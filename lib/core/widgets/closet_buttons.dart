@@ -10,6 +10,7 @@ class ClosetPrimaryButton extends StatelessWidget {
     required this.label,
     this.onPressed,
     this.dore = false,
+    this.icone,
   });
 
   final String label;
@@ -17,6 +18,9 @@ class ClosetPrimaryButton extends StatelessWidget {
 
   /// Variante dorée (bouton final « Rejoindre le cercle »).
   final bool dore;
+
+  /// Icône optionnelle affichée avant le libellé.
+  final IconData? icone;
 
   @override
   Widget build(BuildContext context) {
@@ -42,10 +46,21 @@ class ClosetPrimaryButton extends StatelessWidget {
           child: Center(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Text(
-                label.toUpperCase(),
-                textAlign: TextAlign.center,
-                style: ClosetTextStyles.bouton.copyWith(color: texte),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (icone != null) ...[
+                    Icon(icone, size: 22, color: texte),
+                    const SizedBox(width: 12),
+                  ],
+                  Flexible(
+                    child: Text(
+                      label.toUpperCase(),
+                      textAlign: TextAlign.center,
+                      style: ClosetTextStyles.bouton.copyWith(color: texte),
+                    ),
+                  ),
+                ],
               ),
             ),
           ),

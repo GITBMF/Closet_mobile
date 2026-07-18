@@ -7,6 +7,7 @@ import '../../../core/widgets/bordure_pointillee.dart';
 import '../../../core/widgets/closet_buttons.dart';
 import '../../../core/widgets/closet_header.dart';
 import '../nouvelle/sourceur_nouvelle_piece_screen.dart';
+import '../pieces/sourceur_pieces_screen.dart';
 import '../revenus/sourceur_revenus_screen.dart';
 
 /// Tableau de bord de l'atelier du sourceur (/sourceur) :
@@ -247,9 +248,11 @@ class SourceurAtelierScreen extends StatelessWidget {
             couleurIcone: ClosetColors.texteSurVert,
             titre: 'Mes dépôts',
             label: '$depots PIÈCE${depots == 1 ? '' : 'S'}',
-            onTap: () {
-              // TODO: naviguer vers la liste des dépôts.
-            },
+            onTap: () => Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (_) => const SourceurPiecesScreen(),
+              ),
+            ),
           ),
         ),
       ],
