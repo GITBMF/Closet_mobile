@@ -47,7 +47,7 @@ class SourceurHeroCard extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           Text(
-            "Le comité Clos ET authentifie, photographie et met en "
+            'Le comité Clos ET authentifie, photographie et met en '
             "lumière vos pièces auprès d'une clientèle raffinée.",
             textAlign: TextAlign.center,
             style: ClosetTextStyles.corpsSurVert,

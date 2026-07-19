@@ -87,9 +87,7 @@ class _SourceurNouvellePieceScreenState
                     LabeledField(
                       label: 'Nom de la pièce',
                       controller: _nomController,
-                      hint: 'Robe soie ivoire',
-                      onChanged: (_) => setState(() {}),
-                    ),
+                      hint: 'Robe soie ivoire',                    ),
                     const SizedBox(height: 28),
                     _buildUnivers(),
                     const SizedBox(height: 28),
@@ -97,9 +95,7 @@ class _SourceurNouvellePieceScreenState
                       icone: Icons.local_offer_outlined,
                       label: 'Maison / Marque',
                       controller: _marqueController,
-                      hint: 'Céline, Hermès, Sézane...',
-                      onChanged: (_) => setState(() {}),
-                    ),
+                      hint: 'Céline, Hermès, Sézane...',                    ),
                     const SizedBox(height: 28),
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -131,23 +127,29 @@ class _SourceurNouvellePieceScreenState
                       label: 'Prix proposé (FCFA)',
                       controller: _prixController,
                       hint: '45000',
-                      keyboardType: TextInputType.number,
-                      onChanged: (_) => setState(() {}),
-                    ),
+                      keyboardType: TextInputType.number,                    ),
                     const SizedBox(height: 28),
                     LabeledField(
                       label: 'Description & storytelling',
                       controller: _descriptionController,
                       hint: 'Portée deux fois, couture impeccable, '
                           'matière noble...',
-                      maxLines: 5,
-                      onChanged: (_) => setState(() {}),
-                    ),
+                      maxLines: 5,                    ),
                     const SizedBox(height: 36),
-                    ClosetPrimaryButton(
-                      label: 'Envoyer au comité',
-                      dore: true,
-                      onPressed: _formulaireValide ? _envoyerAuComite : null,
+                    // Seul le bouton dépend du contenu des champs :
+                    // on ne reconstruit que lui à chaque frappe.
+                    ListenableBuilder(
+                      listenable: Listenable.merge([
+                        _nomController,
+                        _marqueController,
+                        _prixController,
+                        _descriptionController,
+                      ]),
+                      builder: (_, _) => ClosetPrimaryButton(
+                        label: 'Envoyer au comité',
+                        dore: true,
+                        onPressed: _formulaireValide ? _envoyerAuComite : null,
+                      ),
                     ),
                     const SizedBox(height: 14),
                     Center(

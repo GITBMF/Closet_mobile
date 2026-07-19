@@ -45,7 +45,7 @@ class LabeledField extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 12),
-        Container(
+        DecoratedBox(
           decoration: BoxDecoration(
             color: ClosetColors.creme,
             borderRadius: BorderRadius.circular(24),

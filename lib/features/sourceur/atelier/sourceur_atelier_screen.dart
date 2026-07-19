@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 
 import '../../../core/theme/closet_colors.dart';
 import '../../../core/theme/closet_text_styles.dart';
-import '../../../core/widgets/closet_bottom_nav.dart';
 import '../../../core/widgets/bordure_pointillee.dart';
+import '../../../core/widgets/closet_bottom_nav.dart';
 import '../../../core/widgets/closet_buttons.dart';
 import '../../../core/widgets/closet_header.dart';
 import '../nouvelle/sourceur_nouvelle_piece_screen.dart';
@@ -38,7 +38,7 @@ class SourceurAtelierScreen extends StatelessWidget {
 
   void _ouvrirDepot(BuildContext context) {
     Navigator.of(context).push(
-      MaterialPageRoute(
+      MaterialPageRoute<void>(
         builder: (_) => const SourceurNouvellePieceScreen(),
       ),
     );
@@ -188,7 +188,7 @@ class SourceurAtelierScreen extends StatelessWidget {
                 child: InkWell(
                   customBorder: const CircleBorder(),
                   onTap: () => Navigator.of(context).push(
-                    MaterialPageRoute(
+                    MaterialPageRoute<void>(
                       builder: (_) => SourceurRevenusScreen(
                         solde: revenusNet,
                         brut: revenusBrut,
@@ -223,39 +223,43 @@ class SourceurAtelierScreen extends StatelessWidget {
   // ------------------------------------------------------ Actions rapides
 
   Widget _buildActionsRapides(BuildContext context) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Expanded(
-          child: _ActionCard(
-            fond: ClosetColors.dore,
-            bordure: const Color(0xFFA07E35),
-            pastille: ClosetColors.noir,
-            icone: Icons.add,
-            couleurIcone: ClosetColors.dore,
-            titre: 'Déposer',
-            label: 'NOUVELLE PIÈCE',
-            onTap: () => _ouvrirDepot(context),
+    // IntrinsicHeight égalise la hauteur des deux cartes sans imposer de
+    // contrainte infinie (on est dans un scroll à hauteur non bornée).
+    return IntrinsicHeight(
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Expanded(
+            child: _ActionCard(
+              fond: ClosetColors.dore,
+              bordure: const Color(0xFFA07E35),
+              pastille: ClosetColors.noir,
+              icone: Icons.add,
+              couleurIcone: ClosetColors.dore,
+              titre: 'Déposer',
+              label: 'NOUVELLE PIÈCE',
+              onTap: () => _ouvrirDepot(context),
+            ),
           ),
-        ),
-        const SizedBox(width: 16),
-        Expanded(
-          child: _ActionCard(
-            fond: ClosetColors.creme,
-            bordure: ClosetColors.bordure,
-            pastille: ClosetColors.vert,
-            icone: Icons.inventory_2_outlined,
-            couleurIcone: ClosetColors.texteSurVert,
-            titre: 'Mes dépôts',
-            label: '$depots PIÈCE${depots == 1 ? '' : 'S'}',
-            onTap: () => Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (_) => const SourceurPiecesScreen(),
+          const SizedBox(width: 16),
+          Expanded(
+            child: _ActionCard(
+              fond: ClosetColors.creme,
+              bordure: ClosetColors.bordure,
+              pastille: ClosetColors.vert,
+              icone: Icons.inventory_2_outlined,
+              couleurIcone: ClosetColors.texteSurVert,
+              titre: 'Mes dépôts',
+              label: '$depots PIÈCE${depots == 1 ? '' : 'S'}',
+              onTap: () => Navigator.of(context).push(
+                MaterialPageRoute<void>(
+                  builder: (_) => const SourceurPiecesScreen(),
+                ),
               ),
             ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 

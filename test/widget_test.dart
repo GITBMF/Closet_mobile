@@ -1,7 +1,7 @@
+import 'package:closet/main.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:closet/main.dart';
-
+/// Test de fumée : l'application démarre sur le parcours Devenir Sourceur.
 void main() {
   testWidgets("Le parcours Devenir Sourceur s'affiche", (tester) async {
     await tester.pumpWidget(const ClosetApp());

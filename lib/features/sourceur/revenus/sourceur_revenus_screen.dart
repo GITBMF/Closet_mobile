@@ -121,29 +121,33 @@ class SourceurRevenusScreen extends StatelessWidget {
   // ------------------------------------------------------ Récapitulatif
 
   Widget _buildRecapitulatif() {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        _RecapTile(
-          icone: Icons.trending_up,
-          label: 'BRUT',
-          montant: '$brut FCFA',
-        ),
-        const SizedBox(width: 14),
-        _RecapTile(
-          icone: Icons.south_east,
-          label: 'COMMISSION',
-          montant: '− $commission FCFA',
-          couleurIcone: ClosetColors.rougeBadge,
-          fondPastille: const Color(0xFFF3DDD7),
-        ),
-        const SizedBox(width: 14),
-        _RecapTile(
-          icone: Icons.schedule,
-          label: 'EN ATTENTE',
-          montant: '$enAttente FCFA',
-        ),
-      ],
+    // IntrinsicHeight égalise la hauteur des tuiles sans imposer de
+    // contrainte infinie (on est dans un scroll à hauteur non bornée).
+    return IntrinsicHeight(
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          _RecapTile(
+            icone: Icons.trending_up,
+            label: 'BRUT',
+            montant: '$brut FCFA',
+          ),
+          const SizedBox(width: 14),
+          _RecapTile(
+            icone: Icons.south_east,
+            label: 'COMMISSION',
+            montant: '− $commission FCFA',
+            couleurIcone: ClosetColors.rougeBadge,
+            fondPastille: const Color(0xFFF3DDD7),
+          ),
+          const SizedBox(width: 14),
+          _RecapTile(
+            icone: Icons.schedule,
+            label: 'EN ATTENTE',
+            montant: '$enAttente FCFA',
+          ),
+        ],
+      ),
     );
   }
 

@@ -48,7 +48,7 @@ class _SourceurPiecesScreenState extends State<SourceurPiecesScreen> {
 
   void _ouvrirDepot() {
     Navigator.of(context).push(
-      MaterialPageRoute(
+      MaterialPageRoute<void>(
         builder: (_) => const SourceurNouvellePieceScreen(),
       ),
     );

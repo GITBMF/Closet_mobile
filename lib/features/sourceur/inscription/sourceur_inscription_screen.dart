@@ -81,7 +81,7 @@ class _SourceurInscriptionScreenState extends State<SourceurInscriptionScreen> {
     // TODO: brancher l'appel API d'inscription sourceur quand le backend
     // sera disponible.
     Navigator.of(context).pushReplacement(
-      MaterialPageRoute(
+      MaterialPageRoute<void>(
         builder: (_) => SourceurAtelierScreen(
           nomAtelier: _atelierController.text.trim(),
           ville: _villeController.text.trim(),
@@ -127,7 +127,18 @@ class _SourceurInscriptionScreenState extends State<SourceurInscriptionScreen> {
                       _ => _buildEtapePaiement(),
                     },
                     const SizedBox(height: 36),
-                    _buildBoutons(),
+                    // Seuls les boutons dépendent du contenu des champs :
+                    // on ne reconstruit qu'eux à chaque frappe.
+                    ListenableBuilder(
+                      listenable: Listenable.merge([
+                        _atelierController,
+                        _villeController,
+                        _whatsappController,
+                        _universController,
+                        _numeroController,
+                      ]),
+                      builder: (_, _) => _buildBoutons(),
+                    ),
                   ],
                 ),
               ),
@@ -149,26 +160,20 @@ class _SourceurInscriptionScreenState extends State<SourceurInscriptionScreen> {
           icone: Icons.storefront_outlined,
           label: 'Nom de votre atelier',
           controller: _atelierController,
-          hint: "L'Atelier d'Awa",
-          onChanged: (_) => setState(() {}),
-        ),
+          hint: "L'Atelier d'Awa",        ),
         const SizedBox(height: 28),
         LabeledField(
           icone: Icons.location_on_outlined,
           label: 'Ville',
           controller: _villeController,
-          hint: 'Yaoundé',
-          onChanged: (_) => setState(() {}),
-        ),
+          hint: 'Yaoundé',        ),
         const SizedBox(height: 28),
         LabeledField(
           icone: Icons.phone_outlined,
           label: 'Téléphone WhatsApp',
           controller: _whatsappController,
           hint: '+237 6 77 45 22 18',
-          keyboardType: TextInputType.phone,
-          onChanged: (_) => setState(() {}),
-        ),
+          keyboardType: TextInputType.phone,        ),
       ],
     );
   }
@@ -185,9 +190,7 @@ class _SourceurInscriptionScreenState extends State<SourceurInscriptionScreen> {
           controller: _universController,
           hint: 'Racontez votre histoire, votre sensibilité, '
               'vos coups de cœur...',
-          maxLines: 6,
-          onChanged: (_) => setState(() {}),
-        ),
+          maxLines: 6,        ),
         const SizedBox(height: 28),
         Row(
           children: [
@@ -243,9 +246,7 @@ class _SourceurInscriptionScreenState extends State<SourceurInscriptionScreen> {
           label: 'Numéro',
           controller: _numeroController,
           hint: '+237 6 ...',
-          keyboardType: TextInputType.phone,
-          onChanged: (_) => setState(() {}),
-        ),
+          keyboardType: TextInputType.phone,        ),
         const SizedBox(height: 24),
         Container(
           padding: const EdgeInsets.all(18),
@@ -262,9 +263,9 @@ class _SourceurInscriptionScreenState extends State<SourceurInscriptionScreen> {
               const SizedBox(width: 12),
               Expanded(
                 child: Text(
-                  "En rejoignant le cercle, vous acceptez la charte "
+                  'En rejoignant le cercle, vous acceptez la charte '
                   "d'authenticité Clos ET et une commission de 25% "
-                  "sur les ventes.",
+                  'sur les ventes.',
                   style: ClosetTextStyles.corps,
                 ),
               ),
