@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'core/theme/closet_colors.dart';
-import 'features/sourceur/inscription/sourceur_inscription_screen.dart';
+import 'features/main_layout.dart';
 
 void main() {
   runApp(const ClosetApp());
@@ -22,7 +22,7 @@ class ClosetApp extends StatelessWidget {
           surface: ClosetColors.ivoire,
         ),
       ),
-      home: const SourceurInscriptionScreen(),
+      home: const MainLayout(),
     );
   }
 }
