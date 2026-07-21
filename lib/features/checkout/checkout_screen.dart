@@ -129,7 +129,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                                     setState(() => _step = 1);
                                   } else {
                                     setState(() => _isPlacing = true);
-                                    await Future.delayed(
+                                    await Future<void>.delayed(
                                         const Duration(milliseconds: 1500));
                                     ref.read(cartProvider.notifier);
                                     if (mounted) {

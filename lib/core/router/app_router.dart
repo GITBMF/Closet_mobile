@@ -2,24 +2,51 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../presentation/screens/main_layout.dart';
-import '../../presentation/screens/home/home_screen.dart';
-import '../../presentation/screens/catalog/catalog_screen.dart';
-import '../../presentation/screens/cart/cart_screen.dart';
-import '../../presentation/screens/profile/profile_screen.dart';
-import '../../presentation/screens/wishlist/wishlist_screen.dart';
-import '../../presentation/screens/product/product_screen.dart';
-import '../../presentation/screens/checkout/checkout_screen.dart';
-import '../../presentation/screens/auth/auth_screen.dart';
+import '../../features/main_layout.dart';
+import '../../features/splash/splash_screen.dart';
+import '../../features/onboarding/onboarding_screen.dart';
+import '../../features/auth/auth_screen.dart';
+import '../../features/cliente/dressing/dressing_screen.dart';
+import '../../features/cliente/collections/collections_screen.dart';
+import '../../features/cliente/wishlist/wishlist_screen.dart';
+import '../../features/cliente/selection/selection_screen.dart';
+import '../../features/cliente/espace/espace_screen.dart';
+import '../../features/cliente/product/product_screen.dart';
+import '../../features/checkout/checkout_screen.dart';
 
 final appRouterProvider = Provider<GoRouter>((ref) {
   final rootNavigatorKey = GlobalKey<NavigatorState>();
-  final shellNavigatorKey = GlobalKey<NavigatorState>();
 
   return GoRouter(
     navigatorKey: rootNavigatorKey,
-    initialLocation: '/home',
+    initialLocation: '/splash',
     routes: [
+      // ── Splash ──────────────────────────────────────────────────────
+      GoRoute(
+        parentNavigatorKey: rootNavigatorKey,
+        path: '/splash',
+        pageBuilder: (context, state) => CustomTransitionPage(
+          key: state.pageKey,
+          child: const SplashScreen(),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            return FadeTransition(opacity: animation, child: child);
+          },
+        ),
+      ),
+
+      // ── Onboarding ───────────────────────────────────────────────────
+      GoRoute(
+        parentNavigatorKey: rootNavigatorKey,
+        path: '/onboarding',
+        pageBuilder: (context, state) => CustomTransitionPage(
+          key: state.pageKey,
+          child: const OnboardingScreen(),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            return FadeTransition(opacity: animation, child: child);
+          },
+        ),
+      ),
+
       // ── Auth (outside shell — no bottom nav) ────────────────────────
       GoRoute(
         parentNavigatorKey: rootNavigatorKey,
@@ -97,21 +124,21 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           return MainLayout(navigationShell: navigationShell);
         },
         branches: [
-          // 0 — DRESSING (Home)
+          // 0 — DRESSING
           StatefulShellBranch(
             routes: [
               GoRoute(
                 path: '/home',
-                builder: (context, state) => const HomeScreen(),
+                builder: (context, state) => const DressingScreen(),
               ),
             ],
           ),
-          // 1 — COLLECTIONS (Catalog)
+          // 1 — COLLECTIONS
           StatefulShellBranch(
             routes: [
               GoRoute(
-                path: '/catalog',
-                builder: (context, state) => const CatalogScreen(),
+                path: '/collections',
+                builder: (context, state) => const CollectionsScreen(),
               ),
             ],
           ),
@@ -124,21 +151,21 @@ final appRouterProvider = Provider<GoRouter>((ref) {
               ),
             ],
           ),
-          // 3 — SÉLECTION (Cart)
+          // 3 — SÉLECTION
           StatefulShellBranch(
             routes: [
               GoRoute(
-                path: '/cart',
-                builder: (context, state) => const CartScreen(),
+                path: '/selection',
+                builder: (context, state) => const SelectionScreen(),
               ),
             ],
           ),
-          // 4 — ESPACE (Profile)
+          // 4 — ESPACE
           StatefulShellBranch(
             routes: [
               GoRoute(
-                path: '/profile',
-                builder: (context, state) => const ProfileScreen(),
+                path: '/espace',
+                builder: (context, state) => const EspaceScreen(),
               ),
             ],
           ),

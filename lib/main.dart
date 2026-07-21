@@ -1,14 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'core/router/app_router.dart';
+import 'core/theme/app_theme.dart';
 import 'core/theme/closet_colors.dart';
-import 'features/main_layout.dart';
 
 void main() {
-  runApp(const ClosetApp());
+  runApp(
+    const ProviderScope(
+      child: ClosetApp(),
+    ),
+  );
 }
 
-class ClosEtApp extends ConsumerWidget {
-  const ClosEtApp({super.key});
+class ClosetApp extends ConsumerWidget {
+  const ClosetApp({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -16,17 +22,14 @@ class ClosEtApp extends ConsumerWidget {
 
     return MaterialApp.router(
       title: 'ClosET - L\'élégance durable',
-      theme: AppTheme.lightTheme,
-      routerConfig: router,
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        scaffoldBackgroundColor: ClosetColors.ivoire,
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: ClosetColors.vert,
-          surface: ClosetColors.ivoire,
+      theme: AppTheme.lightTheme.copyWith(
+        scaffoldBackgroundColor: ClosetColors.beige,
+        colorScheme: AppTheme.lightTheme.colorScheme.copyWith(
+          surface: ClosetColors.creme,
         ),
       ),
-      home: const MainLayout(),
+      routerConfig: router,
+      debugShowCheckedModeBanner: false,
     );
   }
 }

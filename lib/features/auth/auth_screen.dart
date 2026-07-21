@@ -5,6 +5,11 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/theme/app_theme.dart';
 
+// ─── Auth State ──────────────────────────────────────────────────────────────
+
+/// true = l'utilisateur est connecté
+final isAuthenticatedProvider = StateProvider<bool>((ref) => false);
+
 // ─── Auth Screen (Login / Register) ─────────────────────────────────────────
 
 enum AuthMode { login, register }
@@ -50,9 +55,11 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
 
   Future<void> _submit() async {
     setState(() => _isLoading = true);
-    await Future.delayed(const Duration(milliseconds: 1200));
+    await Future<void>.delayed(const Duration(milliseconds: 1200));
     if (mounted) {
       setState(() => _isLoading = false);
+      // Marquer l'utilisateur comme authentifié
+      ref.read(isAuthenticatedProvider.notifier).state = true;
       context.go('/home');
     }
   }

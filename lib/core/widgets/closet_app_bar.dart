@@ -117,11 +117,11 @@ class ClosetAppBar extends ConsumerWidget implements PreferredSizeWidget {
           color: AppTheme.blackCloset,
           onPressed: () {},
         ),
-        // Wishlist
+        // Profile
         IconButton(
-          icon: const Icon(Icons.favorite_border, size: 22),
+          icon: const Icon(Icons.person_outline, size: 22),
           color: AppTheme.blackCloset,
-          onPressed: () {},
+          onPressed: () => context.go('/espace'),
         ),
         // Cart with badge
         Stack(
@@ -130,7 +130,7 @@ class ClosetAppBar extends ConsumerWidget implements PreferredSizeWidget {
             IconButton(
               icon: const Icon(Icons.shopping_bag_outlined, size: 22),
               color: AppTheme.blackCloset,
-              onPressed: () => context.go('/cart'),
+              onPressed: () => context.go('/selection'),
             ),
             if (cartCount > 0)
               Positioned(
@@ -155,39 +155,6 @@ class ClosetAppBar extends ConsumerWidget implements PreferredSizeWidget {
                   ),
                 ),
               ),
-          ],
-        ),
-        // Notifications
-        Stack(
-          alignment: Alignment.topRight,
-          children: [
-            IconButton(
-              icon: const Icon(Icons.notifications_none, size: 22),
-              color: AppTheme.blackCloset,
-              onPressed: () {},
-            ),
-            Positioned(
-              top: 6,
-              right: 6,
-              child: Container(
-                width: 16,
-                height: 16,
-                decoration: const BoxDecoration(
-                  color: Colors.redAccent,
-                  shape: BoxShape.circle,
-                ),
-                child: const Center(
-                  child: Text(
-                    '2',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 9,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              ),
-            ),
           ],
         ),
         const SizedBox(width: 4),

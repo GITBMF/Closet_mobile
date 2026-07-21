@@ -8,14 +8,14 @@ final catalogRepositoryProvider = Provider<CatalogRepository>((ref) {
 class CatalogRepository {
   // Données mockées reproduisant fidèlement la maquette Lovable
   Future<List<Article>> getCatalog({String? universe}) async {
-    await Future.delayed(const Duration(milliseconds: 600));
+    await Future<void>.delayed(const Duration(milliseconds: 600));
     final all = _mockArticles;
     if (universe == null || universe == 'Tout l\'univers') return all;
     return all.where((a) => a.universe == universe).toList();
   }
 
   Future<Article?> getById(String id) async {
-    await Future.delayed(const Duration(milliseconds: 400));
+    await Future<void>.delayed(const Duration(milliseconds: 400));
     try {
       return _mockArticles.firstWhere((a) => a.id == id);
     } catch (_) {
@@ -24,17 +24,17 @@ class CatalogRepository {
   }
 
   Future<Article> getFeatured() async {
-    await Future.delayed(const Duration(milliseconds: 300));
+    await Future<void>.delayed(const Duration(milliseconds: 300));
     return _mockArticles.firstWhere((a) => a.isFeatured);
   }
 
   Future<List<Article>> getNewArrivals() async {
-    await Future.delayed(const Duration(milliseconds: 400));
+    await Future<void>.delayed(const Duration(milliseconds: 400));
     return _mockArticles.take(4).toList();
   }
 
   Future<List<Article>> getCoupDeCoeur() async {
-    await Future.delayed(const Duration(milliseconds: 400));
+    await Future<void>.delayed(const Duration(milliseconds: 400));
     return _mockArticles.skip(2).take(4).toList();
   }
 

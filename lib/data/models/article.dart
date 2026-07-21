@@ -39,7 +39,7 @@ class Article {
       material: json['material'] as String? ?? '',
       condition: json['condition'] as String,
       price: (json['price'] as num).toDouble(),
-      imageUrls: List<String>.from(json['imageUrls'] ?? []),
+      imageUrls: List<String>.from((json['imageUrls'] as List<dynamic>?) ?? <dynamic>[]),
       isFeatured: json['isFeatured'] as bool? ?? false,
       universe: json['universe'] as String? ?? '',
       isSoldOut: json['isSoldOut'] as bool? ?? false,
