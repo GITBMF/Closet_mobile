@@ -27,7 +27,7 @@ class ClosetBottomNav extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: const BoxDecoration(
-        color: ClosetColors.noir,
+        color: ClosetColors.vertFonce,
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       padding: EdgeInsets.only(
@@ -43,23 +43,57 @@ class ClosetBottomNav extends StatelessWidget {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(
-                      _items[i].icone,
-                      size: 24,
-                      color: i == indexActif
-                          ? ClosetColors.dore
-                          : ClosetColors.texteSurVert,
+                    Stack(
+                      clipBehavior: Clip.none,
+                      children: [
+                        Icon(
+                          _items[i].icone,
+                          size: 24,
+                          color: i == indexActif
+                              ? ClosetColors.doreClair
+                              : ClosetColors.texteSurVert.withValues(alpha: 0.7),
+                        ),
+                        if (i == 3) // SÉLECTION
+                          Positioned(
+                            right: -6,
+                            top: -4,
+                            child: Container(
+                              padding: const EdgeInsets.all(4),
+                              decoration: const BoxDecoration(
+                                color: ClosetColors.doreClair,
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Text(
+                                '2',
+                                style: TextStyle(
+                                  color: ClosetColors.vertFonce,
+                                  fontSize: 8,
+                                  fontWeight: FontWeight.w900,
+                                ),
+                              ),
+                            ),
+                          ),
+                      ],
                     ),
                     const SizedBox(height: 6),
                     Text(
                       _items[i].label,
                       style: ClosetTextStyles.navigation.copyWith(
                         color: i == indexActif
-                            ? ClosetColors.dore
-                            : ClosetColors.texteSurVert,
+                            ? ClosetColors.doreClair
+                            : ClosetColors.texteSurVert.withValues(alpha: 0.7),
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 4),
+                    Container(
+                      height: 2,
+                      width: 16,
+                      decoration: BoxDecoration(
+                        color: i == indexActif ? ClosetColors.doreClair : Colors.transparent,
+                        borderRadius: BorderRadius.circular(1),
+                      ),
                     ),
                   ],
                 ),

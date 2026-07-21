@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "snapshots": [
+    {
+      "timestamp": "2026-07-20T12:43:45.317Z",
+      "extensionVersion": "14.3.4",
+      "packages": {
+        "cupertino_icons": {
+          "version": "1.0.8",
+          "score": 62,
+          "category": "stable",
+          "grade": "B"
+        },
+        "flutter_lints": {
+          "version": "6.0.0",
+          "score": 62,
+          "category": "stable",
+          "grade": "B"
+        },
+        "google_fonts": {
+          "version": "6.3.2",
+          "score": 64.5,
+          "category": "stable",
+          "grade": "B"
+        }
+      }
+    }
+  ]
+}

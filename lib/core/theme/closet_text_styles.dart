@@ -4,16 +4,23 @@ import 'package:google_fonts/google_fonts.dart';
 import 'closet_colors.dart';
 
 /// Typographies CLOSET :
+/// - Boldonse pour les très grands titres décoratifs (marque)
 /// - Cormorant Garamond (serif, italique) pour les grands titres
 /// - EB Garamond pour les textes courants et champs de saisie
 /// - Lato pour les labels en capitales espacées
 class ClosetTextStyles {
   ClosetTextStyles._();
 
+  static const TextStyle display = TextStyle(
+    fontFamily: 'Boldonse',
+    fontSize: 24,
+    color: ClosetColors.noir,
+  );
+
   static TextStyle titreEcran = GoogleFonts.cormorantGaramond(
     fontSize: 26,
     fontWeight: FontWeight.w600,
-    color: ClosetColors.noir,
+    color: ClosetColors.vertFonce,
   );
 
   static TextStyle titreHero = GoogleFonts.cormorantGaramond(

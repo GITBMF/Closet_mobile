@@ -1,23 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'core/theme/app_theme.dart';
-import 'core/router/app_router.dart';
+import 'core/theme/closet_colors.dart';
+import 'features/main_layout.dart';
 
-void main() async {
-  // S'assurer que le binding Flutter est initialisé
-  WidgetsFlutterBinding.ensureInitialized();
-
-  // Charger le fichier .env
-  await dotenv.load(fileName: ".env");
-
-  // Lancer l'application enveloppée dans un ProviderScope pour Riverpod
-  runApp(
-    const ProviderScope(
-      child: ClosEtApp(),
-    ),
-  );
+void main() {
+  runApp(const ClosetApp());
 }
 
 class ClosEtApp extends ConsumerWidget {
@@ -32,6 +19,14 @@ class ClosEtApp extends ConsumerWidget {
       theme: AppTheme.lightTheme,
       routerConfig: router,
       debugShowCheckedModeBanner: false,
+      theme: ThemeData(
+        scaffoldBackgroundColor: ClosetColors.ivoire,
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: ClosetColors.vert,
+          surface: ClosetColors.ivoire,
+        ),
+      ),
+      home: const MainLayout(),
     );
   }
 }

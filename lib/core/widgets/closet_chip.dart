@@ -1,46 +1,57 @@
 import 'package:flutter/material.dart';
-
 import '../theme/closet_colors.dart';
-import '../theme/closet_text_styles.dart';
 
-/// Chip de sélection CLOSET : vert sapin quand sélectionnée, crème sinon.
 class ClosetChip extends StatelessWidget {
-  const ClosetChip({
-    super.key,
-    required this.label,
-    required this.selectionnee,
-    required this.onTap,
-  });
-
   final String label;
-  final bool selectionnee;
-  final VoidCallback onTap;
+  final bool isActive;
+  final bool hasCloseIcon;
+  final VoidCallback? onTap;
+  final VoidCallback? onCloseTap;
+
+  const ClosetChip({
+    super.key, 
+    required this.label,
+    this.isActive = false,
+    this.hasCloseIcon = false,
+    this.onTap,
+    this.onCloseTap,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: selectionnee ? ClosetColors.vert : ClosetColors.creme,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(30),
-        side: BorderSide(
-          color: selectionnee ? ClosetColors.vert : ClosetColors.bordure,
-        ),
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        decoration: BoxDecoration(
+        color: isActive ? ClosetColors.vertFonce : ClosetColors.creme,
+        border: Border.all(color: isActive ? Colors.transparent : ClosetColors.ligne),
+        borderRadius: BorderRadius.circular(20),
       ),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(30),
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 13),
-          child: Text(
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
             label,
-            style: ClosetTextStyles.corps.copyWith(
-              color: selectionnee
-                  ? ClosetColors.texteSurVert
-                  : ClosetColors.noir,
+            style: TextStyle(
+              fontSize: 13,
               fontWeight: FontWeight.w600,
+              color: isActive ? Colors.white : ClosetColors.noir,
             ),
           ),
-        ),
+          if (hasCloseIcon) ...[
+            const SizedBox(width: 4),
+            GestureDetector(
+              onTap: onCloseTap ?? onTap,
+              child: Icon(
+                Icons.close,
+                size: 14,
+                color: isActive ? Colors.white : ClosetColors.noir,
+              ),
+            ),
+          ],
+        ],
+      ),
       ),
     );
   }

@@ -1,0 +1,1158 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Clos ET — Dossier de design mobile v1.2 · Système iconographique unifié</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Boldonse&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Lato:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ================= TOKENS CLOS ET ================= */
+:root{
+  --noir:#171512;
+  --vert:#1C382D;
+  --vert-fonce:#12241D;
+  --beige:#F3EBDD;
+  --creme:#FBF7EF;
+  --dore:#C6A24B;         /* décoratif uniquement */
+  --dore-encre:#7E611C;   /* seul doré autorisé en texte sur clair */
+  --dore-clair:#DCBE72;   /* doré sur vert profond */
+  --taupe:#6B5F4C;
+  --ligne:#E2D7C2;
+  --succes:#2E6B4F; --alerte:#8A5A17; --erreur:#9B3A2E;
+  --f-display:'Boldonse', system-ui, sans-serif;
+  --f-serif:'Cormorant Garamond', Georgia, serif;
+  --f-ui:'Lato', 'Segoe UI', system-ui, sans-serif;
+  --r-arche:110px 110px 16px 16px;
+  --r-card:14px; --r-btn:999px;
+  --shadow:0 6px 24px rgba(23,21,18,.08);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#EBE1CE;color:var(--noir);font-family:var(--f-ui);line-height:1.55;-webkit-font-smoothing:antialiased}
+.doc{max-width:1240px;margin:0 auto;padding:40px 24px 120px}
+.doc-head{background:var(--vert-fonce);color:var(--creme);border-radius:20px;padding:56px 48px;position:relative;overflow:hidden}
+.doc-head::after{content:"";position:absolute;right:-60px;top:-80px;width:340px;height:460px;border:1px solid rgba(198,162,75,.35);border-radius:170px 170px 0 0}
+.doc-head .brand{font-family:var(--f-serif);font-style:italic;font-weight:600;font-size:20px;color:var(--dore-clair);letter-spacing:.04em}
+.doc-head h1{font-family:var(--f-display);font-size:clamp(24px,4vw,42px);line-height:1.2;margin:14px 0 10px;letter-spacing:.01em}
+.doc-head p{max-width:640px;color:#D9D2C2;font-size:15px}
+.doc-meta{display:flex;gap:24px;flex-wrap:wrap;margin-top:22px;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--dore-clair)}
+.sec{margin-top:72px}
+.sec>.eyebrow{font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--dore-encre);font-weight:700}
+.sec>h2{font-family:var(--f-serif);font-weight:600;font-size:clamp(24px,3vw,34px);margin:6px 0 8px;color:var(--vert-fonce)}
+.sec>.lead{max-width:780px;color:var(--taupe);font-size:15px;margin-bottom:28px}
+.panel{background:var(--creme);border:1px solid var(--ligne);border-radius:18px;padding:28px;box-shadow:var(--shadow)}
+.grid{display:grid;gap:20px}
+.g2{grid-template-columns:repeat(auto-fit,minmax(300px,1fr))}
+.g3{grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}
+h3.pt{font-family:var(--f-serif);font-size:20px;font-weight:600;color:var(--vert-fonce);margin-bottom:12px}
+.note{font-size:13px;color:var(--taupe)}
+table.spec{width:100%;border-collapse:collapse;font-size:13.5px}
+table.spec th{text-align:left;font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--dore-encre);padding:8px 10px;border-bottom:1px solid var(--ligne)}
+table.spec td{padding:9px 10px;border-bottom:1px solid var(--ligne);vertical-align:top}
+.ok{color:var(--succes);font-weight:700}.ko{color:var(--erreur);font-weight:700}
+.sw{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+.sw i{width:52px;height:52px;border-radius:12px;border:1px solid rgba(23,21,18,.12);flex:none}
+.sw b{display:block;font-size:13.5px}.sw span{font-size:12px;color:var(--taupe)}
+/* Frames téléphone */
+.screens{display:grid;grid-template-columns:repeat(auto-fit,minmax(330px,1fr));gap:44px 28px;align-items:start}
+.frame{display:flex;flex-direction:column;gap:14px}
+.phone{width:100%;max-width:378px;margin:0 auto;background:var(--beige);border:9px solid #100E0C;border-radius:44px;overflow:hidden;position:relative;box-shadow:0 24px 60px rgba(18,36,29,.28)}
+.screen{display:flex;flex-direction:column;min-height:790px;position:relative}
+.statusbar{display:flex;justify-content:space-between;padding:12px 22px 4px;font-size:11.5px;font-weight:700;color:var(--noir)}
+.on-dark .statusbar{color:var(--creme)}
+.appbar{display:flex;align-items:center;justify-content:space-between;padding:10px 18px 12px}
+.appbar .t{font-family:var(--f-serif);font-weight:600;font-size:21px;color:var(--vert-fonce)}
+.icbtn{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:var(--creme);border:1px solid var(--ligne);font-size:17px;color:var(--vert-fonce)}
+.body{flex:1;padding:0 18px 96px}
+.eyeb{font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:var(--dore-encre);font-weight:700}
+.serifT{font-family:var(--f-serif);font-weight:600;color:var(--vert-fonce)}
+.tabbar{position:absolute;left:0;right:0;bottom:0;background:var(--vert-fonce);display:flex;justify-content:space-around;align-items:stretch;padding:8px 6px 16px}
+.tab{min-width:56px;min-height:52px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;color:#ADB9B0;font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;border-radius:12px;position:relative}
+.tab i{font-style:normal;font-size:17px}
+.ic{width:22px;height:22px;display:inline-block;vertical-align:middle;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;fill:none;color:inherit;flex:none}
+.tab .ic{width:23px;height:23px}
+.icbtn .ic{width:21px;height:21px}
+.ic-fill{fill:currentColor;stroke:none}
+.tab.on{color:var(--dore-clair)}
+.tab.on::after{content:"";width:16px;height:2px;background:var(--dore);border-radius:2px;margin-top:2px}
+.tab .dot{position:absolute;top:2px;right:6px;background:var(--dore);color:var(--vert-fonce);font-weight:800;font-size:9px;min-width:15px;height:15px;border-radius:8px;display:flex;align-items:center;justify-content:center}
+.btnP{display:flex;align-items:center;justify-content:center;gap:8px;min-height:52px;background:var(--vert);color:var(--creme);border-radius:var(--r-btn);font-weight:700;font-size:14.5px;letter-spacing:.03em;border:1px solid var(--vert)}
+.btnO{display:flex;align-items:center;justify-content:center;min-height:48px;background:transparent;color:var(--vert-fonce);border:1.5px solid var(--vert);border-radius:var(--r-btn);font-weight:700;font-size:13.5px}
+.btnDis{opacity:.45}
+.focusring{outline:3px solid var(--dore);outline-offset:3px}
+.piece{background:var(--creme);border:1px solid var(--ligne);border-radius:16px;overflow:hidden}
+.ph{position:relative;background:linear-gradient(160deg,#E7DCC6,#D6C6A6);display:flex;align-items:flex-end;justify-content:center;overflow:hidden}
+.ph.arche{border-radius:var(--r-arche)}
+.ph .sil{width:46%;height:74%;background:linear-gradient(180deg,rgba(34,66,53,.14),rgba(18,36,29,.4));border-radius:60px 60px 8px 8px}
+.heart{position:absolute;top:10px;right:10px;width:44px;height:44px;border-radius:50%;background:rgba(251,247,239,.94);display:flex;align-items:center;justify-content:center;font-size:16px;color:var(--vert-fonce);border:1px solid var(--ligne)}
+.heart.on{color:#9B3A2E}
+.tagEtat{position:absolute;left:10px;top:10px;background:var(--vert-fonce);color:var(--dore-clair);font-size:9.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;padding:5px 10px;border-radius:999px}
+.pmeta{padding:10px 12px 12px}
+.pmeta .maison{font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--taupe);font-weight:700}
+.pmeta .nom{font-family:var(--f-serif);font-weight:600;font-size:15.5px;color:var(--noir);line-height:1.25}
+.pmeta .prix{font-family:var(--f-serif);font-weight:700;font-size:15px;color:var(--vert-fonce);margin-top:2px}
+.chips{display:flex;gap:8px;overflow:hidden;padding:2px 0 4px}
+.chip{flex:none;min-height:40px;display:flex;align-items:center;gap:6px;padding:0 14px;border-radius:999px;border:1.5px solid var(--ligne);background:var(--creme);font-size:12.5px;font-weight:600;color:var(--vert-fonce)}
+.chip.on{background:var(--vert);border-color:var(--vert);color:var(--creme)}
+.field{margin-bottom:14px}
+.field label{display:block;font-size:12px;font-weight:700;color:var(--vert-fonce);margin-bottom:6px}
+.input{min-height:52px;background:var(--creme);border:1.5px solid var(--ligne);border-radius:12px;display:flex;align-items:center;padding:0 14px;font-size:14px;color:var(--noir)}
+.input.focus{border-color:var(--vert);box-shadow:0 0 0 3px rgba(198,162,75,.35)}
+.input.err{border-color:var(--erreur)}
+.hint{font-size:11.5px;color:var(--taupe);margin-top:4px}
+.hint.err{color:var(--erreur);font-weight:600}
+.st{display:inline-flex;align-items:center;gap:6px;font-size:10.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:5px 11px;border-radius:999px}
+.st::before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor}
+.st-recu{background:#EFE5CF;color:#6B5A26}.st-analyse{background:#E9E2D2;color:#5C5340}
+.st-ok{background:#DCE8DF;color:#245B41}.st-vente{background:var(--vert-fonce);color:var(--dore-clair)}
+.st-ko{background:#F0DCD6;color:#8F3327}.st-ret{background:#E7E0D5;color:#6B5F4C}
+.tl{position:relative;padding-left:26px}
+.tl::before{content:"";position:absolute;left:8px;top:6px;bottom:6px;width:2px;background:var(--ligne)}
+.tls{position:relative;padding-bottom:20px}
+.tls::before{content:"";position:absolute;left:-24px;top:3px;width:14px;height:14px;border-radius:50%;background:var(--creme);border:2.5px solid var(--ligne)}
+.tls.done::before{background:var(--vert);border-color:var(--vert)}
+.tls.cur::before{background:var(--dore);border-color:var(--dore);box-shadow:0 0 0 4px rgba(198,162,75,.28)}
+.tls b{display:block;font-size:13.5px;color:var(--vert-fonce)}
+.tls span{font-size:11.5px;color:var(--taupe)}
+.spec-card{background:var(--creme);border:1px solid var(--ligne);border-left:4px solid var(--dore);border-radius:12px;padding:16px 18px;font-size:13px}
+.spec-card h4{font-family:var(--f-serif);font-size:16px;color:var(--vert-fonce);margin-bottom:8px}
+.spec-card ul{list-style:none}
+.spec-card li{padding-left:18px;position:relative;margin-bottom:6px;color:#4A4438}
+.spec-card li::before{content:"—";position:absolute;left:0;color:var(--dore-encre)}
+.spec-card li.a11y::before{content:"♿";font-size:11px}
+.sk{background:linear-gradient(90deg,#EDE3D0 25%,#F6EFDF 50%,#EDE3D0 75%);background-size:200% 100%;border-radius:10px}
+@media (prefers-reduced-motion:no-preference){.sk{animation:sh 1.6s infinite}}
+@keyframes sh{to{background-position:-200% 0}}
+.divider{height:1px;background:var(--ligne);margin:14px 0}
+.small{font-size:11.5px;color:var(--taupe)}
+.flowstep{flex:1;min-width:140px;background:var(--beige);border:1px solid var(--ligne);border-radius:14px;padding:14px 15px;position:relative}
+.flowstep-on{background:var(--vert-fonce);border-color:var(--vert-fonce)}
+.flowstep .flowk{font-size:10px;letter-spacing:.18em;font-weight:700;color:var(--dore-encre);display:block;margin-bottom:5px}
+.flowstep-on .flowk{color:var(--dore-clair)}
+.flowstep b{font-family:var(--f-serif);font-weight:600;font-size:15px;color:var(--vert-fonce);display:block;margin-bottom:4px}
+.flowstep-on b{color:var(--creme)}
+.flowstep p{font-size:11.5px;color:var(--taupe);line-height:1.45}
+.flowstep-on p{color:#AEB8AC}
+.flowarr{display:flex;align-items:center;color:var(--dore-encre);font-size:18px;padding:0 6px;flex:none}
+code{font-family:ui-monospace,Menlo,monospace;font-size:11.5px;background:var(--beige);border:1px solid var(--ligne);border-radius:5px;padding:1px 5px;color:var(--dore-encre)}
+@media(max-width:640px){.flowarr{transform:rotate(90deg);width:100%;justify-content:center;padding:4px 0}.flowstep{min-width:100%}}
+</style>
+</head>
+<body>
+<!-- ============================================================
+     JEU D'ICÔNES CLOS ET — sprite cohérent (construit selon les
+     principes du livre : formes simples, stroke 1.5 uniforme,
+     coins arrondis « friendly », grille 24, currentColor.
+     Remplace tous les glyphes Unicode et emojis hétérogènes.
+============================================================ -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <defs>
+    <!-- Recherche : loupe canonique — cercle creux + manche à 45° (livre p.171) -->
+    <symbol id="i-search" viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5"/><line x1="15.5" y1="15.5" x2="20.5" y2="20.5"/></symbol>
+    <!-- Dressing / accueil : cintre (signature marque) -->
+    <symbol id="i-hanger" viewBox="0 0 24 24"><path d="M12 6.2a2 2 0 1 1 1.3 1.88c-.5.2-.8.5-.8 1.02v.9"/><path d="M12.5 10l7.5 5.4c.9.65.44 2.1-.66 2.1H4.66c-1.1 0-1.56-1.45-.66-2.1L12.5 10z"/></symbol>
+    <!-- Collections : cintres alignés (penderie) -->
+    <symbol id="i-collections" viewBox="0 0 24 24"><rect x="3.5" y="4.5" width="17" height="15" rx="2"/><line x1="8" y1="4.5" x2="8" y2="19.5"/><line x1="14" y1="4.5" x2="14" y2="19.5"/></symbol>
+    <!-- Cœur (contour) -->
+    <symbol id="i-heart" viewBox="0 0 24 24"><path d="M12 20s-7-4.35-9.2-8.5C1.3 8.6 2.6 5.5 5.7 5.1c1.9-.24 3.5.8 4.3 2.2.8-1.4 2.4-2.44 4.3-2.2 3.1.4 4.4 3.5 2.9 6.4C19 15.65 12 20 12 20z"/></symbol>
+    <!-- Cœur plein -->
+    <symbol id="i-heart-fill" viewBox="0 0 24 24"><path class="ic-fill" d="M12 20s-7-4.35-9.2-8.5C1.3 8.6 2.6 5.5 5.7 5.1c1.9-.24 3.5.8 4.3 2.2.8-1.4 2.4-2.44 4.3-2.2 3.1.4 4.4 3.5 2.9 6.4C19 15.65 12 20 12 20z"/></symbol>
+    <!-- Sélection : sac shopping -->
+    <symbol id="i-bag" viewBox="0 0 24 24"><path d="M5.5 8h13l-.9 10.4a2 2 0 0 1-2 1.85H8.4a2 2 0 0 1-2-1.85L5.5 8z"/><path d="M9 8V6.5a3 3 0 0 1 6 0V8"/></symbol>
+    <!-- Espace / profil : personne -->
+    <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8.5" r="3.7"/><path d="M5.5 20c.6-3.5 3.2-5.5 6.5-5.5s5.9 2 6.5 5.5"/></symbol>
+    <!-- Notifications : cloche -->
+    <symbol id="i-bell" viewBox="0 0 24 24"><path d="M6.5 10a5.5 5.5 0 0 1 11 0c0 4.2 1.4 5.5 1.9 6H4.6c.5-.5 1.9-1.8 1.9-6z"/><path d="M10 19.2a2.2 2.2 0 0 0 4 0"/></symbol>
+    <!-- Paramètres : glissières (plus élégant que la roue crantée) -->
+    <symbol id="i-settings" viewBox="0 0 24 24"><line x1="4" y1="8" x2="20" y2="8"/><circle cx="14" cy="8" r="2.4" class="ic-fill"/><line x1="4" y1="16" x2="20" y2="16"/><circle cx="9" cy="16" r="2.4" class="ic-fill"/></symbol>
+    <!-- Retour : flèche gauche -->
+    <symbol id="i-back" viewBox="0 0 24 24"><polyline points="14,5 7,12 14,19"/><line x1="7" y1="12" x2="20" y2="12"/></symbol>
+    <!-- Partager -->
+    <symbol id="i-share" viewBox="0 0 24 24"><circle cx="17.5" cy="6" r="2.5"/><circle cx="6.5" cy="12" r="2.5"/><circle cx="17.5" cy="18" r="2.5"/><line x1="8.7" y1="10.8" x2="15.3" y2="7.2"/><line x1="8.7" y1="13.2" x2="15.3" y2="16.8"/></symbol>
+    <!-- Fermer / retirer -->
+    <symbol id="i-close" viewBox="0 0 24 24"><line x1="6.5" y1="6.5" x2="17.5" y2="17.5"/><line x1="17.5" y1="6.5" x2="6.5" y2="17.5"/></symbol>
+    <!-- Chevron bas (selects) -->
+    <symbol id="i-chevron" viewBox="0 0 24 24"><polyline points="6,9.5 12,15.5 18,9.5"/></symbol>
+    <!-- Appareil photo -->
+    <symbol id="i-camera" viewBox="0 0 24 24"><path d="M4 8.5h3l1.3-2h7.4l1.3 2H20a1.5 1.5 0 0 1 1.5 1.5v7.5A1.5 1.5 0 0 1 20 19H4a1.5 1.5 0 0 1-1.5-1.5V10A1.5 1.5 0 0 1 4 8.5z"/><circle cx="12" cy="13" r="3.2"/></symbol>
+    <!-- Vidéo -->
+    <symbol id="i-video" viewBox="0 0 24 24"><rect x="3" y="7" width="12.5" height="10" rx="1.8"/><path d="M15.5 11l5-2.6v7.2l-5-2.6z"/></symbol>
+    <!-- Cadenas -->
+    <symbol id="i-lock" viewBox="0 0 24 24"><rect x="5.5" y="10.5" width="13" height="9" rx="1.8"/><path d="M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5"/><circle cx="12" cy="15" r="1.2" class="ic-fill"/></symbol>
+    <!-- Alerte -->
+    <symbol id="i-alert" viewBox="0 0 24 24"><path d="M12 4.5l8.5 15H3.5l8.5-15z"/><line x1="12" y1="10" x2="12" y2="14"/><circle cx="12" cy="16.6" r="1" class="ic-fill"/></symbol>
+    <!-- Livraison : camion -->
+    <symbol id="i-truck" viewBox="0 0 24 24"><rect x="2.5" y="7" width="11" height="9" rx="1"/><path d="M13.5 10h4l3 3v3h-7z"/><circle cx="7" cy="18" r="1.8"/><circle cx="17.5" cy="18" r="1.8"/></symbol>
+    <!-- Étincelle / curation -->
+    <symbol id="i-sparkle" viewBox="0 0 24 24"><path d="M12 3.5c.6 4.2 1.8 5.4 6 6-4.2.6-5.4 1.8-6 6-.6-4.2-1.8-5.4-6-6 4.2-.6 5.4-1.8 6-6z"/></symbol>
+    <!-- Filtre / affiner -->
+    <symbol id="i-filter" viewBox="0 0 24 24"><line x1="4" y1="7" x2="20" y2="7"/><line x1="7" y1="12" x2="17" y2="12"/><line x1="10" y1="17" x2="14" y2="17"/></symbol>
+    <!-- Carte de paiement -->
+    <symbol id="i-card" viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="12" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="6.5" y1="14.5" x2="10" y2="14.5"/></symbol>
+    <!-- Colis / commande -->
+    <symbol id="i-box" viewBox="0 0 24 24"><path d="M12 3.5l7.5 4v9l-7.5 4-7.5-4v-9z"/><polyline points="4.5,7.5 12,11.5 19.5,7.5"/><line x1="12" y1="11.5" x2="12" y2="20"/></symbol>
+    <!-- Adresse / épingle -->
+    <symbol id="i-pin" viewBox="0 0 24 24"><path d="M12 21c4-4.5 6.5-7.7 6.5-11a6.5 6.5 0 0 0-13 0c0 3.3 2.5 6.5 6.5 11z"/><circle cx="12" cy="10" r="2.4"/></symbol>
+    <!-- Message / écrire -->
+    <symbol id="i-message" viewBox="0 0 24 24"><path d="M4 5.5h16a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H9l-4 3.5V16.5a1 1 0 0 1-1-1v-9a1 1 0 0 1 1-1z"/></symbol>
+    <!-- Feuille / durabilité -->
+    <symbol id="i-leaf" viewBox="0 0 24 24"><path d="M6 18c0-7 5-11 13-11 0 8-4 12-11 12-1 0-2-.3-2-1z"/><line x1="9" y1="15" x2="15" y2="9"/></symbol>
+    <!-- Coche / succès -->
+    <symbol id="i-check" viewBox="0 0 24 24"><polyline points="5,12.5 10,17.5 19,7"/></symbol>
+  </defs>
+</svg>
+<div class="doc">
+
+<header class="doc-head">
+  <div class="brand">Clos ET — L'élégance durable</div>
+  <h1>Dossier de design — application mobile</h1>
+  <p>Système de design, maquettes haute-fidélité et règles d'accessibilité de l'application Flutter (espaces Cliente &amp; Sourceur). Chaque écran applique la métaphore du dressing privé : calme, curation, matières nobles — jamais d'urgence artificielle.</p>
+  <div class="doc-meta"><span>Version 1.0</span><span>07/07/2026</span><span>WCAG 2.1 AA</span><span>Flutter · Material 3 personnalisé</span><span>Réf. CDC v2.0 §8</span></div>
+</header>
+
+<!-- ============ 1. FONDATIONS ============ -->
+<section class="sec">
+  <div class="eyebrow">01 — Fondations</div>
+  <h2>Palette &amp; contrastes vérifiés</h2>
+  <p class="lead">La charte (noir, doré, vert profond, beige sable) est traduite en rôles fonctionnels. Règle absolue : <b>le doré lumière est décoratif</b> — filets, icônes sur fond sombre, ornements. Pour du texte sur fond clair, seul le <b>doré encre</b> est autorisé (seuil AA). Ratios calculés selon WCAG 2.1.</p>
+  <div class="grid g2">
+    <div class="panel">
+      <h3 class="pt">Rôles de couleur</h3>
+      <div class="sw"><i style="background:#171512"></i><div><b>Noir encre — #171512</b><span>Texte principal</span></div></div>
+      <div class="sw"><i style="background:#1C382D"></i><div><b>Vert profond — #1C382D</b><span>CTA primaires, surfaces fortes</span></div></div>
+      <div class="sw"><i style="background:#12241D"></i><div><b>Vert nuit — #12241D</b><span>Tabbar, écrans immersifs</span></div></div>
+      <div class="sw"><i style="background:#F3EBDD"></i><div><b>Beige sable — #F3EBDD</b><span>Fond de l'application</span></div></div>
+      <div class="sw"><i style="background:#FBF7EF"></i><div><b>Blanc cassé — #FBF7EF</b><span>Cartes, champs, feuilles</span></div></div>
+      <div class="sw"><i style="background:#C6A24B"></i><div><b>Doré lumière — #C6A24B</b><span>Décoratif : filets, icônes sur vert, focus ring</span></div></div>
+      <div class="sw"><i style="background:#7E611C"></i><div><b>Doré encre — #7E611C</b><span>Seul doré autorisé en texte sur clair</span></div></div>
+      <div class="sw"><i style="background:#6B5F4C"></i><div><b>Taupe — #6B5F4C</b><span>Texte secondaire sur clair</span></div></div>
+      <div class="sw"><i style="background:#9B3A2E"></i><div><b>Terre brûlée — #9B3A2E</b><span>Erreurs — jamais de rouge criard</span></div></div>
+    </div>
+    <div class="panel">
+      <h3 class="pt">Matrice de contraste (WCAG 2.1)</h3>
+      <table class="spec">
+        <tr><th>Combinaison</th><th>Ratio</th><th>Verdict</th></tr>
+        <tr><td>Noir encre / Beige sable</td><td>15.4:1</td><td class="ok">AAA — texte courant</td></tr>
+        <tr><td>Vert profond / Beige sable</td><td>10.7:1</td><td class="ok">AAA — texte courant</td></tr>
+        <tr><td>Blanc cassé / Vert profond</td><td>11.9:1</td><td class="ok">AAA — CTA, écrans sombres</td></tr>
+        <tr><td>Doré encre / Beige sable</td><td>4.9:1</td><td class="ok">AA — texte ≥ 12 px</td></tr>
+        <tr><td>Taupe / Beige sable</td><td>5.3:1</td><td class="ok">AA — texte secondaire</td></tr>
+        <tr><td>Doré clair #DCBE72 / Vert nuit</td><td>9.0:1</td><td class="ok">AAA — labels tabbar</td></tr>
+        <tr><td>Terre brûlée / Blanc cassé</td><td>6.5:1</td><td class="ok">AA — messages d'erreur</td></tr>
+        <tr><td>Doré lumière / Beige (en texte)</td><td>2.1:1</td><td class="ko">INTERDIT en texte</td></tr>
+        <tr><td>Doré lumière / Vert profond (icône, filet)</td><td>5.3:1</td><td class="ok">AA composants (≥3:1)</td></tr>
+      </table>
+      <p class="note" style="margin-top:12px">L'information n'est <b>jamais portée par la couleur seule</b> (SC 1.4.1) : chaque statut combine pastille + libellé ; chaque erreur combine couleur + icône + message.</p>
+    </div>
+  </div>
+
+  <div class="grid g2" style="margin-top:20px">
+    <div class="panel">
+      <h3 class="pt">Typographie — trois voix, trois rôles</h3>
+      <table class="spec">
+        <tr><th>Style</th><th>Fonte</th><th>Taille</th><th>Usage</th></tr>
+        <tr><td style="font-family:'Boldonse';font-size:12px">MARQUE</td><td>Boldonse</td><td>18–24</td><td>Wordmark, splash, jalons. <b>Dosage rare</b>, jamais en corps</td></tr>
+        <tr><td style="font-family:'Cormorant Garamond';font-weight:600;font-size:17px">Titre éditorial</td><td>Cormorant Garamond 600</td><td>26/32</td><td>Titres d'écran, sections</td></tr>
+        <tr><td style="font-family:'Cormorant Garamond';font-weight:600;font-size:15px">Nom de pièce · Prix</td><td>Cormorant 600–700</td><td>16–20</td><td>Cartes et fiches</td></tr>
+        <tr><td>Corps</td><td>Lato 400</td><td>15/22</td><td>Descriptions</td></tr>
+        <tr><td><b>Label / bouton</b></td><td>Lato 700</td><td>14.5</td><td>CTA, champs, nav</td></tr>
+        <tr><td style="letter-spacing:.2em;font-size:10px;font-weight:700">EYEBROW</td><td>Lato 700 caps</td><td>10–11</td><td>Sur-titres</td></tr>
+      </table>
+      <p class="note" style="margin-top:10px">Corps minimal 15 px. Agrandissement système <b>200 %</b> supporté sans perte (SC 1.4.4) : unités sp, pas de hauteur fixe sur les conteneurs de texte, textes jamais en image.</p>
+    </div>
+    <div class="panel">
+      <h3 class="pt">Rythme, gestes &amp; signature</h3>
+      <table class="spec">
+        <tr><th>Règle</th><th>Valeur</th></tr>
+        <tr><td>Grille d'espacement</td><td>Base 4 — 4/8/12/16/24/32 · marges écran 18 px</td></tr>
+        <tr><td>Cible tactile</td><td><b>≥ 48×48 dp</b>, espacement ≥ 8 dp (WCAG 2.5.5)</td></tr>
+        <tr><td>Zone du pouce</td><td>Actions primaires dans le tiers inférieur : CTA sticky + tabbar</td></tr>
+        <tr><td>Rayons</td><td>Cartes 14–16 · boutons pilule · héros : <b>arche 110/110/16/16</b></td></tr>
+        <tr><td>Motion</td><td>200–320 ms, easeOutCubic · <b>prefers-reduced-motion respecté</b> (fondus simples, zéro parallaxe, aucun carrousel auto)</td></tr>
+        <tr><td>Focus visible</td><td>Anneau doré 3 px, offset 3 px, sur tout élément interactif (SC 2.4.7)</td></tr>
+        <tr><td>Haptique</td><td>Légère : ajout au dressing, paiement confirmé</td></tr>
+        <tr><td>Iconographie</td><td>Trait fin 1.5 px, terminaisons rondes, une seule famille, toujours accompagnée d'un libellé</td></tr>
+      </table>
+      <p class="note" style="margin-top:10px"><b>Signature visuelle : l'arche de dressing.</b> Les photos mises à l'honneur sont cadrées dans une arche (porte de boutique, alcôve de penderie). Réservée aux moments de curation — pièce de la semaine, galerie de fiche, confirmation — pour rester mémorable.</p>
+    </div>
+  </div>
+
+  <div class="panel" style="margin-top:20px">
+    <h3 class="pt">Composants — états obligatoires</h3>
+    <div class="grid g3">
+      <div>
+        <p class="eyeb" style="margin-bottom:10px">Bouton primaire</p>
+        <div class="btnP" style="margin-bottom:10px">Ajouter à mon dressing</div>
+        <div class="btnP focusring" style="margin-bottom:10px">Focus clavier / switch</div>
+        <div class="btnP btnDis" style="margin-bottom:10px">Désactivé + aide contextuelle</div>
+        <div class="btnO">Poursuivre ma visite</div>
+      </div>
+      <div>
+        <p class="eyeb" style="margin-bottom:10px">Champ de saisie</p>
+        <div class="field"><label>Téléphone</label><div class="input">6 90 12 34 56</div></div>
+        <div class="field"><label>Téléphone — focus</label><div class="input focus">6 90 12 34 5|</div></div>
+        <div class="field"><label>Téléphone — erreur</label><div class="input err">6 90 12</div><div class="hint err" style="display:flex;align-items:center;gap:6px"><svg class="ic" aria-hidden="true" style="width:14px;height:14px"><use href="#i-alert"/></svg>Numéro incomplet — 9 chiffres attendus.</div></div>
+      </div>
+      <div>
+        <p class="eyeb" style="margin-bottom:10px">Statuts (pastille + libellé)</p>
+        <p style="margin-bottom:8px"><span class="st st-recu">Dépôt reçu</span></p>
+        <p style="margin-bottom:8px"><span class="st st-analyse">En cours d'analyse</span></p>
+        <p style="margin-bottom:8px"><span class="st st-ok">Accepté</span></p>
+        <p style="margin-bottom:8px"><span class="st st-vente">Mis en vente</span></p>
+        <p style="margin-bottom:8px"><span class="st st-ko">Refusé</span> <span class="st st-ret">Retourné</span></p>
+        <p class="note">Toujours différenciés par le texte, pas par la couleur seule.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 2. PARCOURS CLIENTE — DÉCOUVERTE ============ -->
+<section class="sec">
+  <div class="eyebrow">02 — Parcours cliente · Découverte</div>
+  <h2>Mon dressing, Collections, Filtres</h2>
+  <p class="lead">La navigation repose sur 5 onglets permanents nommés selon le brand book : <b>Dressing · Collections · Cœurs · Sélection · Mon espace</b>. Le contenu curaté ouvre toujours l'expérience — jamais une grille brute.</p>
+
+  <div class="screens">
+
+    <!-- ÉCRAN 1 : ACCUEIL -->
+    <div class="frame">
+      <div class="phone"><div class="screen">
+        <div class="statusbar"><span>9:41</span><span>▮▮▮ ⌁ 87%</span></div>
+        <div class="appbar">
+          <div><div class="eyeb">Bonjour Aïcha</div><div class="t">Mon dressing</div></div>
+          <div style="display:flex;gap:8px"><div class="icbtn" role="img" aria-label="Rechercher"><svg class="ic" aria-hidden="true"><use href="#i-search"/></svg></div><div class="icbtn" aria-label="Notifications"><svg class="ic" aria-hidden="true"><use href="#i-bell"/></svg></div></div>
+        </div>
+        <div class="body">
+          <!-- Pièce de la semaine -->
+          <div class="eyeb" style="margin:4px 0 8px">Pièce de la semaine</div>
+          <div class="ph arche" style="height:300px">
+            <div class="sil"></div>
+            <span class="tagEtat">Très bon état</span>
+            <div class="heart" aria-label="Ajouter aux cœurs"><svg class="ic" aria-hidden="true"><use href="#i-heart"/></svg></div>
+            <div style="position:absolute;left:0;right:0;bottom:0;padding:40px 16px 14px;background:linear-gradient(180deg,transparent,rgba(18,36,29,.82))">
+              <div style="font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--dore-clair);font-weight:700">Maison Saint-Honoré</div>
+              <div style="font-family:var(--f-serif);font-weight:600;font-size:20px;color:var(--creme)">Robe Élégance Durable</div>
+              <div style="font-family:var(--f-serif);font-weight:700;font-size:16px;color:var(--dore-clair)">38 500 FCFA</div>
+            </div>
+          </div>
+          <!-- Nouveautés -->
+          <div style="display:flex;justify-content:space-between;align-items:baseline;margin:18px 0 10px">
+            <span class="serifT" style="font-size:18px">Nouveautés du dressing</span>
+            <span style="font-size:12px;font-weight:700;color:var(--dore-encre)">Découvrir →</span>
+          </div>
+          <div style="display:flex;gap:10px">
+            <div class="piece" style="flex:1"><div class="ph" style="height:120px"><div class="sil"></div></div><div class="pmeta"><div class="maison">Sézane</div><div class="nom">Veste Héritage</div><div class="prix">24 000 F</div></div></div>
+            <div class="piece" style="flex:1"><div class="ph" style="height:120px"><div class="sil" style="border-radius:8px"></div></div><div class="pmeta"><div class="maison">Ba&sh</div><div class="nom">Sac Rive Gauche</div><div class="prix">31 500 F</div></div></div>
+          </div>
+          <!-- Univers -->
+          <div class="serifT" style="font-size:18px;margin:18px 0 10px">Univers</div>
+          <div class="chips">
+            <div class="chip">Robes</div><div class="chip">Vestes</div><div class="chip">Sacs</div><div class="chip">Chaussures</div>
+          </div>
+          <!-- Sponsors -->
+          <div style="margin-top:14px;border:1px solid var(--ligne);border-radius:14px;padding:12px 14px;background:var(--creme);display:flex;align-items:center;gap:12px">
+            <span class="eyeb" style="flex:none">Nos maisons partenaires</span>
+            <div style="display:flex;gap:14px;opacity:.75;font-family:var(--f-serif);font-style:italic;font-size:13px">Hôtel Hilton · Galerie M.</div>
+          </div>
+        </div>
+        <nav class="tabbar" aria-label="Navigation principale">
+          <div class="tab on"><svg class="ic" aria-hidden="true"><use href="#i-hanger"/></svg>Dressing</div>
+          <div class="tab"><svg class="ic" aria-hidden="true"><use href="#i-collections"/></svg>Collections</div>
+          <div class="tab"><svg class="ic" aria-hidden="true"><use href="#i-heart"/></svg>Cœurs</div>
+          <div class="tab"><svg class="ic" aria-hidden="true"><use href="#i-bag"/></svg>Sélection<span class="dot">2</span></div>
+          <div class="tab"><svg class="ic" aria-hidden="true"><use href="#i-user"/></svg>Espace</div>
+        </nav>
+      </div></div>
+      <div class="spec-card">
+        <h4>É01 · Mon dressing (accueil)</h4>
+        <ul>
+          <li>Hiérarchie F-pattern : curation (arche) → nouveautés → univers → sponsors <b>en dernier et discrets</b>.</li>
+          <li>Salutation personnalisée : la cliente entre chez elle, pas dans un magasin.</li>
+          <li>Bloc « Pièce de la semaine » masqué si non défini par l'admin — jamais d'état vide disgracieux.</li>
+          <li class="a11y">Ordre de lecture TalkBack/VoiceOver = ordre visuel ; carrousels balayables aussi navigables par boutons.</li>
+          <li class="a11y">Badge panier : annoncé « Ma sélection, 2 pièces » (pas seulement un point doré).</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- ÉCRAN 2 : COLLECTIONS -->
+    <div class="frame">
+      <div class="phone"><div class="screen">
+        <div class="statusbar"><span>9:41</span><span>▮▮▮ ⌁ 87%</span></div>
+        <div class="appbar">
+          <div class="t">Collections</div>
+          <div class="icbtn" aria-label="Rechercher"><svg class="ic" aria-hidden="true"><use href="#i-search"/></svg></div>
+        </div>
+        <div class="body">
+          <div class="chips" style="margin-bottom:6px">
+            <div class="chip on">Filtres · 2</div><div class="chip on">Robes ✕</div><div class="chip on">Taille M ✕</div><div class="chip">Prix</div>
+          </div>
+          <p class="small" style="margin:2px 0 10px">18 pièces · triées par nouveautés</p>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+            <div class="piece"><div class="ph" style="height:150px"><div class="sil"></div><span class="tagEtat">Neuf</span><div class="heart on" aria-label="Aimée, retirer des cœurs"><svg class="ic" aria-hidden="true"><use href="#i-heart-fill"/></svg></div></div><div class="pmeta"><div class="maison">Maje</div><div class="nom">Robe Jardin d'Été</div><div class="prix">29 000 F</div></div></div>
+            <div class="piece"><div class="ph" style="height:150px"><div class="sil"></div><div class="heart" aria-label="Ajouter aux cœurs"><svg class="ic" aria-hidden="true"><use href="#i-heart"/></svg></div></div><div class="pmeta"><div class="maison">Zara Studio</div><div class="nom">Robe Soie Sauvage</div><div class="prix">22 500 F</div></div></div>
+            <div class="piece"><div class="ph" style="height:150px"><div class="sil"></div><div class="heart" aria-label="Ajouter aux cœurs"><svg class="ic" aria-hidden="true"><use href="#i-heart"/></svg></div></div><div class="pmeta"><div class="maison">Sandro</div><div class="nom">Robe Lumière d'Or</div><div class="prix">41 000 F</div></div></div>
+            <div class="piece"><div class="ph" style="height:150px;filter:grayscale(.5)"><div class="sil"></div>
+              <div style="position:absolute;inset:auto 0 0 0;background:rgba(18,36,29,.85);color:var(--creme);font-size:10.5px;font-weight:700;text-align:center;padding:6px">A trouvé son dressing</div>
+            </div><div class="pmeta"><div class="maison">Claudie P.</div><div class="nom">Robe Velours Nuit</div><div class="prix" style="color:var(--taupe)">Indisponible</div></div></div>
+          </div>
+        </div>
+        <nav class="tabbar"><div class="tab"><svg class="ic" aria-hidden="true"><use href="#i-hanger"/></svg>Dressing</div><div class="tab on"><svg class="ic" aria-hidden="true"><use href="#i-collections"/></svg>Collections</div><div class="tab"><svg class="ic" aria-hidden="true"><use href="#i-heart"/></svg>Cœurs</div><div class="tab"><svg class="ic" aria-hidden="true"><use href="#i-bag"/></svg>Sélection<span class="dot">2</span></div><div class="tab"><svg class="ic" aria-hidden="true"><use href="#i-user"/></svg>Espace</div></nav>
+      </div></div>
+      <div class="spec-card">
+        <h4>É02 · Collections (catalogue)</h4>
+        <ul>
+          <li>Grille 2 colonnes, ratio image 4:5, scroll infini + indicateur de position ; compteur de résultats toujours visible.</li>
+          <li>Filtres actifs = chips supprimables individuellement (loi de proximité, contrôle utilisateur — heuristique Nielsen n°3).</li>
+          <li>Pièce vendue : voilée + « A trouvé son dressing » — la rareté raconte, elle ne frustre pas. Jamais retirée silencieusement d'une wishlist.</li>
+          <li class="a11y">Carte = une seule cible tactile (toute la surface) ; le cœur 48 dp est une cible séparée annoncée « Ajouter Robe Jardin d'Été aux cœurs ».</li>
+          <li class="a11y">Prix lus en toutes lettres par le lecteur d'écran (« vingt-neuf mille francs CFA »).</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- ÉCRAN 3 : FILTRES -->
+    <div class="frame">
+      <div class="phone"><div class="screen" style="background:rgba(18,36,29,.45)">
+        <div style="position:absolute;left:0;right:0;bottom:0;top:120px;background:var(--beige);border-radius:28px 28px 0 0;padding:10px 18px 18px;display:flex;flex-direction:column">
+          <div style="width:44px;height:5px;border-radius:3px;background:var(--ligne);margin:2px auto 10px"></div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+            <span class="serifT" style="font-size:20px">Affiner ma recherche</span>
+            <span style="font-size:12.5px;font-weight:700;color:var(--dore-encre);min-height:44px;display:flex;align-items:center">Tout réinitialiser</span>
+          </div>
+          <div class="eyeb" style="margin-bottom:8px">Univers</div>
+          <div class="chips" style="flex-wrap:wrap;overflow:visible"><div class="chip on">Robes</div><div class="chip">Vestes</div><div class="chip">Jupes</div><div class="chip">Sacs</div><div class="chip">Chaussures</div><div class="chip">Accessoires</div></div>
+          <div class="eyeb" style="margin:14px 0 8px">Taille</div>
+          <div class="chips" style="flex-wrap:wrap;overflow:visible"><div class="chip">XS</div><div class="chip">S</div><div class="chip on">M</div><div class="chip">L</div><div class="chip">XL</div></div>
+          <div class="eyeb" style="margin:14px 0 8px">État de la pièce</div>
+          <div class="chips" style="flex-wrap:wrap;overflow:visible"><div class="chip">Neuf</div><div class="chip">Très bon état</div><div class="chip">Bon état</div></div>
+          <div class="eyeb" style="margin:14px 0 8px">Prix</div>
+          <div style="padding:4px 8px 0">
+            <div style="height:4px;background:var(--ligne);border-radius:2px;position:relative">
+              <div style="position:absolute;left:15%;right:35%;top:0;bottom:0;background:var(--vert);border-radius:2px"></div>
+              <div style="position:absolute;left:15%;top:50%;transform:translate(-50%,-50%);width:26px;height:26px;border-radius:50%;background:var(--creme);border:2.5px solid var(--vert)"></div>
+              <div style="position:absolute;right:35%;top:50%;transform:translate(50%,-50%);width:26px;height:26px;border-radius:50%;background:var(--creme);border:2.5px solid var(--vert)"></div>
+            </div>
+            <div style="display:flex;justify-content:space-between;font-size:12.5px;font-weight:700;color:var(--vert-fonce);margin-top:8px"><span>10 000 F</span><span>45 000 F</span></div>
+          </div>
+          <div style="margin-top:auto"><div class="btnP">Voir 18 pièces</div></div>
+        </div>
+      </div></div>
+      <div class="spec-card">
+        <h4>É03 · Filtres (bottom sheet)</h4>
+        <ul>
+          <li>Feuille modale à mi-hauteur : le catalogue reste visible en filigrane — la cliente ne perd pas son contexte.</li>
+          <li>CTA vivant : « Voir 18 pièces » se met à jour à chaque sélection (feedback immédiat, réduit les allers-retours).</li>
+          <li>Ordre validé par le cadrage (Q2) : Univers → Taille → État → Prix → Maison.</li>
+          <li class="a11y">Poignées de prix : cibles 44 dp+, ajustables aussi par champs numériques (le slider n'est jamais le seul moyen — SC 2.5.1).</li>
+          <li class="a11y">Focus piégé dans la feuille tant qu'elle est ouverte ; fermeture par geste, croix ET bouton retour système.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 3. FICHE PIÈCE & SÉLECTION ============ -->
+<section class="sec">
+  <div class="eyebrow">03 — Parcours cliente · Considération</div>
+  <h2>Fiche Pièce &amp; Ma sélection</h2>
+  <p class="lead">La fiche est le cœur de la conversion en seconde main : elle doit lever le doute (« acheter sans voir ») par la transparence — état réel, mesures en cm, matière — et par le storytelling de curation.</p>
+
+  <div class="screens">
+
+    <!-- ÉCRAN 4 : FICHE PIÈCE -->
+    <div class="frame">
+      <div class="phone"><div class="screen">
+        <div class="statusbar"><span>9:41</span><span>▮▮▮ ⌁ 87%</span></div>
+        <div class="appbar"><div class="icbtn" aria-label="Retour"><svg class="ic" aria-hidden="true"><use href="#i-back"/></svg></div><div style="display:flex;gap:8px"><div class="icbtn" aria-label="Partager"><svg class="ic" aria-hidden="true"><use href="#i-share"/></svg></div><div class="icbtn" aria-label="Ajouter aux cœurs"><svg class="ic" aria-hidden="true"><use href="#i-heart"/></svg></div></div></div>
+        <div class="body">
+          <div class="ph arche" style="height:280px"><div class="sil"></div><span class="tagEtat">Très bon état</span>
+            <div style="position:absolute;bottom:10px;left:50%;transform:translateX(-50%);display:flex;gap:5px">
+              <i style="width:7px;height:7px;border-radius:50%;background:var(--vert-fonce)"></i><i style="width:7px;height:7px;border-radius:50%;background:rgba(18,36,29,.3)"></i><i style="width:7px;height:7px;border-radius:50%;background:rgba(18,36,29,.3)"></i><i style="width:7px;height:7px;border-radius:50%;background:rgba(18,36,29,.3)"></i><i style="width:7px;height:7px;border-radius:50%;background:rgba(18,36,29,.3)"></i>
+            </div>
+          </div>
+          <p class="small" style="text-align:center;margin-top:6px">Photo 1/5 — face · dos · matière · packaging · portée</p>
+          <div style="margin-top:12px">
+            <div class="eyeb">Maison Saint-Honoré · Sélection Clos ET</div>
+            <div class="serifT" style="font-size:24px;line-height:1.2;margin:4px 0">Robe Élégance Durable</div>
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <span style="font-family:var(--f-serif);font-weight:700;font-size:21px;color:var(--vert-fonce)">38 500 FCFA</span>
+              <span class="st st-ok">Pièce unique</span>
+            </div>
+          </div>
+          <div class="divider"></div>
+          <table class="spec" style="font-size:12.5px">
+            <tr><td style="color:var(--taupe);width:44%">État de la pièce</td><td><b>Très bon état</b> — portée deux fois</td></tr>
+            <tr><td style="color:var(--taupe)">Taille &amp; coupe</td><td><b>M</b> · poitrine 92 cm · longueur 108 cm</td></tr>
+            <tr><td style="color:var(--taupe)">Matière</td><td>Soie 70 % · viscose 30 %</td></tr>
+            <tr><td style="color:var(--taupe)">Entretien</td><td>Lavage main, séchage à plat</td></tr>
+          </table>
+          <div style="background:var(--creme);border:1px solid var(--ligne);border-radius:14px;padding:14px;margin-top:12px">
+            <div class="eyeb" style="margin-bottom:6px">À propos de cette pièce</div>
+            <p style="font-family:var(--f-serif);font-size:15px;line-height:1.5;font-style:italic">« Sélectionnée pour son tombé impeccable et sa teinte forêt qui traverse les saisons. Une pièce pensée pour durer avec style. »</p>
+            <p class="small" style="margin-top:8px">✧ Livrée avec packaging Clos ET exclusif</p>
+          </div>
+        </div>
+        <div style="position:absolute;left:0;right:0;bottom:0;padding:12px 18px 18px;background:linear-gradient(180deg,rgba(243,235,221,0),var(--beige) 30%)">
+          <div class="btnP">Ajouter à mon dressing</div>
+        </div>
+      </div></div>
+      <div class="spec-card">
+        <h4>É04 · Fiche Pièce</h4>
+        <ul>
+          <li>Galerie 5 photos codifiées (face, dos, matière, packaging, portée) — pagination annoncée textuellement, pas seulement par points.</li>
+          <li>Tableau de confiance : état honnête, <b>mesures réelles en cm</b>, matière, entretien — lève l'objection n°1 de la seconde main.</li>
+          <li>« Pièce unique » remplace toute mécanique d'urgence (pas de compte à rebours) : la rareté est réelle, on la constate, on ne la dramatise pas.</li>
+          <li>CTA sticky dans la zone du pouce, toujours visible ; storytelling en Cormorant italique = la voix de la curatrice.</li>
+          <li class="a11y">Alt-texts descriptifs par photo (« Robe portée, vue de dos ») ; zoom pinch ET double-tap ; CTA lu « Ajouter Robe Élégance Durable à mon dressing, 38 500 francs ».</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- ÉCRAN 5 : MA SÉLECTION -->
+    <div class="frame">
+      <div class="phone"><div class="screen">
+        <div class="statusbar"><span>9:41</span><span>▮▮▮ ⌁ 87%</span></div>
+        <div class="appbar"><div class="t">Ma sélection</div><span class="small">2 pièces</span></div>
+        <div class="body">
+          <div class="piece" style="display:flex;gap:12px;padding:10px;margin-bottom:10px;border-radius:14px">
+            <div class="ph" style="width:76px;height:96px;border-radius:10px;flex:none"><div class="sil"></div></div>
+            <div style="flex:1">
+              <div class="pmeta" style="padding:0"><div class="maison">Maison Saint-Honoré</div><div class="nom">Robe Élégance Durable</div><div class="small">Taille M · Très bon état</div><div class="prix">38 500 F</div></div>
+            </div>
+            <div class="icbtn" style="align-self:center" aria-label="Retirer de ma sélection"><svg class="ic" aria-hidden="true"><use href="#i-close"/></svg></div>
+          </div>
+          <div class="piece" style="display:flex;gap:12px;padding:10px;border-radius:14px">
+            <div class="ph" style="width:76px;height:96px;border-radius:10px;flex:none"><div class="sil" style="border-radius:8px"></div></div>
+            <div style="flex:1">
+              <div class="pmeta" style="padding:0"><div class="maison">Ba&sh</div><div class="nom">Sac Rive Gauche</div><div class="small">Cuir grainé · Neuf</div><div class="prix">31 500 F</div></div>
+            </div>
+            <div class="icbtn" style="align-self:center" aria-label="Retirer de ma sélection"><svg class="ic" aria-hidden="true"><use href="#i-close"/></svg></div>
+          </div>
+          <div class="input" style="margin-top:16px;justify-content:space-between"><span style="color:var(--taupe)">Ajouter un privilège</span><span style="color:var(--dore-encre);font-weight:700">Saisir →</span></div>
+          <div style="background:var(--creme);border:1px solid var(--ligne);border-radius:14px;padding:14px;margin-top:12px;font-size:13.5px">
+            <div style="display:flex;justify-content:space-between;margin-bottom:6px"><span>Sous-total</span><b>70 000 F</b></div>
+            <div style="display:flex;justify-content:space-between;margin-bottom:6px"><span>Livraison — Yaoundé</span><b>1 500 F</b></div>
+            <div class="divider" style="margin:8px 0"></div>
+            <div style="display:flex;justify-content:space-between;font-family:var(--f-serif);font-weight:700;font-size:18px;color:var(--vert-fonce)"><span>Total</span><span>71 500 F</span></div>
+          </div>
+        </div>
+        <div style="position:absolute;left:0;right:0;bottom:0;padding:12px 18px 18px;background:var(--beige)">
+          <div class="btnP">Finaliser ma sélection</div>
+        </div>
+      </div></div>
+      <div class="spec-card">
+        <h4>É05 · Ma sélection (panier)</h4>
+        <ul>
+          <li>Pas de sélecteur de quantité (pièces uniques — RM-04) : l'interface reflète le métier.</li>
+          <li>Retrait avec confirmation douce + <b>« Annuler » 5 s</b> (pardon de l'erreur — heuristique n°9) ; libellé « Retirer de ma sélection ».</li>
+          <li>Total détaillé AVANT le tunnel : zéro frais surprise (confiance = conversion au Cameroun).</li>
+          <li>Persistance locale : la sélection survit à la fermeture de l'app.</li>
+          <li class="a11y">Croix ✕ = cible 44 dp min, annonce « Retirer Robe Élégance Durable de ma sélection » ; total annoncé après chaque modification (live region polite).</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- ÉCRAN 6 : SÉLECTION VIDE -->
+    <div class="frame">
+      <div class="phone"><div class="screen">
+        <div class="statusbar"><span>9:41</span><span>▮▮▮ ⌁ 87%</span></div>
+        <div class="appbar"><div class="t">Ma sélection</div></div>
+        <div class="body" style="display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding-bottom:140px">
+          <div style="width:130px;height:170px;border:1.5px solid var(--dore);border-radius:65px 65px 12px 12px;display:flex;align-items:center;justify-content:center;margin-bottom:22px;background:var(--creme)">
+            <span style="font-size:34px;color:var(--dore-encre)">⧉</span>
+          </div>
+          <div class="serifT" style="font-size:22px;max-width:240px;line-height:1.3">Votre dressing attend sa prochaine pièce</div>
+          <p class="small" style="max-width:240px;margin:10px 0 22px">Les pièces de notre sélection sont uniques — laissez-vous guider par les nouveautés de la semaine.</p>
+          <div class="btnO" style="min-width:220px">Découvrir les Collections</div>
+        </div>
+        <nav class="tabbar"><div class="tab"><svg class="ic" aria-hidden="true"><use href="#i-hanger"/></svg>Dressing</div><div class="tab"><svg class="ic" aria-hidden="true"><use href="#i-collections"/></svg>Collections</div><div class="tab"><svg class="ic" aria-hidden="true"><use href="#i-heart"/></svg>Cœurs</div><div class="tab on"><svg class="ic" aria-hidden="true"><use href="#i-bag"/></svg>Sélection</div><div class="tab"><svg class="ic" aria-hidden="true"><use href="#i-user"/></svg>Espace</div></nav>
+      </div></div>
+      <div class="spec-card">
+        <h4>É06 · État vide (empty state)</h4>
+        <ul>
+          <li>L'état vide est une <b>invitation</b>, pas un constat d'échec : message du brand book + action de sortie unique et claire.</li>
+          <li>Illustration = l'arche signature en filet doré (décoratif, contraste non requis).</li>
+          <li>Le même patron s'applique aux Cœurs vides et à l'historique vide — cohérence systémique.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 4. TUNNEL DE COMMANDE ============ -->
+<section class="sec">
+  <div class="eyebrow">04 — Parcours cliente · Conversion</div>
+  <h2>Tunnel de commande — 3 étapes, zéro friction</h2>
+  <p class="lead">Objectif CDC : achat complet en moins de 2 minutes, ≤ 4 écrans. Le tunnel est linéaire (Livraison → Paiement → Confirmation), avec un stepper toujours visible, le guest checkout en chemin par défaut, et le récapitulatif accessible à chaque étape.</p>
+
+  <div class="screens">
+
+    <!-- ÉCRAN 7 : LIVRAISON -->
+    <div class="frame">
+      <div class="phone"><div class="screen">
+        <div class="statusbar"><span>9:41</span><span>▮▮▮ ⌁ 87%</span></div>
+        <div class="appbar"><div class="icbtn" aria-label="Retour"><svg class="ic" aria-hidden="true"><use href="#i-back"/></svg></div><div class="t" style="font-size:18px">Finaliser ma sélection</div><span class="small">1/3</span></div>
+        <div style="display:flex;gap:6px;padding:0 18px 14px">
+          <i style="flex:1;height:3px;border-radius:2px;background:var(--dore)"></i><i style="flex:1;height:3px;border-radius:2px;background:var(--ligne)"></i><i style="flex:1;height:3px;border-radius:2px;background:var(--ligne)"></i>
+        </div>
+        <div class="body">
+          <div class="eyeb" style="margin-bottom:10px">Étape 1 — Livraison</div>
+          <div class="field"><label>Nom complet</label><div class="input">Aïcha N.</div></div>
+          <div class="field"><label>Téléphone (WhatsApp)</label><div class="input">6 90 12 34 56</div><div class="hint">Nous vous écrirons sur WhatsApp pour suivre votre pièce.</div></div>
+          <div class="field"><label>Quartier — Yaoundé</label><div class="input" style="justify-content:space-between">Bastos <span><svg class="ic" aria-hidden="true" style="width:16px;height:16px;color:var(--taupe)"><use href="#i-chevron"/></svg></span></div></div>
+          <div class="field"><label>Précisions d'adresse</label><div class="input" style="min-height:64px;align-items:flex-start;padding-top:12px;color:var(--taupe)">Repère, immeuble, étage…</div></div>
+          <div class="eyeb" style="margin:6px 0 10px">Mode de réception</div>
+          <div style="display:flex;gap:10px">
+            <div style="flex:1;border:2px solid var(--vert);border-radius:14px;padding:12px;background:var(--creme)">
+              <b style="font-size:13px;color:var(--vert-fonce)">Livraison à domicile</b>
+              <p class="small">24–48 h · 1 500 F</p>
+            </div>
+            <div style="flex:1;border:1.5px solid var(--ligne);border-radius:14px;padding:12px;background:var(--creme);opacity:.55">
+              <b style="font-size:13px">Retrait pop-up</b>
+              <p class="small">Bientôt disponible</p>
+            </div>
+          </div>
+          <p class="small" style="margin-top:14px">Vous commandez en tant qu'invitée. <b style="color:var(--dore-encre)">Créer mon espace</b> (facultatif)</p>
+        </div>
+        <div style="position:absolute;left:0;right:0;bottom:0;padding:12px 18px 18px;background:var(--beige)"><div class="btnP">Poursuivre — Paiement</div></div>
+      </div></div>
+      <div class="spec-card">
+        <h4>É07 · Étape 1 — Livraison</h4>
+        <ul>
+          <li>Guest checkout par défaut (P2) : la création de compte est proposée, jamais imposée — le champ téléphone suffit pour le suivi WhatsApp.</li>
+          <li>Quartier en liste fermée (zones réellement desservies) : évite les adresses non livrables et alimente le dashboard par zone.</li>
+          <li>Stepper 3 segments + « 1/3 » textuel ; chaque étape est un écran unique (pas de long formulaire).</li>
+          <li class="a11y">Labels toujours visibles au-dessus des champs (jamais de placeholder-seul) ; clavier adapté par champ (tel, texte) ; autocomplétion activée (SC 1.3.5).</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- ÉCRAN 8 : PAIEMENT -->
+    <div class="frame">
+      <div class="phone"><div class="screen">
+        <div class="statusbar"><span>9:41</span><span>▮▮▮ ⌁ 87%</span></div>
+        <div class="appbar"><div class="icbtn" aria-label="Retour"><svg class="ic" aria-hidden="true"><use href="#i-back"/></svg></div><div class="t" style="font-size:18px">Finaliser ma sélection</div><span class="small">2/3</span></div>
+        <div style="display:flex;gap:6px;padding:0 18px 14px">
+          <i style="flex:1;height:3px;border-radius:2px;background:var(--vert)"></i><i style="flex:1;height:3px;border-radius:2px;background:var(--dore)"></i><i style="flex:1;height:3px;border-radius:2px;background:var(--ligne)"></i>
+        </div>
+        <div class="body">
+          <div class="eyeb" style="margin-bottom:10px">Étape 2 — Paiement</div>
+          <div style="border:2px solid var(--vert);border-radius:14px;padding:14px;background:var(--creme);display:flex;align-items:center;gap:12px;margin-bottom:10px">
+            <i style="width:40px;height:40px;border-radius:10px;background:#FFCE00;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:10px;font-style:normal;color:#1a1a1a">MTN</i>
+            <div style="flex:1"><b style="font-size:14px;color:var(--vert-fonce)">MTN Mobile Money</b><p class="small">Validation sur votre téléphone</p></div>
+            <i style="width:22px;height:22px;border-radius:50%;border:2px solid var(--vert);background:var(--vert);box-shadow:inset 0 0 0 4px var(--creme);font-style:normal"></i>
+          </div>
+          <div style="border:1.5px solid var(--ligne);border-radius:14px;padding:14px;background:var(--creme);display:flex;align-items:center;gap:12px;margin-bottom:10px">
+            <i style="width:40px;height:40px;border-radius:10px;background:#FF6600;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:9px;font-style:normal;color:#fff">OM</i>
+            <div style="flex:1"><b style="font-size:14px">Orange Money</b></div>
+            <i style="width:22px;height:22px;border-radius:50%;border:2px solid var(--ligne);font-style:normal"></i>
+          </div>
+          <div style="border:1.5px solid var(--ligne);border-radius:14px;padding:14px;background:var(--creme);display:flex;align-items:center;gap:12px">
+            <i style="width:40px;height:40px;border-radius:10px;background:var(--vert-fonce);display:flex;align-items:center;justify-content:center;font-style:normal;color:var(--dore-clair)"><svg class="ic" aria-hidden="true" style="width:20px;height:20px;color:var(--dore-clair)"><use href="#i-card"/></svg></i>
+            <div style="flex:1"><b style="font-size:14px">Carte bancaire</b><p class="small">Visa · paiement sécurisé Stripe</p></div>
+            <i style="width:22px;height:22px;border-radius:50%;border:2px solid var(--ligne);font-style:normal"></i>
+          </div>
+          <div class="field" style="margin-top:16px"><label>Numéro MTN MoMo</label><div class="input focus">6 90 12 34 56</div><div class="hint">Un message de confirmation s'affichera sur ce numéro.</div></div>
+          <div style="background:var(--creme);border:1px solid var(--ligne);border-radius:14px;padding:12px 14px;font-size:13px;display:flex;justify-content:space-between"><span>Total à régler</span><b style="font-family:var(--f-serif);font-size:16px;color:var(--vert-fonce)">71 500 F</b></div>
+          <p class="small" style="margin-top:10px;display:flex;align-items:center;gap:7px"><svg class="ic" aria-hidden="true" style="width:15px;height:15px;color:var(--vert-fonce)"><use href="#i-lock"/></svg>Paiement chiffré. Votre pièce est réservée pendant 15 minutes.</p>
+        </div>
+        <div style="position:absolute;left:0;right:0;bottom:0;padding:12px 18px 18px;background:var(--beige)"><div class="btnP">Confirmer — 71 500 F</div></div>
+      </div></div>
+      <div class="spec-card">
+        <h4>É08 · Étape 2 — Paiement</h4>
+        <ul>
+          <li>MoMo/OM en premier (usages locaux), cartes = grandes cibles radio (toute la carte est cliquable, pas seulement le rond).</li>
+          <li>Le CTA porte le montant (« Confirmer — 71 500 F ») : engagement explicite, zéro ambiguïté (SC 3.3.4 — transaction).</li>
+          <li>Réservation 15 min de la pièce annoncée sobrement (P9) — c'est une information de service, pas une pression.</li>
+          <li>Pendant l'attente MoMo : écran d'état « Validez sur votre téléphone » avec renvoi possible, timeout géré (retour panier sans perte).</li>
+          <li class="a11y">Radios groupées (fieldset/legend équivalent Flutter Semantics) ; état sélectionné = bordure + coche, jamais couleur seule.</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- ÉCRAN 9 : CONFIRMATION -->
+    <div class="frame">
+      <div class="phone"><div class="screen on-dark" style="background:var(--vert-fonce)">
+        <div class="statusbar"><span>9:41</span><span>▮▮▮ ⌁ 87%</span></div>
+        <div class="body" style="display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding-bottom:40px">
+          <div style="width:150px;height:200px;border:1.5px solid var(--dore);border-radius:75px 75px 14px 14px;display:flex;align-items:center;justify-content:center;margin-bottom:26px;background:rgba(198,162,75,.06)">
+            <span style="font-size:40px;color:var(--dore-clair)">✓</span>
+          </div>
+          <div style="font-family:var(--f-serif);font-weight:600;font-size:26px;color:var(--creme);line-height:1.25;max-width:260px">Merci pour votre sélection</div>
+          <p style="color:#C9CFC4;font-size:14px;max-width:260px;margin:12px 0 6px">Votre pièce sera préparée avec soin et expédiée très prochainement.</p>
+          <p style="color:var(--dore-clair);font-size:13px;letter-spacing:.14em;font-weight:700">COMMANDE Nº CE-2641</p>
+          <p class="small" style="color:#9FAA9E;margin-top:14px">Confirmation envoyée sur WhatsApp <svg class="ic" aria-hidden="true" style="width:14px;height:14px;color:#9FAA9E;vertical-align:-2px"><use href="#i-leaf"/></svg></p>
+          <div style="margin-top:30px;display:flex;flex-direction:column;gap:10px;width:100%;max-width:260px">
+            <div class="btnP" style="background:var(--dore);border-color:var(--dore);color:var(--vert-fonce)">Suivre ma pièce</div>
+            <div class="btnO" style="border-color:rgba(251,247,239,.4);color:var(--creme)">Poursuivre ma visite</div>
+          </div>
+        </div>
+      </div></div>
+      <div class="spec-card">
+        <h4>É09 · Étape 3 — Confirmation</h4>
+        <ul>
+          <li>Seul écran « vert nuit » du parcours d'achat = le moment de cérémonie. L'arche dorée s'anime en un tracé unique 600 ms (désactivé si reduced-motion).</li>
+          <li>Messages exacts du brand book ; numéro de commande copiable au tap.</li>
+          <li>Deux sorties hiérarchisées : suivre (primaire doré) ou poursuivre — jamais de vente additionnelle agressive sur cet écran.</li>
+          <li class="a11y">Contrastes vérifiés sur fond sombre : crème 11.9:1, doré clair 9.0:1 ; annonce vocale immédiate « Commande confirmée, numéro CE-2641 ».</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 5. SUIVI, ESPACE, AUTH ============ -->
+<section class="sec">
+  <div class="eyebrow">05 — Parcours cliente · Fidélité</div>
+  <h2>Suivi, Mon espace, Connexion</h2>
+
+  <div class="screens">
+
+    <!-- ÉCRAN 10 : SUIVI -->
+    <div class="frame">
+      <div class="phone"><div class="screen">
+        <div class="statusbar"><span>9:41</span><span>▮▮▮ ⌁ 87%</span></div>
+        <div class="appbar"><div class="icbtn" aria-label="Retour"><svg class="ic" aria-hidden="true"><use href="#i-back"/></svg></div><div class="t" style="font-size:19px">Commande CE-2641</div><span></span></div>
+        <div class="body">
+          <div class="piece" style="display:flex;gap:12px;padding:10px;margin-bottom:18px">
+            <div class="ph" style="width:64px;height:80px;border-radius:10px;flex:none"><div class="sil"></div></div>
+            <div style="align-self:center"><div class="pmeta" style="padding:0"><div class="maison">Maison Saint-Honoré</div><div class="nom">Robe Élégance Durable</div><div class="small">38 500 F · Livraison Bastos</div></div></div>
+          </div>
+          <div class="eyeb" style="margin-bottom:14px">Le voyage de votre pièce</div>
+          <div class="tl">
+            <div class="tls done"><b>Sélection confirmée</b><span>Lun. 6 juil. · 14:02</span></div>
+            <div class="tls done"><b>Paiement confirmé</b><span>Lun. 6 juil. · 14:03 · MTN MoMo</span></div>
+            <div class="tls cur"><b>Préparée avec soin</b><span>Votre pièce reçoit son packaging Clos ET</span></div>
+            <div class="tls"><b>En route</b><span>Livraison estimée : mer. 8 juil.</span></div>
+            <div class="tls" style="padding-bottom:0"><b>Dans votre dressing</b><span>—</span></div>
+          </div>
+          <div style="margin-top:22px;display:flex;gap:10px">
+            <div class="btnO" style="flex:1;gap:7px"><svg class="ic" aria-hidden="true" style="width:16px;height:16px;color:var(--vert-fonce)"><use href="#i-message"/></svg>Nous écrire</div>
+          </div>
+        </div>
+      </div></div>
+      <div class="spec-card">
+        <h4>É10 · Suivi de commande</h4>
+        <ul>
+          <li>Les 8 statuts techniques du CDC sont traduits en 5 jalons narratifs côté cliente (« Préparée avec soin », « En route ✨ ») — le back-office garde la granularité complète.</li>
+          <li>Étape courante = point doré pulsant (halo statique si reduced-motion) ; passé = vert plein.</li>
+          <li>Support en un tap (WhatsApp) directement depuis l'écran où naissent 80 % des questions.</li>
+          <li class="a11y">Timeline = liste sémantique ordonnée ; chaque jalon annonce son état (« terminé », « en cours », « à venir »).</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- ÉCRAN 11 : MON ESPACE -->
+    <div class="frame">
+      <div class="phone"><div class="screen">
+        <div class="statusbar"><span>9:41</span><span>▮▮▮ ⌁ 87%</span></div>
+        <div class="appbar"><div class="t">Mon espace</div><div class="icbtn" aria-label="Paramètres"><svg class="ic" aria-hidden="true"><use href="#i-settings"/></svg></div></div>
+        <div class="body">
+          <div style="display:flex;align-items:center;gap:14px;margin-bottom:18px">
+            <div style="width:64px;height:64px;border-radius:50%;background:var(--vert);color:var(--dore-clair);display:flex;align-items:center;justify-content:center;font-family:var(--f-serif);font-size:24px;font-weight:600">A</div>
+            <div><div class="serifT" style="font-size:20px">Aïcha N.</div><p class="small">Membre du dressing depuis mars 2026</p></div>
+          </div>
+          <div class="piece" style="border-radius:14px;overflow:hidden">
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:16px;border-bottom:1px solid var(--ligne);min-height:56px"><span style="font-weight:600;font-size:14px;display:inline-flex;align-items:center;gap:8px"><svg class="ic" aria-hidden="true" style="width:18px;height:18px;color:var(--vert-fonce)"><use href="#i-box"/></svg>Mes commandes</span><span style="color:var(--dore-encre);font-size:12px;font-weight:700">1 en route →</span></div>
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:16px;border-bottom:1px solid var(--ligne);min-height:56px"><span style="font-weight:600;font-size:14px;display:inline-flex;align-items:center;gap:8px"><svg class="ic" aria-hidden="true" style="width:18px;height:18px;color:var(--vert-fonce)"><use href="#i-heart"/></svg>Mes cœurs</span><span class="small">4 pièces →</span></div>
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:16px;border-bottom:1px solid var(--ligne);min-height:56px"><span style="font-weight:600;font-size:14px;display:inline-flex;align-items:center;gap:8px"><svg class="ic" aria-hidden="true" style="width:18px;height:18px;color:var(--vert-fonce)"><use href="#i-pin"/></svg>Mes adresses</span><span class="small">→</span></div>
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:16px;border-bottom:1px solid var(--ligne);min-height:56px"><span style="font-weight:600;font-size:14px;display:inline-flex;align-items:center;gap:8px"><svg class="ic" aria-hidden="true" style="width:18px;height:18px;color:var(--vert-fonce)"><use href="#i-user"/></svg>Mes informations</span><span class="small">→</span></div>
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:16px;min-height:56px"><span style="font-weight:600;font-size:14px;display:inline-flex;align-items:center;gap:8px"><svg class="ic" aria-hidden="true" style="width:18px;height:18px;color:var(--vert-fonce)"><use href="#i-bell"/></svg>Mes notifications</span><span class="small">WhatsApp · Push →</span></div>
+          </div>
+          <div style="margin-top:14px;background:var(--vert-fonce);border-radius:14px;padding:16px;display:flex;justify-content:space-between;align-items:center">
+            <div><b style="color:var(--creme);font-size:14px">Confier une pièce à Clos ET</b><p style="color:#AEB8AC;font-size:12px">Votre dressing a des trésors à partager ?</p></div>
+            <span style="color:var(--dore-clair);font-size:18px">→</span>
+          </div>
+          <p class="small" style="text-align:center;margin-top:16px">Se déconnecter · Aide &amp; contact · Confidentialité</p>
+        </div>
+        <nav class="tabbar"><div class="tab"><svg class="ic" aria-hidden="true"><use href="#i-hanger"/></svg>Dressing</div><div class="tab"><svg class="ic" aria-hidden="true"><use href="#i-collections"/></svg>Collections</div><div class="tab"><svg class="ic" aria-hidden="true"><use href="#i-heart"/></svg>Cœurs</div><div class="tab"><svg class="ic" aria-hidden="true"><use href="#i-bag"/></svg>Sélection</div><div class="tab on"><svg class="ic" aria-hidden="true"><use href="#i-user"/></svg>Espace</div></nav>
+      </div></div>
+      <div class="spec-card">
+        <h4>É11 · Mon espace</h4>
+        <ul>
+          <li>Lignes de menu ≥ 56 dp, information de droite utile (« 1 en route ») plutôt que chevrons muets.</li>
+          <li>Passerelle sourceur intégrée (carte vert nuit) : l'entonnoir « Confier une pièce » vit là où la confiance est déjà établie.</li>
+          <li>Aucune section fidélité en V1 (arbitrage P4) : on n'affiche jamais un module vide.</li>
+          <li class="a11y">Déconnexion et actions sensibles éloignées des zones de tap fréquentes ; confirmation avant déconnexion.</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- ÉCRAN 12 : CONNEXION -->
+    <div class="frame">
+      <div class="phone"><div class="screen">
+        <div class="statusbar"><span>9:41</span><span>▮▮▮ ⌁ 87%</span></div>
+        <div class="body" style="padding-top:46px">
+          <div style="text-align:center;margin-bottom:26px">
+            <div style="font-family:var(--f-serif);font-style:italic;font-weight:700;font-size:34px;color:var(--vert-fonce)">Clos <span style="font-style:normal;font-family:var(--f-display);font-size:20px;letter-spacing:.06em">ET</span></div>
+            <div style="width:54px;height:2px;background:var(--dore);margin:10px auto"></div>
+            <p class="small">L'élégance durable</p>
+          </div>
+          <div class="serifT" style="font-size:22px;margin-bottom:16px">Entrer dans mon dressing</div>
+          <div class="field"><label>E-mail</label><div class="input">aicha@exemple.cm</div></div>
+          <div class="field"><label>Mot de passe</label><div class="input" style="justify-content:space-between">••••••••<span style="font-size:12px;font-weight:700;color:var(--dore-encre);min-height:44px;display:flex;align-items:center">Afficher</span></div><div class="hint">8 caractères minimum, dont un chiffre.</div></div>
+          <div class="btnP" style="margin-top:6px">Entrer</div>
+          <p style="text-align:center;font-size:12.5px;font-weight:700;color:var(--dore-encre);margin:14px 0;min-height:44px;display:flex;align-items:center;justify-content:center">Mot de passe oublié ?</p>
+          <div style="display:flex;align-items:center;gap:12px;margin:2px 0 14px"><i style="flex:1;height:1px;background:var(--ligne)"></i><span class="small">ou</span><i style="flex:1;height:1px;background:var(--ligne)"></i></div>
+          <div class="btnO" style="gap:8px">G — Continuer avec Google</div>
+          <p style="text-align:center;font-size:13px;margin-top:18px">Première visite ? <b style="color:var(--dore-encre)">Créer mon espace</b></p>
+          <p class="small" style="text-align:center;margin-top:10px">Continuer en invitée →</p>
+        </div>
+      </div></div>
+      <div class="spec-card">
+        <h4>É12 · Connexion / Inscription</h4>
+        <ul>
+          <li>Trois chemins hiérarchisés : e-mail, Google, <b>invitée</b> (toujours offert — l'auth ne bloque jamais la découverte).</li>
+          <li>« Afficher » le mot de passe (cible 44 dp) + règles annoncées AVANT l'erreur (SC 3.3.2).</li>
+          <li>Vocabulaire du dressing jusque dans l'auth : « Entrer dans mon dressing », « Créer mon espace ».</li>
+          <li class="a11y">Erreurs d'identifiants : message précis non stigmatisant, focus déplacé sur le champ fautif, annonce assertive.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 6. ESPACE SOURCEUR ============ -->
+<section class="sec">
+  <div class="eyebrow">06 — Espace sourceur</div>
+  <h2>Confier, suivre, être rémunéré</h2>
+  <p class="lead">Le sourceur est un partenaire, pas un vendeur de marketplace : son espace est guidé (wizard pas-à-pas), transparent (statuts en temps réel) et valorisant (ses gains, ses pièces en vitrine). Il reprend fidèlement la fiche d'adhésion et le formulaire de dépôt papier. <b>L'accès obéit à une règle contractuelle (§6.2) : aucun dépôt n'est possible avant validation de l'adhésion par l'administratrice.</b> Le parcours d'entrée est donc explicite — bascule depuis l'espace cliente, adhésion guidée, attente de validation, puis connexion à l'espace confié.</p>
+
+  <!-- ====== 6.0 PARCOURS D'ACCÈS SOURCEUR — DU CLIENT AU PARTENAIRE ====== -->
+  <div class="panel" style="margin-bottom:34px;padding:24px 26px">
+    <h3 class="pt">Parcours d'accès — comment le sourceur se connecte</h3>
+    <p class="note" style="max-width:820px;margin-bottom:18px">L'application est un binaire Flutter unique : le sourceur n'a pas d'app séparée, il <b>bascule</b> vers son espace depuis le compte partagé. Le point d'auth est commun (JWT, §5) ; c'est le <b>rôle</b> renvoyé par le back-office qui ouvre — ou non — l'espace confié. Cinq états jalonnent l'entrée :</p>
+    <div style="display:flex;gap:0;flex-wrap:wrap;align-items:stretch">
+      <div class="flowstep"><span class="flowk">01</span><b>Passerelle</b><p>Depuis « Confier une pièce » (accueil cliente ou compte), le visiteur découvre le programme.</p></div>
+      <div class="flowarr">→</div>
+      <div class="flowstep"><span class="flowk">02</span><b>Adhésion</b><p>Fiche d'adhésion guidée : identité, contact, type de collaboration. Soumise en ligne.</p></div>
+      <div class="flowarr">→</div>
+      <div class="flowstep"><span class="flowk">03</span><b>En validation</b><p>L'administratrice étudie l'adhésion. Le compte existe mais le dépôt est verrouillé.</p></div>
+      <div class="flowarr">→</div>
+      <div class="flowstep"><span class="flowk">04</span><b>Connexion</b><p>Adhésion validée : le sourceur reçoit ses accès et entre dans son espace confié.</p></div>
+      <div class="flowarr">→</div>
+      <div class="flowstep flowstep-on"><span class="flowk">05</span><b>Mes dépôts</b><p>Espace personnel : gains, statuts en temps réel, dépôt d'une nouvelle pièce.</p></div>
+    </div>
+  </div>
+
+  <div class="screens">
+
+    <!-- ÉCRAN S-A : PASSERELLE / ADHÉSION AU PROGRAMME -->
+    <div class="frame">
+      <div class="phone on-dark"><div class="screen" style="background:var(--vert-fonce)">
+        <div class="statusbar"><span>9:41</span><span>▮▮▮ ⌁ 87%</span></div>
+        <div class="appbar" style="background:transparent"><div class="icbtn" aria-label="Retour" style="background:rgba(251,247,239,.08);border-color:rgba(220,190,114,.35);color:var(--dore-clair)">←</div><div class="t" style="color:var(--creme);font-size:18px">Devenir sourceur</div><span></span></div>
+        <div class="body" style="color:var(--creme)">
+          <div class="ph arche" style="height:212px;background:var(--vert);border:1px solid rgba(220,190,114,.3);display:flex;align-items:flex-end;justify-content:center;position:relative">
+            <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center">
+              <!-- signature arche + cintre doré -->
+              <svg width="86" height="96" viewBox="0 0 86 96" fill="none" aria-hidden="true">
+                <path d="M14 90 V44 a29 29 0 0 1 58 0 V90" stroke="var(--dore-clair)" stroke-width="1.4" fill="none"/>
+                <path d="M31 40 q12 -13 24 0" stroke="var(--dore-clair)" stroke-width="1.4" fill="none"/>
+                <circle cx="43" cy="34" r="2.2" fill="var(--dore-clair)"/>
+                <line x1="43" y1="34" x2="43" y2="90" stroke="var(--dore-clair)" stroke-width="1.4" opacity=".55"/>
+              </svg>
+            </div>
+          </div>
+          <div class="eyeb" style="color:var(--dore-clair);margin:18px 0 6px">Programme partenaire</div>
+          <div class="serifT" style="color:var(--creme);font-size:23px;line-height:1.25;margin-bottom:10px">Confiez vos pièces,<br>nous les valorisons</div>
+          <p style="font-size:13.5px;color:#C7CFC7;line-height:1.6;margin-bottom:18px">Chaque pièce que vous confiez reste tracée jusqu'à vous. Vous suivez ses statuts en temps réel et vos gains, en toute transparence. Deux formules : <b style="color:var(--dore-clair)">vente directe</b> ou <b style="color:var(--dore-clair)">dépôt-vente</b>.</p>
+          <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:6px">
+            <div style="display:flex;gap:12px;align-items:flex-start"><svg class="ic" aria-hidden="true" style="width:17px;height:17px;color:var(--dore-clair);margin-top:1px"><use href="#i-sparkle"/></svg><div><b style="font-size:13.5px;color:var(--creme)">Curation soignée</b><p style="font-size:12px;color:#AEB8AC">Chaque pièce est premiumisée avant mise en ligne.</p></div></div>
+            <div style="display:flex;gap:12px;align-items:flex-start"><svg class="ic" aria-hidden="true" style="width:17px;height:17px;color:var(--dore-clair);margin-top:1px"><use href="#i-sparkle"/></svg><div><b style="font-size:13.5px;color:var(--creme)">Suivi transparent</b><p style="font-size:12px;color:#AEB8AC">Six statuts, notifiés à chaque étape.</p></div></div>
+          </div>
+        </div>
+        <div style="position:absolute;left:0;right:0;bottom:0;padding:12px 18px 18px;background:var(--vert-fonce)">
+          <div class="btnP" style="background:var(--dore-clair);color:var(--vert-fonce);border-color:var(--dore-clair)">Remplir ma fiche d'adhésion</div>
+          <p style="text-align:center;font-size:12.5px;color:#AEB8AC;margin-top:12px;min-height:44px;display:flex;align-items:center;justify-content:center">Déjà partenaire ? <b style="color:var(--dore-clair);margin-left:5px">Accéder à mon espace</b></p>
+        </div>
+      </div></div>
+      <div class="spec-card">
+        <h4>S00 · Passerelle « Devenir sourceur »</h4>
+        <ul>
+          <li>Écran vert nuit = moment de confiance, cohérent avec la carte passerelle É11. On <b>vend la relation</b> avant de demander un formulaire.</li>
+          <li>Arche signature + cintre doré (rappel du logo) en filet décoratif — contraste non requis, marqué <code>ExcludeSemantics</code>.</li>
+          <li>Double sortie hiérarchisée : adhérer (primaire doré) ou <b>« Accéder à mon espace »</b> pour le partenaire déjà validé — c'est le point de bascule vers la connexion.</li>
+          <li class="a11y">Doré clair #DCBE72 sur vert nuit = 9:1 (AAA) ; les étincelles sont décoratives, l'information reste portée par le texte.</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- ÉCRAN S-B : CONNEXION À L'ESPACE SOURCEUR -->
+    <div class="frame">
+      <div class="phone"><div class="screen">
+        <div class="statusbar"><span>9:41</span><span>▮▮▮ ⌁ 87%</span></div>
+        <div class="appbar"><div class="icbtn" aria-label="Retour"><svg class="ic" aria-hidden="true"><use href="#i-back"/></svg></div><div class="t" style="font-size:18px">Espace sourceur</div><span></span></div>
+        <div class="body">
+          <div style="text-align:center;margin:6px 0 24px">
+            <!-- Wordmark logo : cintre doré au-dessus du O + barre verticale CLOS|ET -->
+            <div style="display:inline-flex;align-items:flex-end;gap:9px;position:relative">
+              <div style="position:relative;font-family:var(--f-serif);font-style:italic;font-weight:600;font-size:32px;color:var(--vert-fonce);line-height:1">Cl<span style="position:relative">o<svg width="26" height="12" viewBox="0 0 26 12" style="position:absolute;left:50%;top:-11px;transform:translateX(-50%)" aria-hidden="true"><path d="M3 10 q10 -11 20 0" stroke="var(--dore-encre)" stroke-width="1.6" fill="none" stroke-linecap="round"/><circle cx="13" cy="4.4" r="1.5" fill="var(--dore-encre)"/></svg></span>s</div>
+              <div style="width:1.5px;height:26px;background:var(--dore-encre);margin-bottom:3px"></div>
+              <div style="font-family:var(--f-display);font-size:19px;letter-spacing:.06em;color:var(--vert-fonce);line-height:1;padding-bottom:2px">ET</div>
+            </div>
+            <div style="width:54px;height:2px;background:var(--dore);margin:12px auto 8px"></div>
+            <p class="small">Espace partenaire</p>
+          </div>
+          <div class="serifT" style="font-size:21px;margin-bottom:16px">Accéder à mon espace confié</div>
+          <div class="field"><label>E-mail ou téléphone</label><div class="input">francine@exemple.cm</div></div>
+          <div class="field"><label>Mot de passe</label><div class="input" style="justify-content:space-between">••••••••<span style="font-size:12px;font-weight:700;color:var(--dore-encre);min-height:44px;display:flex;align-items:center">Afficher</span></div><div class="hint">8 caractères minimum, dont un chiffre.</div></div>
+          <div class="btnP" style="margin-top:6px">Entrer dans mon espace</div>
+          <p style="text-align:center;font-size:12.5px;font-weight:700;color:var(--dore-encre);margin:14px 0;min-height:44px;display:flex;align-items:center;justify-content:center">Mot de passe oublié ?</p>
+          <div style="background:var(--creme);border:1px solid var(--ligne);border-left:4px solid var(--dore);border-radius:12px;padding:13px 15px;margin-top:6px">
+            <p style="font-size:12.5px;color:var(--taupe);line-height:1.5">Pas encore partenaire ? <b style="color:var(--dore-encre)">Remplir ma fiche d'adhésion</b> — un accès vous sera ouvert dès sa validation.</p>
+          </div>
+        </div>
+      </div></div>
+      <div class="spec-card">
+        <h4>S01 · Connexion espace sourceur</h4>
+        <ul>
+          <li>Auth commune à l'app (JWT), mais <b>vocabulaire partenaire</b> : « espace confié », « Entrer dans mon espace » — jamais « Mon dressing » (réservé à la cliente).</li>
+          <li>Wordmark fidèle à la charte : cintre doré au-dessus du « o », barre verticale séparant <b>Clos | ET</b>, Boldonse sur « ET » uniquement (dosage rare).</li>
+          <li>Identifiant e-mail <b>ou téléphone</b> — le sourceur camerounais s'inscrit souvent au numéro ; <code>autofillHints</code> + clavier adapté.</li>
+          <li>Rappel d'adhésion in-context : la connexion ne piège jamais le non-inscrit dans une impasse.</li>
+          <li class="a11y">« Afficher » cible 44 dp ; règle du mot de passe annoncée AVANT l'erreur (SC 3.3.2) ; doré encre #7E611C = 4.9:1 sur crème.</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- ÉCRAN S-C : ADHÉSION EN VALIDATION (ÉTAT VERROUILLÉ) -->
+    <div class="frame">
+      <div class="phone"><div class="screen">
+        <div class="statusbar"><span>9:41</span><span>▮▮▮ ⌁ 87%</span></div>
+        <div class="appbar"><div><div class="eyeb">Espace sourceur</div><div class="t">Mon adhésion</div></div><div class="icbtn" aria-label="Mon profil"><svg class="ic" aria-hidden="true"><use href="#i-user"/></svg></div></div>
+        <div class="body">
+          <div style="background:var(--vert-fonce);border-radius:16px;padding:20px 18px;margin-bottom:18px;position:relative;overflow:hidden">
+            <div class="eyeb" style="color:var(--dore-clair);margin-bottom:8px">Statut de votre adhésion</div>
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
+              <span class="st" style="background:rgba(220,190,114,.16);color:var(--dore-clair)">En cours d'étude</span>
+            </div>
+            <div class="serifT" style="color:var(--creme);font-size:18px;line-height:1.3;margin-top:8px">Votre fiche est entre nos mains</div>
+            <p style="font-size:12.5px;color:#AEB8AC;line-height:1.55;margin-top:6px">Soumise le 8 juil. Notre équipe étudie chaque adhésion avec soin — vous serez notifiée par WhatsApp dès validation, sous 48 h ouvrées.</p>
+          </div>
+
+          <p class="eyeb" style="margin-bottom:12px">Le parcours de votre adhésion</p>
+          <div class="tl" style="margin-left:16px">
+            <div class="tls done"><b>Fiche soumise</b><span>8 juil. · 14 h 20</span></div>
+            <div class="tls cur"><b>En cours d'étude</b><span>L'administratrice vérifie vos informations</span></div>
+            <div class="tls"><b>Adhésion validée</b><span>Votre espace de dépôt s'ouvrira</span></div>
+            <div class="tls"><b>Première pièce confiée</b><span>Vous pourrez déposer votre première pièce</span></div>
+          </div>
+
+          <div style="background:var(--creme);border:1px solid var(--ligne);border-radius:14px;padding:16px;margin-top:8px">
+            <div style="display:flex;gap:10px;align-items:flex-start">
+              <svg class="ic" aria-hidden="true" style="width:19px;height:19px;color:var(--dore-encre)"><use href="#i-lock"/></svg>
+              <div><b style="font-size:13px;color:var(--vert-fonce)">Le dépôt s'ouvre après validation</b><p class="small" style="margin-top:3px">C'est notre garantie de qualité : chaque partenaire est validé avant de confier une pièce.</p></div>
+            </div>
+          </div>
+        </div>
+        <div style="position:absolute;left:0;right:0;bottom:0;padding:12px 18px 18px;background:var(--beige)"><div class="btnO">Compléter mon profil en attendant</div></div>
+      </div></div>
+      <div class="spec-card">
+        <h4>S02 · Adhésion en validation (état verrouillé)</h4>
+        <ul>
+          <li>Réponse au maillon manquant : le compte <b>existe</b> mais le dépôt reste <b>verrouillé</b> jusqu'à validation admin (§6.2). L'attente est rendue lisible, pas subie.</li>
+          <li>Timeline d'adhésion calquée sur le suivi de commande (É10) : cohérence du langage visuel done / cur / à venir.</li>
+          <li>Le verrou est <b>expliqué positivement</b> (« garantie de qualité »), jamais comme une punition — la relation partenaire prime.</li>
+          <li>CTA doux « Compléter mon profil » : convertit l'attente en engagement, sans promettre un dépôt encore impossible.</li>
+          <li class="a11y">Statut = pastille + libellé (SC 1.4.1) ; notification de validation annoncée en live region ; délai chiffré (48 h) plutôt que vague.</li>
+        </ul>
+      </div>
+    </div>
+
+
+    <!-- ÉCRAN 13 : MES DÉPÔTS -->
+    <div class="frame">
+      <div class="phone"><div class="screen">
+        <div class="statusbar"><span>9:41</span><span>▮▮▮ ⌁ 87%</span></div>
+        <div class="appbar"><div><div class="eyeb">Espace sourceur</div><div class="t">Mes dépôts</div></div><div class="icbtn" aria-label="Mon profil"><svg class="ic" aria-hidden="true"><use href="#i-user"/></svg></div></div>
+        <div class="body">
+          <div style="display:flex;gap:10px;margin-bottom:16px">
+            <div style="flex:1;background:var(--vert-fonce);border-radius:14px;padding:14px">
+              <p style="font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:#AEB8AC;font-weight:700">À reverser</p>
+              <p style="font-family:var(--f-serif);font-weight:700;font-size:20px;color:var(--dore-clair)">27 300 F</p>
+            </div>
+            <div style="flex:1;background:var(--creme);border:1px solid var(--ligne);border-radius:14px;padding:14px">
+              <p style="font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--taupe);font-weight:700">Pièces en vente</p>
+              <p style="font-family:var(--f-serif);font-weight:700;font-size:20px;color:var(--vert-fonce)">3</p>
+            </div>
+          </div>
+          <div class="chips" style="margin-bottom:12px"><div class="chip on">Toutes · 6</div><div class="chip">En vente</div><div class="chip">En analyse</div></div>
+
+          <div class="piece" style="display:flex;gap:12px;padding:10px;margin-bottom:10px">
+            <div class="ph" style="width:60px;height:76px;border-radius:10px;flex:none"><div class="sil"></div></div>
+            <div style="flex:1;align-self:center"><div class="pmeta" style="padding:0"><div class="nom" style="font-size:14px">Veste en lin écru</div><div class="small">Déposée le 2 juil. · dépôt-vente</div><div style="margin-top:5px"><span class="st st-vente">Mis en vente</span></div></div></div>
+          </div>
+          <div class="piece" style="display:flex;gap:12px;padding:10px;margin-bottom:10px">
+            <div class="ph" style="width:60px;height:76px;border-radius:10px;flex:none"><div class="sil"></div></div>
+            <div style="flex:1;align-self:center"><div class="pmeta" style="padding:0"><div class="nom" style="font-size:14px">Sac cuir cognac</div><div class="small">Déposé le 5 juil. · vente directe</div><div style="margin-top:5px"><span class="st st-analyse">En cours d'analyse</span></div></div></div>
+          </div>
+          <div class="piece" style="display:flex;gap:12px;padding:10px;margin-bottom:10px">
+            <div class="ph" style="width:60px;height:76px;border-radius:10px;flex:none"><div class="sil"></div></div>
+            <div style="flex:1;align-self:center"><div class="pmeta" style="padding:0"><div class="nom" style="font-size:14px">Jupe plissée dorée</div><div class="small">Déposée le 5 juil.</div><div style="margin-top:5px"><span class="st st-recu">Dépôt reçu</span></div></div></div>
+          </div>
+          <div class="piece" style="display:flex;gap:12px;padding:10px">
+            <div class="ph" style="width:60px;height:76px;border-radius:10px;flex:none;filter:grayscale(.4)"><div class="sil"></div></div>
+            <div style="flex:1;align-self:center"><div class="pmeta" style="padding:0"><div class="nom" style="font-size:14px">Chemisier satin</div><div class="small">Ne correspond pas aux critères actuels</div><div style="margin-top:5px"><span class="st st-ko">Refusé</span> <span class="st st-ret">Retourné</span></div></div></div>
+          </div>
+        </div>
+        <div style="position:absolute;left:0;right:0;bottom:0;padding:12px 18px 18px;background:var(--beige)"><div class="btnP">+ Confier une nouvelle pièce</div></div>
+      </div></div>
+      <div class="spec-card">
+        <h4>É13 · Mes dépôts (sourceur)</h4>
+        <ul>
+          <li>Les gains d'abord : la carte « À reverser » en vert nuit est la première information — c'est la question n°1 du sourceur.</li>
+          <li>Les 6 statuts du parcours sourceur sont visibles tels quels (pastille + libellé) ; un refus est accompagné d'un motif digne, jamais sec.</li>
+          <li>CTA permanent « Confier une nouvelle pièce » : le geste principal est toujours à portée de pouce.</li>
+          <li class="a11y">Filtres à chips = onglets sémantiques annonçant le nombre ; statut lu avec la pièce (« Veste en lin écru, statut : mis en vente »).</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- ÉCRAN 14 : FORMULAIRE DE DÉPÔT -->
+    <div class="frame">
+      <div class="phone"><div class="screen">
+        <div class="statusbar"><span>9:41</span><span>▮▮▮ ⌁ 87%</span></div>
+        <div class="appbar"><div class="icbtn" aria-label="Retour"><svg class="ic" aria-hidden="true"><use href="#i-back"/></svg></div><div class="t" style="font-size:18px">Confier une pièce</div><span class="small">2/4</span></div>
+        <div style="display:flex;gap:6px;padding:0 18px 14px"><i style="flex:1;height:3px;border-radius:2px;background:var(--vert)"></i><i style="flex:1;height:3px;border-radius:2px;background:var(--dore)"></i><i style="flex:1;height:3px;border-radius:2px;background:var(--ligne)"></i><i style="flex:1;height:3px;border-radius:2px;background:var(--ligne)"></i></div>
+        <div class="body">
+          <div class="eyeb" style="margin-bottom:10px">Étape 2 — La pièce et son histoire</div>
+          <div class="field"><label>Type d'article</label><div class="input" style="justify-content:space-between">Veste <span><svg class="ic" aria-hidden="true" style="width:16px;height:16px;color:var(--taupe)"><use href="#i-chevron"/></svg></span></div></div>
+          <div style="display:flex;gap:10px">
+            <div class="field" style="flex:1"><label>Marque (si connue)</label><div class="input">Lin &amp; Co</div></div>
+            <div class="field" style="flex:1"><label>Taille</label><div class="input" style="justify-content:space-between">M <span><svg class="ic" aria-hidden="true" style="width:16px;height:16px;color:var(--taupe)"><use href="#i-chevron"/></svg></span></div></div>
+          </div>
+          <div class="eyeb" style="margin:2px 0 8px">État de la pièce</div>
+          <div class="chips" style="flex-wrap:wrap;overflow:visible;margin-bottom:12px"><div class="chip">Neuf</div><div class="chip on">Très bon état</div><div class="chip">Bon état</div><div class="chip">État correct</div></div>
+          <div class="field"><label>Prix souhaité <span style="font-weight:400;color:var(--taupe)">(optionnel)</span></label><div class="input">15 000 F</div><div class="hint">Clos ET valorise chaque pièce selon ses critères de qualité et d'élégance.</div></div>
+          <div class="eyeb" style="margin:2px 0 8px">Storytelling visuel</div>
+          <div style="display:flex;gap:10px;margin-bottom:12px">
+            <div style="flex:1;min-height:96px;border:1.5px dashed var(--dore);border-radius:14px;background:var(--creme);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px"><svg class="ic" aria-hidden="true" style="width:26px;height:26px;color:var(--dore-encre)"><use href="#i-camera"/></svg><b style="font-size:12px;color:var(--vert-fonce)">Photo *</b></div>
+            <div style="flex:1;min-height:96px;border:1.5px dashed var(--ligne);border-radius:14px;background:var(--creme);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px"><svg class="ic" aria-hidden="true" style="width:26px;height:26px;color:var(--taupe)"><use href="#i-video"/></svg><b style="font-size:12px;color:var(--taupe)">Vidéo 30–60 s</b></div>
+          </div>
+          <div class="field"><label>L'histoire de votre pièce</label><div class="input" style="min-height:70px;align-items:flex-start;padding-top:12px;color:var(--taupe);font-style:italic">Son origine, son style, une anecdote qui la rend unique…</div></div>
+        </div>
+        <div style="position:absolute;left:0;right:0;bottom:0;padding:12px 18px 18px;background:var(--beige);display:flex;gap:10px">
+          <div class="btnO" style="flex:1">Retour</div><div class="btnP" style="flex:2">Poursuivre</div>
+        </div>
+      </div></div>
+      <div class="spec-card">
+        <h4>É14 · Dépôt guidé (wizard 4 étapes)</h4>
+        <ul>
+          <li>4 étapes courtes : Collaboration → Pièce &amp; histoire → Visuels → Engagements &amp; envoi. Une idée par écran, retour sans perte de saisie (brouillon auto).</li>
+          <li>Photo obligatoire signalée d'emblée (astérisque + zone dorée) ; guide photo intégré (« lumière du jour, fond uni »).</li>
+          <li>Engagements de la fiche papier = cases à cocher explicites à l'étape 4 : propriété, critères Clos ET, autorisation réseaux sociaux (distincte, non pré-cochée — consentement réel).</li>
+          <li>CTA final : « Soumettre la pièce » → confirmation « Dépôt reçu » + prochaine étape annoncée (« Nous vous contactons pour convenir de la récupération »).</li>
+          <li class="a11y">Champ optionnel marqué dans le label (jamais l'inverse) ; upload accessible : bouton natif, progression annoncée, erreur de taille expliquée avec solution.</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- ÉCRAN 15 : ÉTATS SYSTÈME -->
+    <div class="frame">
+      <div class="phone"><div class="screen">
+        <div class="statusbar"><span>9:41</span><span>▮▮▮ ⌁ 87%</span></div>
+        <div class="body" style="padding-top:8px">
+          <p class="eyeb" style="margin-bottom:8px">Chargement — squelettes</p>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:6px">
+            <div><div class="sk" style="height:110px"></div><div class="sk" style="height:11px;width:60%;margin-top:8px"></div><div class="sk" style="height:11px;width:40%;margin-top:6px"></div></div>
+            <div><div class="sk" style="height:110px"></div><div class="sk" style="height:11px;width:70%;margin-top:8px"></div><div class="sk" style="height:11px;width:35%;margin-top:6px"></div></div>
+          </div>
+          <p class="small" style="margin-bottom:14px">« Préparation de votre dressing… » — squelettes aux formes réelles, jamais de spinner plein écran.</p>
+          <div class="divider"></div>
+          <p class="eyeb" style="margin:12px 0 8px">Aucun résultat</p>
+          <div style="background:var(--creme);border:1px solid var(--ligne);border-radius:14px;padding:18px;text-align:center;margin-bottom:14px">
+            <div class="serifT" style="font-size:16px">Aucune pièce ne correspond à votre recherche</div>
+            <p class="small" style="margin:6px 0 12px">Essayez d'élargir la taille ou l'univers.</p>
+            <div class="btnO" style="min-height:44px;display:inline-flex;padding:0 22px">Réinitialiser les filtres</div>
+          </div>
+          <div class="divider"></div>
+          <p class="eyeb" style="margin:12px 0 8px">Erreur réseau</p>
+          <div style="background:var(--creme);border:1px solid var(--ligne);border-left:4px solid var(--erreur);border-radius:14px;padding:16px;display:flex;gap:12px;align-items:flex-start">
+            <svg class="ic" aria-hidden="true" style="width:20px;height:20px;color:var(--erreur)"><use href="#i-alert"/></svg>
+            <div style="flex:1">
+              <b style="font-size:13.5px;color:var(--vert-fonce)">Une interruption est survenue</b>
+              <p class="small" style="margin:3px 0 10px">Vos pièces vous attendent — vérifiez votre connexion.</p>
+              <div class="btnO" style="min-height:44px;display:inline-flex;padding:0 22px">Réessayer</div>
+            </div>
+          </div>
+          <div class="divider" style="margin-top:14px"></div>
+          <p class="eyeb" style="margin:12px 0 8px">Hors ligne — bandeau</p>
+          <div style="background:var(--vert-fonce);color:var(--creme);border-radius:12px;padding:10px 14px;font-size:12.5px;display:flex;justify-content:space-between;align-items:center">Connexion perdue · consultation seule <span style="color:var(--dore-clair);font-weight:700">Réessayer</span></div>
+        </div>
+      </div></div>
+      <div class="spec-card">
+        <h4>É15 · États système</h4>
+        <ul>
+          <li>Squelettes reprenant la forme réelle du contenu (réduction de l'incertitude perçue) ; réseau 4G camerounais = cas nominal, pas cas limite.</li>
+          <li>Chaque erreur dit : ce qui s'est passé, ce que ça change, quoi faire — dans la voix de la marque, sans jargon ni culpabilisation.</li>
+          <li>Le panier et la wishlist restent consultables hors ligne (persistance locale) ; les actions réseau sont mises en file et rejouées.</li>
+          <li class="a11y">Erreurs annoncées en live region ; « Réessayer » = cible 44 dp+ ; le bandeau hors-ligne ne masque jamais la tabbar.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 7. CHECKLIST WCAG ============ -->
+<section class="sec">
+  <div class="eyebrow">07 — Conformité</div>
+  <h2>Checklist d'accessibilité WCAG 2.1 AA — critères de recette</h2>
+  <p class="lead">Ces critères sont contractuels : ils entrent dans la Definition of Done de chaque écran et dans l'audit de recette du Sprint 4 (tests TalkBack + VoiceOver + agrandissement 200 % sur devices réels).</p>
+  <div class="panel">
+    <table class="spec">
+      <tr><th>Critère WCAG</th><th>Exigence Clos ET</th><th>Vérification</th></tr>
+      <tr><td>1.1.1 Contenu non textuel</td><td>Alt-text descriptif sur chaque photo produit (généré à la création de fiche, champ obligatoire du back-office)</td><td>Revue de fiche + lecteur d'écran</td></tr>
+      <tr><td>1.3.1 / 1.3.2 Structure</td><td>Widgets Flutter avec Semantics explicites ; ordre de lecture = ordre visuel ; en-têtes déclarés</td><td>TalkBack / VoiceOver</td></tr>
+      <tr><td>1.3.5 Champs identifiés</td><td>autofillHints sur nom, téléphone, e-mail, adresse ; claviers adaptés</td><td>Test formulaire</td></tr>
+      <tr><td>1.4.1 Couleur seule</td><td>Statuts = pastille + texte ; erreurs = couleur + icône + message ; liens soulignés ou graissés</td><td>Simulation daltonisme</td></tr>
+      <tr><td>1.4.3 Contraste texte</td><td>≥ 4.5:1 partout (matrice §01) ; doré lumière interdit en texte sur clair</td><td>Analyse automatisée + revue</td></tr>
+      <tr><td>1.4.4 Redimensionnement</td><td>200 % sans perte : unités sp, textes jamais en image, conteneurs fluides</td><td>Réglage système ×2</td></tr>
+      <tr><td>1.4.11 Contraste non textuel</td><td>Bordures de champs, icônes, focus ring ≥ 3:1</td><td>Analyse</td></tr>
+      <tr><td>2.4.7 Focus visible</td><td>Anneau doré 3 px systématique (clavier externe, switch access)</td><td>Navigation clavier</td></tr>
+      <tr><td>2.5.1 Gestes</td><td>Tout geste complexe (swipe, slider, pinch) a un équivalent simple (boutons, champs)</td><td>Revue interactions</td></tr>
+      <tr><td>2.5.5 Taille des cibles</td><td>≥ 48×48 dp, espacement ≥ 8 dp — y compris cœurs, croix, steppers</td><td>Inspection layout</td></tr>
+      <tr><td>3.2.3 / 3.2.4 Cohérence</td><td>Navigation identique sur tous les écrans ; un même geste = un même effet ; vocabulaire du brand book constant</td><td>Audit éditorial</td></tr>
+      <tr><td>3.3.1 / 3.3.2 / 3.3.3 Erreurs</td><td>Règles annoncées avant saisie, erreur localisée sur le champ, suggestion de correction</td><td>Tests formulaires</td></tr>
+      <tr><td>3.3.4 Transactions</td><td>Récapitulatif avant paiement, montant dans le CTA, confirmation explicite</td><td>Parcours d'achat</td></tr>
+      <tr><td>Animation (2.3.3)</td><td>prefers-reduced-motion : fondus simples, halo statique, zéro parallaxe ; aucun clignotement</td><td>Réglage système</td></tr>
+    </table>
+  </div>
+
+  <div class="grid g2" style="margin-top:20px">
+    <div class="panel">
+      <h3 class="pt">Principes UX appliqués (synthèse)</h3>
+      <table class="spec">
+        <tr><td><b>Visibilité de l'état</b></td><td>Stepper de tunnel, timeline de commande, statuts de dépôt, CTA de filtres vivant, badge panier</td></tr>
+        <tr><td><b>Correspondance au monde réel</b></td><td>Métaphore du dressing portée par le vocabulaire ET la forme (arche)</td></tr>
+        <tr><td><b>Contrôle &amp; liberté</b></td><td>Annuler un retrait (5 s), quitter le tunnel sans perte, guest partout</td></tr>
+        <tr><td><b>Prévention des erreurs</b></td><td>Quartiers en liste fermée, claviers adaptés, règles avant saisie, réservation 15 min</td></tr>
+        <tr><td><b>Reconnaissance &gt; rappel</b></td><td>Filtres actifs visibles en chips, récapitulatifs à chaque étape</td></tr>
+        <tr><td><b>Charge cognitive</b></td><td>Une décision par écran dans les wizards ; loi de Hick appliquée au checkout</td></tr>
+        <tr><td><b>Éthique</b></td><td>Zéro dark pattern : pas d'urgence artificielle, pas de case pré-cochée, désabonnement aussi simple que l'abonnement</td></tr>
+      </table>
+    </div>
+    <div class="panel">
+      <h3 class="pt">Implémentation Flutter — notes pour l'équipe</h3>
+      <table class="spec">
+        <tr><td>Thème</td><td>ThemeData centralisé depuis les tokens §01 (ColorScheme seed interdit — couleurs exactes de la charte)</td></tr>
+        <tr><td>Chaînes</td><td>Fichiers ARB centralisés = source unique du vocabulaire brand book ; recette éditoriale automatisable</td></tr>
+        <tr><td>Sémantique</td><td>Semantics/MergeSemantics sur cartes produit ; liveRegion sur totaux et erreurs ; ExcludeSemantics sur le décoratif (arches, filets)</td></tr>
+        <tr><td>Images</td><td>cached_network_image + placeholders squelette + alt via semanticLabel ; formats WebP, 3 tailles servies par le CDN</td></tr>
+        <tr><td>Motion</td><td>MediaQuery.disableAnimations respecté globalement (wrapper maison)</td></tr>
+        <tr><td>Tests</td><td>Golden tests par écran (clair, 200 %, petit device 360 dp) + tests d'accessibilité meetsGuideline (androidTapTargetGuideline, textContrastGuideline)</td></tr>
+      </table>
+    </div>
+  </div>
+</section>
+
+<footer style="margin-top:80px;text-align:center;color:var(--taupe);font-size:12.5px">
+  <div style="width:54px;height:2px;background:var(--dore);margin:0 auto 14px"></div>
+  Clos ET — L'élégance durable · Dossier de design mobile v1.0 · Document de travail confidentiel<br>
+  Prochaine étape : déclinaison Figma haute-fidélité + prototype cliquable pour validation client (réunion du mercredi).
+</footer>
+
+</div>
+</body>
+</html>
