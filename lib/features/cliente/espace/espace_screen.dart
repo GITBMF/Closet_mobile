@@ -324,7 +324,7 @@ class _MenuSection extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 10),
-        Container(
+        DecoratedBox(
           decoration: BoxDecoration(
             color: AppTheme.warmCream,
             borderRadius: BorderRadius.circular(14),

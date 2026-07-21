@@ -16,7 +16,7 @@ class MainLayout extends ConsumerWidget {
 
     return Scaffold(
       body: navigationShell,
-      bottomNavigationBar: Container(
+      bottomNavigationBar: DecoratedBox(
         decoration: const BoxDecoration(
           color: AppTheme.blackCloset,
           boxShadow: [

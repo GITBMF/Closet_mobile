@@ -117,7 +117,7 @@ class _ProductScreenState extends ConsumerState<ProductScreen> {
                       article.imageUrls[i],
                       fit: BoxFit.cover,
                       width: double.infinity,
-                      errorBuilder: (_, _, _) => Container(
+                      errorBuilder: (_, _, _) => ColoredBox(
                         color: AppTheme.sandBeige,
                         child: const Icon(Icons.image_not_supported,
                             size: 48, color: AppTheme.greyText),
@@ -156,7 +156,7 @@ class _ProductScreenState extends ConsumerState<ProductScreen> {
 
           // ─── Detail Sheet ───────────────────────────────────────────
           Expanded(
-            child: Container(
+            child: ColoredBox(
               color: AppTheme.offWhite,
               child: SingleChildScrollView(
                 padding: const EdgeInsets.fromLTRB(20, 20, 20, 100),
@@ -254,8 +254,8 @@ class _ProductScreenState extends ConsumerState<ProductScreen> {
                     const SizedBox(height: 24),
 
                     // Description éditoriale
-                    Row(
-                      children: const [
+                    const Row(
+                      children: [
                         Icon(Icons.auto_awesome,
                             size: 12, color: AppTheme.goldCloset),
                         SizedBox(width: 6),
@@ -291,8 +291,8 @@ class _ProductScreenState extends ConsumerState<ProductScreen> {
                         border: Border.all(
                             color: AppTheme.goldCloset.withValues(alpha: 0.3)),
                       ),
-                      child: Row(
-                        children: const [
+                      child: const Row(
+                        children: [
                           Icon(Icons.local_shipping_outlined,
                               size: 18, color: AppTheme.forestGreen),
                           SizedBox(width: 12),

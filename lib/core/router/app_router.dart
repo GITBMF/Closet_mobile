@@ -2,17 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../features/main_layout.dart';
-import '../../features/splash/splash_screen.dart';
-import '../../features/onboarding/onboarding_screen.dart';
 import '../../features/auth/auth_screen.dart';
-import '../../features/cliente/dressing/dressing_screen.dart';
+import '../../features/checkout/checkout_screen.dart';
 import '../../features/cliente/collections/collections_screen.dart';
-import '../../features/cliente/wishlist/wishlist_screen.dart';
-import '../../features/cliente/selection/selection_screen.dart';
+import '../../features/cliente/dressing/dressing_screen.dart';
 import '../../features/cliente/espace/espace_screen.dart';
 import '../../features/cliente/product/product_screen.dart';
-import '../../features/checkout/checkout_screen.dart';
+import '../../features/cliente/selection/selection_screen.dart';
+import '../../features/cliente/wishlist/wishlist_screen.dart';
+import '../../features/main_layout.dart';
+import '../../features/onboarding/onboarding_screen.dart';
+import '../../features/splash/splash_screen.dart';
 
 final appRouterProvider = Provider<GoRouter>((ref) {
   final rootNavigatorKey = GlobalKey<NavigatorState>();

@@ -65,7 +65,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               alignment: Alignment.topRight,
               child: TextButton(
                 onPressed: _onSkip,
-                child: Text(
+                child: const Text(
                   'Passer',
                   style: TextStyle(
                     color: AppTheme.greyText,
@@ -125,7 +125,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         Text(
                           _pages[index]['subtitle'] as String,
                           textAlign: TextAlign.center,
-                          style: TextStyle(
+                          style: const TextStyle(
                             fontSize: 14,
                             color: AppTheme.greyText,
                             height: 1.5,

@@ -317,13 +317,13 @@ class _DeliveryStep extends StatelessWidget {
         ),
         const SizedBox(height: 14),
         ...[
-          _AddressField(label: 'Prénom & Nom', icon: Icons.person_outline),
+          const _AddressField(label: 'Prénom & Nom', icon: Icons.person_outline),
           const SizedBox(height: 10),
-          _AddressField(label: 'Téléphone', icon: Icons.phone_outlined),
+          const _AddressField(label: 'Téléphone', icon: Icons.phone_outlined),
           const SizedBox(height: 10),
-          _AddressField(label: 'Adresse complète', icon: Icons.location_on_outlined),
+          const _AddressField(label: 'Adresse complète', icon: Icons.location_on_outlined),
           const SizedBox(height: 10),
-          _AddressField(label: 'Ville / Pays', icon: Icons.public_outlined),
+          const _AddressField(label: 'Ville / Pays', icon: Icons.public_outlined),
         ],
       ],
     );
@@ -425,7 +425,7 @@ class _AddressField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return DecoratedBox(
       decoration: BoxDecoration(
         color: AppTheme.warmCream,
         borderRadius: BorderRadius.circular(10),
@@ -504,11 +504,11 @@ class _PaymentStep extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 14),
-          _AddressField(
+          const _AddressField(
               label: 'Numéro de carte', icon: Icons.credit_card),
           const SizedBox(height: 10),
-          Row(
-            children: const [
+          const Row(
+            children: [
               Expanded(
                   child: _AddressField(
                       label: 'MM/AA', icon: Icons.calendar_today_outlined)),
@@ -519,11 +519,11 @@ class _PaymentStep extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 10),
-          _AddressField(label: 'Nom sur la carte', icon: Icons.person_outline),
+          const _AddressField(label: 'Nom sur la carte', icon: Icons.person_outline),
         ],
         if (selected == PaymentOption.mobile) ...[
           const SizedBox(height: 14),
-          _AddressField(
+          const _AddressField(
               label: 'Numéro de téléphone', icon: Icons.phone_outlined),
         ],
       ],

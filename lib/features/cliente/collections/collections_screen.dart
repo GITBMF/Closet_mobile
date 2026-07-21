@@ -4,9 +4,9 @@ import 'package:flutter_riverpod/legacy.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/theme/app_theme.dart';
-import '../../../data/repositories/catalog_repository.dart';
-import '../../../data/models/article.dart';
 import '../../../core/widgets/closet_app_bar.dart';
+import '../../../data/models/article.dart';
+import '../../../data/repositories/catalog_repository.dart';
 
 final selectedUniverseProvider = StateProvider<String>((ref) => 'Tout l\'univers');
 

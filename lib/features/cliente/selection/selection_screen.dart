@@ -29,9 +29,9 @@ class SelectionScreen extends ConsumerWidget {
         backgroundColor: AppTheme.offWhite,
         elevation: 0,
         automaticallyImplyLeading: false,
-        title: Column(
+        title: const Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          children: const [
+          children: [
             Text(
               'Ma sélection',
               style: TextStyle(
@@ -97,7 +97,7 @@ class _EmptyCart extends StatelessWidget {
             Container(
               width: 80,
               height: 80,
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 color: AppTheme.sandBeige,
                 shape: BoxShape.circle,
               ),
@@ -264,7 +264,7 @@ class _CartItem extends StatelessWidget {
               onTap: onRemove,
               child: Container(
                 padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
+                decoration: const BoxDecoration(
                   color: AppTheme.sandBeige,
                   shape: BoxShape.circle,
                 ),
@@ -355,8 +355,8 @@ class _CartSummary extends StatelessWidget {
               border: Border.all(color: AppTheme.sandBeige),
               borderRadius: BorderRadius.circular(10),
             ),
-            child: Row(
-              children: const [
+            child: const Row(
+              children: [
                 Icon(Icons.card_giftcard,
                     size: 18, color: AppTheme.goldCloset),
                 SizedBox(width: 10),

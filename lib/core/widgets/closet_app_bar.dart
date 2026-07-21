@@ -177,7 +177,7 @@ class ArticleCard extends ConsumerWidget {
 
     return GestureDetector(
       onTap: onTap,
-      child: Container(
+      child: DecoratedBox(
         decoration: BoxDecoration(
           color: AppTheme.warmCream,
           borderRadius: BorderRadius.circular(12),

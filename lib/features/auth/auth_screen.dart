@@ -257,7 +257,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
 
                       if (isLogin) ...[
                         const SizedBox(height: 12),
-                        Align(
+                        const Align(
                           alignment: Alignment.centerRight,
                           child: Text(
                             'Mot de passe oublié ?',
@@ -320,13 +320,13 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
                       const SizedBox(height: 24),
 
                       // Divider
-                      Row(
+                      const Row(
                         children: [
-                          const Expanded(
+                          Expanded(
                               child: Divider(color: AppTheme.sandBeige)),
                           Padding(
                             padding:
-                                const EdgeInsets.symmetric(horizontal: 12),
+                                EdgeInsets.symmetric(horizontal: 12),
                             child: Text(
                               'ou continuer sans compte',
                               style: TextStyle(
@@ -335,7 +335,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
                               ),
                             ),
                           ),
-                          const Expanded(
+                          Expanded(
                               child: Divider(color: AppTheme.sandBeige)),
                         ],
                       ),
@@ -401,7 +401,7 @@ class _AuthField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return DecoratedBox(
       decoration: BoxDecoration(
         color: AppTheme.warmCream,
         borderRadius: BorderRadius.circular(12),

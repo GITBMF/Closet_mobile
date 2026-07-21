@@ -167,11 +167,11 @@ class _WishlistCard extends StatelessWidget {
                 ],
               ),
             ),
-            Column(
+            const Column(
               children: [
-                const Icon(Icons.favorite, size: 20, color: Colors.redAccent),
-                const SizedBox(height: 12),
-                const Icon(Icons.chevron_right, size: 18, color: AppTheme.greyText),
+                Icon(Icons.favorite, size: 20, color: Colors.redAccent),
+                SizedBox(height: 12),
+                Icon(Icons.chevron_right, size: 18, color: AppTheme.greyText),
               ],
             ),
           ],

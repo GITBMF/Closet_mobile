@@ -179,9 +179,9 @@ class _HomeBody extends StatelessWidget {
 
        
         // ─── Footer slogan ────────────────────────────────────────────
-        SliverToBoxAdapter(
+        const SliverToBoxAdapter(
           child: Padding(
-            padding: const EdgeInsets.fromLTRB(0, 40, 0, 32),
+            padding: EdgeInsets.fromLTRB(0, 40, 0, 32),
             child: Center(
               child: Text(
                 'CLOSET ·L\'ÉLÉGANCE DURABLE',
@@ -218,9 +218,9 @@ class _FeaturedBanner extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       height: 200,
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         color: AppTheme.forestGreen,
-        borderRadius: const BorderRadius.only(
+        borderRadius: BorderRadius.only(
           topLeft: Radius.circular(12),
           topRight: Radius.circular(80),
           bottomLeft: Radius.circular(12),
@@ -233,8 +233,8 @@ class _FeaturedBanner extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Row(
-              children: const [
+            const Row(
+              children: [
                 Icon(Icons.auto_awesome, size: 12, color: AppTheme.goldCloset),
                 SizedBox(width: 6),
                 Text(
