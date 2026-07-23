@@ -1,0 +1,964 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Clos ET — Maquettes hautes fidélités v2.0 · Application complète</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Boldonse&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,500&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+<style>
+/* ============ TOKENS CLOS ET (charte projet) ============ */
+:root{
+  --noir:#171512; --vert:#1C382D; --vert-nuit:#12241D;
+  --beige:#F3EBDD; --creme:#FBF7EF;
+  --dore:#C6A24B; --dore-encre:#7E611C; --dore-clair:#DCBE72;
+  --taupe:#6B5F4C; --ligne:#E2D7C2;
+  --succes:#2E6B4F; --alerte:#8A5A17; --erreur:#9B3A2E;
+  --f-display:'Boldonse',system-ui,sans-serif;
+  --f-serif:'Cormorant Garamond',Georgia,serif;
+  --f-ui:'Lato','Segoe UI',system-ui,sans-serif;
+  --arche:88px 88px 12px 12px;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#EBE1CE;color:var(--noir);font-family:var(--f-ui);line-height:1.5;-webkit-font-smoothing:antialiased}
+.doc{max-width:1280px;margin:0 auto;padding:40px 24px 120px}
+.doc-head{background:var(--vert-nuit);color:var(--creme);border-radius:20px;padding:52px 48px;position:relative;overflow:hidden}
+.doc-head::after{content:"";position:absolute;right:-60px;top:-90px;width:340px;height:470px;border:1px solid rgba(198,162,75,.35);border-radius:170px 170px 0 0}
+.doc-head .brand{font-family:var(--f-serif);font-style:italic;font-weight:600;font-size:20px;color:var(--dore-clair)}
+.doc-head h1{font-family:var(--f-display);font-size:clamp(22px,3.6vw,38px);line-height:1.25;margin:14px 0 10px}
+.doc-head p{max-width:660px;color:#D9D2C2;font-size:15px}
+.doc-meta{display:flex;gap:22px;flex-wrap:wrap;margin-top:22px;font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--dore-clair)}
+.sec{margin-top:70px}
+.sec>.eyebrow{font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--dore-encre);font-weight:700}
+.sec>h2{font-family:var(--f-serif);font-weight:600;font-size:clamp(23px,3vw,32px);margin:6px 0 8px;color:var(--vert-nuit)}
+.sec>.lead{max-width:800px;color:var(--taupe);font-size:14.5px;margin-bottom:26px}
+.row{display:flex;flex-wrap:wrap;gap:28px;align-items:flex-start}
+.frame{width:312px}
+.frame h4{font-family:var(--f-serif);font-size:17px;font-weight:600;color:var(--vert-nuit);margin:14px 2px 4px}
+.frame .cap{font-size:12px;color:var(--taupe);padding:0 2px}
+.frame .cap b{color:var(--dore-encre)}
+
+/* ============ PHONE FRAME ============ */
+.phone{width:312px;background:var(--vert-nuit);border-radius:34px;padding:9px;box-shadow:0 14px 40px rgba(23,21,18,.22)}
+.screen{background:var(--beige);border-radius:26px;overflow:hidden;height:648px;display:flex;flex-direction:column;position:relative}
+.screen.dark{background:var(--vert-nuit);color:var(--creme)}
+.sb{display:flex;justify-content:space-between;padding:9px 18px 4px;font-size:10.5px;font-weight:700;color:var(--noir)}
+.dark .sb{color:var(--creme)}
+.body{flex:1;overflow:hidden;padding:0 14px;display:flex;flex-direction:column;gap:10px}
+.tabbar{background:var(--vert-nuit);display:flex;justify-content:space-around;padding:9px 6px 12px;margin-top:auto}
+.tab{text-align:center;font-size:8.6px;letter-spacing:.04em;color:#9DA898;font-weight:700}
+.tab i{display:block;font-style:normal;font-size:15px;margin-bottom:2px}
+.tab.on{color:var(--dore-clair)}
+/* ---------- composants mobiles ---------- */
+.h-app{display:flex;justify-content:space-between;align-items:center;padding:6px 2px 0}
+.h-app .wm{font-family:var(--f-serif);font-style:italic;font-weight:700;font-size:19px;color:var(--vert-nuit)}
+.h-app .ic{display:flex;gap:10px;font-size:15px}
+.eyeb{font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--dore-encre);font-weight:700}
+.t-ed{font-family:var(--f-serif);font-weight:600;font-size:21px;color:var(--vert-nuit);line-height:1.15}
+.search{background:var(--creme);border:1px solid var(--ligne);border-radius:999px;padding:8px 14px;font-size:12px;color:var(--taupe);display:flex;gap:8px;align-items:center}
+.chips{display:flex;gap:6px;overflow:hidden}
+.chip{white-space:nowrap;font-size:10.5px;font-weight:700;border:1px solid var(--ligne);background:var(--creme);color:var(--vert-nuit);border-radius:999px;padding:5px 11px}
+.chip.on{background:var(--vert);color:var(--creme);border-color:var(--vert)}
+.hero{background:linear-gradient(160deg,#243F32,#12241D);border-radius:var(--arche);color:var(--creme);padding:22px 16px 16px;text-align:center;position:relative;overflow:hidden}
+.hero::before{content:"";position:absolute;inset:8px;border:1px solid rgba(198,162,75,.4);border-radius:80px 80px 8px 8px;pointer-events:none}
+.hero .eyeb{color:var(--dore-clair)}
+.hero h5{font-family:var(--f-serif);font-size:19px;font-weight:600;margin:4px 0 2px}
+.hero p{font-size:11px;color:#C9C3B2}
+.pgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.pc{background:var(--creme);border:1px solid var(--ligne);border-radius:12px;overflow:hidden;position:relative}
+.pc .ph{height:104px;background:linear-gradient(150deg,#E7DCC6,#D8C9A8);border-radius:var(--arche);margin:6px 6px 0;position:relative}
+.pc .ph.g2{background:linear-gradient(150deg,#DCD3BE,#B8A67F)}
+.pc .ph.g3{background:linear-gradient(150deg,#E2D6BE,#CBB68A)}
+.pc .ph.g4{background:linear-gradient(150deg,#D9CFBA,#A99770)}
+.pc .heart{position:absolute;top:5px;right:5px;width:20px;height:20px;background:var(--creme);border-radius:50%;display:grid;place-items:center;font-size:10px;box-shadow:0 1px 4px rgba(0,0,0,.12)}
+.pc .in{padding:7px 9px 9px}
+.pc .maison{font-size:8.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--dore-encre);font-weight:700}
+.pc .nom{font-family:var(--f-serif);font-weight:600;font-size:13.5px;color:var(--noir);line-height:1.15}
+.pc .px{font-family:var(--f-serif);font-weight:700;font-size:13.5px;color:var(--vert-nuit)}
+.pc .meta{font-size:9.5px;color:var(--taupe)}
+.badge{display:inline-block;font-size:8.6px;font-weight:700;letter-spacing:.05em;border-radius:999px;padding:2px 7px}
+.b-exc{background:#DCE8DF;color:#245B41}.b-tb{background:#EFE5CF;color:#6B5A26}.b-uniq{background:var(--vert-nuit);color:var(--dore-clair)}
+.b-vendu{background:#E7E0D5;color:#6B5F4C}
+.btn{display:block;text-align:center;background:var(--vert);color:var(--creme);font-weight:700;font-size:13px;border-radius:999px;padding:12px;letter-spacing:.02em}
+.btn.ghost{background:transparent;color:var(--vert-nuit);border:1.5px solid var(--vert)}
+.btn.gold{background:var(--dore);color:var(--noir)}
+.btn.dis{background:#C9C0AC;color:#7B7361}
+.input{background:var(--creme);border:1px solid var(--ligne);border-radius:10px;padding:9px 12px;font-size:12px;color:var(--noir)}
+.input .lab{display:block;font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--taupe);font-weight:700;margin-bottom:2px}
+.input.err{border-color:var(--erreur)}
+.err-msg{font-size:10px;color:var(--erreur);font-weight:700}
+.hr{height:1px;background:var(--ligne)}
+.lrow{display:flex;justify-content:space-between;align-items:center;font-size:12px}
+.lrow b{font-family:var(--f-serif);font-size:14px;color:var(--vert-nuit)}
+.card{background:var(--creme);border:1px solid var(--ligne);border-radius:12px;padding:11px 12px}
+.steps{display:flex;align-items:center;gap:4px;font-size:9px;font-weight:700;color:var(--taupe)}
+.steps .st{display:flex;align-items:center;gap:5px}
+.steps .n{width:18px;height:18px;border-radius:50%;border:1.5px solid var(--ligne);display:grid;place-items:center;background:var(--creme)}
+.steps .st.on .n{background:var(--vert);border-color:var(--vert);color:var(--creme)}
+.steps .st.done .n{background:var(--dore);border-color:var(--dore);color:var(--noir)}
+.steps .bar{flex:1;height:1px;background:var(--ligne)}
+.tl{position:relative;padding-left:22px;display:flex;flex-direction:column;gap:12px}
+.tl::before{content:"";position:absolute;left:7px;top:6px;bottom:8px;width:2px;background:var(--ligne)}
+.tls{position:relative}
+.tls::before{content:"";position:absolute;left:-21px;top:2px;width:12px;height:12px;border-radius:50%;background:var(--beige);border:2.5px solid var(--ligne)}
+.tls.done::before{background:var(--succes);border-color:var(--succes)}
+.tls.cur::before{background:var(--dore);border-color:var(--dore);box-shadow:0 0 0 4px rgba(198,162,75,.3)}
+.tls b{display:block;font-size:11.5px;color:var(--vert-nuit)}
+.tls span{font-size:9.8px;color:var(--taupe)}
+.sheet{position:absolute;left:0;right:0;bottom:0;background:var(--creme);border-radius:22px 22px 0 0;box-shadow:0 -10px 34px rgba(0,0,0,.28);padding:12px 16px 16px;display:flex;flex-direction:column;gap:10px}
+.scrim{position:absolute;inset:0;background:rgba(18,36,29,.45)}
+.grab{width:38px;height:4px;border-radius:2px;background:var(--ligne);margin:0 auto}
+.toast{position:absolute;left:14px;right:14px;bottom:74px;background:var(--vert-nuit);color:var(--creme);border-radius:12px;padding:10px 12px;font-size:11px;display:flex;gap:8px;align-items:center;box-shadow:0 8px 24px rgba(0,0,0,.3)}
+.toast i{color:var(--dore-clair);font-style:normal}
+.notif-dot{width:7px;height:7px;border-radius:50%;background:var(--dore);display:inline-block}
+.avatar{width:40px;height:40px;border-radius:50%;background:var(--vert);color:var(--dore-clair);display:grid;place-items:center;font-family:var(--f-serif);font-weight:700;font-size:16px}
+.star{color:var(--dore);font-size:14px;letter-spacing:2px}
+.seg{display:flex;background:var(--creme);border:1px solid var(--ligne);border-radius:999px;padding:3px;font-size:11px;font-weight:700}
+.seg span{flex:1;text-align:center;padding:6px;border-radius:999px;color:var(--taupe)}
+.seg span.on{background:var(--vert);color:var(--creme)}
+.pay{display:flex;align-items:center;gap:10px;border:1.5px solid var(--ligne);border-radius:12px;padding:10px 12px;background:var(--creme);font-size:12px;font-weight:700}
+.pay.on{border-color:var(--vert);box-shadow:0 0 0 1px var(--vert)}
+.pay .logo{width:30px;height:30px;border-radius:8px;display:grid;place-items:center;font-size:8px;font-weight:800;color:#fff}
+.pay .radio{margin-left:auto;width:16px;height:16px;border-radius:50%;border:1.5px solid var(--ligne)}
+.pay.on .radio{border:5px solid var(--vert)}
+.sk{background:linear-gradient(90deg,#EDE3D0 25%,#F6EFDF 50%,#EDE3D0 75%);background-size:200% 100%;border-radius:10px}
+@media (prefers-reduced-motion:no-preference){.sk{animation:sh 1.6s infinite}}
+@keyframes sh{to{background-position:-200% 0}}
+
+/* ============ ADMIN WEB FRAME ============ */
+.web{width:100%;max-width:1180px;background:var(--vert-nuit);border-radius:16px;padding:8px;box-shadow:0 14px 40px rgba(23,21,18,.22)}
+.web .chrome{display:flex;gap:6px;align-items:center;padding:4px 10px 8px}
+.web .chrome i{width:9px;height:9px;border-radius:50%;background:#4E5B50;display:inline-block}
+.web .chrome .url{flex:1;background:#1C332A;border-radius:6px;color:#9DA898;font-size:10.5px;padding:4px 12px}
+.wapp{background:var(--beige);border-radius:10px;display:flex;min-height:560px;overflow:hidden}
+.wnav{width:198px;background:var(--vert-nuit);color:var(--creme);padding:18px 0;display:flex;flex-direction:column}
+.wnav .wm{font-family:var(--f-serif);font-style:italic;font-weight:700;font-size:19px;color:var(--dore-clair);padding:0 20px 14px}
+.wnav a{display:flex;gap:10px;align-items:center;padding:9px 20px;font-size:12.5px;color:#B9C2B4;font-weight:700}
+.wnav a.on{background:rgba(198,162,75,.14);color:var(--dore-clair);border-left:3px solid var(--dore)}
+.wnav .cnt{margin-left:auto;background:var(--dore);color:var(--noir);font-size:9.5px;border-radius:999px;padding:1px 7px}
+.wmain{flex:1;padding:20px 22px;display:flex;flex-direction:column;gap:14px;overflow:hidden}
+.wtop{display:flex;justify-content:space-between;align-items:center}
+.wtop h5{font-family:var(--f-serif);font-size:21px;font-weight:600;color:var(--vert-nuit)}
+.wtop .who{display:flex;gap:8px;align-items:center;font-size:11.5px;color:var(--taupe)}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.kpi{background:var(--creme);border:1px solid var(--ligne);border-radius:12px;padding:12px 14px}
+.kpi .l{font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--taupe);font-weight:700}
+.kpi .v{font-family:var(--f-serif);font-weight:700;font-size:23px;color:var(--vert-nuit);margin:2px 0}
+.kpi .d{font-size:10px;font-weight:700}
+.up{color:var(--succes)}.down{color:var(--erreur)}
+.wgrid{display:grid;grid-template-columns:1.6fr 1fr;gap:12px}
+.wcard{background:var(--creme);border:1px solid var(--ligne);border-radius:12px;padding:13px 15px}
+.wcard h6{font-family:var(--f-serif);font-size:15px;font-weight:600;color:var(--vert-nuit);margin-bottom:8px;display:flex;justify-content:space-between;align-items:center}
+.wcard h6 span{font-family:var(--f-ui);font-size:10px;color:var(--dore-encre);font-weight:700}
+table.wt{width:100%;border-collapse:collapse;font-size:11.5px}
+table.wt th{text-align:left;font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--taupe);padding:6px 8px;border-bottom:1px solid var(--ligne)}
+table.wt td{padding:7px 8px;border-bottom:1px solid #EFE7D6;color:var(--noir)}
+.st{display:inline-flex;gap:5px;align-items:center;font-size:9.6px;font-weight:700;border-radius:999px;padding:2.5px 9px}
+.st::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor}
+.st-new{background:#EFE5CF;color:#6B5A26}.st-pay{background:#DCE8DF;color:#245B41}
+.st-prep{background:#E9E2D2;color:#5C5340}.st-exp{background:#DDE6EA;color:#2C5568}
+.st-liv{background:var(--vert-nuit);color:var(--dore-clair)}.st-ret{background:#F0DCD6;color:#8F3327}
+.bar-h{display:flex;align-items:center;gap:8px;font-size:10.5px;margin:5px 0}
+.bar-h .lab{width:78px;color:var(--taupe)}
+.bar-h .tr{flex:1;height:8px;background:#EDE3D0;border-radius:4px;overflow:hidden}
+.bar-h .fl{height:100%;background:var(--vert);border-radius:4px}
+.bar-h .fl.g{background:var(--dore)}
+.wbtn{display:inline-block;background:var(--vert);color:var(--creme);font-weight:700;font-size:11px;border-radius:999px;padding:7px 16px}
+.wbtn.ghost{background:transparent;color:var(--vert-nuit);border:1.5px solid var(--vert)}
+.wbtn.sm{padding:4px 11px;font-size:10px}
+.alertbox{background:#FBF3E2;border:1px solid #E8D6A8;border-left:4px solid var(--dore);border-radius:10px;padding:9px 12px;font-size:11px;color:#5C4A18}
+.pill-f{font-size:10px;font-weight:700;border:1px solid var(--ligne);background:var(--creme);border-radius:999px;padding:4px 11px;color:var(--vert-nuit)}
+.pill-f.on{background:var(--vert);color:var(--creme);border-color:var(--vert)}
+.note-panel{background:var(--creme);border:1px solid var(--ligne);border-left:4px solid var(--dore);border-radius:12px;padding:16px 18px;font-size:13px;max-width:900px}
+.note-panel b{color:var(--vert-nuit)}
+footer{margin-top:80px;text-align:center;color:var(--taupe);font-size:12.5px}
+</style>
+</head>
+<body>
+<div class="doc">
+
+<header class="doc-head">
+  <div class="brand">Clos ET — L'élégance durable</div>
+  <h1>Maquettes hautes fidélités — Application complète</h1>
+  <p>Couverture intégrale des trois interfaces : application mobile cliente (Flutter), espace sourceur mobile et back-office administrateur (web). Chaque écran applique la charte (noir, vert profond, doré, beige sable), le vocabulaire « dressing privé » et les règles WCAG 2.1 AA du dossier de design v1.0. Données d'exemple réalistes : FCFA, MTN MoMo / Orange Money, quartiers de Yaoundé.</p>
+  <div class="doc-meta"><span>Version 2.0</span><span>07/07/2026</span><span>26 écrans</span><span>V1 + V1.1</span><span>Réf. CDC v2.0 · Cas d'utilisation · Design v1.0</span></div>
+</header>
+
+<!-- ================= PARTIE I · 01 DÉCOUVERTE ================= -->
+<section class="sec">
+  <div class="eyebrow">Partie I — App mobile cliente · 01 Découverte</div>
+  <h2>Mon dressing, Collections, Filtres, Recherche, Wishlist</h2>
+  <p class="lead">Réponses aux questions Q1 à Q3 (CRITIQUES V1) : accueil curated « dressing privé » avec Pièce de la semaine, catalogue filtrable, wishlist native. La wishlist crée l'urgence naturelle propre à la seconde main — chaque pièce est unique.</p>
+  <div class="row">
+
+  <!-- É01 MON DRESSING -->
+  <div class="frame">
+    <div class="phone"><div class="screen">
+      <div class="sb"><span>9:41</span><span>▮▮▮ ⌁ ▭</span></div>
+      <div class="body">
+        <div class="h-app"><span class="wm">Clos ET</span><span class="ic">🔍 <span style="position:relative">🔔<span class="notif-dot" style="position:absolute;top:-1px;right:-3px"></span></span></span></div>
+        <div class="hero">
+          <div class="eyeb">Pièce de la semaine</div>
+          <h5>Robe Élégance Durable</h5>
+          <p>Sandro · Soie · Taille 38 · Unique</p>
+          <div style="margin-top:8px"><span class="badge" style="background:var(--dore);color:var(--noir)">Découvrir — 38 500 FCFA</span></div>
+        </div>
+        <div class="chips"><span class="chip on">Tout l'univers</span><span class="chip">Robes</span><span class="chip">Vestes</span><span class="chip">Sacs</span><span class="chip">Escar…</span></div>
+        <div class="lrow"><b>Nouveautés du dressing</b><span style="font-size:10px;color:var(--dore-encre);font-weight:700">Tout découvrir →</span></div>
+        <div class="pgrid">
+          <div class="pc"><div class="ph"><span class="heart">♡</span></div><div class="in"><div class="maison">Maje</div><div class="nom">Veste tweed crème</div><div class="lrow"><span class="px">24 500 FCFA</span><span class="badge b-exc">Excellent</span></div></div></div>
+          <div class="pc"><div class="ph g2"><span class="heart" style="color:var(--erreur)">♥</span></div><div class="in"><div class="maison">Sézane</div><div class="nom">Sac cuir camel</div><div class="lrow"><span class="px">31 000 FCFA</span><span class="badge b-tb">Très bon</span></div></div></div>
+        </div>
+        <div class="lrow"><b>Coup de cœur Clos ET</b><span style="font-size:10px;color:var(--dore-encre);font-weight:700">Voir →</span></div>
+      </div>
+      <div class="tabbar">
+        <div class="tab on"><i>⌂</i>Mon dressing</div><div class="tab"><i>▤</i>Collections</div><div class="tab"><i>♡</i>Wishlist</div><div class="tab"><i>◇</i>Ma sélection</div><div class="tab"><i>◌</i>Mon espace</div>
+      </div>
+    </div></div>
+    <h4>É01 · Mon dressing (accueil)</h4>
+    <p class="cap"><b>Q1 tranchée :</b> sélection curated, pas de catalogue brut. Hero arche = Pièce de la semaine (gérée depuis le back-office A03). Accès Univers par chips. Badge notification sur la cloche.</p>
+  </div>
+
+  <!-- É02 COLLECTIONS -->
+  <div class="frame">
+    <div class="phone"><div class="screen">
+      <div class="sb"><span>9:41</span><span>▮▮▮ ⌁ ▭</span></div>
+      <div class="body">
+        <div class="lrow"><span class="t-ed">Collections</span><span style="font-size:11px;font-weight:700;color:var(--vert-nuit)">⇅ Trier</span></div>
+        <div class="search">🔍 Rechercher une pièce, une maison…</div>
+        <div class="chips"><span class="chip on">Filtres · 3</span><span class="chip on">Robes ✕</span><span class="chip on">T. 38 ✕</span><span class="chip">≤ 40 000 F</span></div>
+        <div class="lrow" style="font-size:10.5px;color:var(--taupe)"><span>24 pièces uniques</span><span>Nouveautés d'abord</span></div>
+        <div class="pgrid">
+          <div class="pc"><div class="ph"><span class="heart">♡</span></div><div class="in"><div class="maison">Sandro</div><div class="nom">Robe midi soie</div><div class="lrow"><span class="px">38 500 FCFA</span><span class="badge b-exc">Excellent</span></div><div class="meta">T. 38 · Soie</div></div></div>
+          <div class="pc"><div class="ph g3"><span class="heart">♡</span></div><div class="in"><div class="maison">Massimo Dutti</div><div class="nom">Robe lin sable</div><div class="lrow"><span class="px">22 000 FCFA</span><span class="badge b-tb">Très bon</span></div><div class="meta">T. 38 · Lin</div></div></div>
+          <div class="pc"><div class="ph g4" style="filter:saturate(.5) brightness(.96)"><span class="badge b-vendu" style="position:absolute;left:6px;top:6px">Déjà adoptée</span></div><div class="in"><div class="maison">Maje</div><div class="nom">Robe portefeuille</div><div class="lrow"><span class="px" style="color:var(--taupe)">29 000 FCFA</span><span style="font-size:9px;font-weight:700;color:var(--dore-encre)">M'alerter →</span></div></div></div>
+          <div class="pc"><div class="ph g2"><span class="heart">♡</span></div><div class="in"><div class="maison">Zara Studio</div><div class="nom">Robe plissée</div><div class="lrow"><span class="px">18 500 FCFA</span><span class="badge b-tb">Très bon</span></div><div class="meta">T. 38 · Viscose</div></div></div>
+        </div>
+      </div>
+      <div class="tabbar"><div class="tab"><i>⌂</i>Mon dressing</div><div class="tab on"><i>▤</i>Collections</div><div class="tab"><i>♡</i>Wishlist</div><div class="tab"><i>◇</i>Ma sélection</div><div class="tab"><i>◌</i>Mon espace</div></div>
+    </div></div>
+    <h4>É02 · Collections (catalogue)</h4>
+    <p class="cap"><b>Q2 :</b> filtres actifs supprimables en chips. Pièce vendue = « Déjà adoptée » (jamais grisée-cachée) + CTA « M'alerter » qui alimente le sourcing (Q6). Compteur de pièces uniques.</p>
+  </div>
+
+  <!-- É03 FILTRES -->
+  <div class="frame">
+    <div class="phone"><div class="screen">
+      <div class="sb"><span>9:41</span><span>▮▮▮ ⌁ ▭</span></div>
+      <div class="body" style="filter:blur(1px);opacity:.55">
+        <div class="lrow"><span class="t-ed">Collections</span></div>
+        <div class="pgrid"><div class="pc"><div class="ph"></div></div><div class="pc"><div class="ph g2"></div></div><div class="pc"><div class="ph g3"></div></div><div class="pc"><div class="ph g4"></div></div></div>
+      </div>
+      <div class="scrim"></div>
+      <div class="sheet" style="height:74%">
+        <div class="grab"></div>
+        <div class="lrow"><b style="font-family:var(--f-serif);font-size:17px">Affiner ma recherche</b><span style="font-size:10.5px;color:var(--dore-encre);font-weight:700">Tout effacer</span></div>
+        <div><div class="eyeb">Univers</div><div class="chips" style="margin-top:5px;flex-wrap:wrap"><span class="chip on">Robes</span><span class="chip">Vestes</span><span class="chip">Sacs</span><span class="chip">Tops</span><span class="chip">Jupes</span></div></div>
+        <div><div class="eyeb">Taille</div><div class="chips" style="margin-top:5px"><span class="chip">36</span><span class="chip on">38</span><span class="chip">40</span><span class="chip">42</span><span class="chip">44</span></div></div>
+        <div><div class="eyeb">État de la pièce</div><div class="chips" style="margin-top:5px"><span class="chip">Excellent</span><span class="chip on">Très bon</span><span class="chip">Bon</span></div></div>
+        <div><div class="eyeb">Prix</div>
+          <div style="margin-top:10px;position:relative;height:14px"><div style="height:3px;background:var(--ligne);border-radius:2px;margin-top:5px"></div><div style="position:absolute;left:18%;right:35%;top:5px;height:3px;background:var(--dore)"></div><i style="position:absolute;left:18%;top:0;width:14px;height:14px;border-radius:50%;background:var(--vert);border:2px solid var(--creme)"></i><i style="position:absolute;right:35%;top:0;width:14px;height:14px;border-radius:50%;background:var(--vert);border:2px solid var(--creme)"></i></div>
+          <div class="lrow" style="font-size:10.5px;color:var(--taupe)"><span>10 000 FCFA</span><span>40 000 FCFA</span></div>
+        </div>
+        <div><div class="eyeb">Maison</div><div class="chips" style="margin-top:5px"><span class="chip">Sandro</span><span class="chip">Maje</span><span class="chip">Sézane</span><span class="chip">Zara</span></div></div>
+        <a class="btn">Voir 24 pièces</a>
+      </div>
+    </div></div>
+    <h4>É03 · Filtres (bottom sheet)</h4>
+    <p class="cap"><b>Ordre validé Q2 :</b> Univers → Taille → État → Prix → Maison. Le CTA annonce le résultat (« Voir 24 pièces ») pour éviter les recherches vides. Sélections en chips, jamais de dropdowns imbriqués.</p>
+  </div>
+
+  <!-- É04 RECHERCHE -->
+  <div class="frame">
+    <div class="phone"><div class="screen">
+      <div class="sb"><span>9:41</span><span>▮▮▮ ⌁ ▭</span></div>
+      <div class="body">
+        <div class="search" style="border-color:var(--vert);box-shadow:0 0 0 1px var(--vert);color:var(--noir)">🔍 robe soie<span style="margin-left:auto;color:var(--taupe)">✕</span></div>
+        <div class="eyeb">Suggestions</div>
+        <div class="card" style="display:flex;flex-direction:column;gap:8px;font-size:12px">
+          <span>🔍 robe <b>soie</b> sandro</span><span>🔍 robe <b>soie</b> midi</span><span>🔍 foulard <b>soie</b></span>
+        </div>
+        <div class="eyeb">Résultats — 6 pièces</div>
+        <div class="card" style="display:flex;gap:10px;align-items:center">
+          <div class="ph" style="width:52px;height:60px;border-radius:26px 26px 6px 6px;background:linear-gradient(150deg,#E7DCC6,#D8C9A8)"></div>
+          <div style="flex:1"><div class="maison">Sandro</div><div class="nom" style="font-family:var(--f-serif);font-weight:600;font-size:14px">Robe midi soie</div><div class="meta" style="font-size:10px;color:var(--taupe)">T. 38 · Excellent</div></div>
+          <span class="px" style="font-family:var(--f-serif);font-weight:700">38 500 F</span>
+        </div>
+        <div class="card" style="display:flex;gap:10px;align-items:center">
+          <div class="ph" style="width:52px;height:60px;border-radius:26px 26px 6px 6px;background:linear-gradient(150deg,#DCD3BE,#B8A67F)"></div>
+          <div style="flex:1"><div class="maison">Maje</div><div class="nom" style="font-family:var(--f-serif);font-weight:600;font-size:14px">Top soie ivoire</div><div class="meta" style="font-size:10px;color:var(--taupe)">T. 36 · Très bon</div></div>
+          <span class="px" style="font-family:var(--f-serif);font-weight:700">16 000 F</span>
+        </div>
+        <div class="eyeb">Recherches récentes</div>
+        <div class="chips"><span class="chip">sac cuir</span><span class="chip">veste tweed</span><span class="chip">sézane</span></div>
+      </div>
+      <div class="tabbar"><div class="tab"><i>⌂</i>Mon dressing</div><div class="tab on"><i>▤</i>Collections</div><div class="tab"><i>♡</i>Wishlist</div><div class="tab"><i>◇</i>Ma sélection</div><div class="tab"><i>◌</i>Mon espace</div></div>
+    </div></div>
+    <h4>É04 · Recherche</h4>
+    <p class="cap">Recherche par mot-clé (F1) avec suggestions instantanées, résultats compacts et historique local. Le terme saisi est mis en évidence dans les suggestions.</p>
+  </div>
+
+  <!-- É05 WISHLIST -->
+  <div class="frame">
+    <div class="phone"><div class="screen">
+      <div class="sb"><span>9:41</span><span>▮▮▮ ⌁ ▭</span></div>
+      <div class="body">
+        <span class="t-ed">Ma wishlist</span>
+        <p style="font-size:11px;color:var(--taupe)">Chaque pièce est unique — elle peut rejoindre un autre dressing à tout moment.</p>
+        <div class="card" style="display:flex;gap:10px">
+          <div style="width:56px;height:66px;border-radius:28px 28px 6px 6px;background:linear-gradient(150deg,#DCD3BE,#B8A67F)"></div>
+          <div style="flex:1"><div class="maison">Sézane</div><div style="font-family:var(--f-serif);font-weight:600;font-size:14px">Sac cuir camel</div><div class="lrow"><span class="px" style="font-family:var(--f-serif);font-weight:700">31 000 F</span><span class="badge b-uniq">Encore disponible</span></div></div>
+        </div>
+        <a class="btn" style="padding:9px;font-size:12px">Ajouter à ma sélection</a>
+        <div class="card" style="display:flex;gap:10px;opacity:.85">
+          <div style="width:56px;height:66px;border-radius:28px 28px 6px 6px;background:linear-gradient(150deg,#D9CFBA,#A99770);filter:saturate(.4)"></div>
+          <div style="flex:1"><div class="maison">Maje</div><div style="font-family:var(--f-serif);font-weight:600;font-size:14px">Robe portefeuille</div><div class="lrow"><span class="badge b-vendu">Déjà adoptée</span><span style="font-size:10px;font-weight:700;color:var(--dore-encre)">M'alerter d'une pièce similaire →</span></div></div>
+        </div>
+        <div class="hr"></div>
+        <div class="card" style="display:flex;gap:10px">
+          <div style="width:56px;height:66px;border-radius:28px 28px 6px 6px;background:linear-gradient(150deg,#E7DCC6,#CBB68A)"></div>
+          <div style="flex:1"><div class="maison">Massimo Dutti</div><div style="font-family:var(--f-serif);font-weight:600;font-size:14px">Escarpins daim</div><div class="lrow"><span class="px" style="font-family:var(--f-serif);font-weight:700">19 500 F</span><span class="badge b-exc">Excellent</span></div></div>
+        </div>
+      </div>
+      <div class="tabbar"><div class="tab"><i>⌂</i>Mon dressing</div><div class="tab"><i>▤</i>Collections</div><div class="tab on"><i>♥</i>Wishlist</div><div class="tab"><i>◇</i>Ma sélection</div><div class="tab"><i>◌</i>Mon espace</div></div>
+    </div></div>
+    <h4>É05 · Ma wishlist</h4>
+    <p class="cap"><b>Q3 CRITIQUE — écran manquant du dossier v1.0.</b> Urgence honnête (« Encore disponible »), zéro compte à rebours artificiel. Pièce vendue conservée avec bascule vers l'alerte similaire (Q6) : la wishlist nourrit le sourcing.</p>
+  </div>
+
+  </div>
+</section>
+
+<!-- ================= 02 CONSIDÉRATION ================= -->
+<section class="sec">
+  <div class="eyebrow">Partie I — App mobile cliente · 02 Considération</div>
+  <h2>Fiche Pièce, alerte similaire, Ma sélection</h2>
+  <p class="lead">Q4 à Q6 : la fiche doit permettre d'acheter sans voir la pièce physiquement — photos 5+, mesures réelles en cm, état détaillé, matière, conseil de style. Partage WhatsApp / Instagram natif (recommandation organique gratuite).</p>
+  <div class="row">
+
+  <!-- É06 FICHE PIÈCE -->
+  <div class="frame">
+    <div class="phone"><div class="screen">
+      <div class="sb"><span>9:41</span><span>▮▮▮ ⌁ ▭</span></div>
+      <div class="body" style="gap:8px">
+        <div class="lrow"><span style="font-size:15px">←</span><span class="ic" style="display:flex;gap:12px;font-size:15px">⇪ ♡</span></div>
+        <div style="height:198px;border-radius:var(--arche);background:linear-gradient(155deg,#E9DEC8,#CDB98E);position:relative">
+          <span class="badge b-uniq" style="position:absolute;left:10px;top:10px">Pièce unique</span>
+          <span style="position:absolute;right:10px;bottom:10px;background:rgba(23,21,18,.55);color:#fff;font-size:9px;border-radius:999px;padding:2px 8px">1 / 6 · ▶ vidéo</span>
+          <div style="position:absolute;bottom:10px;left:12px;display:flex;gap:4px"><i style="width:14px;height:3px;background:var(--dore);border-radius:2px"></i><i style="width:6px;height:3px;background:rgba(255,255,255,.7);border-radius:2px"></i><i style="width:6px;height:3px;background:rgba(255,255,255,.7);border-radius:2px"></i></div>
+        </div>
+        <div class="maison" style="font-size:9.5px">Sandro · Paris</div>
+        <div class="lrow"><span style="font-family:var(--f-serif);font-weight:600;font-size:19px;color:var(--vert-nuit)">Robe midi soie</span><span class="px" style="font-family:var(--f-serif);font-weight:700;font-size:19px">38 500 F</span></div>
+        <div class="chips"><span class="badge b-exc">État · Excellent</span><span class="badge" style="background:#EDE3D0;color:var(--taupe)">Taille 38 · coupe droite</span><span class="badge" style="background:#EDE3D0;color:var(--taupe)">100 % soie</span></div>
+        <div class="card" style="font-size:11px;padding:9px 11px"><b style="font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--dore-encre)">Mesures réelles</b><br>Poitrine 46 cm · Taille 38 cm · Longueur 112 cm</div>
+        <div class="card" style="font-size:11px;padding:9px 11px;border-left:3px solid var(--dore)"><b style="font-family:var(--f-serif);font-style:italic;font-size:12.5px;color:var(--vert-nuit)">Le conseil Clos ET</b><br>Portez-la avec des sandales dorées et une pochette structurée pour un déjeuner en terrasse.</div>
+      </div>
+      <div style="padding:10px 14px 14px;background:var(--creme);border-top:1px solid var(--ligne)"><a class="btn">Ajouter à mon dressing — 38 500 FCFA</a></div>
+    </div></div>
+    <h4>É06 · Fiche Pièce</h4>
+    <p class="cap"><b>Q4 :</b> les 6 informations de confiance au-dessus de la ligne de flottaison. CTA sticky au vocabulaire brand book (« Ajouter à mon dressing »). Galerie 6 visuels dont vidéo.</p>
+  </div>
+
+  <!-- É07 PARTAGE + PIÈCE VENDUE -->
+  <div class="frame">
+    <div class="phone"><div class="screen">
+      <div class="sb"><span>9:41</span><span>▮▮▮ ⌁ ▭</span></div>
+      <div class="body" style="gap:8px;filter:blur(.6px);opacity:.6">
+        <div style="height:180px;border-radius:var(--arche);background:linear-gradient(155deg,#D9CFBA,#A99770);filter:saturate(.4);position:relative"><span class="badge b-vendu" style="position:absolute;left:10px;top:10px">Déjà adoptée</span></div>
+        <div class="maison">Maje</div>
+        <div style="font-family:var(--f-serif);font-weight:600;font-size:18px;color:var(--taupe)">Robe portefeuille</div>
+      </div>
+      <div class="scrim"></div>
+      <div class="sheet">
+        <div class="grab"></div>
+        <b style="font-family:var(--f-serif);font-size:17px;color:var(--vert-nuit)">Cette pièce a trouvé son dressing</b>
+        <p style="font-size:11.5px;color:var(--taupe)">Soyez prévenue en priorité si une pièce similaire — robe Maje, taille 38 — rejoint nos collections.</p>
+        <div class="input"><span class="lab">Me prévenir par</span>WhatsApp · +237 6 94 12 34 56</div>
+        <a class="btn gold">M'alerter d'une pièce similaire</a>
+        <a class="btn ghost" style="border:none;font-size:11.5px;padding:4px">Partager quand même · WhatsApp ⇪ Instagram ⇪</a>
+      </div>
+    </div></div>
+    <h4>É07 · Pièce vendue — alerte similaire</h4>
+    <p class="cap"><b>Q6 (V1.1) :</b> la déception devient une donnée de sourcing — chaque alerte indique quoi acheter en priorité. Canal de notification pré-rempli. Partage social conservé (Q5).</p>
+  </div>
+
+  <!-- É08 MA SÉLECTION -->
+  <div class="frame">
+    <div class="phone"><div class="screen">
+      <div class="sb"><span>9:41</span><span>▮▮▮ ⌁ ▭</span></div>
+      <div class="body">
+        <span class="t-ed">Ma sélection</span>
+        <div class="card" style="display:flex;gap:10px">
+          <div style="width:56px;height:66px;border-radius:28px 28px 6px 6px;background:linear-gradient(150deg,#E7DCC6,#D8C9A8)"></div>
+          <div style="flex:1"><div class="maison">Sandro</div><div style="font-family:var(--f-serif);font-weight:600;font-size:14px">Robe midi soie</div><div class="meta" style="font-size:10px;color:var(--taupe)">T. 38 · Excellent</div><div class="lrow"><span class="px" style="font-family:var(--f-serif);font-weight:700">38 500 F</span><span style="font-size:10px;color:var(--taupe)">Retirer</span></div></div>
+        </div>
+        <div class="card" style="display:flex;gap:10px">
+          <div style="width:56px;height:66px;border-radius:28px 28px 6px 6px;background:linear-gradient(150deg,#DCD3BE,#B8A67F)"></div>
+          <div style="flex:1"><div class="maison">Sézane</div><div style="font-family:var(--f-serif);font-weight:600;font-size:14px">Sac cuir camel</div><div class="meta" style="font-size:10px;color:var(--taupe)">Très bon</div><div class="lrow"><span class="px" style="font-family:var(--f-serif);font-weight:700">31 000 F</span><span style="font-size:10px;color:var(--taupe)">Retirer</span></div></div>
+        </div>
+        <div class="card" style="display:flex;gap:8px;align-items:center;border-style:dashed"><span style="font-size:14px">🏷</span><span style="flex:1;font-size:11.5px;color:var(--taupe)">Code promo ou points fidélité</span><span style="font-size:10.5px;font-weight:700;color:var(--dore-encre)">Appliquer</span></div>
+        <div class="hr"></div>
+        <div class="lrow" style="font-size:12px"><span>Sous-total · 2 pièces</span><span>69 500 F</span></div>
+        <div class="lrow" style="font-size:12px"><span>Livraison Yaoundé (estimation)</span><span>1 500 F</span></div>
+        <div class="lrow"><b style="font-size:15px">Total</b><b style="font-size:16px">71 000 FCFA</b></div>
+        <a class="btn">Finaliser ma sélection</a>
+        <p style="text-align:center;font-size:10px;color:var(--taupe)">Paiement sécurisé · MTN MoMo · Orange Money · À la livraison</p>
+      </div>
+    </div></div>
+    <h4>É08 · Ma sélection (panier)</h4>
+    <p class="cap">Total annoncé avec livraison estimée — zéro surprise au paiement. Champ promo/fidélité discret (Q10, V1.1). Réassurance paiement sous le CTA.</p>
+  </div>
+
+  <!-- É09 SÉLECTION VIDE -->
+  <div class="frame">
+    <div class="phone"><div class="screen">
+      <div class="sb"><span>9:41</span><span>▮▮▮ ⌁ ▭</span></div>
+      <div class="body" style="justify-content:center;text-align:center;gap:14px">
+        <div style="width:120px;height:140px;margin:0 auto;border:1.5px solid var(--dore);border-radius:60px 60px 10px 10px;display:grid;place-items:center;font-size:30px;color:var(--dore-encre)">◇</div>
+        <div style="font-family:var(--f-serif);font-weight:600;font-size:20px;color:var(--vert-nuit)">Votre sélection est encore vide</div>
+        <p style="font-size:12px;color:var(--taupe);max-width:220px;margin:0 auto">Les pièces de nos collections sont uniques — la vôtre vous attend peut-être déjà.</p>
+        <a class="btn" style="margin:0 24px">Découvrir les collections</a>
+        <a style="font-size:11.5px;font-weight:700;color:var(--dore-encre)">Voir ma wishlist ♡</a>
+      </div>
+      <div class="tabbar"><div class="tab"><i>⌂</i>Mon dressing</div><div class="tab"><i>▤</i>Collections</div><div class="tab"><i>♡</i>Wishlist</div><div class="tab on"><i>◇</i>Ma sélection</div><div class="tab"><i>◌</i>Mon espace</div></div>
+    </div></div>
+    <h4>É09 · État vide</h4>
+    <p class="cap">L'écran vide est une invitation, pas un cul-de-sac : deux sorties (Collections, Wishlist). Arche dorée décorative — le doré lumière n'est jamais porteur de texte.</p>
+  </div>
+
+  </div>
+</section>
+
+<!-- ================= 03 CONVERSION ================= -->
+<section class="sec">
+  <div class="eyebrow">Partie I — App mobile cliente · 03 Conversion</div>
+  <h2>Tunnel de commande — 3 étapes, zéro friction</h2>
+  <p class="lead">Q7 tranchée : <b>guest checkout par défaut</b> (le compte est proposé après la confirmation, jamais avant). Q8 : MTN MoMo et Orange Money en premier, paiement à la livraison en filet de sécurité. Une décision par écran (loi de Hick).</p>
+  <div class="row">
+
+  <!-- É10 LIVRAISON -->
+  <div class="frame">
+    <div class="phone"><div class="screen">
+      <div class="sb"><span>9:41</span><span>▮▮▮ ⌁ ▭</span></div>
+      <div class="body">
+        <div class="steps"><div class="st on"><span class="n">1</span>Livraison</div><span class="bar"></span><div class="st"><span class="n">2</span>Paiement</div><span class="bar"></span><div class="st"><span class="n">3</span>Confirmation</div></div>
+        <span class="t-ed" style="font-size:19px">Où livrer votre sélection ?</span>
+        <div class="input"><span class="lab">Nom complet</span>Vanessa Mbarga</div>
+        <div class="input"><span class="lab">Téléphone (WhatsApp)</span>+237 6 94 12 34 56</div>
+        <div class="input err"><span class="lab">Quartier · Yaoundé</span><span style="color:var(--taupe)">Choisir un quartier…</span></div>
+        <div class="err-msg">⚠ Choisissez votre quartier pour calculer la livraison.</div>
+        <div class="input"><span class="lab">Précisions (repère, immeuble…)</span>Face pharmacie, portail vert</div>
+        <div class="eyeb" style="margin-top:2px">Mode de remise</div>
+        <div class="pay on"><span>🛵</span><span style="flex:1">Livraison à domicile<br><i style="font-style:normal;font-size:9.5px;color:var(--taupe);font-weight:400">Sous 24–48 h · 1 500 F</i></span><span class="radio"></span></div>
+        <div class="pay"><span>🏛</span><span style="flex:1">Retrait au showroom Bastos<br><i style="font-style:normal;font-size:9.5px;color:var(--taupe);font-weight:400">Dès demain · Offert</i></span><span class="radio"></span></div>
+        <a class="btn dis">Poursuivre vers le paiement</a>
+      </div>
+    </div></div>
+    <h4>É10 · Étape 1 — Livraison</h4>
+    <p class="cap"><b>Q9 :</b> domicile vs showroom. État d'erreur conforme charte : terre brûlée + icône + message (jamais la couleur seule). CTA désactivé tant que le quartier manque.</p>
+  </div>
+
+  <!-- É11 PAIEMENT -->
+  <div class="frame">
+    <div class="phone"><div class="screen">
+      <div class="sb"><span>9:41</span><span>▮▮▮ ⌁ ▭</span></div>
+      <div class="body">
+        <div class="steps"><div class="st done"><span class="n">✓</span>Livraison</div><span class="bar"></span><div class="st on"><span class="n">2</span>Paiement</div><span class="bar"></span><div class="st"><span class="n">3</span>Confirmation</div></div>
+        <span class="t-ed" style="font-size:19px">Comment souhaitez-vous régler ?</span>
+        <div class="pay on"><span class="logo" style="background:#FFCB05;color:#00427A">MTN</span><span style="flex:1">MTN Mobile Money<br><i style="font-style:normal;font-size:9.5px;color:var(--taupe);font-weight:400">Validation sur votre téléphone</i></span><span class="radio"></span></div>
+        <div class="pay"><span class="logo" style="background:#FF6600">OM</span><span style="flex:1">Orange Money</span><span class="radio"></span></div>
+        <div class="pay"><span class="logo" style="background:var(--vert)">💵</span><span style="flex:1">Paiement à la livraison<br><i style="font-style:normal;font-size:9.5px;color:var(--taupe);font-weight:400">En espèces, à la remise</i></span><span class="radio"></span></div>
+        <div class="input"><span class="lab">Numéro MoMo à débiter</span>+237 6 94 12 34 56</div>
+        <div class="card" style="font-size:11px;background:#F0EADB">
+          <div class="lrow"><span>2 pièces</span><span>69 500 F</span></div>
+          <div class="lrow"><span>Livraison · Omnisports</span><span>1 500 F</span></div>
+          <div class="lrow" style="color:var(--succes);font-weight:700"><span>Code BIENVENUE</span><span>− 3 000 F</span></div>
+          <div class="hr" style="margin:5px 0"></div>
+          <div class="lrow"><b>À régler</b><b>68 000 FCFA</b></div>
+        </div>
+        <a class="btn">Confirmer — 68 000 FCFA</a>
+        <p style="text-align:center;font-size:9.5px;color:var(--taupe)">🔒 Vous validerez le paiement sur votre téléphone (code *126#).</p>
+      </div>
+    </div></div>
+    <h4>É11 · Étape 2 — Paiement</h4>
+    <p class="cap"><b>Q8 CRITIQUE :</b> MoMo par défaut, montant exact répété dans le CTA, pédagogie USSD sous le bouton. Le paiement à la livraison réduit l'abandon des primo-acheteuses.</p>
+  </div>
+
+  <!-- É12 CONFIRMATION -->
+  <div class="frame">
+    <div class="phone"><div class="screen dark">
+      <div class="sb"><span>9:41</span><span>▮▮▮ ⌁ ▭</span></div>
+      <div class="body" style="justify-content:center;text-align:center;gap:12px">
+        <div style="width:110px;height:130px;margin:0 auto;border:1.5px solid var(--dore);border-radius:55px 55px 10px 10px;display:grid;place-items:center;font-size:34px;color:var(--dore-clair)">✓</div>
+        <div style="font-family:var(--f-serif);font-weight:600;font-size:22px;color:var(--creme)">Votre sélection est confirmée</div>
+        <p style="font-size:12px;color:#C9C3B2;max-width:230px;margin:0 auto">Commande <b style="color:var(--dore-clair)">CLS-2451</b> · Paiement MoMo reçu.<br>Livraison à Omnisports sous 24–48 h.</p>
+        <div class="card" style="background:rgba(251,247,239,.07);border-color:rgba(198,162,75,.35);color:var(--creme);font-size:11px;text-align:left">
+          <b style="color:var(--dore-clair)">Suivez votre commande sans compte</b><br>Un lien de suivi vous a été envoyé par WhatsApp au +237 6 94 12 34 56.
+        </div>
+        <a class="btn gold" style="margin:0 20px">Suivre ma commande</a>
+        <a style="font-size:11.5px;font-weight:700;color:var(--dore-clair)">Créer mon espace en 10 secondes — et gagner 500 points</a>
+      </div>
+    </div></div>
+    <h4>É12 · Étape 3 — Confirmation</h4>
+    <p class="cap"><b>Q7 :</b> le compte est proposé <b>après</b> l'achat, adossé à un bénéfice fidélité concret. Écran immersif vert nuit — le seul moment « cérémonie » du tunnel.</p>
+  </div>
+
+  </div>
+</section>
+
+<!-- ================= 04 POST-ACHAT & COMPTE ================= -->
+<section class="sec">
+  <div class="eyebrow">Partie I — App mobile cliente · 04 Post-achat, compte &amp; fidélité</div>
+  <h2>Suivi, Mon espace, Connexion, Notifications, Avis, Support</h2>
+  <p class="lead">Q11 à Q15 : suivi temps réel (CRITIQUE), notifications push + SMS/WhatsApp, avis produit, support intégré et demande de retour — le point de contact qui capte l'insatisfaction avant l'avis négatif public.</p>
+  <div class="row">
+
+  <!-- É13 SUIVI -->
+  <div class="frame">
+    <div class="phone"><div class="screen">
+      <div class="sb"><span>9:41</span><span>▮▮▮ ⌁ ▭</span></div>
+      <div class="body">
+        <div class="lrow"><span style="font-size:15px">←</span><span class="t-ed" style="font-size:18px">Commande CLS-2451</span><span class="st st-exp" style="font-size:9px">En route</span></div>
+        <div class="card" style="font-size:11px"><div class="lrow"><span>2 pièces · 68 000 FCFA</span><span style="font-weight:700;color:var(--succes)">Payée · MoMo</span></div></div>
+        <div class="tl">
+          <div class="tls done"><b>Sélection confirmée</b><span>Lun 6 juil · 14:22</span></div>
+          <div class="tls done"><b>Paiement MoMo reçu</b><span>Lun 6 juil · 14:23</span></div>
+          <div class="tls done"><b>Préparée avec soin</b><span>Lun 6 juil · 17:40 · Emballage signature</span></div>
+          <div class="tls cur"><b>En route vers Omnisports</b><span>Aujourd'hui · Livreur : Éric · arrivée estimée 15 h – 17 h</span></div>
+          <div class="tls"><b>Remise en main propre</b><span>À venir</span></div>
+        </div>
+        <div class="card" style="display:flex;gap:8px;align-items:center"><span style="font-size:15px">💬</span><span style="flex:1;font-size:11px">Un imprévu ? Écrivez-nous, nous répondons en minutes.</span><span class="badge" style="background:var(--vert);color:var(--creme)">WhatsApp</span></div>
+      </div>
+      <div class="tabbar"><div class="tab"><i>⌂</i>Mon dressing</div><div class="tab"><i>▤</i>Collections</div><div class="tab"><i>♡</i>Wishlist</div><div class="tab"><i>◇</i>Ma sélection</div><div class="tab on"><i>◌</i>Mon espace</div></div>
+    </div></div>
+    <h4>É13 · Suivi de commande</h4>
+    <p class="cap"><b>Q13 :</b> timeline 5 statuts alignée sur le back-office. Créneau d'arrivée + prénom du livreur = confiance. Escalade support à portée de pouce (Q15).</p>
+  </div>
+
+  <!-- É14 MON ESPACE -->
+  <div class="frame">
+    <div class="phone"><div class="screen">
+      <div class="sb"><span>9:41</span><span>▮▮▮ ⌁ ▭</span></div>
+      <div class="body">
+        <div style="display:flex;gap:10px;align-items:center"><span class="avatar">V</span><div><div style="font-family:var(--f-serif);font-weight:600;font-size:17px;color:var(--vert-nuit)">Vanessa Mbarga</div><div style="font-size:10px;color:var(--taupe)">Membre depuis mars 2026</div></div></div>
+        <div class="hero" style="padding:14px 16px;text-align:left;border-radius:16px"><div class="lrow"><div><div class="eyeb" style="color:var(--dore-clair)">Mes points fidélité</div><div style="font-family:var(--f-serif);font-weight:700;font-size:24px">1 250 pts</div></div><span class="badge" style="background:var(--dore);color:var(--noir)">= 2 500 F</span></div><p style="font-size:9.5px;margin-top:4px">Encore 750 pts avant votre prochaine récompense.</p></div>
+        <div class="card lrow" style="font-size:12.5px"><b>Mes commandes</b><span style="font-size:10px;color:var(--taupe)">CLS-2451 en route →</span></div>
+        <div class="card lrow" style="font-size:12.5px"><b>Ma wishlist</b><span style="font-size:10px;color:var(--taupe)">3 pièces →</span></div>
+        <div class="card lrow" style="font-size:12.5px"><b>Mes avis</b><span style="font-size:10px;color:var(--taupe)">2 déposés →</span></div>
+        <div class="card lrow" style="font-size:12.5px"><b>Mes adresses</b><span style="font-size:10px;color:var(--taupe)">Omnisports →</span></div>
+        <div class="card lrow" style="font-size:12.5px"><b>Mes notifications</b><span class="seg" style="width:88px;font-size:9px"><span class="on">Push</span><span>SMS</span></span></div>
+        <div class="card lrow" style="font-size:12.5px"><b>Confier une pièce à Clos ET</b><span style="font-size:10px;color:var(--dore-encre);font-weight:700">Devenir sourceur →</span></div>
+      </div>
+      <div class="tabbar"><div class="tab"><i>⌂</i>Mon dressing</div><div class="tab"><i>▤</i>Collections</div><div class="tab"><i>♡</i>Wishlist</div><div class="tab"><i>◇</i>Ma sélection</div><div class="tab on"><i>◌</i>Mon espace</div></div>
+    </div></div>
+    <h4>É14 · Mon espace</h4>
+    <p class="cap"><b>Q11 :</b> commandes, wishlist, avis, adresses, préférence de canal (Q14) et passerelle « Confier une pièce » vers l'espace sourceur. Points fidélité convertis en FCFA — valeur lisible.</p>
+  </div>
+
+  <!-- É15 CONNEXION -->
+  <div class="frame">
+    <div class="phone"><div class="screen dark">
+      <div class="sb"><span>9:41</span><span>▮▮▮ ⌁ ▭</span></div>
+      <div class="body" style="justify-content:center;gap:12px">
+        <div style="text-align:center"><span style="font-family:var(--f-display);font-size:21px;letter-spacing:.06em;color:var(--creme)">CLOS ET</span><div style="font-family:var(--f-serif);font-style:italic;color:var(--dore-clair);font-size:13px">L'élégance durable</div></div>
+        <div style="font-family:var(--f-serif);font-weight:600;font-size:19px;color:var(--creme);text-align:center">Retrouvez votre dressing</div>
+        <div class="input" style="background:rgba(251,247,239,.08);border-color:rgba(226,215,194,.3);color:var(--creme)"><span class="lab" style="color:#B9C2B4">Email ou téléphone</span>vanessa@exemple.cm</div>
+        <div class="input" style="background:rgba(251,247,239,.08);border-color:rgba(226,215,194,.3);color:var(--creme)"><span class="lab" style="color:#B9C2B4">Mot de passe</span>•••••••• <span style="float:right;font-size:10px;color:var(--dore-clair)">Afficher</span></div>
+        <a class="btn gold">Entrer dans mon espace</a>
+        <div style="display:flex;align-items:center;gap:10px;color:#8A9488;font-size:10px"><span class="hr" style="flex:1;background:rgba(226,215,194,.25)"></span>ou<span class="hr" style="flex:1;background:rgba(226,215,194,.25)"></span></div>
+        <a class="btn" style="background:var(--creme);color:var(--noir)">G · Poursuivre avec Google</a>
+        <p style="text-align:center;font-size:10.5px;color:#B9C2B4">Première visite ? <b style="color:var(--dore-clair)">Créer mon espace</b></p>
+        <p style="text-align:center;font-size:10px;color:#8A9488">Vous pouvez aussi <u>poursuivre sans compte</u>.</p>
+      </div>
+    </div></div>
+    <h4>É15 · Connexion / Inscription</h4>
+    <p class="cap">Email / Google (F3), mot de passe affichable (accessibilité), et sortie « sans compte » toujours visible — cohérente avec le guest checkout (Q7).</p>
+  </div>
+
+  <!-- É16 NOTIFICATIONS -->
+  <div class="frame">
+    <div class="phone"><div class="screen">
+      <div class="sb"><span>9:41</span><span>▮▮▮ ⌁ ▭</span></div>
+      <div class="body">
+        <span class="t-ed">Notifications</span>
+        <div class="eyeb">Aujourd'hui</div>
+        <div class="card" style="display:flex;gap:9px;border-left:3px solid var(--dore)"><span>🛵</span><div style="font-size:11.5px"><b>Votre commande est en route</b><br><span style="color:var(--taupe);font-size:10px">CLS-2451 · arrivée estimée 15 h – 17 h · il y a 8 min</span></div></div>
+        <div class="card" style="display:flex;gap:9px;border-left:3px solid var(--dore)"><span>♡</span><div style="font-size:11.5px"><b>Une pièce de votre wishlist baisse de prix</b><br><span style="color:var(--taupe);font-size:10px">Escarpins daim Massimo Dutti · 19 500 → 17 000 F · il y a 2 h</span></div></div>
+        <div class="eyeb">Cette semaine</div>
+        <div class="card" style="display:flex;gap:9px;opacity:.8"><span>✨</span><div style="font-size:11.5px"><b>Une pièce similaire est arrivée</b><br><span style="color:var(--taupe);font-size:10px">Robe portefeuille · Maje · T. 38 — d'après votre alerte</span></div></div>
+        <div class="card" style="display:flex;gap:9px;opacity:.8"><span>🏛</span><div style="font-size:11.5px"><b>Brunch Clos ET — samedi, Bastos</b><br><span style="color:var(--taupe);font-size:10px">Nouvelle collection capsule en avant-première</span></div></div>
+        <div class="card" style="font-size:10.5px;color:var(--taupe)">Vous recevez : suivi de commande, wishlist, alertes pièces. <b style="color:var(--dore-encre)">Gérer mes préférences</b> — se désabonner est aussi simple que s'abonner.</div>
+      </div>
+      <div class="tabbar"><div class="tab on"><i>⌂</i>Mon dressing</div><div class="tab"><i>▤</i>Collections</div><div class="tab"><i>♡</i>Wishlist</div><div class="tab"><i>◇</i>Ma sélection</div><div class="tab"><i>◌</i>Mon espace</div></div>
+    </div></div>
+    <h4>É16 · Centre de notifications</h4>
+    <p class="cap"><b>Q14 :</b> push in-app + relais SMS/WhatsApp. Chaque notification est actionnable et liée à un événement réel (jamais promotionnel pur). Zéro dark pattern : gestion des préférences en un tap.</p>
+  </div>
+
+  <!-- É17 AVIS -->
+  <div class="frame">
+    <div class="phone"><div class="screen">
+      <div class="sb"><span>9:41</span><span>▮▮▮ ⌁ ▭</span></div>
+      <div class="body">
+        <div class="lrow"><span style="font-size:15px">←</span><span class="t-ed" style="font-size:18px">Votre avis compte</span><span></span></div>
+        <div class="card" style="display:flex;gap:10px;align-items:center"><div style="width:44px;height:52px;border-radius:22px 22px 5px 5px;background:linear-gradient(150deg,#E7DCC6,#D8C9A8)"></div><div style="font-size:11.5px"><div class="maison">Sandro</div><b style="font-family:var(--f-serif);font-size:13.5px">Robe midi soie</b><br><span style="color:var(--taupe);font-size:9.5px">Livrée le 7 juil</span></div></div>
+        <div style="text-align:center"><div class="eyeb">Votre note</div><div class="star" style="font-size:26px">★ ★ ★ ★ ☆</div></div>
+        <div class="input" style="min-height:74px"><span class="lab">Votre expérience (facultatif)</span><span style="color:var(--noir)">La pièce est fidèle aux photos, les mesures en cm m'ont évité toute mauvaise surprise…</span></div>
+        <div class="chips" style="flex-wrap:wrap"><span class="chip on">Fidèle aux photos</span><span class="chip on">Taille juste</span><span class="chip">Livraison rapide</span><span class="chip">Bel emballage</span></div>
+        <div class="card" style="display:flex;gap:8px;align-items:center;border-style:dashed;font-size:11px"><span>📷</span>Ajouter une photo portée (+50 pts fidélité)</div>
+        <a class="btn">Publier mon avis</a>
+        <p style="text-align:center;font-size:9.5px;color:var(--taupe)">Publié sous « Vanessa M. » après modération.</p>
+      </div>
+    </div></div>
+    <h4>É17 · Laisser un avis</h4>
+    <p class="cap"><b>Q12 (V1.1) :</b> friction minimale — note + tags en un tap, texte facultatif. Photo portée récompensée en points : l'UGC alimente la stratégie contenu de la marque.</p>
+  </div>
+
+  <!-- É18 SUPPORT / RETOUR -->
+  <div class="frame">
+    <div class="phone"><div class="screen">
+      <div class="sb"><span>9:41</span><span>▮▮▮ ⌁ ▭</span></div>
+      <div class="body">
+        <span class="t-ed">Besoin d'aide ?</span>
+        <div class="card" style="display:flex;gap:10px;align-items:center;background:var(--vert);color:var(--creme);border-color:var(--vert)"><span style="font-size:17px">💬</span><div style="flex:1;font-size:12px"><b>WhatsApp Clos ET</b><br><span style="font-size:9.5px;color:#C9C3B2">Réponse en moins de 15 min · 9 h – 20 h</span></div><span style="color:var(--dore-clair)">→</span></div>
+        <div class="eyeb">À propos de la commande CLS-2451</div>
+        <div class="card lrow" style="font-size:12px"><b>Où en est ma livraison ?</b><span>→</span></div>
+        <div class="card lrow" style="font-size:12px"><b>Signaler un problème</b><span>→</span></div>
+        <div class="card" style="border-left:3px solid var(--dore)">
+          <b style="font-size:12.5px;font-family:var(--f-serif)">Demander un retour</b>
+          <p style="font-size:10px;color:var(--taupe);margin:3px 0 7px">Sous 48 h après la remise, pièce non portée, emballage conservé.</p>
+          <div class="input" style="margin-bottom:6px"><span class="lab">Pièce concernée</span>Sac cuir camel — Sézane</div>
+          <div class="input" style="margin-bottom:6px"><span class="lab">Motif</span>La couleur diffère des photos</div>
+          <a class="btn ghost" style="padding:8px;font-size:11.5px">Envoyer ma demande de retour</a>
+        </div>
+        <p style="font-size:9.5px;color:var(--taupe);text-align:center">Vous serez recontactée sous 24 h. Suivi du retour dans Mon espace.</p>
+      </div>
+      <div class="tabbar"><div class="tab"><i>⌂</i>Mon dressing</div><div class="tab"><i>▤</i>Collections</div><div class="tab"><i>♡</i>Wishlist</div><div class="tab"><i>◇</i>Ma sélection</div><div class="tab on"><i>◌</i>Mon espace</div></div>
+    </div></div>
+    <h4>É18 · Support &amp; demande de retour</h4>
+    <p class="cap"><b>Q15 :</b> WhatsApp en canal n°1, FAQ contextuelle à la dernière commande, retour encadré (conditions visibles avant l'envoi). Capte l'insatisfaction avant l'avis public négatif.</p>
+  </div>
+
+  </div>
+</section>
+
+<!-- ================= PARTIE II · SOURCEUR ================= -->
+<section class="sec">
+  <div class="eyebrow">Partie II — Espace sourceur (mobile)</div>
+  <h2>Confier, suivre, être rémunéré</h2>
+  <p class="lead">Attente client CRITIQUE : dépôt en ligne guidé et suivi des statuts (Reçu → En analyse → Accepté / Refusé → En vente → Vendu → Rémunéré). Le sourceur est un fournisseur particulier — le parcours doit être guidé, jamais technique.</p>
+  <div class="row">
+
+  <!-- S01 MES DÉPÔTS -->
+  <div class="frame">
+    <div class="phone"><div class="screen">
+      <div class="sb"><span>9:41</span><span>▮▮▮ ⌁ ▭</span></div>
+      <div class="body">
+        <div class="lrow"><span class="t-ed" style="font-size:19px">Mes dépôts</span><span class="badge" style="background:var(--vert);color:var(--creme);padding:5px 10px">+ Confier une pièce</span></div>
+        <div class="hero" style="padding:13px 15px;text-align:left;border-radius:16px"><div class="lrow"><div><div class="eyeb" style="color:var(--dore-clair)">Gains en attente</div><div style="font-family:var(--f-serif);font-weight:700;font-size:22px">45 500 FCFA</div></div><span class="badge" style="background:var(--dore);color:var(--noir)">Versement le 15 juil</span></div></div>
+        <div class="chips"><span class="chip on">Toutes · 6</span><span class="chip">En vente · 3</span><span class="chip">Vendues · 2</span><span class="chip">En analyse</span></div>
+        <div class="card" style="display:flex;gap:10px;align-items:center"><div style="width:44px;height:52px;border-radius:22px 22px 5px 5px;background:linear-gradient(150deg,#E7DCC6,#D8C9A8)"></div><div style="flex:1;font-size:11.5px"><b style="font-family:var(--f-serif);font-size:13px">Trench beige · Burberry</b><br><span style="font-size:9.5px;color:var(--taupe)">Déposé le 28 juin · prix conseillé 55 000 F</span></div><span class="st st-liv" style="font-size:9px">Vendue</span></div>
+        <div class="card" style="display:flex;gap:10px;align-items:center"><div style="width:44px;height:52px;border-radius:22px 22px 5px 5px;background:linear-gradient(150deg,#DCD3BE,#B8A67F)"></div><div style="flex:1;font-size:11.5px"><b style="font-family:var(--f-serif);font-size:13px">Sac bandoulière · Lancel</b><br><span style="font-size:9.5px;color:var(--taupe)">En ligne depuis 12 jours</span></div><span class="st st-pay" style="font-size:9px">En vente</span></div>
+        <div class="card" style="display:flex;gap:10px;align-items:center"><div style="width:44px;height:52px;border-radius:22px 22px 5px 5px;background:linear-gradient(150deg,#E2D6BE,#CBB68A)"></div><div style="flex:1;font-size:11.5px"><b style="font-family:var(--f-serif);font-size:13px">Blazer lin · COS</b><br><span style="font-size:9.5px;color:var(--taupe)">Déposé hier</span></div><span class="st st-new" style="font-size:9px">En analyse</span></div>
+        <div class="card" style="display:flex;gap:10px;align-items:center;opacity:.85"><div style="width:44px;height:52px;border-radius:22px 22px 5px 5px;background:linear-gradient(150deg,#D9CFBA,#A99770)"></div><div style="flex:1;font-size:11.5px"><b style="font-family:var(--f-serif);font-size:13px">Jupe plissée</b><br><span style="font-size:9.5px;color:var(--erreur)">Refusée · état insuffisant — détails →</span></div><span class="st st-ret" style="font-size:9px">Refusée</span></div>
+      </div>
+      <div class="tabbar"><div class="tab on"><i>▣</i>Mes dépôts</div><div class="tab"><i>＋</i>Confier</div><div class="tab"><i>₣</i>Mes gains</div><div class="tab"><i>◌</i>Mon espace</div></div>
+    </div></div>
+    <h4>S01 · Mes dépôts</h4>
+    <p class="cap">Le gain en attente est l'information n°1 (motivation du sourceur). Statuts alignés sur le back-office A04. Un refus est toujours motivé — transparence = rétention des bons sourceurs.</p>
+  </div>
+
+  <!-- S02 DÉPÔT GUIDÉ -->
+  <div class="frame">
+    <div class="phone"><div class="screen">
+      <div class="sb"><span>9:41</span><span>▮▮▮ ⌁ ▭</span></div>
+      <div class="body">
+        <div class="steps"><div class="st done"><span class="n">✓</span>Photos</div><span class="bar"></span><div class="st on"><span class="n">2</span>La pièce</div><span class="bar"></span><div class="st"><span class="n">3</span>Prix</div><span class="bar"></span><div class="st"><span class="n">4</span>Envoi</div></div>
+        <span class="t-ed" style="font-size:19px">Parlez-nous de cette pièce</span>
+        <div style="display:flex;gap:6px"><div style="width:52px;height:60px;border-radius:10px;background:linear-gradient(150deg,#E7DCC6,#D8C9A8)"></div><div style="width:52px;height:60px;border-radius:10px;background:linear-gradient(150deg,#DCD3BE,#B8A67F)"></div><div style="width:52px;height:60px;border-radius:10px;border:1.5px dashed var(--ligne);display:grid;place-items:center;color:var(--taupe)">＋</div></div>
+        <div class="input"><span class="lab">Type de pièce</span>Trench / Manteau</div>
+        <div class="input"><span class="lab">Maison (marque)</span>Burberry</div>
+        <div class="input"><span class="lab">Taille</span>40</div>
+        <div><div class="eyeb">État</div><div class="chips" style="margin-top:5px"><span class="chip on">Excellent</span><span class="chip">Très bon</span><span class="chip">Bon</span></div></div>
+        <div class="card" style="font-size:10px;color:var(--taupe);border-left:3px solid var(--dore)">💡 Une pièce « Excellent » se vend en moyenne 2× plus vite. Soyez juste : notre atelier vérifie chaque pièce.</div>
+        <a class="btn">Poursuivre — le prix</a>
+      </div>
+    </div></div>
+    <h4>S02 · Dépôt guidé (wizard 4 étapes)</h4>
+    <p class="cap">Une décision par écran. Photos d'abord (le plus engageant), pédagogie honnête sur l'état. Le formulaire remplace la fiche papier (<i>formulaire.pdf</i>) — mêmes champs, zéro ressaisie admin.</p>
+  </div>
+
+  <!-- S03 GAINS -->
+  <div class="frame">
+    <div class="phone"><div class="screen">
+      <div class="sb"><span>9:41</span><span>▮▮▮ ⌁ ▭</span></div>
+      <div class="body">
+        <span class="t-ed">Mes gains</span>
+        <div class="hero" style="padding:16px;text-align:left;border-radius:16px">
+          <div class="eyeb" style="color:var(--dore-clair)">Prochain versement · 15 juil</div>
+          <div style="font-family:var(--f-serif);font-weight:700;font-size:26px">45 500 FCFA</div>
+          <p style="font-size:9.5px">Sur MTN MoMo · +237 6 77 88 99 00</p>
+        </div>
+        <div class="eyeb">Détail des ventes</div>
+        <div class="card"><div class="lrow" style="font-size:11.5px"><b style="font-family:var(--f-serif)">Trench Burberry</b><span class="st st-liv" style="font-size:8.6px">Vendue 55 000 F</span></div>
+          <div class="lrow" style="font-size:10px;color:var(--taupe)"><span>Votre part (70 %)</span><b style="color:var(--succes)">38 500 F</b></div></div>
+        <div class="card"><div class="lrow" style="font-size:11.5px"><b style="font-family:var(--f-serif)">Foulard soie Hermès</b><span class="st st-liv" style="font-size:8.6px">Vendue 10 000 F</span></div>
+          <div class="lrow" style="font-size:10px;color:var(--taupe)"><span>Votre part (70 %)</span><b style="color:var(--succes)">7 000 F</b></div></div>
+        <div class="eyeb">Historique</div>
+        <div class="card lrow" style="font-size:11px"><span>Versement du 15 juin · MoMo</span><b>22 000 F ✓</b></div>
+        <div class="card lrow" style="font-size:11px"><span>Versement du 15 mai · MoMo</span><b>31 500 F ✓</b></div>
+      </div>
+      <div class="tabbar"><div class="tab"><i>▣</i>Mes dépôts</div><div class="tab"><i>＋</i>Confier</div><div class="tab on"><i>₣</i>Mes gains</div><div class="tab"><i>◌</i>Mon espace</div></div>
+    </div></div>
+    <h4>S03 · Mes gains &amp; rémunération</h4>
+    <p class="cap"><b>Hypothèse à valider :</b> commission 70/30 et versement mensuel MoMo (non chiffrés dans le CDC). Transparence totale ligne par ligne — condition de confiance des sourceurs.</p>
+  </div>
+
+  </div>
+</section>
+
+<!-- ================= PARTIE III · BACK-OFFICE ADMIN ================= -->
+<section class="sec">
+  <div class="eyebrow">Partie III — Back-office administrateur (web)</div>
+  <h2>A01 · Tableau de bord — le rituel du matin</h2>
+  <p class="lead">Attente client n°1 (CRITIQUE V1) : « consulter chaque matin le CA, les commandes à traiter, les paiements en attente et le stock ». Les 4 KPI indispensables en tête, les widgets Importants dessous, tout le reste reporté V2 conformément au questionnaire dashboard.</p>
+
+  <div class="web"><div class="chrome"><i></i><i></i><i></i><span class="url">admin.closet.cm/tableau-de-bord</span></div>
+  <div class="wapp">
+    <nav class="wnav">
+      <div class="wm">Clos ET · Admin</div>
+      <a class="on">▦ Tableau de bord</a>
+      <a>◇ Commandes <span class="cnt">7</span></a>
+      <a>▤ Catalogue</a>
+      <a>✦ Mises en avant</a>
+      <a>▣ Sourceurs &amp; dépôts <span class="cnt">3</span></a>
+      <a>₣ Paiements &amp; finances</a>
+      <a>↩ Retours &amp; réclamations</a>
+      <a>🏷 Codes promo</a>
+      <a style="margin-top:auto;font-size:11px;color:#8A9488">⚙ Paramètres · Déconnexion</a>
+    </nav>
+    <main class="wmain">
+      <div class="wtop"><h5>Bonjour Estelle — mardi 7 juillet</h5><div class="who"><span class="pill-f on">Jour</span><span class="pill-f">Semaine</span><span class="pill-f">Mois</span></div></div>
+      <div class="alertbox">⚠ <b>2 commandes dépassent 4 h sans traitement</b> (CLS-2447, CLS-2449) · 1 paiement MoMo à confirmer manuellement → <u>Traiter maintenant</u></div>
+      <div class="kpis">
+        <div class="kpi"><div class="l">Chiffre d'affaires · jour</div><div class="v">312 500 F</div><div class="d up">▲ +18 % vs mardi dernier</div></div>
+        <div class="kpi"><div class="l">Commandes à traiter</div><div class="v">7</div><div class="d down">dont 2 en retard &gt; 4 h</div></div>
+        <div class="kpi"><div class="l">Paiements en attente</div><div class="v">3</div><div class="d" style="color:var(--alerte)">54 000 F à confirmer</div></div>
+        <div class="kpi"><div class="l">Stock total</div><div class="v">184 pièces</div><div class="d up">+9 mises en ligne hier</div></div>
+      </div>
+      <div class="wgrid">
+        <div class="wcard">
+          <h6>Commandes récentes <span>Tout voir →</span></h6>
+          <table class="wt">
+            <tr><th>N°</th><th>Cliente</th><th>Montant</th><th>Paiement</th><th>Statut</th></tr>
+            <tr><td>CLS-2451</td><td>Vanessa M.</td><td>68 000 F</td><td>MoMo ✓</td><td><span class="st st-exp">Expédiée</span></td></tr>
+            <tr><td>CLS-2450</td><td>Aïcha N.</td><td>24 500 F</td><td>Orange ✓</td><td><span class="st st-prep">En préparation</span></td></tr>
+            <tr><td>CLS-2449</td><td>Laure T.</td><td>31 000 F</td><td>À la livraison</td><td><span class="st st-new">Reçue · ⏱ 5 h</span></td></tr>
+            <tr><td>CLS-2448</td><td>Mireille F.</td><td>92 500 F</td><td>MoMo ⏳</td><td><span class="st st-new">Paiement en attente</span></td></tr>
+            <tr><td>CLS-2447</td><td>Sandra E.</td><td>18 500 F</td><td>MoMo ✓</td><td><span class="st st-new">Reçue · ⏱ 6 h</span></td></tr>
+          </table>
+        </div>
+        <div>
+          <div class="wcard" style="margin-bottom:12px">
+            <h6>Ventes par catégorie · 7 j</h6>
+            <div class="bar-h"><span class="lab">Robes</span><span class="tr"><span class="fl" style="width:78%"></span></span><b>38 %</b></div>
+            <div class="bar-h"><span class="lab">Sacs</span><span class="tr"><span class="fl" style="width:52%"></span></span><b>25 %</b></div>
+            <div class="bar-h"><span class="lab">Vestes</span><span class="tr"><span class="fl" style="width:40%"></span></span><b>19 %</b></div>
+            <div class="bar-h"><span class="lab">Chaussures</span><span class="tr"><span class="fl g" style="width:26%"></span></span><b>12 %</b></div>
+            <div class="bar-h"><span class="lab">Autres</span><span class="tr"><span class="fl g" style="width:13%"></span></span><b>6 %</b></div>
+          </div>
+          <div class="wcard">
+            <h6>Signaux · Important</h6>
+            <div style="font-size:11.5px;display:flex;flex-direction:column;gap:7px">
+              <div class="lrow"><span>Articles sans vente &gt; 30 j</span><b style="color:var(--alerte)">11 pièces →</b></div>
+              <div class="lrow"><span>Taux de retour clientes</span><b class="up">34 %</b></div>
+              <div class="lrow"><span>Top zone de livraison</span><b>Bastos · Omnisports</b></div>
+              <div class="lrow"><span>Délai moyen mise en ligne → vente</span><b>9,4 jours</b></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div></div>
+</section>
+
+<section class="sec">
+  <div class="eyebrow">Partie III — Back-office administrateur (web)</div>
+  <h2>A02 · Gestion des commandes</h2>
+  <p class="lead">Les 8 statuts du CDC (Reçue → Remboursée), alertes de délai 2 h / 4 h / 24 h, et contact cliente WhatsApp en un clic depuis la ligne — sans quitter la plateforme.</p>
+
+  <div class="web"><div class="chrome"><i></i><i></i><i></i><span class="url">admin.closet.cm/commandes</span></div>
+  <div class="wapp">
+    <nav class="wnav"><div class="wm">Clos ET · Admin</div><a>▦ Tableau de bord</a><a class="on">◇ Commandes <span class="cnt">7</span></a><a>▤ Catalogue</a><a>✦ Mises en avant</a><a>▣ Sourceurs &amp; dépôts</a><a>₣ Paiements &amp; finances</a><a>↩ Retours &amp; réclamations</a><a>🏷 Codes promo</a></nav>
+    <main class="wmain">
+      <div class="wtop"><h5>Commandes</h5><span class="wbtn ghost">⇩ Exporter le mois (PDF / Excel)</span></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap"><span class="pill-f on">À traiter · 7</span><span class="pill-f">Paiement en attente · 3</span><span class="pill-f">En préparation · 4</span><span class="pill-f">Expédiées · 6</span><span class="pill-f">Livrées</span><span class="pill-f">Retours / annulées</span></div>
+      <div class="wcard">
+        <table class="wt">
+          <tr><th>N° · Date</th><th>Cliente · Zone</th><th>Pièces</th><th>Montant</th><th>Paiement</th><th>Statut</th><th>⏱ Délai</th><th>Actions</th></tr>
+          <tr><td>CLS-2449<br><span style="color:var(--taupe);font-size:10px">7 juil · 08:12</span></td><td>Laure T.<br><span style="color:var(--taupe);font-size:10px">Nsimeyong</span></td><td>1</td><td>31 000 F</td><td>À la livraison</td><td><span class="st st-new">Reçue</span></td><td style="color:var(--erreur);font-weight:700">5 h ⚠</td><td><span class="wbtn sm">Préparer</span> <span class="wbtn sm ghost">💬</span></td></tr>
+          <tr><td>CLS-2448<br><span style="color:var(--taupe);font-size:10px">7 juil · 07:55</span></td><td>Mireille F.<br><span style="color:var(--taupe);font-size:10px">Odza</span></td><td>3</td><td>92 500 F</td><td>MoMo ⏳</td><td><span class="st st-new">Paiement en attente</span></td><td style="color:var(--alerte);font-weight:700">3 h</td><td><span class="wbtn sm">Confirmer paiement</span></td></tr>
+          <tr><td>CLS-2450<br><span style="color:var(--taupe);font-size:10px">6 juil · 18:30</span></td><td>Aïcha N.<br><span style="color:var(--taupe);font-size:10px">Bastos</span></td><td>1</td><td>24 500 F</td><td>Orange ✓</td><td><span class="st st-prep">En préparation</span></td><td>—</td><td><span class="wbtn sm">Marquer expédiée</span> <span class="wbtn sm ghost">💬</span></td></tr>
+          <tr><td>CLS-2451<br><span style="color:var(--taupe);font-size:10px">6 juil · 14:22</span></td><td>Vanessa M.<br><span style="color:var(--taupe);font-size:10px">Omnisports</span></td><td>2</td><td>68 000 F</td><td>MoMo ✓</td><td><span class="st st-exp">Expédiée</span></td><td>—</td><td><span class="wbtn sm">Marquer livrée</span> <span class="wbtn sm ghost">💬</span></td></tr>
+          <tr><td>CLS-2440<br><span style="color:var(--taupe);font-size:10px">4 juil</span></td><td>Sandra E.<br><span style="color:var(--taupe);font-size:10px">Bastos</span></td><td>1</td><td>18 500 F</td><td>MoMo ✓ remboursé</td><td><span class="st st-ret">Retournée</span></td><td>—</td><td><span class="wbtn sm ghost">Dossier retour</span></td></tr>
+        </table>
+      </div>
+      <p style="font-size:11px;color:var(--taupe)">Changer un statut notifie automatiquement la cliente (push + WhatsApp/SMS selon sa préférence) et alimente la timeline É13 de l'app.</p>
+    </main>
+  </div></div>
+</section>
+
+<section class="sec">
+  <div class="eyebrow">Partie III — Back-office administrateur (web)</div>
+  <h2>A03 · Catalogue, ajout de pièce &amp; mises en avant</h2>
+  <p class="lead">CRUD produit complet, vue du stock par taille/catégorie pour piloter le sourcing (« 20 robes en M, 2 en L »), alerte invendus &gt; 30 jours, et sélection manuelle de la Pièce de la semaine / Coup de cœur affichés en É01.</p>
+
+  <div class="web"><div class="chrome"><i></i><i></i><i></i><span class="url">admin.closet.cm/catalogue</span></div>
+  <div class="wapp">
+    <nav class="wnav"><div class="wm">Clos ET · Admin</div><a>▦ Tableau de bord</a><a>◇ Commandes</a><a class="on">▤ Catalogue</a><a>✦ Mises en avant</a><a>▣ Sourceurs &amp; dépôts</a><a>₣ Paiements &amp; finances</a><a>↩ Retours &amp; réclamations</a><a>🏷 Codes promo</a></nav>
+    <main class="wmain">
+      <div class="wtop"><h5>Catalogue · 184 pièces en ligne</h5><span class="wbtn">＋ Ajouter une pièce</span></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap"><span class="pill-f on">Toutes</span><span class="pill-f">Brouillons · 5</span><span class="pill-f" style="border-color:var(--dore);color:var(--dore-encre)">Invendues &gt; 30 j · 11 ⚠</span><span class="pill-f">Robes</span><span class="pill-f">Sacs</span><span class="pill-f">Taille M</span></div>
+      <div class="wgrid">
+        <div class="wcard">
+          <h6>Pièces</h6>
+          <table class="wt">
+            <tr><th>Pièce</th><th>Maison</th><th>Taille</th><th>État</th><th>Prix</th><th>Origine</th><th>En ligne</th><th></th></tr>
+            <tr><td>Robe midi soie</td><td>Sandro</td><td>38</td><td>Excellent</td><td>38 500 F</td><td>Achat direct</td><td>3 j</td><td><span class="wbtn sm ghost">Modifier</span></td></tr>
+            <tr><td>Trench beige</td><td>Burberry</td><td>40</td><td>Excellent</td><td>55 000 F</td><td>Sourceur · P. Ngo</td><td><span class="st st-liv">Vendue</span></td><td><span class="wbtn sm ghost">Voir</span></td></tr>
+            <tr><td>Sac cuir camel</td><td>Sézane</td><td>—</td><td>Très bon</td><td>31 000 F</td><td>Sourceur · C. Abena</td><td>12 j</td><td><span class="wbtn sm ghost">Modifier</span></td></tr>
+            <tr><td style="color:var(--alerte)">Jupe crayon ⚠</td><td>Zara</td><td>36</td><td>Bon</td><td>9 500 F</td><td>Achat direct</td><td style="color:var(--alerte);font-weight:700">34 j</td><td><span class="wbtn sm">Baisser le prix</span></td></tr>
+          </table>
+        </div>
+        <div>
+          <div class="wcard" style="margin-bottom:12px">
+            <h6>Stock par taille · Robes</h6>
+            <div class="bar-h"><span class="lab">Taille 36</span><span class="tr"><span class="fl" style="width:55%"></span></span><b>14</b></div>
+            <div class="bar-h"><span class="lab">Taille 38</span><span class="tr"><span class="fl" style="width:80%"></span></span><b>20</b></div>
+            <div class="bar-h"><span class="lab">Taille 40</span><span class="tr"><span class="fl g" style="width:30%"></span></span><b>7</b></div>
+            <div class="bar-h"><span class="lab">Taille 42+</span><span class="tr"><span class="fl g" style="width:9%"></span></span><b style="color:var(--erreur)">2 ⚠</b></div>
+            <p style="font-size:10px;color:var(--taupe);margin-top:5px">Manque identifié : grandes tailles → consigne de sourcing.</p>
+          </div>
+          <div class="wcard">
+            <h6>Mises en avant · Accueil app</h6>
+            <div style="font-size:11.5px;display:flex;flex-direction:column;gap:7px">
+              <div class="lrow"><span>✦ Pièce de la semaine</span><b>Robe Élégance Durable</b></div>
+              <div class="lrow"><span>♥ Coup de cœur du mois</span><b>Sac Lancel bandoulière</b></div>
+              <div class="lrow"><span>Programmée · lun 13 juil</span><span class="wbtn sm ghost">Changer</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="wcard" style="border-left:4px solid var(--dore)">
+        <h6>Fiche d'ajout — champs (modale)</h6>
+        <p style="font-size:11.5px;color:var(--taupe)">Titre · À propos de cette pièce (description) · Univers (catégorie) · Maison · Taille &amp; coupe · Mesures réelles (cm) · Matière · État (Excellent / Très bon / Bon) · Prix · Durabilité · 5+ photos (fond beige sable) · Vidéo optionnelle · Origine (achat direct / sourceur) · <b>Brouillon ⇄ Publier</b>. Les dépôts sourceurs acceptés pré-remplissent cette fiche automatiquement.</p>
+      </div>
+    </main>
+  </div></div>
+</section>
+
+<section class="sec">
+  <div class="eyebrow">Partie III — Back-office administrateur (web)</div>
+  <h2>A04 · Sourceurs &amp; dépôts — A05 · Paiements, finances &amp; retours</h2>
+  <p class="lead">Validation des adhésions, analyse des dépôts (accepter = pré-remplir la fiche catalogue ; refuser = motif obligatoire notifié en S01), stats par sourceur exigées par le client, et suivi MoMo reçu vs en attente avec export comptable mensuel.</p>
+  <div style="display:flex;flex-direction:column;gap:26px">
+
+  <div class="web"><div class="chrome"><i></i><i></i><i></i><span class="url">admin.closet.cm/sourceurs</span></div>
+  <div class="wapp" style="min-height:420px">
+    <nav class="wnav"><div class="wm">Clos ET · Admin</div><a>▦ Tableau de bord</a><a>◇ Commandes</a><a>▤ Catalogue</a><a>✦ Mises en avant</a><a class="on">▣ Sourceurs &amp; dépôts <span class="cnt">3</span></a><a>₣ Paiements &amp; finances</a><a>↩ Retours &amp; réclamations</a><a>🏷 Codes promo</a></nav>
+    <main class="wmain">
+      <div class="wtop"><h5>Dépôts à analyser · 3</h5><span class="pill-f">Adhésions à valider · 1</span></div>
+      <div class="wcard">
+        <table class="wt">
+          <tr><th>Pièce déposée</th><th>Sourceur</th><th>Prix souhaité</th><th>Photos</th><th>Reçu</th><th>Décision</th></tr>
+          <tr><td>Blazer lin · COS</td><td>C. Abena · ★ 4,8 · 12 ventes</td><td>28 000 F</td><td>4 / 5 ⚠</td><td>Hier</td><td><span class="wbtn sm">Accepter → fiche</span> <span class="wbtn sm ghost">Refuser</span> <span class="wbtn sm ghost">💬</span></td></tr>
+          <tr><td>Escarpins vernis</td><td>P. Ngo · ★ 4,5 · 8 ventes</td><td>15 000 F</td><td>5 / 5</td><td>Hier</td><td><span class="wbtn sm">Accepter → fiche</span> <span class="wbtn sm ghost">Refuser</span></td></tr>
+          <tr><td>Robe cocktail</td><td>Nouveau · M. Essomba</td><td>40 000 F</td><td>6 / 5</td><td>Il y a 2 h</td><td><span class="wbtn sm">Accepter → fiche</span> <span class="wbtn sm ghost">Refuser</span></td></tr>
+        </table>
+      </div>
+      <div class="wgrid">
+        <div class="wcard"><h6>Statistiques par sourceur</h6>
+          <table class="wt"><tr><th>Sourceur</th><th>Dépôts</th><th>Acceptés</th><th>Vendus</th><th>CA généré</th><th>Délai vente moy.</th></tr>
+          <tr><td>C. Abena</td><td>18</td><td>15 (83 %)</td><td>12</td><td>412 000 F</td><td>8 j</td></tr>
+          <tr><td>P. Ngo</td><td>11</td><td>9 (82 %)</td><td>8</td><td>296 500 F</td><td>11 j</td></tr>
+          <tr><td>M. Essomba</td><td>1</td><td>—</td><td>—</td><td>—</td><td>Nouveau</td></tr></table>
+        </div>
+        <div class="wcard"><h6>Motifs de refus (obligatoires)</h6>
+          <p style="font-size:11.5px;color:var(--taupe)">État insuffisant · Contrefaçon suspectée · Hors positionnement Clos ET · Photos inexploitables · Prix souhaité irréaliste (contre-proposition possible). Le motif est notifié au sourceur dans S01 — transparence contractuelle.</p>
+        </div>
+      </div>
+    </main>
+  </div></div>
+
+  <div class="web"><div class="chrome"><i></i><i></i><i></i><span class="url">admin.closet.cm/finances</span></div>
+  <div class="wapp" style="min-height:420px">
+    <nav class="wnav"><div class="wm">Clos ET · Admin</div><a>▦ Tableau de bord</a><a>◇ Commandes</a><a>▤ Catalogue</a><a>✦ Mises en avant</a><a>▣ Sourceurs &amp; dépôts</a><a class="on">₣ Paiements &amp; finances</a><a class="on" style="opacity:.75">↩ Retours &amp; réclamations <span class="cnt">1</span></a><a>🏷 Codes promo</a></nav>
+    <main class="wmain">
+      <div class="wtop"><h5>Paiements &amp; finances · Juillet</h5><span class="wbtn ghost">⇩ Récap mensuel comptable (PDF / Excel)</span></div>
+      <div class="kpis" style="grid-template-columns:repeat(3,1fr)">
+        <div class="kpi"><div class="l">Encaissé · juillet</div><div class="v">1 842 000 F</div><div class="d up">MoMo 68 % · Orange 22 % · Livraison 10 %</div></div>
+        <div class="kpi"><div class="l">En attente de confirmation</div><div class="v">54 000 F</div><div class="d" style="color:var(--alerte)">3 transactions MoMo</div></div>
+        <div class="kpi"><div class="l">Remboursements · juillet</div><div class="v">18 500 F</div><div class="d">1 retour · motif tracé</div></div>
+      </div>
+      <div class="wgrid">
+        <div class="wcard"><h6>Transactions récentes</h6>
+          <table class="wt"><tr><th>Réf.</th><th>Commande</th><th>Canal</th><th>Montant</th><th>Statut</th></tr>
+          <tr><td>MP-88112</td><td>CLS-2451</td><td>MTN MoMo</td><td>68 000 F</td><td><span class="st st-pay">Confirmé</span></td></tr>
+          <tr><td>OM-45770</td><td>CLS-2450</td><td>Orange Money</td><td>24 500 F</td><td><span class="st st-pay">Confirmé</span></td></tr>
+          <tr><td>MP-88109</td><td>CLS-2448</td><td>MTN MoMo</td><td>92 500 F</td><td><span class="st st-new">En attente ⏳</span></td></tr>
+          <tr><td>RB-00214</td><td>CLS-2440</td><td>Remboursement MoMo</td><td>− 18 500 F</td><td><span class="st st-ret">Motif : couleur non conforme</span></td></tr></table>
+        </div>
+        <div class="wcard"><h6>Ticket retour ouvert · TR-031</h6>
+          <div style="font-size:11.5px;display:flex;flex-direction:column;gap:6px">
+            <div class="lrow"><span>Commande</span><b>CLS-2452 · Sac Sézane</b></div>
+            <div class="lrow"><span>Motif cliente</span><b>Couleur diffère des photos</b></div>
+            <div class="lrow"><span>Statut</span><span class="st st-new">Pièce attendue au showroom</span></div>
+            <div style="display:flex;gap:6px;margin-top:4px"><span class="wbtn sm">Pièce reçue → contrôler</span><span class="wbtn sm ghost">💬 Cliente</span></div>
+            <p style="font-size:10px;color:var(--taupe)">Clôture = statut commande « Retournée / Remboursée » + réintégration stock + motif archivé.</p>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div></div>
+
+  </div>
+</section>
+
+<!-- ================= HYPOTHÈSES & VALIDATION ================= -->
+<section class="sec">
+  <div class="eyebrow">Synthèse</div>
+  <h2>Hypothèses, périmètre et points à valider client</h2>
+  <div class="row">
+    <div class="note-panel" style="flex:1;min-width:300px">
+      <b>Hypothèses signalées (non tranchées dans les documents)</b>
+      <ul style="margin:8px 0 0 16px;font-size:12.5px;color:#4A4438">
+        <li>Commission sourceur <b>70/30</b> et versement mensuel MoMo (S03) — à contractualiser.</li>
+        <li>Fenêtre de retour <b>48 h</b>, pièce non portée (É18) — politique à valider juridiquement.</li>
+        <li>Retrait showroom <b>Bastos</b> offert (É10) — adresse et gratuité à confirmer.</li>
+        <li>Frais de livraison <b>1 500 F / quartier Yaoundé</b> — grille tarifaire à fournir.</li>
+        <li>Alerte pièce similaire via <b>WhatsApp</b> par défaut (É07) — dépend de l'API Business validée.</li>
+        <li>Programme fidélité affiché (É14, 1 pt = 2 F) : le Gantt le reporte en V2 alors que le CDC le liste en F4 — <b>conflit documentaire à arbitrer</b> ; l'écran est prêt, activable par feature flag.</li>
+      </ul>
+    </div>
+    <div class="note-panel" style="flex:1;min-width:300px;border-left-color:var(--vert)">
+      <b>Couverture &amp; conformité</b>
+      <ul style="margin:8px 0 0 16px;font-size:12.5px;color:#4A4438">
+        <li><b>26 écrans</b> : 18 cliente (V1 + V1.1), 3 sourceur, 5 vues back-office web (l'admin a une vue web uniquement — confirmé en Q/R projet).</li>
+        <li>Vocabulaire brand book appliqué partout : Mon dressing, Collections, Univers, Maisons, Ma sélection, « Ajouter à mon dressing », « Confier une pièce ».</li>
+        <li>Charte WCAG 2.1 AA du dossier v1.0 respectée : doré lumière décoratif seulement, doré encre pour le texte, statuts = pastille + libellé, erreurs = couleur + icône + message.</li>
+        <li>Zéro dark pattern : urgence factuelle uniquement (pièce unique), désabonnement en un tap, aucun compte forcé.</li>
+        <li>Statuts synchronisés bout en bout : back-office A02 ⇄ timeline cliente É13 ⇄ notifications É16.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div style="width:54px;height:2px;background:var(--dore);margin:0 auto 14px"></div>
+  Clos ET — L'élégance durable · Maquettes hautes fidélités v2.0 · Application complète (cliente · sourceur · admin) · Document de travail confidentiel<br>
+  Prochaine étape : validation client des 6 hypothèses, puis déclinaison Figma + prototype cliquable du tunnel de commande.
+</footer>
+
+</div>
+</body>
+</html>

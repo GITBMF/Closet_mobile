@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Clos ET — Maquettes haute fidélité · Back-office administrateur</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=Lato:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --noir:#171512;--vert:#1C382D;--nuit:#12241D;
+  --beige:#F4EDE1;--creme:#FCF9F3;
+  --dore:#C6A24B;--dore-encre:#7E611C;--dore-clair:#DCBE72;
+  --taupe:#6B5F4C;--ligne:#E6DCC8;--hair:#EDE4D2;
+  --erreur:#9B3A2E;--succes:#2E6B4F;--alerte:#8A5A17;
+  --serif:'Cormorant Garamond',Georgia,serif;--ui:'Lato',system-ui,sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#E9DFCB;font-family:var(--ui);color:var(--noir);line-height:1.5;-webkit-font-smoothing:antialiased}
+.doc{max-width:1360px;margin:0 auto;padding:44px 24px 120px}
+.head{background:var(--nuit);color:var(--creme);border-radius:18px;padding:54px 52px;position:relative;overflow:hidden}
+.head::before{content:"";position:absolute;right:80px;top:-90px;width:270px;height:420px;border:1px solid rgba(198,162,75,.4);border-radius:135px 135px 0 0}
+.head .k{font-size:11px;letter-spacing:.34em;text-transform:uppercase;color:var(--dore-clair);font-weight:700}
+.head h1{font-family:var(--serif);font-weight:600;font-size:clamp(28px,4vw,48px);line-height:1.1;margin:14px 0 12px;max-width:700px}
+.head h1 i{font-style:italic;color:var(--dore-clair)}
+.head p{max-width:620px;color:#CFCABB;font-size:15px}
+.meta{display:flex;gap:26px;flex-wrap:wrap;margin-top:24px;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:#9CA79B}
+.sec{margin-top:78px}
+.sec .n{font-family:var(--serif);font-style:italic;font-size:15px;color:var(--dore-encre)}
+.sec h2{font-family:var(--serif);font-weight:600;font-size:clamp(24px,2.8vw,34px);color:var(--nuit);margin:4px 0 8px}
+.sec .lead{max-width:840px;color:var(--taupe);font-size:14.5px;margin-bottom:30px}
+/* browser frame */
+.bw{background:#0E0C0A;border-radius:14px;padding:10px 10px 0;box-shadow:0 28px 64px rgba(14,22,18,.28);margin:0 auto}
+.bw .bar{display:flex;align-items:center;gap:10px;padding:6px 8px 12px}
+.bw .dots i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px;background:#3A352E}
+.bw .url{flex:1;background:#1D1A16;color:#9B927F;font-size:11.5px;border-radius:7px;padding:7px 14px;letter-spacing:.03em}
+.app{display:flex;min-height:660px;background:var(--beige);border-radius:8px 8px 0 0;overflow:hidden}
+/* sidebar */
+.side{width:218px;flex:none;background:var(--nuit);color:#B9C2B4;display:flex;flex-direction:column;padding:22px 0 18px}
+.side .logo{padding:0 22px 20px}
+.side .logo b{font-family:var(--serif);font-style:italic;font-weight:600;font-size:22px;color:var(--creme)}
+.side .logo span{font-size:9px;letter-spacing:.3em;color:var(--dore-clair);font-weight:700}
+.side .gr{font-size:8.5px;letter-spacing:.26em;text-transform:uppercase;color:#5E6B5E;font-weight:700;padding:16px 22px 8px}
+.nv{display:flex;align-items:center;gap:11px;padding:10px 22px;font-size:13px;font-weight:500;min-height:42px;border-left:2px solid transparent}
+.nv svg{width:17px;height:17px;stroke:currentColor;fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.nv.on{color:var(--dore-clair);background:rgba(198,162,75,.08);border-left-color:var(--dore)}
+.nv .pill{margin-left:auto;background:var(--dore);color:var(--nuit);font-size:10px;font-weight:800;min-width:20px;height:18px;border-radius:9px;display:flex;align-items:center;justify-content:center;padding:0 6px}
+.side .foot{margin-top:auto;padding:14px 22px;border-top:1px solid rgba(255,255,255,.07);font-size:11.5px;display:flex;align-items:center;gap:10px}
+.av{width:30px;height:30px;border-radius:50%;background:var(--dore);color:var(--nuit);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:12px;flex:none}
+/* main */
+.main{flex:1;padding:22px 26px;overflow:hidden}
+.topline{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:18px;gap:16px}
+.topline h3{font-family:var(--serif);font-weight:600;font-size:26px;color:var(--nuit)}
+.topline .sub{font-size:12px;color:var(--taupe)}
+.tools{display:flex;gap:10px;align-items:center}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:38px;padding:0 18px;background:var(--vert);color:var(--creme);font-size:10.5px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;border-radius:2px}
+.btn.o{background:transparent;border:1px solid var(--nuit);color:var(--nuit)}
+.btn.g{background:var(--dore);color:var(--nuit)}
+.search{display:flex;align-items:center;gap:8px;background:var(--creme);border:1px solid var(--ligne);border-radius:2px;min-height:38px;padding:0 14px;font-size:12.5px;color:var(--taupe);min-width:210px}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:16px}
+.kpi{background:var(--creme);border:1px solid var(--ligne);border-top:2px solid var(--dore);padding:16px 18px}
+.kpi.dark{background:var(--nuit);border-color:var(--nuit)}
+.kpi .l{font-size:9px;letter-spacing:.22em;text-transform:uppercase;font-weight:700;color:var(--taupe)}
+.kpi.dark .l{color:#A9B4A6}
+.kpi .v{font-family:var(--serif);font-weight:600;font-size:27px;color:var(--nuit);margin-top:5px}
+.kpi.dark .v{color:var(--dore-clair)}
+.kpi .d{font-size:11px;margin-top:3px;color:var(--taupe)}
+.kpi .d b.up{color:var(--succes)}.kpi .d b.dn{color:var(--erreur)}
+.panel{background:var(--creme);border:1px solid var(--ligne);padding:18px 20px}
+.panel h5{font-size:9.5px;letter-spacing:.24em;text-transform:uppercase;font-weight:700;color:var(--dore-encre);margin-bottom:12px}
+table.t{width:100%;border-collapse:collapse;font-size:12.5px}
+table.t th{text-align:left;font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--taupe);font-weight:700;padding:8px 10px;border-bottom:1px solid var(--ligne)}
+table.t td{padding:11px 10px;border-bottom:1px solid var(--hair);vertical-align:middle}
+table.t tr.sel td{background:#F1E8D6}
+.stt{display:inline-flex;align-items:center;gap:6px;font-size:8.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;padding:5px 10px;border-radius:2px;white-space:nowrap}
+.stt::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor}
+.s-rec{background:#F0E7D2;color:#6B5A26}.s-pay{background:#DFE9E1;color:#245B41}
+.s-prep{background:#EAE3D3;color:#5C5340}.s-exp{background:#E3E8EF;color:#3D5068}
+.s-liv{background:var(--nuit);color:var(--dore-clair)}.s-ann{background:#F1DDD7;color:#8F3327}
+.s-brl{background:#EDE4D2;color:#6B5F4C}.s-pub{background:#DFE9E1;color:#245B41}
+.warn{display:flex;gap:10px;align-items:center;background:#F6EBD9;border:1px solid #E4CFA5;border-left:3px solid var(--alerte);padding:10px 14px;font-size:12.5px;color:#6B4E12;margin-bottom:14px}
+.an{background:var(--creme);border-top:2px solid var(--dore);padding:16px 20px;font-size:12.8px;max-width:1180px;margin:14px auto 0}
+.an h4{font-family:var(--serif);font-size:16.5px;font-weight:600;color:var(--nuit);margin-bottom:7px}
+.an p{color:#4B4436;margin-bottom:5px;padding-left:14px;position:relative}
+.an p::before{content:"";position:absolute;left:0;top:9px;width:6px;height:1.5px;background:var(--dore-encre)}
+.an p.ac::before{content:"◦";background:none;top:0;color:var(--dore-encre)}
+.cap{font-size:12.5px;text-align:center;color:var(--taupe);margin-top:12px}
+.cap b{color:var(--nuit)}
+.fld{margin-bottom:13px}
+.fld label{display:block;font-size:9px;letter-spacing:.2em;text-transform:uppercase;font-weight:700;color:var(--nuit);margin-bottom:6px}
+.in{min-height:38px;background:#fff;border:1px solid var(--ligne);display:flex;align-items:center;justify-content:space-between;padding:0 12px;font-size:13px;border-radius:2px}
+.mini{font-size:11px;color:var(--taupe)}
+.bar-h{display:flex;align-items:center;gap:10px;margin-bottom:8px;font-size:11.5px}
+.bar-h .tr{flex:1;height:8px;background:var(--hair);border-radius:4px;overflow:hidden}
+.bar-h .tr i{display:block;height:100%;background:var(--vert)}
+svg.ic{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+@media(max-width:900px){.kpis{grid-template-columns:1fr 1fr}.side{width:64px}.side .logo b,.side .gr,.nv span,.side .foot div{display:none}}
+</style>
+</head>
+<body>
+<div class="doc">
+
+<header class="head">
+  <div class="k">Clos ET · Back of house</div>
+  <h1>Maquettes haute fidélité<br><i>Back-office administrateur</i></h1>
+  <p>Interface web (React/Next.js) de l'administratrice unique. Même langue visuelle que l'application — vert nuit, beige, filets dorés — mais orientée décision : les 6 chiffres du matin d'abord, chaque écran est une file de travail, chaque alerte est actionnable.</p>
+  <div class="meta"><span>V1 · Hi-Fi</span><span>6 écrans</span><span>WCAG 2.1 AA</span><span>Desktop-first · responsive</span><span>07 / 07 / 2026</span></div>
+</header>
+
+<!-- ====== A1 CONNEXION ====== -->
+<section class="sec">
+  <div class="n">Écran A1</div>
+  <h2>Connexion sécurisée — le seuil de la maison</h2>
+  <div class="bw" style="max-width:1000px">
+    <div class="bar"><span class="dots"><i></i><i></i><i></i></span><span class="url">admin.closet.cm — connexion</span></div>
+    <div class="app" style="min-height:560px;align-items:stretch">
+      <div style="flex:1;background:var(--nuit);display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--creme);padding:40px">
+        <div style="width:150px;height:206px;border:1px solid rgba(198,162,75,.55);border-radius:999px 999px 2px 2px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;margin-bottom:26px">
+          <span style="font-family:var(--serif);font-style:italic;font-weight:600;font-size:38px">Clos</span>
+          <span style="font-size:12px;letter-spacing:.34em;color:var(--dore-clair);font-weight:700;margin-left:.34em">ET</span>
+        </div>
+        <p style="font-size:10px;letter-spacing:.36em;text-transform:uppercase;color:#A9B4A6;font-weight:600;margin-left:.36em">Back of house</p>
+      </div>
+      <div style="flex:1.1;display:flex;flex-direction:column;justify-content:center;padding:48px 56px">
+        <p style="font-family:var(--serif);font-weight:600;font-size:27px;color:var(--nuit)">Espace administratrice</p>
+        <p class="mini" style="margin:6px 0 26px">Accès réservé — chaque connexion est journalisée.</p>
+        <div class="fld"><label>E-mail</label><div class="in">direction@closet.cm</div></div>
+        <div class="fld"><label>Mot de passe</label><div class="in">••••••••••<span style="font-size:9px;letter-spacing:.16em;text-transform:uppercase;font-weight:700;color:var(--dore-encre)">Afficher</span></div></div>
+        <div style="border:1px solid var(--ligne);background:var(--beige);padding:14px 16px;margin:6px 0 18px">
+          <p style="font-size:9px;letter-spacing:.2em;text-transform:uppercase;font-weight:700;color:var(--dore-encre);margin-bottom:8px">Double authentification</p>
+          <div style="display:flex;gap:8px">
+            <span class="in" style="width:40px;justify-content:center;font-weight:700">7</span><span class="in" style="width:40px;justify-content:center;font-weight:700">4</span><span class="in" style="width:40px;justify-content:center;font-weight:700">2</span><span class="in" style="width:40px;justify-content:center;border-color:var(--dore-encre)"></span><span class="in" style="width:40px;justify-content:center"></span><span class="in" style="width:40px;justify-content:center"></span>
+          </div>
+          <p class="mini" style="margin-top:8px">Code envoyé sur votre application d'authentification.</p>
+        </div>
+        <div class="btn" style="min-height:44px">Entrer dans le back-office</div>
+        <p class="mini" style="margin-top:14px">3 tentatives maximum, puis verrouillage 15 minutes.</p>
+      </div>
+    </div>
+  </div>
+  <div class="an"><h4>A1 · Décisions</h4>
+    <p>2FA obligatoire dès la V1 : le compte admin unique est le point de défaillance critique (R9) — champs OTP à 6 chiffres, collage autorisé.</p>
+    <p>Journalisation annoncée sur l'écran même : la sécurité fait partie du décor, pas des petites lignes.</p>
+    <p class="ac">Focus visible doré sur chaque champ ; OTP = un seul champ logique pour le lecteur d'écran ; verrouillage annoncé avec durée.</p>
+  </div>
+</section>
+
+<!-- ====== A2 DASHBOARD ====== -->
+<section class="sec">
+  <div class="n">Écran A2</div>
+  <h2>Le tableau du matin — 6 chiffres, 30 secondes</h2>
+  <p class="lead">Conforme au questionnaire de cadrage : ce qui permet une décision dans la journée, rien d'autre. Lecture en Z : CA du jour en haut à gauche, files d'attente actionnables au centre, signaux faibles en bas.</p>
+  <div class="bw">
+    <div class="bar"><span class="dots"><i></i><i></i><i></i></span><span class="url">admin.closet.cm/tableau — mardi 7 juillet 2026, 8 h 04</span></div>
+    <div class="app">
+      <aside class="side">
+        <div class="logo"><b>Clos</b> <span>ET</span></div>
+        <div class="gr">Pilotage</div>
+        <div class="nv on"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="8" height="8"/><rect x="13" y="3" width="8" height="5"/><rect x="13" y="10" width="8" height="11"/><rect x="3" y="13" width="8" height="8"/></svg><span>Tableau du matin</span></div>
+        <div class="nv"><svg viewBox="0 0 24 24"><path d="M4 7h16v13H4z"/><path d="M4 7l2-3h12l2 3M9 11h6"/></svg><span>Commandes</span><span class="pill">5</span></div>
+        <div class="nv"><svg viewBox="0 0 24 24"><path d="M6 3h12l2 5H4l2-5Z"/><path d="M4 8v13h16V8"/></svg><span>Dressing (catalogue)</span></div>
+        <div class="gr">Relations</div>
+        <div class="nv"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c1.2-3 3.6-4.5 6.5-4.5s5.3 1.5 6.5 4.5"/><circle cx="17.5" cy="9" r="2.5"/><path d="M15.5 15.7c2.7.2 4.8 1.6 6 4.3"/></svg><span>Sourceurs</span><span class="pill">3</span></div>
+        <div class="nv"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c1.5-3.5 4.5-5 8-5s6.5 1.5 8 5"/></svg><span>Clientes</span></div>
+        <div class="gr">Animation</div>
+        <div class="nv"><svg viewBox="0 0 24 24"><path d="M20 12v8H4v-8M2 7h20v5H2zM12 7v13M12 7s-1-4-4-4-2.5 4 4 4M12 7s1-4 4-4 2.5 4-4 4"/></svg><span>Privilèges</span></div>
+        <div class="nv"><svg viewBox="0 0 24 24"><path d="m12 3 2.7 5.6 6.3.8-4.6 4.3 1.2 6.1L12 16.9 6.4 19.8l1.2-6.1L3 9.4l6.3-.8L12 3Z"/></svg><span>Mises en avant</span></div>
+        <div class="nv"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18"/></svg><span>Finances</span></div>
+        <div class="foot"><span class="av">D</span><div>Direction<br><span style="color:#7E8A7D">Session sécurisée</span></div></div>
+      </aside>
+      <div class="main">
+        <div class="topline">
+          <div><h3>Bonjour — voici votre matinée</h3><p class="sub">Mardi 7 juillet · dernière synchronisation il y a 2 min</p></div>
+          <div class="tools"><span class="btn o">Récapitulatif hebdo</span><span class="btn g">+ Nouvelle pièce</span></div>
+        </div>
+        <div class="kpis">
+          <div class="kpi dark"><p class="l">CA aujourd'hui</p><p class="v">47 500 F</p><p class="d" style="color:#A9B4A6"><b class="up" style="color:#8FD0AC">▲ +12 %</b> vs mardi dernier</p></div>
+          <div class="kpi"><p class="l">Commandes à traiter</p><p class="v">5</p><p class="d"><b class="dn">2 dépassent 4 h</b></p></div>
+          <div class="kpi"><p class="l">Paiements en attente</p><p class="v">3</p><p class="d">2 MoMo · 1 OM — à réconcilier</p></div>
+          <div class="kpi"><p class="l">Pièces en dressing</p><p class="v">43</p><p class="d"><b class="dn">4 sans vente &gt; 30 j</b></p></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1.5fr 1fr;gap:14px">
+          <div class="panel">
+            <h5>File de travail — commandes</h5>
+            <table class="t">
+              <tr><th>N°</th><th>Cliente</th><th>Montant</th><th>Attente</th><th>Statut</th></tr>
+              <tr><td><b>CE-2641</b></td><td>Aïcha N. · Bastos</td><td>71 500 F</td><td style="color:var(--erreur);font-weight:700">5 h 12</td><td><span class="stt s-pay">Paiement confirmé</span></td></tr>
+              <tr><td><b>CE-2640</b></td><td>Vanessa T. · Omnisport</td><td>24 000 F</td><td style="color:var(--erreur);font-weight:700">4 h 40</td><td><span class="stt s-pay">Paiement confirmé</span></td></tr>
+              <tr><td><b>CE-2639</b></td><td>Invitée · Mvan</td><td>31 500 F</td><td>1 h 05</td><td><span class="stt s-rec">Reçue — MoMo en attente</span></td></tr>
+              <tr><td><b>CE-2638</b></td><td>Laure K. · Douala</td><td>18 000 F</td><td>0 h 40</td><td><span class="stt s-prep">En préparation</span></td></tr>
+            </table>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:14px">
+            <div class="panel">
+              <h5>Ventes par univers — 7 jours</h5>
+              <div class="bar-h"><span style="width:64px">Robes</span><span class="tr"><i style="width:78%"></i></span><b>186 k</b></div>
+              <div class="bar-h"><span style="width:64px">Sacs</span><span class="tr"><i style="width:56%;background:var(--dore)"></i></span><b>134 k</b></div>
+              <div class="bar-h"><span style="width:64px">Vestes</span><span class="tr"><i style="width:34%"></i></span><b>81 k</b></div>
+              <div class="bar-h" style="margin-bottom:0"><span style="width:64px">Souliers</span><span class="tr"><i style="width:18%"></i></span><b>43 k</b></div>
+              <p class="mini" style="margin-top:10px">Les sacs font 25 % du CA avec 9 % du stock → sourcer davantage.</p>
+            </div>
+            <div class="panel">
+              <h5>Dépôts sourceurs en attente</h5>
+              <p style="font-size:13px;margin-bottom:6px"><b>3 dépôts</b> à analyser · <b>1 adhésion</b> à valider</p>
+              <span class="btn o" style="min-height:34px">Ouvrir la file sourceurs</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="an"><h4>A2 · Décisions</h4>
+    <p>Un seul KPI sombre : le CA du jour — l'œil s'y pose en premier (réponse à la question 1.1 du cadrage). Chaque chiffre embarque sa comparaison : « 5 commandes » ne dit rien, « 2 dépassent 4 h » déclenche une action.</p>
+    <p>La file de commandes trie par attente décroissante, pas par date : le dashboard est une to-do, pas un rapport. L'insight sourcing (sacs) transforme la donnée en décision d'achat.</p>
+    <p class="ac">Tableaux avec en-têtes th/scope ; alertes de délai en texte + couleur ; navigation latérale au clavier avec focus doré ; badges de compte annoncés (« Commandes, 5 à traiter »).</p>
+  </div>
+</section>
+
+<!-- ====== A3 COMMANDES ====== -->
+<section class="sec">
+  <div class="n">Écran A3</div>
+  <h2>Commandes — la liste et le détail côte à côte</h2>
+  <div class="bw">
+    <div class="bar"><span class="dots"><i></i><i></i><i></i></span><span class="url">admin.closet.cm/commandes/CE-2641</span></div>
+    <div class="app">
+      <aside class="side">
+        <div class="logo"><b>Clos</b> <span>ET</span></div>
+        <div class="gr">Pilotage</div>
+        <div class="nv"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="8" height="8"/><rect x="13" y="3" width="8" height="5"/><rect x="13" y="10" width="8" height="11"/><rect x="3" y="13" width="8" height="8"/></svg><span>Tableau du matin</span></div>
+        <div class="nv on"><svg viewBox="0 0 24 24"><path d="M4 7h16v13H4z"/><path d="M4 7l2-3h12l2 3M9 11h6"/></svg><span>Commandes</span><span class="pill">5</span></div>
+        <div class="nv"><svg viewBox="0 0 24 24"><path d="M6 3h12l2 5H4l2-5Z"/><path d="M4 8v13h16V8"/></svg><span>Dressing (catalogue)</span></div>
+        <div class="gr">Relations</div>
+        <div class="nv"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c1.2-3 3.6-4.5 6.5-4.5s5.3 1.5 6.5 4.5"/><circle cx="17.5" cy="9" r="2.5"/><path d="M15.5 15.7c2.7.2 4.8 1.6 6 4.3"/></svg><span>Sourceurs</span><span class="pill">3</span></div>
+        <div class="nv"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c1.5-3.5 4.5-5 8-5s6.5 1.5 8 5"/></svg><span>Clientes</span></div>
+        <div class="gr">Animation</div>
+        <div class="nv"><svg viewBox="0 0 24 24"><path d="M20 12v8H4v-8M2 7h20v5H2zM12 7v13"/></svg><span>Privilèges</span></div>
+        <div class="nv"><svg viewBox="0 0 24 24"><path d="m12 3 2.7 5.6 6.3.8-4.6 4.3 1.2 6.1L12 16.9 6.4 19.8l1.2-6.1L3 9.4l6.3-.8L12 3Z"/></svg><span>Mises en avant</span></div>
+        <div class="nv"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18"/></svg><span>Finances</span></div>
+        <div class="foot"><span class="av">D</span><div>Direction</div></div>
+      </aside>
+      <div class="main" style="display:flex;gap:0;padding:0">
+        <div style="flex:1.15;padding:22px 20px;border-right:1px solid var(--ligne)">
+          <div class="topline" style="margin-bottom:12px"><h3 style="font-size:22px">Commandes</h3><span class="search">Rechercher n°, cliente, quartier…</span></div>
+          <div style="display:flex;gap:8px;margin-bottom:12px;font-size:11px">
+            <span class="stt" style="background:var(--nuit);color:var(--dore-clair)">À traiter · 5</span>
+            <span class="stt s-prep">En préparation · 2</span><span class="stt s-exp">Expédiées · 3</span>
+          </div>
+          <div class="warn">⚠ 2 commandes dépassent le délai de 4 h — protégez l'expérience premium.</div>
+          <table class="t">
+            <tr><th>N°</th><th>Cliente · zone</th><th>Montant</th><th>Statut</th></tr>
+            <tr class="sel"><td><b>CE-2641</b></td><td>Aïcha N. · Bastos</td><td>71 500 F</td><td><span class="stt s-pay">Payée</span></td></tr>
+            <tr><td><b>CE-2640</b></td><td>Vanessa T. · Omnisport</td><td>24 000 F</td><td><span class="stt s-pay">Payée</span></td></tr>
+            <tr><td><b>CE-2639</b></td><td>Invitée · Mvan</td><td>31 500 F</td><td><span class="stt s-rec">Reçue</span></td></tr>
+            <tr><td><b>CE-2638</b></td><td>Laure K. · Douala</td><td>18 000 F</td><td><span class="stt s-prep">Préparation</span></td></tr>
+            <tr><td><b>CE-2637</b></td><td>Mireille B. · Nlongkak</td><td>52 000 F</td><td><span class="stt s-exp">Expédiée</span></td></tr>
+          </table>
+        </div>
+        <div style="flex:1;padding:22px 22px;background:var(--creme)">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px">
+            <div><p style="font-family:var(--serif);font-weight:600;font-size:21px">CE-2641</p><p class="mini">Lundi 6 juil. 14 h 02 · MTN MoMo · réf. MP-88214</p></div>
+            <span class="stt s-pay">Paiement confirmé</span>
+          </div>
+          <div class="warn" style="margin:10px 0">⏱ En attente depuis 5 h 12 — seuil d'alerte : 4 h.</div>
+          <div style="display:flex;gap:12px;border:1px solid var(--ligne);padding:12px;background:#fff;margin-bottom:12px">
+            <div style="width:52px;height:66px;background:linear-gradient(155deg,#E9DFC9,#D3C29E);flex:none"></div>
+            <div style="flex:1"><p style="font-family:var(--serif);font-weight:600;font-size:15px">Robe Élégance Durable</p><p class="mini">Maison Saint-Honoré · M · Très bon état · sourceur : M. Essomba (dépôt-vente 60/40)</p><p style="font-weight:700;font-size:13px;margin-top:4px">38 500 F <span class="mini" style="font-weight:400">+ Sac Rive Gauche 31 500 F + livraison 1 500 F</span></p></div>
+          </div>
+          <div class="fld"><label>Livraison</label><div class="in" style="min-height:44px">Bastos, Yaoundé — « immeuble Azur, 2e étage » · 6 90 12 34 56</div></div>
+          <div class="fld"><label>Faire avancer la commande</label>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <span class="btn" style="min-height:36px">Passer « En préparation »</span>
+              <span class="btn o" style="min-height:36px">Contacter sur WhatsApp</span>
+              <span class="btn o" style="min-height:36px;border-color:var(--erreur);color:var(--erreur)">Annuler…</span>
+            </div>
+          </div>
+          <p class="mini" style="margin-top:8px">Chaque changement est journalisé et notifie la cliente (WhatsApp + e-mail) : « Préparée avec soin ».</p>
+          <div style="border-top:1px solid var(--ligne);margin-top:14px;padding-top:12px">
+            <p style="font-size:9px;letter-spacing:.2em;text-transform:uppercase;font-weight:700;color:var(--dore-encre);margin-bottom:8px">Journal</p>
+            <p class="mini" style="margin-bottom:4px">14 h 03 — Paiement confirmé (webhook MTN, MP-88214)</p>
+            <p class="mini">14 h 02 — Commande reçue (application mobile, invitée convertie)</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="an"><h4>A3 · Décisions</h4>
+    <p>Liste + détail côte à côte : traiter une commande = 1 clic de sélection + 1 clic d'action (objectif &lt; 1 minute du CDC). Les transitions de statut sont des verbes, pas un menu déroulant ambigu.</p>
+    <p>Le lien sourceur est visible sur chaque ligne d'article (traçabilité + part de reversement) ; annulation en action « froide » rouge, avec confirmation et motif obligatoire.</p>
+    <p class="ac">Ligne sélectionnée marquée par fond + gras (pas couleur seule) ; boutons d'action nommés par leur effet exact ; journal horodaté lisible par lecteur d'écran.</p>
+  </div>
+</section>
+
+<!-- ====== A4 CATALOGUE ====== -->
+<section class="sec">
+  <div class="n">Écran A4</div>
+  <h2>Le dressing (catalogue) — préparer en brouillon, publier en lot</h2>
+  <div class="bw">
+    <div class="bar"><span class="dots"><i></i><i></i><i></i></span><span class="url">admin.closet.cm/dressing — édition « Robe Lumière d'Or »</span></div>
+    <div class="app">
+      <aside class="side">
+        <div class="logo"><b>Clos</b> <span>ET</span></div>
+        <div class="gr">Pilotage</div>
+        <div class="nv"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="8" height="8"/><rect x="13" y="3" width="8" height="5"/><rect x="13" y="10" width="8" height="11"/><rect x="3" y="13" width="8" height="8"/></svg><span>Tableau du matin</span></div>
+        <div class="nv"><svg viewBox="0 0 24 24"><path d="M4 7h16v13H4z"/><path d="M4 7l2-3h12l2 3M9 11h6"/></svg><span>Commandes</span><span class="pill">5</span></div>
+        <div class="nv on"><svg viewBox="0 0 24 24"><path d="M6 3h12l2 5H4l2-5Z"/><path d="M4 8v13h16V8"/></svg><span>Dressing (catalogue)</span></div>
+        <div class="gr">Relations</div>
+        <div class="nv"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c1.2-3 3.6-4.5 6.5-4.5s5.3 1.5 6.5 4.5"/><circle cx="17.5" cy="9" r="2.5"/><path d="M15.5 15.7c2.7.2 4.8 1.6 6 4.3"/></svg><span>Sourceurs</span><span class="pill">3</span></div>
+        <div class="nv"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c1.5-3.5 4.5-5 8-5s6.5 1.5 8 5"/></svg><span>Clientes</span></div>
+        <div class="gr">Animation</div>
+        <div class="nv"><svg viewBox="0 0 24 24"><path d="M20 12v8H4v-8M2 7h20v5H2zM12 7v13"/></svg><span>Privilèges</span></div>
+        <div class="nv"><svg viewBox="0 0 24 24"><path d="m12 3 2.7 5.6 6.3.8-4.6 4.3 1.2 6.1L12 16.9 6.4 19.8l1.2-6.1L3 9.4l6.3-.8L12 3Z"/></svg><span>Mises en avant</span></div>
+        <div class="nv"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18"/></svg><span>Finances</span></div>
+        <div class="foot"><span class="av">D</span><div>Direction</div></div>
+      </aside>
+      <div class="main" style="display:flex;gap:0;padding:0">
+        <div style="flex:1.2;padding:22px 20px;border-right:1px solid var(--ligne)">
+          <div class="topline" style="margin-bottom:12px">
+            <div><h3 style="font-size:22px">Le dressing</h3><p class="sub">43 pièces publiées · 6 brouillons prêts</p></div>
+            <span class="btn g">Publier la fournée de jeudi · 6</span>
+          </div>
+          <div style="display:flex;gap:8px;margin-bottom:12px">
+            <span class="stt" style="background:var(--nuit);color:var(--dore-clair)">Tout · 49</span>
+            <span class="stt s-brl">Brouillons · 6</span><span class="stt s-pub">Publiées · 43</span>
+            <span class="stt s-ann">Sans vente &gt; 30 j · 4</span>
+          </div>
+          <div class="warn">💡 Manque repéré : 20 robes en taille M, 2 seulement en taille L — demande équivalente.</div>
+          <table class="t">
+            <tr><th>Pièce</th><th>Univers · taille</th><th>Prix</th><th>En ligne</th><th>Statut</th></tr>
+            <tr class="sel"><td><b>Robe Lumière d'Or</b> · Sandro</td><td>Robes · M</td><td>41 000 F</td><td>—</td><td><span class="stt s-brl">Brouillon</span></td></tr>
+            <tr><td><b>Veste Héritage</b> · Sézane</td><td>Vestes · S</td><td>24 000 F</td><td>3 j</td><td><span class="stt s-pub">Publiée</span></td></tr>
+            <tr><td><b>Robe Velours Nuit</b> · Claudie P.</td><td>Robes · M</td><td>36 000 F</td><td style="color:var(--erreur);font-weight:700">38 j</td><td><span class="stt s-pub">Publiée</span></td></tr>
+            <tr><td><b>Sac Rive Gauche</b> · Ba&sh</td><td>Sacs · —</td><td>31 500 F</td><td>2 j</td><td><span class="stt s-pub">Publiée</span></td></tr>
+          </table>
+        </div>
+        <div style="flex:1;padding:22px;background:var(--creme)">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+            <p style="font-family:var(--serif);font-weight:600;font-size:20px">Édition de la pièce</p><span class="stt s-brl">Brouillon</span>
+          </div>
+          <div style="display:flex;gap:8px;margin-bottom:12px">
+            <div style="width:64px;height:80px;background:linear-gradient(155deg,#E9DFC9,#D3C29E);border:1px solid var(--ligne)"></div>
+            <div style="width:64px;height:80px;background:linear-gradient(155deg,#E9DFC9,#D3C29E);border:1px solid var(--ligne)"></div>
+            <div style="width:64px;height:80px;border:1px dashed var(--dore-encre);display:flex;align-items:center;justify-content:center;color:var(--dore-encre);font-size:20px">+</div>
+            <p class="mini" style="align-self:flex-end">5 vues codifiées : face · dos · matière · packaging · portée</p>
+          </div>
+          <div style="display:flex;gap:10px"><div class="fld" style="flex:1"><label>Nom premiumisé</label><div class="in">Robe Lumière d'Or</div></div><div class="fld" style="width:110px"><label>Prix</label><div class="in">41 000 F</div></div></div>
+          <div style="display:flex;gap:10px">
+            <div class="fld" style="flex:1"><label>Maison</label><div class="in">Sandro</div></div>
+            <div class="fld" style="flex:1"><label>État</label><div class="in">Très bon état ▾</div></div>
+            <div class="fld" style="flex:1"><label>Taille</label><div class="in">M ▾</div></div>
+          </div>
+          <div class="fld"><label>Mesures réelles (cm) — requises</label><div class="in">Poitrine 90 · longueur 104</div></div>
+          <div class="fld"><label>Storytelling — la voix de la curatrice</label><div class="in" style="min-height:58px;align-items:flex-start;padding-top:10px;font-family:var(--serif);font-style:italic">« Un doré discret qui attrape la lumière du soir… »</div></div>
+          <div class="fld"><label>Provenance</label><div class="in">Dépôt D-1187 · M. Essomba · dépôt-vente 60/40</div></div>
+          <div style="display:flex;gap:8px;margin-top:6px">
+            <span class="btn o">Enregistrer le brouillon</span>
+            <span class="btn">Ajouter à la fournée de jeudi</span>
+          </div>
+          <p class="mini" style="margin-top:10px">Publication impossible sans : 3 photos min., état, taille, mesures, prix — les manques sont listés au clic.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="an"><h4>A4 · Décisions</h4>
+    <p>Le rythme hebdomadaire (RM-30) devient un objet d'interface : la « fournée de jeudi » se prépare en brouillons puis se publie en un geste — l'effet de rareté est outillé, pas subi.</p>
+    <p>Les signaux du cadrage sont natifs : invendus &gt; 30 j en filtre rouge, manque taille L détecté et affiché comme conseil de sourcing. La provenance sourceur est un champ de premier rang.</p>
+    <p class="ac">Règles de complétude annoncées avant l'action (SC 3.3.2) ; miniatures avec alt obligatoire à l'upload ; formulaire navigable entièrement au clavier.</p>
+  </div>
+</section>
+
+<!-- ====== A5 SOURCEURS ====== -->
+<section class="sec">
+  <div class="n">Écran A5</div>
+  <h2>Sourceurs — la file des dépôts et les reversements</h2>
+  <div class="bw">
+    <div class="bar"><span class="dots"><i></i><i></i><i></i></span><span class="url">admin.closet.cm/sourceurs</span></div>
+    <div class="app">
+      <aside class="side">
+        <div class="logo"><b>Clos</b> <span>ET</span></div>
+        <div class="gr">Pilotage</div>
+        <div class="nv"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="8" height="8"/><rect x="13" y="3" width="8" height="5"/><rect x="13" y="10" width="8" height="11"/><rect x="3" y="13" width="8" height="8"/></svg><span>Tableau du matin</span></div>
+        <div class="nv"><svg viewBox="0 0 24 24"><path d="M4 7h16v13H4z"/><path d="M4 7l2-3h12l2 3M9 11h6"/></svg><span>Commandes</span><span class="pill">5</span></div>
+        <div class="nv"><svg viewBox="0 0 24 24"><path d="M6 3h12l2 5H4l2-5Z"/><path d="M4 8v13h16V8"/></svg><span>Dressing (catalogue)</span></div>
+        <div class="gr">Relations</div>
+        <div class="nv on"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c1.2-3 3.6-4.5 6.5-4.5s5.3 1.5 6.5 4.5"/><circle cx="17.5" cy="9" r="2.5"/><path d="M15.5 15.7c2.7.2 4.8 1.6 6 4.3"/></svg><span>Sourceurs</span><span class="pill">3</span></div>
+        <div class="nv"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c1.5-3.5 4.5-5 8-5s6.5 1.5 8 5"/></svg><span>Clientes</span></div>
+        <div class="gr">Animation</div>
+        <div class="nv"><svg viewBox="0 0 24 24"><path d="M20 12v8H4v-8M2 7h20v5H2zM12 7v13"/></svg><span>Privilèges</span></div>
+        <div class="nv"><svg viewBox="0 0 24 24"><path d="m12 3 2.7 5.6 6.3.8-4.6 4.3 1.2 6.1L12 16.9 6.4 19.8l1.2-6.1L3 9.4l6.3-.8L12 3Z"/></svg><span>Mises en avant</span></div>
+        <div class="nv"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18"/></svg><span>Finances</span></div>
+        <div class="foot"><span class="av">D</span><div>Direction</div></div>
+      </aside>
+      <div class="main">
+        <div class="topline">
+          <div><h3>Sourceurs</h3><p class="sub">12 partenaires actifs · 3 dépôts à analyser · 1 adhésion en attente</p></div>
+          <span class="search">Rechercher un sourceur…</span>
+        </div>
+        <div class="kpis" style="grid-template-columns:repeat(3,1fr)">
+          <div class="kpi"><p class="l">Dépôts à analyser</p><p class="v">3</p><p class="d">Promesse : réponse sous 48 h</p></div>
+          <div class="kpi dark"><p class="l">À reverser ce mois</p><p class="v">86 400 F</p><p class="d" style="color:#A9B4A6">4 sourceurs concernés</p></div>
+          <div class="kpi"><p class="l">Taux d'acceptation</p><p class="v">71 %</p><p class="d">Sur les 30 derniers jours</p></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1.4fr 1fr;gap:14px">
+          <div class="panel">
+            <h5>File d'analyse — dépôts reçus</h5>
+            <table class="t">
+              <tr><th>Dépôt</th><th>Sourceur</th><th>Formule</th><th>Reçu</th><th>Action</th></tr>
+              <tr><td><b>D-1190</b> · Sac cuir cognac</td><td>M. Essomba</td><td>Vente directe</td><td>Hier</td><td><span class="btn o" style="min-height:30px;padding:0 12px">Analyser</span></td></tr>
+              <tr><td><b>D-1191</b> · Jupe plissée dorée</td><td>C. Mbarga</td><td>Dépôt-vente 60/40</td><td>Hier</td><td><span class="btn o" style="min-height:30px;padding:0 12px">Analyser</span></td></tr>
+              <tr><td><b>D-1192</b> · Trench camel</td><td>R. Fouda</td><td>Dépôt-vente 60/40</td><td style="color:var(--alerte);font-weight:700">Il y a 2 j</td><td><span class="btn o" style="min-height:30px;padding:0 12px">Analyser</span></td></tr>
+            </table>
+            <div class="warn" style="margin:12px 0 0">✦ Adhésion en attente : <b>Mme L. Atangana</b> — fiche complète, engagements signés. <span style="text-decoration:underline">Examiner</span></div>
+          </div>
+          <div class="panel">
+            <h5>Reversements &amp; relation</h5>
+            <table class="t">
+              <tr><th>Sourceur</th><th>À reverser</th><th></th></tr>
+              <tr><td>M. Essomba <p class="mini">8 pièces · 6 vendues</p></td><td><b>27 300 F</b></td><td><span class="btn" style="min-height:30px;padding:0 12px">Régler</span></td></tr>
+              <tr><td>C. Mbarga <p class="mini">5 pièces · 3 vendues</p></td><td><b>31 500 F</b></td><td><span class="btn" style="min-height:30px;padding:0 12px">Régler</span></td></tr>
+              <tr><td>R. Fouda <p class="mini">4 pièces · 2 vendues</p></td><td><b>27 600 F</b></td><td><span class="btn" style="min-height:30px;padding:0 12px">Régler</span></td></tr>
+            </table>
+            <p class="mini" style="margin-top:10px">« Régler » enregistre le reversement (MoMo/espèces), le journalise et notifie le sourceur sur WhatsApp.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="an"><h4>A5 · Décisions</h4>
+    <p>Deux files, deux promesses : analyser sous 48 h (le retard vire à l'ambre à 2 j), reverser sans retard — la fiabilité des reversements est LE facteur de rétention des sourceurs (R7).</p>
+    <p>Chaque analyse aboutit à un statut du parcours officiel (Accepté / Refusé / Retourné) avec motif obligatoire en cas de refus — le motif alimente le message digne côté app sourceur.</p>
+    <p class="ac">Actions par ligne nommées (« Analyser D-1190, sac cuir cognac ») ; montants annoncés en toutes lettres ; alerte de délai portée par texte + couleur.</p>
+  </div>
+</section>
+
+<!-- ====== A6 PRIVILÈGES / ANIMATION ====== -->
+<section class="sec">
+  <div class="n">Écran A6</div>
+  <h2>Animation — privilèges, mises en avant, maisons partenaires</h2>
+  <div class="bw">
+    <div class="bar"><span class="dots"><i></i><i></i><i></i></span><span class="url">admin.closet.cm/animation</span></div>
+    <div class="app">
+      <aside class="side">
+        <div class="logo"><b>Clos</b> <span>ET</span></div>
+        <div class="gr">Pilotage</div>
+        <div class="nv"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="8" height="8"/><rect x="13" y="3" width="8" height="5"/><rect x="13" y="10" width="8" height="11"/><rect x="3" y="13" width="8" height="8"/></svg><span>Tableau du matin</span></div>
+        <div class="nv"><svg viewBox="0 0 24 24"><path d="M4 7h16v13H4z"/><path d="M4 7l2-3h12l2 3M9 11h6"/></svg><span>Commandes</span><span class="pill">5</span></div>
+        <div class="nv"><svg viewBox="0 0 24 24"><path d="M6 3h12l2 5H4l2-5Z"/><path d="M4 8v13h16V8"/></svg><span>Dressing (catalogue)</span></div>
+        <div class="gr">Relations</div>
+        <div class="nv"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c1.2-3 3.6-4.5 6.5-4.5s5.3 1.5 6.5 4.5"/><circle cx="17.5" cy="9" r="2.5"/><path d="M15.5 15.7c2.7.2 4.8 1.6 6 4.3"/></svg><span>Sourceurs</span><span class="pill">3</span></div>
+        <div class="nv"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c1.5-3.5 4.5-5 8-5s6.5 1.5 8 5"/></svg><span>Clientes</span></div>
+        <div class="gr">Animation</div>
+        <div class="nv on"><svg viewBox="0 0 24 24"><path d="M20 12v8H4v-8M2 7h20v5H2zM12 7v13"/></svg><span>Privilèges</span></div>
+        <div class="nv"><svg viewBox="0 0 24 24"><path d="m12 3 2.7 5.6 6.3.8-4.6 4.3 1.2 6.1L12 16.9 6.4 19.8l1.2-6.1L3 9.4l6.3-.8L12 3Z"/></svg><span>Mises en avant</span></div>
+        <div class="nv"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18"/></svg><span>Finances</span></div>
+        <div class="foot"><span class="av">D</span><div>Direction</div></div>
+      </aside>
+      <div class="main">
+        <div class="topline">
+          <div><h3>Animation de la maison</h3><p class="sub">Codes privilège · pièces mises en avant · maisons partenaires</p></div>
+          <span class="btn g">+ Nouveau privilège</span>
+        </div>
+        <div style="display:grid;grid-template-columns:1.3fr 1fr;gap:14px">
+          <div style="display:flex;flex-direction:column;gap:14px">
+            <div class="panel">
+              <h5>Codes privilège actifs</h5>
+              <table class="t">
+                <tr><th>Code</th><th>Avantage</th><th>Conditions</th><th>Usage</th><th>État</th></tr>
+                <tr><td><b>BIENVENUE10</b></td><td>−10 %</td><td>Dès 20 000 F · 1 / cliente</td><td>34 fois</td><td><span class="stt s-pub">Actif</span></td></tr>
+                <tr><td><b>MAISON5000</b></td><td>−5 000 F</td><td>Dès 40 000 F · jusqu'au 31/07</td><td>12 fois</td><td><span class="stt s-pub">Actif</span></td></tr>
+                <tr><td><b>FETES25</b></td><td>−25 %</td><td>Décembre 2025</td><td>61 fois</td><td><span class="stt s-brl">Expiré</span></td></tr>
+              </table>
+              <p class="mini" style="margin-top:10px">Un privilège = pourcentage OU montant fixe, plancher d'achat, période, plafond d'usage. Jamais affiché comme « promo » côté cliente.</p>
+            </div>
+            <div class="panel">
+              <h5>Maisons partenaires (sponsors)</h5>
+              <table class="t">
+                <tr><th>Partenaire</th><th>Visibilité</th><th>Période</th><th>État</th></tr>
+                <tr><td><b>Hôtel Hilton</b></td><td>Signature d'accueil</td><td>Juil. — sept.</td><td><span class="stt s-pub">En ligne</span></td></tr>
+                <tr><td><b>Galerie M.</b></td><td>Signature d'accueil</td><td>Juil. — août</td><td><span class="stt s-pub">En ligne</span></td></tr>
+              </table>
+              <p class="mini" style="margin-top:10px">La visibilité sponsor reste une mention élégante — jamais de bannière publicitaire dans le dressing.</p>
+            </div>
+          </div>
+          <div class="panel">
+            <h5>Mises en avant de la semaine</h5>
+            <p class="mini" style="margin-bottom:10px">Sélection manuelle — c'est l'acte éditorial de la curatrice.</p>
+            <div style="border:1px solid var(--dore);padding:12px;display:flex;gap:12px;margin-bottom:10px;background:#FBF5E7">
+              <div style="width:56px;height:70px;background:linear-gradient(155deg,#E9DFC9,#D3C29E);flex:none"></div>
+              <div style="flex:1"><p style="font-size:9px;letter-spacing:.2em;text-transform:uppercase;font-weight:700;color:var(--dore-encre)">Pièce de la semaine</p>
+                <p style="font-family:var(--serif);font-weight:600;font-size:15px">Robe Élégance Durable</p>
+                <p class="mini">En vitrine depuis lundi · 214 vues · 19 cœurs</p></div>
+              <span class="btn o" style="min-height:32px;align-self:center;padding:0 12px">Remplacer</span>
+            </div>
+            <div style="border:1px solid var(--ligne);padding:12px;display:flex;gap:12px;background:#fff">
+              <div style="width:56px;height:70px;background:linear-gradient(155deg,#E9DFC9,#D3C29E);flex:none"></div>
+              <div style="flex:1"><p style="font-size:9px;letter-spacing:.2em;text-transform:uppercase;font-weight:700;color:var(--taupe)">Coup de cœur</p>
+                <p style="font-family:var(--serif);font-weight:600;font-size:15px">Sac Rive Gauche</p>
+                <p class="mini">96 vues · 11 cœurs</p></div>
+              <span class="btn o" style="min-height:32px;align-self:center;padding:0 12px">Remplacer</span>
+            </div>
+            <p class="mini" style="margin-top:12px">Si aucune pièce n'est sélectionnée, le bloc disparaît de l'accueil — jamais d'emplacement vide côté cliente.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="an"><h4>A6 · Décisions</h4>
+    <p>Le CRUD des codes suit exactement le cadrage (Q. promos) : % ou montant fixe, plancher, période, plafond — et le registre linguistique est verrouillé jusque dans le back-office (« privilège », jamais « promo »).</p>
+    <p>La mise en avant est un choix humain assumé (pas d'algorithme en V1) avec ses métriques de retour (vues, cœurs) pour éclairer le choix suivant.</p>
+    <p class="ac">Tables triables au clavier ; états actif/expiré en pastille + libellé ; chaque action de remplacement ouvre un sélecteur avec aperçu avant publication.</p>
+  </div>
+</section>
+
+<footer style="margin-top:90px;text-align:center;color:var(--taupe);font-size:12px">
+  <div style="width:46px;height:1px;background:var(--dore);margin:0 auto 16px"></div>
+  <p style="font-family:var(--serif);font-style:italic;font-size:15px;color:var(--nuit)">Clos ET — L'élégance durable</p>
+  <p style="margin-top:6px">Maquettes haute fidélité · Back-office administrateur · v1 — document de travail confidentiel</p>
+</footer>
+</div>
+</body>
+</html>

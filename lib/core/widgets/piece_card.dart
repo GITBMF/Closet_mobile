@@ -32,7 +32,7 @@ class PieceCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
-      child: Container(
+      child: DecoratedBox(
       decoration: BoxDecoration(
         color: ClosetColors.creme,
         border: Border.all(color: ClosetColors.ligne),
