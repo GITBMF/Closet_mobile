@@ -3,64 +3,81 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/theme/app_theme.dart';
+import '../../../core/theme/theme_provider.dart';
+import '../../../data/models/user.dart';
+import '../../../data/repositories/auth_repository.dart';
 import '../../../data/repositories/cart_repository.dart';
+import '../../../data/repositories/wishlist_repository.dart';
 
 class EspaceScreen extends ConsumerWidget {
   const EspaceScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final cartCount = ref.watch(cartCountProvider);
+    final cartCount = ref.watch<int>(cartCountProvider);
+    final wishlistCount = ref.watch(wishlistProvider).length;
+    final ClosetUser? user = ref.watch<ClosetUser?>(currentUserProvider);
+    final theme = Theme.of(context);
+    final onSurfaceColor = theme.colorScheme.onSurface;
+    final isDark = ref.watch<ThemeMode>(themeModeProvider) == ThemeMode.dark;
 
     return Scaffold(
-      backgroundColor: AppTheme.offWhite,
+      backgroundColor: theme.scaffoldBackgroundColor,
       body: CustomScrollView(
         slivers: [
           // ── Hero Profile Header ────────────────────────────────────
           SliverToBoxAdapter(
             child: Container(
               width: double.infinity,
-              decoration: const BoxDecoration(
-                color: AppTheme.forestGreen,
-                borderRadius: BorderRadius.only(
+              decoration: BoxDecoration(
+                color: theme.colorScheme.primary.withValues(alpha: 0.15),
+                borderRadius: const BorderRadius.only(
                   bottomLeft: Radius.circular(32),
                   bottomRight: Radius.circular(32),
                 ),
+                border: Border.all(color: theme.colorScheme.primary, width: 1.5),
               ),
               child: SafeArea(
                 child: Padding(
-                  padding:
-                      const EdgeInsets.fromLTRB(24, 16, 24, 32),
+                  padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
                   child: Column(
                     children: [
                       // Top bar
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          const Text(
+                          Text(
                             'Mon espace',
                             style: TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.w700,
-                              color: Colors.white,
+                              color: onSurfaceColor,
                             ),
                           ),
                           GestureDetector(
-                            onTap: () => context.push('/auth'),
+                            onTap: () {
+                              if (user != null) {
+                                // Logout
+                                ref.read<dynamic>(currentUserProvider.notifier).state = null;
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(content: Text('Vous avez été déconnecté.')),
+                                );
+                              } else {
+                                // Login
+                                context.push('/auth');
+                              }
+                            },
                             child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 14, vertical: 6),
+                              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
                               decoration: BoxDecoration(
-                                color: Colors.white.withValues(alpha: 0.15),
+                                color: theme.colorScheme.primary,
                                 borderRadius: BorderRadius.circular(20),
-                                border: Border.all(
-                                    color: Colors.white.withValues(alpha: 0.3)),
                               ),
-                              child: const Text(
-                                'Se connecter',
+                              child: Text(
+                                user != null ? 'Se déconnecter' : 'Se connecter',
                                 style: TextStyle(
                                   fontSize: 11,
-                                  color: Colors.white,
+                                  color: theme.colorScheme.onPrimary,
                                   fontWeight: FontWeight.w600,
                                 ),
                               ),
@@ -70,43 +87,62 @@ class EspaceScreen extends ConsumerWidget {
                       ),
                       const SizedBox(height: 24),
 
-                      // Avatar
+                      // Avatar: Initials if authenticated, logo otherwise
                       Container(
                         width: 80,
                         height: 80,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          color: Colors.white.withValues(alpha: 0.15),
-                          border:
-                              Border.all(color: AppTheme.goldCloset, width: 2),
+                          color: user != null ? theme.colorScheme.primary : theme.colorScheme.surface,
+                          border: Border.all(color: theme.colorScheme.secondary, width: 2),
                         ),
-                        child: const Center(
-                          child: Text(
-                            'C',
-                            style: TextStyle(
-                              fontSize: 36,
-                              fontWeight: FontWeight.w800,
-                              color: Colors.white,
-                            ),
-                          ),
-                        ),
+                        child: user != null
+                            ? Center(
+                                child: Text(
+                                  user.initials,
+                                  style: TextStyle(
+                                    fontSize: 28,
+                                    fontWeight: FontWeight.w800,
+                                    color: theme.colorScheme.onPrimary,
+                                    letterSpacing: 1,
+                                  ),
+                                ),
+                              )
+                            : ClipOval(
+                                child: Image.asset(
+                                  'assets/logo.png',
+                                  width: 80,
+                                  height: 80,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (_, _, _) => const Center(
+                                    child: Text(
+                                      'C',
+                                      style: TextStyle(
+                                        fontSize: 36,
+                                        fontWeight: FontWeight.w800,
+                                        color: AppTheme.goldCloset,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
                       ),
                       const SizedBox(height: 12),
-                      const Text(
-                        'Invité(e)',
+                      Text(
+                        user != null ? '${user.firstName} ${user.lastName}' : 'Invité(e)',
                         style: TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.w700,
-                          color: Colors.white,
+                          color: onSurfaceColor,
                         ),
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        'Connectez-vous pour accéder à votre dressing privé',
+                        user != null ? user.email : 'Connectez-vous pour accéder à votre dressing privé',
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           fontSize: 12,
-                          color: Colors.white.withValues(alpha: 0.7),
+                          color: onSurfaceColor.withValues(alpha: 0.7),
                         ),
                       ),
                       const SizedBox(height: 24),
@@ -115,15 +151,11 @@ class EspaceScreen extends ConsumerWidget {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceAround,
                         children: [
-                          _StatChip(label: 'Sélection', value: '$cartCount'),
-                          Container(
-                              height: 30, width: 1,
-                              color: Colors.white.withValues(alpha: 0.2)),
-                          const _StatChip(label: 'Wishlist', value: '2'),
-                          Container(
-                              height: 30, width: 1,
-                              color: Colors.white.withValues(alpha: 0.2)),
-                          const _StatChip(label: 'Commandes', value: '0'),
+                          _StatChip(label: 'Sélection', value: '$cartCount', color: onSurfaceColor),
+                          Container(height: 30, width: 1, color: onSurfaceColor.withValues(alpha: 0.2)),
+                          _StatChip(label: 'Wishlist', value: '$wishlistCount', color: onSurfaceColor),
+                          Container(height: 30, width: 1, color: onSurfaceColor.withValues(alpha: 0.2)),
+                          _StatChip(label: 'Commandes', value: user != null ? '1' : '0', color: onSurfaceColor),
                         ],
                       ),
                     ],
@@ -141,34 +173,29 @@ class EspaceScreen extends ConsumerWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const SizedBox(height: 8),
+                  
+                  // PRÉFÉRENCES (Dark Mode switch)
                   _MenuSection(
-                    title: 'MON DRESSING',
+                    title: 'PRÉFÉRENCES',
                     items: [
                       _MenuItem(
-                        icon: Icons.shopping_bag_outlined,
-                        label: 'Ma sélection',
-                        badge: cartCount > 0 ? '$cartCount' : null,
-                        onTap: () => context.go('/selection'),
-                      ),
-                      _MenuItem(
-                        icon: Icons.favorite_border,
-                        label: 'Ma wishlist',
-                        badge: '2',
-                        onTap: () {},
-                      ),
-                      _MenuItem(
-                        icon: Icons.history,
-                        label: 'Mes commandes',
-                        onTap: () {},
-                      ),
-                      _MenuItem(
-                        icon: Icons.local_shipping_outlined,
-                        label: 'Suivi de livraison',
-                        onTap: () {},
+                        icon: Icons.dark_mode_outlined,
+                        label: 'Mode sombre',
+                        onTap: () {
+                          ref.read<ThemeModeNotifier>(themeModeProvider.notifier).toggleTheme();
+                        },
+                        trailing: Switch(
+                          value: isDark,
+                          activeThumbColor: theme.colorScheme.secondary,
+                          onChanged: (value) {
+                            ref.read<ThemeModeNotifier>(themeModeProvider.notifier).toggleTheme();
+                          },
+                        ),
                       ),
                     ],
                   ),
                   const SizedBox(height: 20),
+                  
                   _MenuSection(
                     title: 'MON COMPTE',
                     items: [
@@ -191,12 +218,13 @@ class EspaceScreen extends ConsumerWidget {
                         icon: Icons.notifications_none,
                         label: 'Mes alertes pièces',
                         badge: '3',
-                        badgeColor: AppTheme.forestGreen,
+                        badgeColor: theme.colorScheme.primary,
                         onTap: () {},
                       ),
                     ],
                   ),
                   const SizedBox(height: 20),
+
                   _MenuSection(
                     title: 'ESPACE SOURCEUR',
                     items: [
@@ -214,6 +242,7 @@ class EspaceScreen extends ConsumerWidget {
                     ],
                   ),
                   const SizedBox(height: 20),
+
                   _MenuSection(
                     title: 'ASSISTANCE',
                     items: [
@@ -237,24 +266,24 @@ class EspaceScreen extends ConsumerWidget {
                   const SizedBox(height: 32),
 
                   // Footer
-                  const Center(
+                  Center(
                     child: Text(
-                      'CLOS ET · ABIDJAN — PARIS — YAOUNDÉ',
+                      'CLOS ET · YAOUNDÉ — DOUALA · CAMEROUN',
                       style: TextStyle(
                         fontSize: 9,
                         letterSpacing: 2.5,
-                        color: AppTheme.greyText,
+                        color: onSurfaceColor.withValues(alpha: 0.5),
                         fontWeight: FontWeight.w500,
                       ),
                     ),
                   ),
                   const SizedBox(height: 8),
-                  const Center(
+                  Center(
                     child: Text(
                       'Version 1.0.0',
                       style: TextStyle(
                         fontSize: 10,
-                        color: AppTheme.greyText,
+                        color: onSurfaceColor.withValues(alpha: 0.5),
                       ),
                     ),
                   ),
@@ -274,7 +303,13 @@ class EspaceScreen extends ConsumerWidget {
 class _StatChip extends StatelessWidget {
   final String label;
   final String value;
-  const _StatChip({required this.label, required this.value});
+  final Color color;
+  
+  const _StatChip({
+    required this.label,
+    required this.value,
+    required this.color,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -282,10 +317,10 @@ class _StatChip extends StatelessWidget {
       children: [
         Text(
           value,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 22,
             fontWeight: FontWeight.w800,
-            color: Colors.white,
+            color: color,
           ),
         ),
         const SizedBox(height: 2),
@@ -293,7 +328,7 @@ class _StatChip extends StatelessWidget {
           label,
           style: TextStyle(
             fontSize: 10,
-            color: Colors.white.withValues(alpha: 0.7),
+            color: color.withValues(alpha: 0.7),
             letterSpacing: 0.5,
           ),
         ),
@@ -311,42 +346,40 @@ class _MenuSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final onSurfaceColor = theme.colorScheme.onSurface;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           title,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 9,
             fontWeight: FontWeight.w700,
-            color: AppTheme.greyText,
+            color: onSurfaceColor.withValues(alpha: 0.5),
             letterSpacing: 2,
           ),
         ),
         const SizedBox(height: 10),
         DecoratedBox(
           decoration: BoxDecoration(
-            color: AppTheme.warmCream,
+            color: theme.colorScheme.surface,
             borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: AppTheme.sandBeige),
+            border: Border.all(color: theme.dividerColor.withValues(alpha: 0.2)),
           ),
           child: Column(
-            children: items
-                .map((item) => item)
-                .toList()
-                .asMap()
-                .entries
-                .map((entry) {
+            children: items.asMap().entries.map((entry) {
               final isLast = entry.key == items.length - 1;
               return Column(
                 children: [
                   entry.value,
                   if (!isLast)
-                    const Divider(
+                    Divider(
                       height: 1,
                       indent: 54,
                       endIndent: 16,
-                      color: AppTheme.sandBeige,
+                      color: theme.dividerColor.withValues(alpha: 0.2),
                     ),
                 ],
               );
@@ -367,6 +400,7 @@ class _MenuItem extends StatelessWidget {
   final Color? badgeColor;
   final VoidCallback onTap;
   final bool isHighlighted;
+  final Widget? trailing;
 
   const _MenuItem({
     required this.icon,
@@ -375,12 +409,16 @@ class _MenuItem extends StatelessWidget {
     this.badge,
     this.badgeColor,
     this.isHighlighted = false,
+    this.trailing,
   });
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final onSurface = theme.colorScheme.onSurface;
+
     return GestureDetector(
-      onTap: onTap,
+      onTap: trailing != null ? null : onTap,
       behavior: HitTestBehavior.opaque,
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
@@ -391,16 +429,16 @@ class _MenuItem extends StatelessWidget {
               height: 34,
               decoration: BoxDecoration(
                 color: isHighlighted
-                    ? AppTheme.forestGreen.withValues(alpha: 0.1)
-                    : AppTheme.sandBeige.withValues(alpha: 0.5),
+                    ? theme.colorScheme.primary.withValues(alpha: 0.15)
+                    : onSurface.withValues(alpha: 0.08),
                 shape: BoxShape.circle,
               ),
               child: Icon(
                 icon,
                 size: 17,
                 color: isHighlighted
-                    ? AppTheme.forestGreen
-                    : AppTheme.blackCloset,
+                    ? theme.colorScheme.primary
+                    : onSurface,
               ),
             ),
             const SizedBox(width: 14),
@@ -409,20 +447,16 @@ class _MenuItem extends StatelessWidget {
                 label,
                 style: TextStyle(
                   fontSize: 14,
-                  fontWeight:
-                      isHighlighted ? FontWeight.w700 : FontWeight.w500,
-                  color: isHighlighted
-                      ? AppTheme.forestGreen
-                      : AppTheme.blackCloset,
+                  fontWeight: isHighlighted ? FontWeight.w700 : FontWeight.w500,
+                  color: isHighlighted ? theme.colorScheme.primary : onSurface,
                 ),
               ),
             ),
             if (badge != null)
               Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                 decoration: BoxDecoration(
-                  color: (badgeColor ?? AppTheme.goldCloset).withValues(alpha: 0.15),
+                  color: (badgeColor ?? theme.colorScheme.secondary).withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Text(
@@ -430,15 +464,15 @@ class _MenuItem extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.w700,
-                    color: badgeColor ?? AppTheme.goldCloset,
+                    color: badgeColor ?? theme.colorScheme.secondary,
                   ),
                 ),
               ),
             const SizedBox(width: 8),
-            const Icon(
+            trailing ?? Icon(
               Icons.chevron_right,
               size: 18,
-              color: AppTheme.greyText,
+              color: onSurface.withValues(alpha: 0.4),
             ),
           ],
         ),

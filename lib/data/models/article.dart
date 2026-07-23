@@ -46,4 +46,36 @@ class Article {
       isWishlisted: json['isWishlisted'] as bool? ?? false,
     );
   }
+
+  Article copyWith({
+    String? id,
+    String? title,
+    String? description,
+    String? brand,
+    String? size,
+    String? material,
+    String? condition,
+    double? price,
+    List<String>? imageUrls,
+    bool? isFeatured,
+    String? universe,
+    bool? isSoldOut,
+    bool? isWishlisted,
+  }) {
+    return Article(
+      id: id ?? this.id,
+      title: title ?? this.title,
+      description: description ?? this.description,
+      brand: brand ?? this.brand,
+      size: size ?? this.size,
+      material: material ?? this.material,
+      condition: condition ?? this.condition,
+      price: price ?? this.price,
+      imageUrls: imageUrls ?? this.imageUrls,
+      isFeatured: isFeatured ?? this.isFeatured,
+      universe: universe ?? this.universe,
+      isSoldOut: isSoldOut ?? this.isSoldOut,
+      isWishlisted: isWishlisted ?? this.isWishlisted,
+    );
+  }
 }

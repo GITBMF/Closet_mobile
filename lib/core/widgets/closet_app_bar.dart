@@ -3,7 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/theme/app_theme.dart';
+import '../../core/theme/theme_provider.dart';
+import '../../data/models/article.dart';
 import '../../data/repositories/cart_repository.dart';
+import '../../data/repositories/wishlist_repository.dart';
 
 /// AppBar réutilisable avec logo ClosET et icônes d'action
 class ClosetAppBar extends ConsumerWidget implements PreferredSizeWidget {
@@ -19,14 +22,15 @@ class ClosetAppBar extends ConsumerWidget implements PreferredSizeWidget {
   });
 
   @override
-  Size get preferredSize => const Size.fromHeight(64);
-
-  @override
+  Size get preferredSize => const Size.fromHeight(64);  @override
   Widget build(BuildContext context, WidgetRef ref) {
     final cartCount = ref.watch(cartCountProvider);
+    final theme = Theme.of(context);
+    final onSurfaceColor = theme.colorScheme.onSurface;
+    final isDark = ref.watch(themeModeProvider) == ThemeMode.dark;
 
     return AppBar(
-      backgroundColor: AppTheme.offWhite,
+      backgroundColor: theme.appBarTheme.backgroundColor ?? theme.scaffoldBackgroundColor,
       elevation: 0,
       automaticallyImplyLeading: false,
       title: showBackButton
@@ -34,8 +38,8 @@ class ClosetAppBar extends ConsumerWidget implements PreferredSizeWidget {
               children: [
                 GestureDetector(
                   onTap: () => context.pop(),
-                  child: const Icon(Icons.arrow_back_ios_new,
-                      size: 18, color: AppTheme.blackCloset),
+                  child: Icon(Icons.arrow_back_ios_new,
+                      size: 18, color: onSurfaceColor),
                 ),
                 const SizedBox(width: 12),
                 Column(
@@ -43,19 +47,19 @@ class ClosetAppBar extends ConsumerWidget implements PreferredSizeWidget {
                   children: [
                     Text(
                       title ?? '',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.w700,
-                        color: AppTheme.blackCloset,
+                        color: onSurfaceColor,
                         letterSpacing: 0.5,
                       ),
                     ),
                     if (subtitle != null)
                       Text(
                         subtitle!,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 10,
-                          color: AppTheme.greyText,
+                          color: onSurfaceColor.withValues(alpha: 0.6),
                           letterSpacing: 1.5,
                         ),
                       ),
@@ -65,23 +69,18 @@ class ClosetAppBar extends ConsumerWidget implements PreferredSizeWidget {
             )
           : Row(
               children: [
-                // Avatar circle + logo
-                Container(
+                // Asset Logo
+                Image.asset(
+                  isDark ? 'assets/fond sombre.png' : 'assets/iconheader.png',
                   width: 36,
                   height: 36,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: AppTheme.goldCloset.withValues(alpha: 0.2),
-                    border: Border.all(color: AppTheme.goldCloset, width: 1.5),
-                  ),
-                  child: const Center(
-                    child: Text(
-                      'C',
-                      style: TextStyle(
-                        color: AppTheme.goldCloset,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                      ),
+                  errorBuilder: (_, _, _) => const DecoratedBox(
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: AppTheme.goldCloset,
+                    ),
+                    child: Center(
+                      child: Text('C', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
                     ),
                   ),
                 ),
@@ -91,18 +90,18 @@ class ClosetAppBar extends ConsumerWidget implements PreferredSizeWidget {
                   children: [
                     Text(
                       title ?? 'ClosET',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w700,
-                        color: AppTheme.blackCloset,
+                        color: onSurfaceColor,
                         letterSpacing: 0.3,
                       ),
                     ),
                     Text(
                       subtitle ?? 'L\'ÉLÉGANCE DURABLE',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 8,
-                        color: AppTheme.greyText,
+                        color: onSurfaceColor.withValues(alpha: 0.6),
                         letterSpacing: 2,
                       ),
                     ),
@@ -111,16 +110,16 @@ class ClosetAppBar extends ConsumerWidget implements PreferredSizeWidget {
               ],
             ),
       actions: [
-        // Search
+        // Search icon navigating to collections
         IconButton(
           icon: const Icon(Icons.search, size: 22),
-          color: AppTheme.blackCloset,
-          onPressed: () {},
+          color: onSurfaceColor,
+          onPressed: () => context.go('/collections'),
         ),
         // Profile
         IconButton(
           icon: const Icon(Icons.person_outline, size: 22),
-          color: AppTheme.blackCloset,
+          color: onSurfaceColor,
           onPressed: () => context.go('/espace'),
         ),
         // Cart with badge
@@ -129,7 +128,7 @@ class ClosetAppBar extends ConsumerWidget implements PreferredSizeWidget {
           children: [
             IconButton(
               icon: const Icon(Icons.shopping_bag_outlined, size: 22),
-              color: AppTheme.blackCloset,
+              color: onSurfaceColor,
               onPressed: () => context.go('/selection'),
             ),
             if (cartCount > 0)
@@ -165,25 +164,27 @@ class ClosetAppBar extends ConsumerWidget implements PreferredSizeWidget {
 
 /// Carte article réutilisable reproduisant le design de la maquette
 class ArticleCard extends ConsumerWidget {
-  final dynamic article; // Article
+  final Article article;
   final VoidCallback? onTap;
 
   const ArticleCard({super.key, required this.article, this.onTap});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final isWishlisted = article.isWishlisted as bool;
-    final isSoldOut = article.isSoldOut as bool;
+    final isWishlisted = ref.watch(wishlistProvider.notifier).isWishlisted(article.id);
+    final isSoldOut = article.isSoldOut;
+    final theme = Theme.of(context);
+    final onSurfaceColor = theme.colorScheme.onSurface;
 
     return GestureDetector(
       onTap: onTap,
       child: DecoratedBox(
         decoration: BoxDecoration(
-          color: AppTheme.warmCream,
+          color: theme.colorScheme.surface,
           borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
-              color: AppTheme.blackCloset.withValues(alpha: 0.06),
+              color: onSurfaceColor.withValues(alpha: 0.06),
               blurRadius: 8,
               offset: const Offset(0, 2),
             ),
@@ -211,12 +212,12 @@ class ArticleCard extends ConsumerWidget {
                           : const ColorFilter.mode(
                               Colors.transparent, BlendMode.multiply),
                       child: Image.network(
-                        article.imageUrls[0] as String,
+                        article.imageUrls[0],
                         width: double.infinity,
                         height: double.infinity,
                         fit: BoxFit.cover,
                         errorBuilder: (_, _, _) => Container(
-                          color: AppTheme.sandBeige,
+                          color: Colors.grey.shade300,
                         ),
                       ),
                     ),
@@ -230,7 +231,7 @@ class ArticleCard extends ConsumerWidget {
                         padding: const EdgeInsets.symmetric(
                             horizontal: 8, vertical: 4),
                         decoration: BoxDecoration(
-                          color: AppTheme.blackCloset.withValues(alpha: 0.75),
+                          color: Colors.black.withValues(alpha: 0.75),
                           borderRadius: BorderRadius.circular(4),
                         ),
                         child: const Text(
@@ -247,23 +248,28 @@ class ArticleCard extends ConsumerWidget {
                   Positioned(
                     top: 8,
                     right: 8,
-                    child: Container(
-                      width: 32,
-                      height: 32,
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.9),
-                        shape: BoxShape.circle,
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.08),
-                            blurRadius: 4,
-                          ),
-                        ],
-                      ),
-                      child: Icon(
-                        isWishlisted ? Icons.favorite : Icons.favorite_border,
-                        size: 16,
-                        color: isWishlisted ? Colors.red : AppTheme.greyText,
+                    child: GestureDetector(
+                      onTap: () {
+                        ref.read(wishlistProvider.notifier).toggleWishlist(article);
+                      },
+                      child: Container(
+                        width: 32,
+                        height: 32,
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.9),
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.08),
+                              blurRadius: 4,
+                            ),
+                          ],
+                        ),
+                        child: Icon(
+                          isWishlisted ? Icons.favorite : Icons.favorite_border,
+                          size: 16,
+                          color: isWishlisted ? Colors.red : AppTheme.greyText,
+                        ),
                       ),
                     ),
                   ),
@@ -277,23 +283,23 @@ class ArticleCard extends ConsumerWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    (article.brand as String).toUpperCase(),
-                    style: const TextStyle(
+                    article.brand.toUpperCase(),
+                    style: TextStyle(
                       fontSize: 9,
                       fontWeight: FontWeight.w700,
-                      color: AppTheme.forestGreen,
+                      color: theme.colorScheme.primary,
                       letterSpacing: 1.2,
                     ),
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    article.title as String,
+                    article.title,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w600,
-                      color: AppTheme.blackCloset,
+                      color: onSurfaceColor,
                     ),
                   ),
                   const SizedBox(height: 6),
@@ -301,24 +307,24 @@ class ArticleCard extends ConsumerWidget {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        _formatPrice(article.price as double),
-                        style: const TextStyle(
+                        _formatPrice(article.price),
+                        style: TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.w700,
-                          color: AppTheme.blackCloset,
+                          color: onSurfaceColor,
                         ),
                       ),
                       if (!isSoldOut)
-                        _ConditionBadge(condition: article.condition as String),
+                        _ConditionBadge(condition: article.condition),
                       if (isSoldOut)
                         GestureDetector(
                           onTap: () {},
-                          child: const Text(
+                          child: Text(
                             '⏰ M\'ALERTER',
                             style: TextStyle(
                               fontSize: 9,
                               fontWeight: FontWeight.w700,
-                              color: AppTheme.forestGreen,
+                              color: theme.colorScheme.primary,
                               letterSpacing: 0.5,
                             ),
                           ),
@@ -328,9 +334,9 @@ class ArticleCard extends ConsumerWidget {
                   const SizedBox(height: 4),
                   Text(
                     'T. ${article.size} · ${article.material}',
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 10,
-                      color: AppTheme.greyText,
+                      color: onSurfaceColor.withValues(alpha: 0.6),
                     ),
                   ),
                 ],

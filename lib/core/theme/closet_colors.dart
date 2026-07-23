@@ -5,13 +5,13 @@ class ClosetColors {
   ClosetColors._();
 
   // Rôles de couleur
-  static const Color noir = Color(0xFF171512); // Texte principal
-  static const Color vert = Color(0xFF1C382D); // Vert profond : CTA primaires, surfaces fortes
+  static const Color noir = Color(0xFF1D1D1B); // Texte principal
+  static const Color vert = Color(0xFF1C3D2F); // Vert profond : CTA primaires, surfaces fortes
   static const Color vertFonce = Color(0xFF12241D); // Vert nuit : Tabbar, écrans immersifs
   static const Color beige = Color(0xFFF3EBDD); // Beige sable : Fond de l'application
   static const Color creme = Color(0xFFFBF7EF); // Blanc cassé : Cartes, champs, feuilles
   
-  static const Color dore = Color(0xFFC6A24B); // Doré lumière : Décoratif uniquement (filets, icônes)
+  static const Color dore = Color(0xFFBC9746); // Doré lumière : Décoratif uniquement (filets, icônes)
   static const Color doreEncre = Color(0xFF7E611C); // Doré encre : Seul doré autorisé en texte sur clair
   static const Color doreClair = Color(0xFFDCBE72); // Doré clair : doré sur vert profond
   

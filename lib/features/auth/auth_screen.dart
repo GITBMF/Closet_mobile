@@ -4,11 +4,13 @@ import 'package:flutter_riverpod/legacy.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/theme/app_theme.dart';
+import '../../../data/models/user.dart';
+import '../../../data/repositories/auth_repository.dart';
 
 // ─── Auth State ──────────────────────────────────────────────────────────────
 
 /// true = l'utilisateur est connecté
-final isAuthenticatedProvider = StateProvider<bool>((ref) => false);
+final isAuthenticatedProvider = StateProvider<bool>((ref) => ref.watch(currentUserProvider) != null);
 
 // ─── Auth Screen (Login / Register) ─────────────────────────────────────────
 
@@ -27,7 +29,8 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
     with SingleTickerProviderStateMixin {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-  final _nameController = TextEditingController();
+  final _nameController = TextEditingController(); // used as First Name (Prénom)
+  final _lastNameController = TextEditingController(); // used as Last Name (Nom)
   bool _obscurePassword = true;
   bool _isLoading = false;
   late AnimationController _animController;
@@ -49,18 +52,68 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
     _emailController.dispose();
     _passwordController.dispose();
     _nameController.dispose();
+    _lastNameController.dispose();
     _animController.dispose();
     super.dispose();
   }
 
   Future<void> _submit() async {
+    final email = _emailController.text.trim();
+    final password = _passwordController.text;
+    final isLogin = ref.read(authModeProvider) == AuthMode.login;
+
+    if (email.isEmpty || password.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Veuillez remplir tous les champs.')),
+      );
+      return;
+    }
+
+    if (!isLogin) {
+      final firstName = _nameController.text.trim();
+      final lastName = _lastNameController.text.trim();
+      if (firstName.isEmpty || lastName.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Veuillez renseigner votre nom et prénom.')),
+        );
+        return;
+      }
+    }
+
     setState(() => _isLoading = true);
-    await Future<void>.delayed(const Duration(milliseconds: 1200));
-    if (mounted) {
-      setState(() => _isLoading = false);
-      // Marquer l'utilisateur comme authentifié
-      ref.read(isAuthenticatedProvider.notifier).state = true;
-      context.go('/home');
+
+    try {
+      final authRepo = ref.read(authRepositoryProvider);
+      ClosetUser user;
+      if (isLogin) {
+        user = await authRepo.logIn(email: email, password: password);
+      } else {
+        user = await authRepo.signUp(
+          firstName: _nameController.text,
+          lastName: _lastNameController.text,
+          email: email,
+          password: password,
+        );
+      }
+
+      if (mounted) {
+        ref.read(currentUserProvider.notifier).state = user;
+        
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(isLogin ? 'Bon retour, ${user.firstName} !' : 'Inscription réussie !')),
+        );
+        context.go('/home');
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(e.toString().replaceAll('Exception: ', ''))),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
     }
   }
 
@@ -70,7 +123,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
     final isLogin = mode == AuthMode.login;
 
     return Scaffold(
-      backgroundColor: AppTheme.offWhite,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: FadeTransition(
         opacity: _fadeAnim,
         child: SafeArea(
@@ -91,23 +144,26 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      // Logo circle
-                      Container(
+                      Image.asset(
+                        'assets/logo.png',
                         width: 80,
                         height: 80,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: Colors.white.withValues(alpha: 0.1),
-                          border:
-                              Border.all(color: AppTheme.goldCloset, width: 2),
-                        ),
-                        child: const Center(
-                          child: Text(
-                            'C',
-                            style: TextStyle(
-                              fontSize: 40,
-                              fontWeight: FontWeight.w800,
-                              color: Colors.white,
+                        errorBuilder: (_, _, _) => Container(
+                          width: 80,
+                          height: 80,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: Colors.white.withValues(alpha: 0.1),
+                            border: Border.all(color: AppTheme.goldCloset, width: 2),
+                          ),
+                          child: const Center(
+                            child: Text(
+                              'C',
+                              style: TextStyle(
+                                fontSize: 40,
+                                fontWeight: FontWeight.w800,
+                                color: Colors.white,
+                              ),
                             ),
                           ),
                         ),
@@ -226,6 +282,12 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
                         _AuthField(
                           controller: _nameController,
                           label: 'Votre prénom',
+                          icon: Icons.person_outline,
+                        ),
+                        const SizedBox(height: 14),
+                        _AuthField(
+                          controller: _lastNameController,
+                          label: 'Votre nom',
                           icon: Icons.person_outline,
                         ),
                         const SizedBox(height: 14),

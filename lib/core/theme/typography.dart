@@ -7,49 +7,44 @@ class AppTypography {
   static TextTheme get textTheme {
     return TextTheme(
       // Titres avec une police s'approchant de Boldonse (ex: Playfair Display)
-      displayLarge: GoogleFonts.playfairDisplay(
+      displayLarge: const TextStyle(
+        fontFamily: 'Boldonse',
         fontSize: 32,
         fontWeight: FontWeight.bold,
-        color: AppTheme.blackCloset,
       ),
-      displayMedium: GoogleFonts.playfairDisplay(
+      displayMedium: const TextStyle(
+        fontFamily: 'Boldonse',
         fontSize: 28,
         fontWeight: FontWeight.bold,
-        color: AppTheme.blackCloset,
       ),
-      displaySmall: GoogleFonts.playfairDisplay(
+      displaySmall: const TextStyle(
+        fontFamily: 'Boldonse',
         fontSize: 24,
         fontWeight: FontWeight.bold,
-        color: AppTheme.blackCloset,
       ),
       
       // Sous-titres et éditorial avec Cormorant Garamond
       titleLarge: GoogleFonts.cormorantGaramond(
         fontSize: 22,
         fontWeight: FontWeight.w600,
-        color: AppTheme.blackCloset,
       ),
       titleMedium: GoogleFonts.cormorantGaramond(
         fontSize: 18,
         fontWeight: FontWeight.w600,
-        color: AppTheme.blackCloset,
       ),
       titleSmall: GoogleFonts.cormorantGaramond(
         fontSize: 16,
         fontWeight: FontWeight.w600,
-        color: AppTheme.blackCloset,
       ),
 
       // Corps de texte et UI avec Lato
       bodyLarge: GoogleFonts.lato(
         fontSize: 16,
         fontWeight: FontWeight.normal,
-        color: AppTheme.blackCloset,
       ),
       bodyMedium: GoogleFonts.lato(
         fontSize: 14,
         fontWeight: FontWeight.normal,
-        color: AppTheme.blackCloset,
       ),
       bodySmall: GoogleFonts.lato(
         fontSize: 12,

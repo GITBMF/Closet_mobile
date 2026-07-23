@@ -3,8 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/theme/app_theme.dart';
-import '../../../data/repositories/cart_repository.dart';
+import '../../../core/widgets/closet_app_bar.dart';
 import '../../../data/models/article.dart';
+import '../../../data/repositories/cart_repository.dart';
 import '../../auth/auth_screen.dart';
 
 class SelectionScreen extends ConsumerWidget {
@@ -22,37 +23,16 @@ class SelectionScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final cartItems = ref.watch(cartProvider);
     final total = ref.watch(cartTotalProvider);
+    final theme = Theme.of(context);
 
     return Scaffold(
-      backgroundColor: AppTheme.offWhite,
-      appBar: AppBar(
-        backgroundColor: AppTheme.offWhite,
-        elevation: 0,
-        automaticallyImplyLeading: false,
-        title: const Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Ma sélection',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.w700,
-                color: AppTheme.blackCloset,
-              ),
-            ),
-            Text(
-              'VOTRE DRESSING PERSONNALISÉ',
-              style: TextStyle(
-                fontSize: 8,
-                color: AppTheme.greyText,
-                letterSpacing: 2,
-              ),
-            ),
-          ],
-        ),
+      backgroundColor: theme.scaffoldBackgroundColor,
+      appBar: const ClosetAppBar(
+        title: 'Ma sélection',
+        subtitle: 'VOTRE DRESSING PERSONNALISÉ',
       ),
       body: cartItems.isEmpty
-          ? _EmptyCart()
+          ? const _EmptyCart()
           : Column(
               children: [
                 Expanded(
@@ -86,8 +66,13 @@ class SelectionScreen extends ConsumerWidget {
 // ── Empty State ──────────────────────────────────────────────────────────────
 
 class _EmptyCart extends StatelessWidget {
+  const _EmptyCart();
+
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final onSurfaceColor = theme.colorScheme.onSurface;
+
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(40),
@@ -97,34 +82,34 @@ class _EmptyCart extends StatelessWidget {
             Container(
               width: 80,
               height: 80,
-              decoration: const BoxDecoration(
-                color: AppTheme.sandBeige,
+              decoration: BoxDecoration(
+                color: theme.colorScheme.primary.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.shopping_bag_outlined,
                 size: 36,
-                color: AppTheme.greyText,
+                color: theme.colorScheme.primary.withValues(alpha: 0.6),
               ),
             ),
             const SizedBox(height: 24),
-            const Text(
+            Text(
               'Votre dressing attend\nsa prochaine pièce',
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w700,
-                color: AppTheme.blackCloset,
+                color: onSurfaceColor,
                 height: 1.3,
               ),
             ),
             const SizedBox(height: 12),
-            const Text(
+            Text(
               'Explorez nos collections pour trouver\nla pièce qui vous ressemble.',
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 13,
-                color: AppTheme.greyText,
+                color: onSurfaceColor.withValues(alpha: 0.6),
                 height: 1.5,
               ),
             ),
@@ -135,13 +120,13 @@ class _EmptyCart extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(
                     horizontal: 28, vertical: 14),
                 decoration: BoxDecoration(
-                  color: AppTheme.forestGreen,
+                  color: theme.colorScheme.primary,
                   borderRadius: BorderRadius.circular(30),
                 ),
-                child: const Text(
+                child: Text(
                   'Découvrir les collections',
                   style: TextStyle(
-                    color: Colors.white,
+                    color: theme.colorScheme.onPrimary,
                     fontSize: 14,
                     fontWeight: FontWeight.w700,
                   ),
@@ -178,17 +163,20 @@ class _CartItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final onSurfaceColor = theme.colorScheme.onSurface;
+
     return GestureDetector(
       onTap: onTap,
       child: Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: AppTheme.warmCream,
+          color: theme.colorScheme.surface,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: AppTheme.sandBeige),
+          border: Border.all(color: theme.colorScheme.primary.withValues(alpha: 0.1)),
           boxShadow: [
             BoxShadow(
-              color: AppTheme.blackCloset.withValues(alpha: 0.04),
+              color: onSurfaceColor.withValues(alpha: 0.04),
               blurRadius: 8,
               offset: const Offset(0, 2),
             ),
@@ -199,17 +187,25 @@ class _CartItem extends StatelessWidget {
             // Image
             ClipRRect(
               borderRadius: BorderRadius.circular(8),
-              child: Image.network(
-                article.imageUrls.first,
-                width: 80,
-                height: 100,
-                fit: BoxFit.cover,
-                errorBuilder: (_, _, _) => Container(
-                  width: 80,
-                  height: 100,
-                  color: AppTheme.sandBeige,
-                ),
-              ),
+              child: article.imageUrls.isNotEmpty
+                  ? Image.network(
+                      article.imageUrls.first,
+                      width: 80,
+                      height: 100,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, _, _) => Container(
+                        width: 80,
+                        height: 100,
+                        color: theme.colorScheme.primary.withValues(alpha: 0.1),
+                        child: const Icon(Icons.image_not_supported_outlined),
+                      ),
+                    )
+                  : Container(
+                      width: 80,
+                      height: 100,
+                      color: theme.colorScheme.primary.withValues(alpha: 0.1),
+                      child: const Icon(Icons.image_not_supported_outlined),
+                    ),
             ),
             const SizedBox(width: 14),
 
@@ -220,39 +216,39 @@ class _CartItem extends StatelessWidget {
                 children: [
                   Text(
                     article.brand.toUpperCase(),
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 9,
                       fontWeight: FontWeight.w700,
-                      color: AppTheme.forestGreen,
+                      color: theme.colorScheme.primary,
                       letterSpacing: 1.2,
                     ),
                   ),
                   const SizedBox(height: 4),
                   Text(
                     article.title,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.w700,
-                      color: AppTheme.blackCloset,
+                      color: onSurfaceColor,
                     ),
                   ),
                   const SizedBox(height: 4),
                   Text(
                     'T. ${article.size} · ${article.material}',
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 11,
-                      color: AppTheme.greyText,
+                      color: onSurfaceColor.withValues(alpha: 0.6),
                     ),
                   ),
-                  const SizedBox(height: 2),
+                  const SizedBox(height: 4),
                   _ConditionBadge(condition: article.condition),
                   const SizedBox(height: 8),
                   Text(
                     _formatPrice(article.price),
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w700,
-                      color: AppTheme.blackCloset,
+                      color: onSurfaceColor,
                     ),
                   ),
                 ],
@@ -264,14 +260,14 @@ class _CartItem extends StatelessWidget {
               onTap: onRemove,
               child: Container(
                 padding: const EdgeInsets.all(8),
-                decoration: const BoxDecoration(
-                  color: AppTheme.sandBeige,
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.primary.withValues(alpha: 0.1),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.close,
                   size: 16,
-                  color: AppTheme.greyText,
+                  color: onSurfaceColor.withValues(alpha: 0.6),
                 ),
               ),
             ),
@@ -297,14 +293,18 @@ class _CartSummary extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final onSurfaceColor = theme.colorScheme.onSurface;
+
     return Container(
       padding: const EdgeInsets.fromLTRB(20, 20, 20, 32),
       decoration: BoxDecoration(
-        color: AppTheme.warmCream,
+        color: theme.colorScheme.surface,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        border: Border.all(color: theme.colorScheme.primary.withValues(alpha: 0.1)),
         boxShadow: [
           BoxShadow(
-            color: AppTheme.blackCloset.withValues(alpha: 0.08),
+            color: onSurfaceColor.withValues(alpha: 0.08),
             blurRadius: 20,
             offset: const Offset(0, -4),
           ),
@@ -320,7 +320,7 @@ class _CartSummary extends StatelessWidget {
               height: 4,
               margin: const EdgeInsets.only(bottom: 16),
               decoration: BoxDecoration(
-                color: AppTheme.sandBeige,
+                color: theme.colorScheme.primary.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
@@ -328,20 +328,20 @@ class _CartSummary extends StatelessWidget {
 
           Row(
             children: [
-              const Text(
+              Text(
                 'Récapitulatif',
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w700,
-                  color: AppTheme.blackCloset,
+                  color: onSurfaceColor,
                 ),
               ),
               const Spacer(),
               Text(
-                '${items.length} pièce${items.length > 1 ? 's' : ''}',
-                style: const TextStyle(
+                '${items.length} pièce${items.length > 1 ? "s" : ""}',
+                style: TextStyle(
                   fontSize: 12,
-                  color: AppTheme.greyText,
+                  color: onSurfaceColor.withValues(alpha: 0.6),
                 ),
               ),
             ],
@@ -352,24 +352,24 @@ class _CartSummary extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: BoxDecoration(
-              border: Border.all(color: AppTheme.sandBeige),
+              border: Border.all(color: theme.colorScheme.primary.withValues(alpha: 0.1)),
               borderRadius: BorderRadius.circular(10),
             ),
-            child: const Row(
+            child: Row(
               children: [
-                Icon(Icons.card_giftcard,
+                const Icon(Icons.card_giftcard,
                     size: 18, color: AppTheme.goldCloset),
-                SizedBox(width: 10),
+                const SizedBox(width: 10),
                 Text(
                   'Ajouter un privilège',
                   style: TextStyle(
                     fontSize: 13,
-                    color: AppTheme.greyText,
+                    color: onSurfaceColor.withValues(alpha: 0.6),
                   ),
                 ),
-                Spacer(),
+                const Spacer(),
                 Icon(Icons.chevron_right,
-                    size: 18, color: AppTheme.greyText),
+                    size: 18, color: onSurfaceColor.withValues(alpha: 0.6)),
               ],
             ),
           ),
@@ -379,19 +379,19 @@ class _CartSummary extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
+              Text(
                 'Total',
                 style: TextStyle(
                   fontSize: 14,
-                  color: AppTheme.blackCloset,
+                  color: onSurfaceColor,
                 ),
               ),
               Text(
                 formatPrice(total),
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w800,
-                  color: AppTheme.blackCloset,
+                  color: onSurfaceColor,
                 ),
               ),
             ],
@@ -403,7 +403,7 @@ class _CartSummary extends StatelessWidget {
             width: double.infinity,
             child: Consumer(
               builder: (context, ref, _) {
-                final isAuthenticated = ref.watch(isAuthenticatedProvider);
+                final bool isAuthenticated = ref.watch<bool>(isAuthenticatedProvider);
                 return GestureDetector(
                   onTap: () {
                     if (!isAuthenticated) {
@@ -415,14 +415,14 @@ class _CartSummary extends StatelessWidget {
                   child: Container(
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     decoration: BoxDecoration(
-                      color: AppTheme.blackCloset,
+                      color: theme.colorScheme.primary,
                       borderRadius: BorderRadius.circular(30),
                     ),
-                    child: const Center(
+                    child: Center(
                       child: Text(
                         'FINALISER MA SÉLECTION',
                         style: TextStyle(
-                          color: Colors.white,
+                          color: theme.colorScheme.onPrimary,
                           fontSize: 13,
                           fontWeight: FontWeight.w800,
                           letterSpacing: 1,

@@ -68,23 +68,26 @@ class _SplashScreenState extends State<SplashScreen>
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    // Logo circle
-                    Container(
+                    Image.asset(
+                      'assets/fond vert.png',
                       width: 120,
                       height: 120,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: Colors.white.withValues(alpha: 0.1),
-                        border:
-                            Border.all(color: AppTheme.goldCloset, width: 2),
-                      ),
-                      child: const Center(
-                        child: Text(
-                          'C',
-                          style: TextStyle(
-                            fontSize: 60,
-                            fontWeight: FontWeight.w800,
-                            color: Colors.white,
+                      errorBuilder: (_, _, _) => Container(
+                        width: 120,
+                        height: 120,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Colors.white.withValues(alpha: 0.1),
+                          border: Border.all(color: AppTheme.goldCloset, width: 2),
+                        ),
+                        child: const Center(
+                          child: Text(
+                            'C',
+                            style: TextStyle(
+                              fontSize: 60,
+                              fontWeight: FontWeight.w800,
+                              color: Colors.white,
+                            ),
                           ),
                         ),
                       ),

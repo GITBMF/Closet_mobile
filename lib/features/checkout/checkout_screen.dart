@@ -6,11 +6,11 @@ import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../data/repositories/cart_repository.dart';
 
-enum DeliveryOption { abidjan, international }
-enum PaymentOption { card, mobile, bank }
+enum DeliveryOption { yaoundeDouala, otherCities }
+enum PaymentOption { card, mtnMoney, orangeMoney }
 
 final deliveryOptionProvider =
-    StateProvider<DeliveryOption>((ref) => DeliveryOption.abidjan);
+    StateProvider<DeliveryOption>((ref) => DeliveryOption.yaoundeDouala);
 final paymentOptionProvider =
     StateProvider<PaymentOption>((ref) => PaymentOption.card);
 
@@ -25,6 +25,20 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
   int _step = 0; // 0: delivery, 1: payment, 2: confirmation
   bool _isPlacing = false;
 
+  final _nameController = TextEditingController();
+  final _phoneController = TextEditingController();
+  final _addressController = TextEditingController();
+  final _cityController = TextEditingController(text: 'Cameroun');
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _phoneController.dispose();
+    _addressController.dispose();
+    _cityController.dispose();
+    super.dispose();
+  }
+
   String _formatPrice(double price) {
     final intPrice = price.toInt();
     final thousands = intPrice ~/ 1000;
@@ -33,34 +47,57 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
     return '$thousands ${remainder.toString().padLeft(3, '0')} FCFA';
   }
 
+  double _getDeliveryCost(DeliveryOption option) {
+    switch (option) {
+      case DeliveryOption.yaoundeDouala:
+        return 2500;
+      case DeliveryOption.otherCities:
+        return 5000;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    final total = ref.watch(cartTotalProvider);
+    final subtotal = ref.watch(cartTotalProvider);
     final cartItems = ref.watch(cartProvider);
     final deliveryOption = ref.watch(deliveryOptionProvider);
     final paymentOption = ref.watch(paymentOptionProvider);
+    final deliveryCost = _getDeliveryCost(deliveryOption);
+    final total = subtotal + deliveryCost;
+    final theme = Theme.of(context);
+    final onSurfaceColor = theme.colorScheme.onSurface;
 
     return Scaffold(
-      backgroundColor: AppTheme.offWhite,
+      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: AppTheme.offWhite,
+        backgroundColor: theme.scaffoldBackgroundColor,
         elevation: 0,
         leading: GestureDetector(
-          onTap: () => context.pop(),
-          child: const Icon(Icons.arrow_back_ios_new,
-              size: 18, color: AppTheme.blackCloset),
+          onTap: () {
+            if (_step > 0 && _step < 2) {
+              setState(() => _step--);
+            } else {
+              context.pop();
+            }
+          },
+          child: Icon(Icons.arrow_back_ios_new,
+              size: 18, color: onSurfaceColor),
         ),
-        title: const Text(
+        title: Text(
           'Finaliser ma sélection',
           style: TextStyle(
             fontSize: 17,
             fontWeight: FontWeight.w700,
-            color: AppTheme.blackCloset,
+            color: onSurfaceColor,
           ),
         ),
       ),
       body: _step == 2
-          ? _ConfirmationView(onGoHome: () => context.go('/home'))
+          ? _ConfirmationView(onGoHome: () {
+              // Clear cart after checkout is confirmed
+              ref.read(cartProvider.notifier).state = [];
+              context.go('/home');
+            })
           : Column(
               children: [
                 // Progress stepper
@@ -74,6 +111,10 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                             onChanged: (v) => ref
                                 .read(deliveryOptionProvider.notifier)
                                 .state = v,
+                            nameController: _nameController,
+                            phoneController: _phoneController,
+                            addressController: _addressController,
+                            cityController: _cityController,
                           )
                         : _PaymentStep(
                             selected: paymentOption,
@@ -87,10 +128,11 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                 Container(
                   padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
                   decoration: BoxDecoration(
-                    color: AppTheme.warmCream,
+                    color: theme.colorScheme.surface,
+                    border: Border(top: BorderSide(color: theme.colorScheme.primary.withValues(alpha: 0.1))),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.06),
+                        color: onSurfaceColor.withValues(alpha: 0.06),
                         blurRadius: 16,
                         offset: const Offset(0, -4),
                       ),
@@ -101,19 +143,31 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text(
-                            '${cartItems.length} pièce${cartItems.length > 1 ? 's' : ''}',
-                            style: const TextStyle(
-                              fontSize: 13,
-                              color: AppTheme.greyText,
-                            ),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                '${cartItems.length} pièce${cartItems.length > 1 ? 's' : ''}',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: onSurfaceColor.withValues(alpha: 0.6),
+                                ),
+                              ),
+                              Text(
+                                'Livraison : ${_formatPrice(deliveryCost)}',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  color: onSurfaceColor.withValues(alpha: 0.5),
+                                ),
+                              ),
+                            ],
                           ),
                           Text(
                             _formatPrice(total),
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.w800,
-                              color: AppTheme.blackCloset,
+                              color: onSurfaceColor,
                             ),
                           ),
                         ],
@@ -126,12 +180,19 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                               ? null
                               : () async {
                                   if (_step == 0) {
+                                    if (_nameController.text.isEmpty ||
+                                        _phoneController.text.isEmpty ||
+                                        _addressController.text.isEmpty) {
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        const SnackBar(content: Text('Veuillez remplir tous les champs de livraison.')),
+                                      );
+                                      return;
+                                    }
                                     setState(() => _step = 1);
                                   } else {
                                     setState(() => _isPlacing = true);
                                     await Future<void>.delayed(
                                         const Duration(milliseconds: 1500));
-                                    ref.read(cartProvider.notifier);
                                     if (mounted) {
                                       setState(() {
                                         _isPlacing = false;
@@ -144,24 +205,24 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                             duration: const Duration(milliseconds: 200),
                             padding: const EdgeInsets.symmetric(vertical: 16),
                             decoration: BoxDecoration(
-                              color: AppTheme.forestGreen,
+                              color: theme.colorScheme.primary,
                               borderRadius: BorderRadius.circular(30),
                             ),
                             child: Center(
                               child: _isPlacing
-                                  ? const SizedBox(
+                                  ? SizedBox(
                                       width: 20,
                                       height: 20,
                                       child: CircularProgressIndicator(
                                           strokeWidth: 2,
-                                          color: Colors.white),
+                                          color: theme.colorScheme.onPrimary),
                                     )
                                   : Text(
                                       _step == 0
                                           ? 'Continuer vers le paiement'
                                           : 'Confirmer ma commande',
-                                      style: const TextStyle(
-                                        color: Colors.white,
+                                      style: TextStyle(
+                                        color: theme.colorScheme.onPrimary,
                                         fontSize: 14,
                                         fontWeight: FontWeight.w800,
                                         letterSpacing: 0.5,
@@ -188,6 +249,7 @@ class _StepBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
       child: Row(
@@ -197,15 +259,15 @@ class _StepBar extends StatelessWidget {
               child: Container(
                   height: 1,
                   color: currentStep >= 1
-                      ? AppTheme.forestGreen
-                      : AppTheme.sandBeige)),
+                      ? theme.colorScheme.primary
+                      : theme.colorScheme.primary.withValues(alpha: 0.2))),
           _StepDot(label: 'Paiement', index: 1, current: currentStep),
           Expanded(
               child: Container(
                   height: 1,
                   color: currentStep >= 2
-                      ? AppTheme.forestGreen
-                      : AppTheme.sandBeige)),
+                      ? theme.colorScheme.primary
+                      : theme.colorScheme.primary.withValues(alpha: 0.2))),
           _StepDot(label: 'Confirmé', index: 2, current: currentStep),
         ],
       ),
@@ -221,6 +283,7 @@ class _StepDot extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     final isDone = index < current;
     final isActive = index == current;
     return Column(
@@ -231,23 +294,23 @@ class _StepDot extends StatelessWidget {
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             color: isDone || isActive
-                ? AppTheme.forestGreen
-                : AppTheme.sandBeige,
+                ? theme.colorScheme.primary
+                : theme.colorScheme.primary.withValues(alpha: 0.1),
             border: Border.all(
               color: isDone || isActive
-                  ? AppTheme.forestGreen
-                  : AppTheme.sandBeige,
+                  ? theme.colorScheme.primary
+                  : theme.colorScheme.primary.withValues(alpha: 0.2),
             ),
           ),
           child: Center(
             child: isDone
-                ? const Icon(Icons.check, size: 14, color: Colors.white)
+                ? Icon(Icons.check, size: 14, color: theme.colorScheme.onPrimary)
                 : Text(
                     '${index + 1}',
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w700,
-                      color: isActive ? Colors.white : AppTheme.greyText,
+                      color: isActive ? theme.colorScheme.onPrimary : theme.colorScheme.onSurface.withValues(alpha: 0.6),
                     ),
                   ),
           ),
@@ -257,7 +320,7 @@ class _StepDot extends StatelessWidget {
           label,
           style: TextStyle(
             fontSize: 9,
-            color: isActive ? AppTheme.forestGreen : AppTheme.greyText,
+            color: isActive ? theme.colorScheme.primary : theme.colorScheme.onSurface.withValues(alpha: 0.6),
             fontWeight: isActive ? FontWeight.w700 : FontWeight.normal,
           ),
         ),
@@ -271,59 +334,74 @@ class _StepDot extends StatelessWidget {
 class _DeliveryStep extends StatelessWidget {
   final DeliveryOption selected;
   final void Function(DeliveryOption) onChanged;
-  const _DeliveryStep({required this.selected, required this.onChanged});
+  final TextEditingController nameController;
+  final TextEditingController phoneController;
+  final TextEditingController addressController;
+  final TextEditingController cityController;
+
+  const _DeliveryStep({
+    required this.selected,
+    required this.onChanged,
+    required this.nameController,
+    required this.phoneController,
+    required this.addressController,
+    required this.cityController,
+  });
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final onSurfaceColor = theme.colorScheme.onSurface;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'MODE DE LIVRAISON',
+        Text(
+          'MODE DE LIVRAISON (CAMEROUN)',
           style: TextStyle(
             fontSize: 10,
             fontWeight: FontWeight.w700,
-            color: AppTheme.greyText,
+            color: onSurfaceColor.withValues(alpha: 0.5),
             letterSpacing: 2,
           ),
         ),
         const SizedBox(height: 14),
         _DeliveryCard(
-          title: 'Livraison Abidjan / Yaoundé',
+          title: 'Livraison Yaoundé / Douala',
           subtitle: 'Sous 24h · Écrin ClosET inclus',
           price: '2 500 FCFA',
           icon: Icons.electric_moped_outlined,
-          isSelected: selected == DeliveryOption.abidjan,
-          onTap: () => onChanged(DeliveryOption.abidjan),
+          isSelected: selected == DeliveryOption.yaoundeDouala,
+          onTap: () => onChanged(DeliveryOption.yaoundeDouala),
         ),
         const SizedBox(height: 12),
         _DeliveryCard(
-          title: 'Expédition internationale',
-          subtitle: 'Sous 5 jours ouvrés · Paris inclus',
-          price: '8 000 FCFA',
-          icon: Icons.flight_takeoff_outlined,
-          isSelected: selected == DeliveryOption.international,
-          onTap: () => onChanged(DeliveryOption.international),
+          title: 'Autres villes du Cameroun',
+          subtitle: 'Expédition sous 48h-72h par agence',
+          price: '5 000 FCFA',
+          icon: Icons.local_shipping_outlined,
+          isSelected: selected == DeliveryOption.otherCities,
+          onTap: () => onChanged(DeliveryOption.otherCities),
         ),
         const SizedBox(height: 28),
-        const Text(
+        Text(
           'ADRESSE DE LIVRAISON',
           style: TextStyle(
             fontSize: 10,
             fontWeight: FontWeight.w700,
-            color: AppTheme.greyText,
+            color: onSurfaceColor.withValues(alpha: 0.5),
             letterSpacing: 2,
           ),
         ),
         const SizedBox(height: 14),
         ...[
-          const _AddressField(label: 'Prénom & Nom', icon: Icons.person_outline),
+          _AddressField(label: 'Prénom & Nom du destinataire', icon: Icons.person_outline, controller: nameController),
           const SizedBox(height: 10),
-          const _AddressField(label: 'Téléphone', icon: Icons.phone_outlined),
+          _AddressField(label: 'Numéro de téléphone (+237)', icon: Icons.phone_outlined, controller: phoneController, keyboardType: TextInputType.phone),
           const SizedBox(height: 10),
-          const _AddressField(label: 'Adresse complète', icon: Icons.location_on_outlined),
+          _AddressField(label: 'Quartier / Adresse complète', icon: Icons.location_on_outlined, controller: addressController),
           const SizedBox(height: 10),
-          const _AddressField(label: 'Ville / Pays', icon: Icons.public_outlined),
+          _AddressField(label: 'Ville / Pays', icon: Icons.public_outlined, controller: cityController, readOnly: true),
         ],
       ],
     );
@@ -337,6 +415,7 @@ class _DeliveryCard extends StatelessWidget {
   final IconData icon;
   final bool isSelected;
   final VoidCallback onTap;
+
   const _DeliveryCard({
     required this.title,
     required this.subtitle,
@@ -348,6 +427,9 @@ class _DeliveryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final onSurfaceColor = theme.colorScheme.onSurface;
+
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
@@ -355,11 +437,11 @@ class _DeliveryCard extends StatelessWidget {
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: isSelected
-              ? AppTheme.forestGreen.withValues(alpha: 0.06)
-              : AppTheme.warmCream,
+              ? theme.colorScheme.primary.withValues(alpha: 0.08)
+              : theme.colorScheme.surface,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: isSelected ? AppTheme.forestGreen : AppTheme.sandBeige,
+            color: isSelected ? theme.colorScheme.primary : theme.colorScheme.primary.withValues(alpha: 0.15),
             width: isSelected ? 1.5 : 1,
           ),
         ),
@@ -370,13 +452,13 @@ class _DeliveryCard extends StatelessWidget {
               height: 44,
               decoration: BoxDecoration(
                 color: isSelected
-                    ? AppTheme.forestGreen.withValues(alpha: 0.1)
-                    : AppTheme.sandBeige,
+                    ? theme.colorScheme.primary.withValues(alpha: 0.15)
+                    : theme.colorScheme.primary.withValues(alpha: 0.05),
                 shape: BoxShape.circle,
               ),
               child: Icon(icon,
                   size: 20,
-                  color: isSelected ? AppTheme.forestGreen : AppTheme.greyText),
+                  color: isSelected ? theme.colorScheme.primary : onSurfaceColor.withValues(alpha: 0.6)),
             ),
             const SizedBox(width: 14),
             Expanded(
@@ -389,15 +471,15 @@ class _DeliveryCard extends StatelessWidget {
                       fontSize: 14,
                       fontWeight: FontWeight.w700,
                       color: isSelected
-                          ? AppTheme.forestGreen
-                          : AppTheme.blackCloset,
+                          ? theme.colorScheme.primary
+                          : onSurfaceColor,
                     ),
                   ),
                   const SizedBox(height: 2),
                   Text(
                     subtitle,
-                    style: const TextStyle(
-                        fontSize: 11, color: AppTheme.greyText),
+                    style: TextStyle(
+                        fontSize: 11, color: onSurfaceColor.withValues(alpha: 0.6)),
                   ),
                 ],
               ),
@@ -407,8 +489,7 @@ class _DeliveryCard extends StatelessWidget {
               style: TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.w700,
-                color:
-                    isSelected ? AppTheme.forestGreen : AppTheme.blackCloset,
+                color: isSelected ? theme.colorScheme.primary : onSurfaceColor,
               ),
             ),
           ],
@@ -421,23 +502,38 @@ class _DeliveryCard extends StatelessWidget {
 class _AddressField extends StatelessWidget {
   final String label;
   final IconData icon;
-  const _AddressField({required this.label, required this.icon});
+  final TextEditingController controller;
+  final TextInputType? keyboardType;
+  final bool readOnly;
+
+  const _AddressField({
+    required this.label,
+    required this.icon,
+    required this.controller,
+    this.keyboardType,
+    this.readOnly = false,
+  });
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final onSurfaceColor = theme.colorScheme.onSurface;
+
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: AppTheme.warmCream,
+        color: theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: AppTheme.sandBeige),
+        border: Border.all(color: theme.colorScheme.primary.withValues(alpha: 0.15)),
       ),
       child: TextField(
-        style: const TextStyle(fontSize: 14, color: AppTheme.blackCloset),
+        controller: controller,
+        readOnly: readOnly,
+        keyboardType: keyboardType,
+        style: TextStyle(fontSize: 14, color: onSurfaceColor),
         decoration: InputDecoration(
           hintText: label,
-          hintStyle:
-              const TextStyle(fontSize: 13, color: AppTheme.greyText),
-          prefixIcon: Icon(icon, size: 18, color: AppTheme.greyText),
+          hintStyle: TextStyle(fontSize: 13, color: onSurfaceColor.withValues(alpha: 0.5)),
+          prefixIcon: Icon(icon, size: 18, color: onSurfaceColor.withValues(alpha: 0.5)),
           border: InputBorder.none,
           contentPadding:
               const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
@@ -456,75 +552,87 @@ class _PaymentStep extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final onSurfaceColor = theme.colorScheme.onSurface;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           'MOYEN DE PAIEMENT',
           style: TextStyle(
             fontSize: 10,
             fontWeight: FontWeight.w700,
-            color: AppTheme.greyText,
+            color: onSurfaceColor.withValues(alpha: 0.5),
             letterSpacing: 2,
           ),
         ),
         const SizedBox(height: 14),
         _PaymentCard(
           title: 'Carte bancaire',
-          subtitle: 'Visa · Mastercard · Paiement sécurisé',
+          subtitle: 'Visa · Mastercard · Sigue · UBA',
           icon: Icons.credit_card_outlined,
           isSelected: selected == PaymentOption.card,
           onTap: () => onChanged(PaymentOption.card),
         ),
         const SizedBox(height: 12),
         _PaymentCard(
-          title: 'Mobile Money',
-          subtitle: 'MTN · Orange · Wave',
-          icon: Icons.phone_android_outlined,
-          isSelected: selected == PaymentOption.mobile,
-          onTap: () => onChanged(PaymentOption.mobile),
+          title: 'MTN Mobile Money',
+          subtitle: 'Paiement instantané via MoMo',
+          imageAsset: 'assets/mtn.png',
+          isSelected: selected == PaymentOption.mtnMoney,
+          onTap: () => onChanged(PaymentOption.mtnMoney),
         ),
         const SizedBox(height: 12),
         _PaymentCard(
-          title: 'Virement bancaire',
-          subtitle: 'Informations fournies après commande',
-          icon: Icons.account_balance_outlined,
-          isSelected: selected == PaymentOption.bank,
-          onTap: () => onChanged(PaymentOption.bank),
+          title: 'Orange Money',
+          subtitle: 'Paiement instantané via Orange Money',
+          imageAsset: 'assets/orange.png',
+          isSelected: selected == PaymentOption.orangeMoney,
+          onTap: () => onChanged(PaymentOption.orangeMoney),
         ),
         const SizedBox(height: 28),
         if (selected == PaymentOption.card) ...[
-          const Text(
+          Text(
             'INFORMATIONS CARTE',
             style: TextStyle(
               fontSize: 10,
               fontWeight: FontWeight.w700,
-              color: AppTheme.greyText,
+              color: onSurfaceColor.withValues(alpha: 0.5),
               letterSpacing: 2,
             ),
           ),
           const SizedBox(height: 14),
-          const _AddressField(
-              label: 'Numéro de carte', icon: Icons.credit_card),
+          _AddressField(
+              label: 'Numéro de carte', icon: Icons.credit_card, controller: TextEditingController()),
           const SizedBox(height: 10),
-          const Row(
+          Row(
             children: [
               Expanded(
                   child: _AddressField(
-                      label: 'MM/AA', icon: Icons.calendar_today_outlined)),
-              SizedBox(width: 10),
+                      label: 'MM/AA', icon: Icons.calendar_today_outlined, controller: TextEditingController())),
+              const SizedBox(width: 10),
               Expanded(
                   child: _AddressField(
-                      label: 'CVV', icon: Icons.lock_outline)),
+                      label: 'CVV', icon: Icons.lock_outline, controller: TextEditingController())),
             ],
           ),
           const SizedBox(height: 10),
-          const _AddressField(label: 'Nom sur la carte', icon: Icons.person_outline),
+          _AddressField(label: 'Nom sur la carte', icon: Icons.person_outline, controller: TextEditingController()),
         ],
-        if (selected == PaymentOption.mobile) ...[
+        if (selected == PaymentOption.mtnMoney || selected == PaymentOption.orangeMoney) ...[
+          Text(
+            'TÉLÉPHONE PAIEMENT MOBILE',
+            style: TextStyle(
+              fontSize: 10,
+              fontWeight: FontWeight.w700,
+              color: onSurfaceColor.withValues(alpha: 0.5),
+              letterSpacing: 2,
+            ),
+          ),
           const SizedBox(height: 14),
-          const _AddressField(
-              label: 'Numéro de téléphone', icon: Icons.phone_outlined),
+          _AddressField(
+              label: 'Numéro de téléphone Mobile Money', icon: Icons.phone_android_outlined, controller: TextEditingController(), keyboardType: TextInputType.phone),
         ],
       ],
     );
@@ -534,19 +642,25 @@ class _PaymentStep extends StatelessWidget {
 class _PaymentCard extends StatelessWidget {
   final String title;
   final String subtitle;
-  final IconData icon;
+  final IconData? icon;
+  final String? imageAsset;
   final bool isSelected;
   final VoidCallback onTap;
+
   const _PaymentCard({
     required this.title,
     required this.subtitle,
-    required this.icon,
+    this.icon,
+    this.imageAsset,
     required this.isSelected,
     required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final onSurfaceColor = theme.colorScheme.onSurface;
+
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
@@ -554,11 +668,11 @@ class _PaymentCard extends StatelessWidget {
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: isSelected
-              ? AppTheme.forestGreen.withValues(alpha: 0.06)
-              : AppTheme.warmCream,
+              ? theme.colorScheme.primary.withValues(alpha: 0.08)
+              : theme.colorScheme.surface,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: isSelected ? AppTheme.forestGreen : AppTheme.sandBeige,
+            color: isSelected ? theme.colorScheme.primary : theme.colorScheme.primary.withValues(alpha: 0.15),
             width: isSelected ? 1.5 : 1,
           ),
         ),
@@ -569,14 +683,28 @@ class _PaymentCard extends StatelessWidget {
               height: 44,
               decoration: BoxDecoration(
                 color: isSelected
-                    ? AppTheme.forestGreen.withValues(alpha: 0.1)
-                    : AppTheme.sandBeige,
+                    ? theme.colorScheme.primary.withValues(alpha: 0.15)
+                    : theme.colorScheme.primary.withValues(alpha: 0.05),
                 shape: BoxShape.circle,
               ),
-              child: Icon(icon,
-                  size: 20,
-                  color:
-                      isSelected ? AppTheme.forestGreen : AppTheme.greyText),
+              child: imageAsset != null
+                  ? ClipOval(
+                      child: Padding(
+                        padding: const EdgeInsets.all(6.0),
+                        child: Image.asset(
+                          imageAsset!,
+                          fit: BoxFit.contain,
+                          errorBuilder: (_, __, ___) => Icon(
+                            Icons.payment_outlined,
+                            size: 20,
+                            color: isSelected ? theme.colorScheme.primary : onSurfaceColor.withValues(alpha: 0.6),
+                          ),
+                        ),
+                      ),
+                    )
+                  : Icon(icon ?? Icons.payment_outlined,
+                      size: 20,
+                      color: isSelected ? theme.colorScheme.primary : onSurfaceColor.withValues(alpha: 0.6)),
             ),
             const SizedBox(width: 14),
             Expanded(
@@ -589,22 +717,22 @@ class _PaymentCard extends StatelessWidget {
                       fontSize: 14,
                       fontWeight: FontWeight.w700,
                       color: isSelected
-                          ? AppTheme.forestGreen
-                          : AppTheme.blackCloset,
+                          ? theme.colorScheme.primary
+                          : onSurfaceColor,
                     ),
                   ),
                   const SizedBox(height: 2),
                   Text(
                     subtitle,
-                    style: const TextStyle(
-                        fontSize: 11, color: AppTheme.greyText),
+                    style: TextStyle(
+                        fontSize: 11, color: onSurfaceColor.withValues(alpha: 0.6)),
                   ),
                 ],
               ),
             ),
             Icon(
               isSelected ? Icons.radio_button_checked : Icons.radio_button_off,
-              color: isSelected ? AppTheme.forestGreen : AppTheme.sandBeige,
+              color: isSelected ? theme.colorScheme.primary : theme.colorScheme.primary.withValues(alpha: 0.2),
               size: 20,
             ),
           ],
@@ -622,6 +750,9 @@ class _ConfirmationView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final onSurfaceColor = theme.colorScheme.onSurface;
+
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(40),
@@ -632,42 +763,42 @@ class _ConfirmationView extends StatelessWidget {
               width: 100,
               height: 100,
               decoration: BoxDecoration(
-                color: AppTheme.forestGreen.withValues(alpha: 0.1),
+                color: theme.colorScheme.primary.withValues(alpha: 0.15),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.check_circle_outline,
                 size: 54,
-                color: AppTheme.forestGreen,
+                color: theme.colorScheme.primary,
               ),
             ),
             const SizedBox(height: 28),
-            const Text(
+            Text(
               'Commande confirmée !',
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.w800,
-                color: AppTheme.blackCloset,
+                color: onSurfaceColor,
               ),
             ),
             const SizedBox(height: 12),
-            const Text(
+            Text(
               'Votre sélection a été reçue.\nNos équipes préparent votre commande avec soin.',
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 14,
-                color: AppTheme.greyText,
+                color: onSurfaceColor.withValues(alpha: 0.6),
                 height: 1.5,
               ),
             ),
             const SizedBox(height: 16),
-            const Text(
-              'Vous recevrez un e-mail de confirmation\navec le suivi de votre livraison.',
+            Text(
+              'Vous recevrez un SMS de confirmation\navec le suivi de votre livraison.',
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 12,
-                color: AppTheme.greyText,
+                color: onSurfaceColor.withValues(alpha: 0.5),
                 height: 1.5,
               ),
             ),
@@ -678,13 +809,13 @@ class _ConfirmationView extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(
                     horizontal: 36, vertical: 16),
                 decoration: BoxDecoration(
-                  color: AppTheme.forestGreen,
+                  color: theme.colorScheme.primary,
                   borderRadius: BorderRadius.circular(30),
                 ),
-                child: const Text(
+                child: Text(
                   'Retour à mon dressing',
                   style: TextStyle(
-                    color: Colors.white,
+                    color: theme.colorScheme.onPrimary,
                     fontSize: 14,
                     fontWeight: FontWeight.w700,
                   ),

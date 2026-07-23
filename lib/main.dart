@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:go_router/go_router.dart';
 import 'core/router/app_router.dart';
 import 'core/theme/app_theme.dart';
-import 'core/theme/closet_colors.dart';
+import 'core/theme/theme_provider.dart';
 
 void main() {
   runApp(
@@ -18,16 +19,14 @@ class ClosetApp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final router = ref.watch(appRouterProvider);
+    final router = ref.watch<GoRouter>(appRouterProvider);
+    final themeMode = ref.watch<ThemeMode>(themeModeProvider);
 
     return MaterialApp.router(
       title: 'ClosET - L\'élégance durable',
-      theme: AppTheme.lightTheme.copyWith(
-        scaffoldBackgroundColor: ClosetColors.beige,
-        colorScheme: AppTheme.lightTheme.colorScheme.copyWith(
-          surface: ClosetColors.creme,
-        ),
-      ),
+      theme: AppTheme.lightTheme,
+      darkTheme: AppTheme.darkTheme,
+      themeMode: themeMode,
       routerConfig: router,
       debugShowCheckedModeBanner: false,
     );

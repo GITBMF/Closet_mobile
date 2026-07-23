@@ -17,9 +17,17 @@ import '../../features/splash/splash_screen.dart';
 final appRouterProvider = Provider<GoRouter>((ref) {
   final rootNavigatorKey = GlobalKey<NavigatorState>();
 
-  return GoRouter(
+  final router = GoRouter(
     navigatorKey: rootNavigatorKey,
     initialLocation: '/splash',
+    redirect: (context, state) {
+      final isAuthenticated = ref.read(isAuthenticatedProvider);
+      final loc = state.matchedLocation;
+      if (!isAuthenticated && (loc == '/checkout' || loc == '/espace')) {
+        return '/auth';
+      }
+      return null;
+    },
     routes: [
       // ── Splash ──────────────────────────────────────────────────────
       GoRoute(
@@ -173,4 +181,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       ),
     ],
   );
+
+  ref.listen<bool>(isAuthenticatedProvider, (previous, next) {
+    router.refresh();
+  });
+
+  return router;
 });
