@@ -8,21 +8,39 @@ import 'cliente/selection/selection_screen.dart';
 import 'cliente/wishlist/wishlist_screen.dart';
 
 class MainLayout extends StatefulWidget {
-  const MainLayout({super.key});
+  final int initialIndex;
+
+  const MainLayout({
+    super.key,
+    this.initialIndex = 0,
+  });
 
   @override
   State<MainLayout> createState() => _MainLayoutState();
 }
 
 class _MainLayoutState extends State<MainLayout> {
-  int _currentIndex = 0;
+  late int _currentIndex;
 
-  final List<Widget> _screens = const [
-    DressingScreen(),
-    CollectionsScreen(),
-    WishlistScreen(),
-    SelectionScreen(),
-    EspaceScreen(),
+  @override
+  void initState() {
+    super.initState();
+    _currentIndex = widget.initialIndex;
+  }
+
+  final List<Widget> _screens = [
+    Navigator(
+      key: GlobalKey<NavigatorState>(),
+      onGenerateRoute: (settings) {
+        return MaterialPageRoute(
+          builder: (context) => const DressingScreen(),
+        );
+      },
+    ),
+    const CollectionsScreen(),
+    const WishlistScreen(),
+    const SelectionScreen(),
+    const EspaceScreen(),
   ];
 
   @override

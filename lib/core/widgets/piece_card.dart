@@ -2,13 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../theme/closet_colors.dart';
 
-class PieceCard extends StatelessWidget {
+class PieceCard extends StatefulWidget {
   final String maison;
   final String nom;
   final String prix;
   final String? imageUrl;
   final bool isImageArche;
   final String? statusBadgeText;
+  final String? subtitle;
   final bool isFavorite;
   final bool isSold;
   final VoidCallback? onFavoriteTap;
@@ -22,6 +23,7 @@ class PieceCard extends StatelessWidget {
     this.imageUrl,
     this.isImageArche = false,
     this.statusBadgeText,
+    this.subtitle,
     this.isFavorite = false,
     this.isSold = false,
     this.onFavoriteTap,
@@ -29,77 +31,84 @@ class PieceCard extends StatelessWidget {
   });
 
   @override
+  State<PieceCard> createState() => _PieceCardState();
+}
+
+class _PieceCardState extends State<PieceCard> {
+  late bool _isFavorite;
+
+  @override
+  void initState() {
+    super.initState();
+    _isFavorite = widget.isFavorite;
+  }
+
+  void _toggleFavorite() {
+    setState(() {
+      _isFavorite = !_isFavorite;
+    });
+    if (widget.onFavoriteTap != null) {
+      widget.onFavoriteTap!();
+    }
+  }
+
+  Color _getBadgeColor(String text) {
+    if (text.toLowerCase() == 'excellent') {
+      return const Color(0xFFE0ECE5); // Light mint
+    }
+    return const Color(0xFFF3EAD7); // Light beige for Très bon
+  }
+
+  @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: onTap,
+      onTap: widget.onTap,
       child: Container(
-      decoration: BoxDecoration(
-        color: ClosetColors.creme,
-        border: Border.all(color: ClosetColors.ligne),
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            height: 140,
-            width: double.infinity,
-            decoration: const BoxDecoration(
-              color: ClosetColors.beige, 
-              borderRadius: BorderRadius.vertical(top: Radius.circular(15)),
-            ),
-            child: Stack(
-              children: [
-                Align(
-                  alignment: Alignment.bottomCenter,
-                  child: imageUrl != null
-                      ? ClipRRect(
-                          borderRadius: isImageArche
-                              ? const BorderRadius.only(
-                                  topLeft: Radius.circular(45),
-                                  topRight: Radius.circular(45),
-                                )
-                              : BorderRadius.circular(8),
-                          child: Image.network(
-                            imageUrl!,
-                            width: 90,
-                            height: 110,
-                            fit: BoxFit.cover,
-                            color: isSold ? Colors.black.withValues(alpha: 0.5) : null,
-                            colorBlendMode: isSold ? BlendMode.darken : null,
-                          ),
-                        )
-                      : const SizedBox(),
-                ),
-
-                if (statusBadgeText != null && !isSold)
-                  Positioned(
-                    top: 10,
-                    left: 10,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: ClosetColors.vertFonce,
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Text(
-                        statusBadgeText!.toUpperCase(),
-                        style: const TextStyle(
-                          fontSize: 9,
-                          fontWeight: FontWeight.w800,
-                          letterSpacing: 1.0,
-                          color: ClosetColors.doreClair,
-                        ),
-                      ),
-                    ),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          border: Border.all(color: ClosetColors.ligne),
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              height: 200,
+              width: double.infinity,
+              decoration: const BoxDecoration(
+                color: ClosetColors.creme, 
+                borderRadius: BorderRadius.vertical(top: Radius.circular(15)),
+              ),
+              child: Stack(
+                children: [
+                  Align(
+                    alignment: Alignment.bottomCenter,
+                    child: widget.imageUrl != null
+                        ? ClipRRect(
+                            borderRadius: widget.isImageArche
+                                ? const BorderRadius.only(
+                                    topLeft: Radius.circular(90),
+                                    topRight: Radius.circular(90),
+                                  )
+                                : const BorderRadius.vertical(top: Radius.circular(15)),
+                            child: Opacity(
+                              opacity: widget.isSold ? 0.6 : 1.0,
+                              child: Image.network(
+                                widget.imageUrl!,
+                                width: double.infinity,
+                                height: double.infinity,
+                                fit: BoxFit.cover,
+                              ),
+                            ),
+                          )
+                        : const SizedBox(),
                   ),
 
-                if (!isSold)
                   Positioned(
                     top: 10,
                     right: 10,
                     child: GestureDetector(
-                      onTap: onFavoriteTap,
+                      onTap: _toggleFavorite,
                       child: Container(
                         padding: const EdgeInsets.all(6),
                         decoration: BoxDecoration(
@@ -114,76 +123,130 @@ class PieceCard extends StatelessWidget {
                           ],
                         ),
                         child: Icon(
-                          isFavorite ? Icons.favorite : Icons.favorite_border,
-                          color: isFavorite ? const Color(0xFF8B2516) : ClosetColors.vertFonce,
+                          _isFavorite ? Icons.favorite : Icons.favorite_border,
+                          color: _isFavorite ? const Color(0xFF8B2516) : ClosetColors.vertFonce,
                           size: 16,
                         ),
                       ),
                     ),
                   ),
 
-                if (isSold)
-                  Positioned(
-                    bottom: 0,
-                    left: 0,
-                    right: 0,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(vertical: 6),
-                      color: ClosetColors.vertFonce.withValues(alpha: 0.9),
-                      child: const Text(
-                        'A trouvé son dressing',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 10,
-                          fontWeight: FontWeight.w600,
+                  if (widget.isSold)
+                    Positioned(
+                      top: 10,
+                      left: 10,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: Colors.black.withValues(alpha: 0.2),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Text(
+                          'Déjà adoptée',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 10,
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                       ),
                     ),
-                  ),
-              ],
+                ],
+              ),
             ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(12.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  maison.toUpperCase(),
-                  style: const TextStyle(
-                    fontSize: 10,
-                    letterSpacing: 1.5,
-                    fontWeight: FontWeight.w700,
-                    color: ClosetColors.taupe,
+            Padding(
+              padding: const EdgeInsets.all(12.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    widget.maison.toUpperCase(),
+                    style: const TextStyle(
+                      fontSize: 9,
+                      letterSpacing: 1.5,
+                      fontWeight: FontWeight.w700,
+                      color: ClosetColors.doreEncre,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  nom,
-                  style: GoogleFonts.cormorantGaramond(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w600,
-                    color: ClosetColors.noir,
+                  const SizedBox(height: 4),
+                  Text(
+                    widget.nom,
+                    style: GoogleFonts.cormorantGaramond(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: ClosetColors.vertFonce,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  isSold ? 'Indisponible' : prix,
-                  style: GoogleFonts.cormorantGaramond(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
-                    color: isSold ? ClosetColors.taupe : ClosetColors.noir,
-                  ),
-                ),
-              ],
+                  const SizedBox(height: 8),
+                  if (widget.isSold)
+                    Row(
+                      children: [
+                        const Icon(Icons.notifications_none, size: 14, color: ClosetColors.doreEncre),
+                        const SizedBox(width: 4),
+                        const Text(
+                          "M'ALERTER",
+                          style: TextStyle(
+                            fontSize: 10,
+                            letterSpacing: 1.0,
+                            fontWeight: FontWeight.w700,
+                            color: ClosetColors.doreEncre,
+                          ),
+                        ),
+                      ],
+                    )
+                  else
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          widget.prix,
+                          style: GoogleFonts.cormorantGaramond(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w700,
+                            color: ClosetColors.vertFonce,
+                          ),
+                        ),
+                        if (widget.statusBadgeText != null)
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: _getBadgeColor(widget.statusBadgeText!),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Text(
+                              widget.statusBadgeText!,
+                              style: const TextStyle(
+                                fontSize: 9,
+                                fontWeight: FontWeight.w600,
+                                color: ClosetColors.vertFonce,
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                  if (widget.subtitle != null && !widget.isSold) ...[
+                    const SizedBox(height: 8),
+                    Text(
+                      widget.subtitle!,
+                      style: const TextStyle(
+                        fontSize: 9,
+                        fontWeight: FontWeight.w400,
+                        color: ClosetColors.taupe,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
-    ),
     );
   }
 }
+
+

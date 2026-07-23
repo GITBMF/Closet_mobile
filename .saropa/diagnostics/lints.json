@@ -2,372 +2,12 @@
   "schemaVersion": 1,
   "producer": {
     "name": "saropa_lints",
-    "version": "14.3.4"
+    "version": "14.3.5"
   },
-  "generatedAt": "2026-07-20T16:15:23.598Z",
+  "generatedAt": "2026-07-23T03:37:51.861Z",
   "diagnostics": [
     {
-      "id": "lints:undefined_named_parameter:lib/features/sourceur/inscription/sourceur_inscription_screen.dart:211",
-      "source": "lints",
-      "severity": "error",
-      "category": "other",
-      "title": "The named parameter 'selectionnee' isn't defined.\nTry correcting the name to an existing named parameter's name, or defining a named parameter with the name 'selectionnee'.",
-      "ruleId": "undefined_named_parameter",
-      "location": {
-        "file": "lib/features/sourceur/inscription/sourceur_inscription_screen.dart",
-        "line": 211
-      },
-      "fix": {
-        "kind": "command",
-        "title": "Explain this rule",
-        "command": "saropaLints.explainRule",
-        "args": [
-          {
-            "ruleId": "undefined_named_parameter"
-          }
-        ]
-      },
-      "docUri": "https://github.com/saropa/saropa_lints/blob/main/ROADMAP.md",
-      "commitSha": "7f9792d6e5d0ae4d6fe36f3663e18a943fbe994e"
-    },
-    {
-      "id": "lints:todo:lib/features/sourceur/inscription/sourceur_inscription_screen.dart:81",
-      "source": "lints",
-      "severity": "info",
-      "category": "other",
-      "title": "TODO: brancher l'appel API d'inscription sourceur quand le backend",
-      "ruleId": "todo",
-      "location": {
-        "file": "lib/features/sourceur/inscription/sourceur_inscription_screen.dart",
-        "line": 81
-      },
-      "fix": {
-        "kind": "command",
-        "title": "Explain this rule",
-        "command": "saropaLints.explainRule",
-        "args": [
-          {
-            "ruleId": "todo"
-          }
-        ]
-      },
-      "docUri": "https://github.com/saropa/saropa_lints/blob/main/ROADMAP.md",
-      "commitSha": "7f9792d6e5d0ae4d6fe36f3663e18a943fbe994e"
-    },
-    {
-      "id": "lints:undefined_named_parameter:lib/features/sourceur/nouvelle/sourceur_nouvelle_piece_screen.dart:225",
-      "source": "lints",
-      "severity": "error",
-      "category": "other",
-      "title": "The named parameter 'selectionnee' isn't defined.\nTry correcting the name to an existing named parameter's name, or defining a named parameter with the name 'selectionnee'.",
-      "ruleId": "undefined_named_parameter",
-      "location": {
-        "file": "lib/features/sourceur/nouvelle/sourceur_nouvelle_piece_screen.dart",
-        "line": 225
-      },
-      "fix": {
-        "kind": "command",
-        "title": "Explain this rule",
-        "command": "saropaLints.explainRule",
-        "args": [
-          {
-            "ruleId": "undefined_named_parameter"
-          }
-        ]
-      },
-      "docUri": "https://github.com/saropa/saropa_lints/blob/main/ROADMAP.md",
-      "commitSha": "7f9792d6e5d0ae4d6fe36f3663e18a943fbe994e"
-    },
-    {
-      "id": "lints:todo:lib/features/sourceur/nouvelle/sourceur_nouvelle_piece_screen.dart:59",
-      "source": "lints",
-      "severity": "info",
-      "category": "other",
-      "title": "TODO: brancher l'envoi du dépôt au comité quand le backend",
-      "ruleId": "todo",
-      "location": {
-        "file": "lib/features/sourceur/nouvelle/sourceur_nouvelle_piece_screen.dart",
-        "line": 59
-      },
-      "fix": {
-        "kind": "command",
-        "title": "Explain this rule",
-        "command": "saropaLints.explainRule",
-        "args": [
-          {
-            "ruleId": "todo"
-          }
-        ]
-      },
-      "docUri": "https://github.com/saropa/saropa_lints/blob/main/ROADMAP.md",
-      "commitSha": "7f9792d6e5d0ae4d6fe36f3663e18a943fbe994e"
-    },
-    {
-      "id": "lints:todo:lib/features/sourceur/nouvelle/sourceur_nouvelle_piece_screen.dart:201",
-      "source": "lints",
-      "severity": "info",
-      "category": "other",
-      "title": "TODO: ouvrir le sélecteur de photos (image_picker).",
-      "ruleId": "todo",
-      "location": {
-        "file": "lib/features/sourceur/nouvelle/sourceur_nouvelle_piece_screen.dart",
-        "line": 201
-      },
-      "fix": {
-        "kind": "command",
-        "title": "Explain this rule",
-        "command": "saropaLints.explainRule",
-        "args": [
-          {
-            "ruleId": "todo"
-          }
-        ]
-      },
-      "docUri": "https://github.com/saropa/saropa_lints/blob/main/ROADMAP.md",
-      "commitSha": "7f9792d6e5d0ae4d6fe36f3663e18a943fbe994e"
-    },
-    {
-      "id": "lints:undefined_named_parameter:lib/features/sourceur/pieces/sourceur_pieces_screen.dart:113",
-      "source": "lints",
-      "severity": "error",
-      "category": "other",
-      "title": "The named parameter 'selectionnee' isn't defined.\nTry correcting the name to an existing named parameter's name, or defining a named parameter with the name 'selectionnee'.",
-      "ruleId": "undefined_named_parameter",
-      "location": {
-        "file": "lib/features/sourceur/pieces/sourceur_pieces_screen.dart",
-        "line": 113
-      },
-      "fix": {
-        "kind": "command",
-        "title": "Explain this rule",
-        "command": "saropaLints.explainRule",
-        "args": [
-          {
-            "ruleId": "undefined_named_parameter"
-          }
-        ]
-      },
-      "docUri": "https://github.com/saropa/saropa_lints/blob/main/ROADMAP.md",
-      "commitSha": "7f9792d6e5d0ae4d6fe36f3663e18a943fbe994e"
-    },
-    {
-      "id": "lints:todo:lib/features/sourceur/pieces/sourceur_pieces_screen.dart:78",
-      "source": "lints",
-      "severity": "info",
-      "category": "other",
-      "title": "TODO: afficher les cartes de pièces quand le backend",
-      "ruleId": "todo",
-      "location": {
-        "file": "lib/features/sourceur/pieces/sourceur_pieces_screen.dart",
-        "line": 78
-      },
-      "fix": {
-        "kind": "command",
-        "title": "Explain this rule",
-        "command": "saropaLints.explainRule",
-        "args": [
-          {
-            "ruleId": "todo"
-          }
-        ]
-      },
-      "docUri": "https://github.com/saropa/saropa_lints/blob/main/ROADMAP.md",
-      "commitSha": "7f9792d6e5d0ae4d6fe36f3663e18a943fbe994e"
-    },
-    {
-      "id": "lints:todo:lib/features/sourceur/revenus/sourceur_revenus_screen.dart:112",
-      "source": "lints",
-      "severity": "info",
-      "category": "other",
-      "title": "TODO: brancher la demande de versement (backend).",
-      "ruleId": "todo",
-      "location": {
-        "file": "lib/features/sourceur/revenus/sourceur_revenus_screen.dart",
-        "line": 112
-      },
-      "fix": {
-        "kind": "command",
-        "title": "Explain this rule",
-        "command": "saropaLints.explainRule",
-        "args": [
-          {
-            "ruleId": "todo"
-          }
-        ]
-      },
-      "docUri": "https://github.com/saropa/saropa_lints/blob/main/ROADMAP.md",
-      "commitSha": "7f9792d6e5d0ae4d6fe36f3663e18a943fbe994e"
-    },
-    {
-      "id": "lints:todo:lib/features/sourceur/revenus/sourceur_revenus_screen.dart:174",
-      "source": "lints",
-      "severity": "info",
-      "category": "other",
-      "title": "TODO: afficher la liste des ventes quand le backend sera branché.",
-      "ruleId": "todo",
-      "location": {
-        "file": "lib/features/sourceur/revenus/sourceur_revenus_screen.dart",
-        "line": 174
-      },
-      "fix": {
-        "kind": "command",
-        "title": "Explain this rule",
-        "command": "saropaLints.explainRule",
-        "args": [
-          {
-            "ruleId": "todo"
-          }
-        ]
-      },
-      "docUri": "https://github.com/saropa/saropa_lints/blob/main/ROADMAP.md",
-      "commitSha": "7f9792d6e5d0ae4d6fe36f3663e18a943fbe994e"
-    },
-    {
-      "id": "lints:undefined_getter:test/sourceur_nouvelle_piece_test.dart:43",
-      "source": "lints",
-      "severity": "error",
-      "category": "other",
-      "title": "The getter 'selectionnee' isn't defined for the type 'ClosetChip'.\nTry importing the library that defines 'selectionnee', correcting the name to the name of an existing getter, or defining a getter or field named 'selectionnee'.",
-      "ruleId": "undefined_getter",
-      "location": {
-        "file": "test/sourceur_nouvelle_piece_test.dart",
-        "line": 43
-      },
-      "fix": {
-        "kind": "command",
-        "title": "Explain this rule",
-        "command": "saropaLints.explainRule",
-        "args": [
-          {
-            "ruleId": "undefined_getter"
-          }
-        ]
-      },
-      "docUri": "https://github.com/saropa/saropa_lints/blob/main/ROADMAP.md",
-      "commitSha": "7f9792d6e5d0ae4d6fe36f3663e18a943fbe994e"
-    },
-    {
-      "id": "lints:undefined_getter:test/sourceur_nouvelle_piece_test.dart:48",
-      "source": "lints",
-      "severity": "error",
-      "category": "other",
-      "title": "The getter 'selectionnee' isn't defined for the type 'ClosetChip'.\nTry importing the library that defines 'selectionnee', correcting the name to the name of an existing getter, or defining a getter or field named 'selectionnee'.",
-      "ruleId": "undefined_getter",
-      "location": {
-        "file": "test/sourceur_nouvelle_piece_test.dart",
-        "line": 48
-      },
-      "fix": {
-        "kind": "command",
-        "title": "Explain this rule",
-        "command": "saropaLints.explainRule",
-        "args": [
-          {
-            "ruleId": "undefined_getter"
-          }
-        ]
-      },
-      "docUri": "https://github.com/saropa/saropa_lints/blob/main/ROADMAP.md",
-      "commitSha": "7f9792d6e5d0ae4d6fe36f3663e18a943fbe994e"
-    },
-    {
-      "id": "lints:undefined_getter:test/sourceur_nouvelle_piece_test.dart:49",
-      "source": "lints",
-      "severity": "error",
-      "category": "other",
-      "title": "The getter 'selectionnee' isn't defined for the type 'ClosetChip'.\nTry importing the library that defines 'selectionnee', correcting the name to the name of an existing getter, or defining a getter or field named 'selectionnee'.",
-      "ruleId": "undefined_getter",
-      "location": {
-        "file": "test/sourceur_nouvelle_piece_test.dart",
-        "line": 49
-      },
-      "fix": {
-        "kind": "command",
-        "title": "Explain this rule",
-        "command": "saropaLints.explainRule",
-        "args": [
-          {
-            "ruleId": "undefined_getter"
-          }
-        ]
-      },
-      "docUri": "https://github.com/saropa/saropa_lints/blob/main/ROADMAP.md",
-      "commitSha": "7f9792d6e5d0ae4d6fe36f3663e18a943fbe994e"
-    },
-    {
-      "id": "lints:undefined_getter:test/sourceur_pieces_test.dart:27",
-      "source": "lints",
-      "severity": "error",
-      "category": "other",
-      "title": "The getter 'selectionnee' isn't defined for the type 'ClosetChip'.\nTry importing the library that defines 'selectionnee', correcting the name to the name of an existing getter, or defining a getter or field named 'selectionnee'.",
-      "ruleId": "undefined_getter",
-      "location": {
-        "file": "test/sourceur_pieces_test.dart",
-        "line": 27
-      },
-      "fix": {
-        "kind": "command",
-        "title": "Explain this rule",
-        "command": "saropaLints.explainRule",
-        "args": [
-          {
-            "ruleId": "undefined_getter"
-          }
-        ]
-      },
-      "docUri": "https://github.com/saropa/saropa_lints/blob/main/ROADMAP.md",
-      "commitSha": "7f9792d6e5d0ae4d6fe36f3663e18a943fbe994e"
-    },
-    {
-      "id": "lints:undefined_getter:test/sourceur_pieces_test.dart:32",
-      "source": "lints",
-      "severity": "error",
-      "category": "other",
-      "title": "The getter 'selectionnee' isn't defined for the type 'ClosetChip'.\nTry importing the library that defines 'selectionnee', correcting the name to the name of an existing getter, or defining a getter or field named 'selectionnee'.",
-      "ruleId": "undefined_getter",
-      "location": {
-        "file": "test/sourceur_pieces_test.dart",
-        "line": 32
-      },
-      "fix": {
-        "kind": "command",
-        "title": "Explain this rule",
-        "command": "saropaLints.explainRule",
-        "args": [
-          {
-            "ruleId": "undefined_getter"
-          }
-        ]
-      },
-      "docUri": "https://github.com/saropa/saropa_lints/blob/main/ROADMAP.md",
-      "commitSha": "7f9792d6e5d0ae4d6fe36f3663e18a943fbe994e"
-    },
-    {
-      "id": "lints:undefined_getter:test/sourceur_pieces_test.dart:33",
-      "source": "lints",
-      "severity": "error",
-      "category": "other",
-      "title": "The getter 'selectionnee' isn't defined for the type 'ClosetChip'.\nTry importing the library that defines 'selectionnee', correcting the name to the name of an existing getter, or defining a getter or field named 'selectionnee'.",
-      "ruleId": "undefined_getter",
-      "location": {
-        "file": "test/sourceur_pieces_test.dart",
-        "line": 33
-      },
-      "fix": {
-        "kind": "command",
-        "title": "Explain this rule",
-        "command": "saropaLints.explainRule",
-        "args": [
-          {
-            "ruleId": "undefined_getter"
-          }
-        ]
-      },
-      "docUri": "https://github.com/saropa/saropa_lints/blob/main/ROADMAP.md",
-      "commitSha": "7f9792d6e5d0ae4d6fe36f3663e18a943fbe994e"
-    },
-    {
-      "id": "lints:use_decorated_box:lib/core/widgets/piece_card.dart:35",
+      "id": "lints:use_decorated_box:lib/core/widgets/piece_card.dart:66",
       "source": "lints",
       "severity": "info",
       "category": "other",
@@ -375,7 +15,7 @@
       "ruleId": "use_decorated_box",
       "location": {
         "file": "lib/core/widgets/piece_card.dart",
-        "line": 35
+        "line": 66
       },
       "fix": {
         "kind": "command",
@@ -388,42 +28,18 @@
         ]
       },
       "docUri": "https://github.com/saropa/saropa_lints/blob/main/ROADMAP.md",
-      "commitSha": "7f9792d6e5d0ae4d6fe36f3663e18a943fbe994e"
+      "commitSha": "23d061521d3207c51889593d410b19fa27ff3644"
     },
     {
-      "id": "lints:unused_import:lib/features/cliente/dressing/dressing_screen.dart:5",
-      "source": "lints",
-      "severity": "warning",
-      "category": "other",
-      "title": "Unused import: '../../../core/theme/closet_text_styles.dart'.\nTry removing the import directive.",
-      "ruleId": "unused_import",
-      "location": {
-        "file": "lib/features/cliente/dressing/dressing_screen.dart",
-        "line": 5
-      },
-      "fix": {
-        "kind": "command",
-        "title": "Explain this rule",
-        "command": "saropaLints.explainRule",
-        "args": [
-          {
-            "ruleId": "unused_import"
-          }
-        ]
-      },
-      "docUri": "https://github.com/saropa/saropa_lints/blob/main/ROADMAP.md",
-      "commitSha": "7f9792d6e5d0ae4d6fe36f3663e18a943fbe994e"
-    },
-    {
-      "id": "lints:prefer_const_constructors:lib/features/cliente/dressing/dressing_screen.dart:26",
+      "id": "lints:prefer_const_constructors:lib/core/widgets/piece_card.dart:184",
       "source": "lints",
       "severity": "info",
       "category": "other",
       "title": "Use 'const' with the constructor to improve performance.\nTry adding the 'const' keyword to the constructor invocation.",
       "ruleId": "prefer_const_constructors",
       "location": {
-        "file": "lib/features/cliente/dressing/dressing_screen.dart",
-        "line": 26
+        "file": "lib/core/widgets/piece_card.dart",
+        "line": 184
       },
       "fix": {
         "kind": "command",
@@ -436,18 +52,18 @@
         ]
       },
       "docUri": "https://github.com/saropa/saropa_lints/blob/main/ROADMAP.md",
-      "commitSha": "7f9792d6e5d0ae4d6fe36f3663e18a943fbe994e"
+      "commitSha": "23d061521d3207c51889593d410b19fa27ff3644"
     },
     {
-      "id": "lints:prefer_const_constructors:lib/features/cliente/dressing/dressing_screen.dart:28",
+      "id": "lints:prefer_const_literals_to_create_immutables:lib/core/widgets/piece_card.dart:185",
       "source": "lints",
       "severity": "info",
       "category": "other",
-      "title": "Use 'const' with the constructor to improve performance.\nTry adding the 'const' keyword to the constructor invocation.",
-      "ruleId": "prefer_const_constructors",
+      "title": "Use 'const' literals as arguments to constructors of '@immutable' classes.\nTry adding 'const' before the literal.",
+      "ruleId": "prefer_const_literals_to_create_immutables",
       "location": {
-        "file": "lib/features/cliente/dressing/dressing_screen.dart",
-        "line": 28
+        "file": "lib/core/widgets/piece_card.dart",
+        "line": 185
       },
       "fix": {
         "kind": "command",
@@ -455,87 +71,15 @@
         "command": "saropaLints.explainRule",
         "args": [
           {
-            "ruleId": "prefer_const_constructors"
+            "ruleId": "prefer_const_literals_to_create_immutables"
           }
         ]
       },
       "docUri": "https://github.com/saropa/saropa_lints/blob/main/ROADMAP.md",
-      "commitSha": "7f9792d6e5d0ae4d6fe36f3663e18a943fbe994e"
+      "commitSha": "23d061521d3207c51889593d410b19fa27ff3644"
     },
     {
-      "id": "lints:prefer_const_constructors:lib/features/cliente/dressing/dressing_screen.dart:92",
-      "source": "lints",
-      "severity": "info",
-      "category": "other",
-      "title": "Use 'const' with the constructor to improve performance.\nTry adding the 'const' keyword to the constructor invocation.",
-      "ruleId": "prefer_const_constructors",
-      "location": {
-        "file": "lib/features/cliente/dressing/dressing_screen.dart",
-        "line": 92
-      },
-      "fix": {
-        "kind": "command",
-        "title": "Explain this rule",
-        "command": "saropaLints.explainRule",
-        "args": [
-          {
-            "ruleId": "prefer_const_constructors"
-          }
-        ]
-      },
-      "docUri": "https://github.com/saropa/saropa_lints/blob/main/ROADMAP.md",
-      "commitSha": "7f9792d6e5d0ae4d6fe36f3663e18a943fbe994e"
-    },
-    {
-      "id": "lints:prefer_const_constructors:lib/features/cliente/dressing/dressing_screen.dart:94",
-      "source": "lints",
-      "severity": "info",
-      "category": "other",
-      "title": "Use 'const' with the constructor to improve performance.\nTry adding the 'const' keyword to the constructor invocation.",
-      "ruleId": "prefer_const_constructors",
-      "location": {
-        "file": "lib/features/cliente/dressing/dressing_screen.dart",
-        "line": 94
-      },
-      "fix": {
-        "kind": "command",
-        "title": "Explain this rule",
-        "command": "saropaLints.explainRule",
-        "args": [
-          {
-            "ruleId": "prefer_const_constructors"
-          }
-        ]
-      },
-      "docUri": "https://github.com/saropa/saropa_lints/blob/main/ROADMAP.md",
-      "commitSha": "7f9792d6e5d0ae4d6fe36f3663e18a943fbe994e"
-    },
-    {
-      "id": "lints:inference_failure_on_function_invocation:lib/features/cliente/collections/collections_screen.dart:140",
-      "source": "lints",
-      "severity": "warning",
-      "category": "other",
-      "title": "The type argument(s) of the function 'showModalBottomSheet' can't be inferred.\nUse explicit type argument(s) for 'showModalBottomSheet'.",
-      "ruleId": "inference_failure_on_function_invocation",
-      "location": {
-        "file": "lib/features/cliente/collections/collections_screen.dart",
-        "line": 140
-      },
-      "fix": {
-        "kind": "command",
-        "title": "Explain this rule",
-        "command": "saropaLints.explainRule",
-        "args": [
-          {
-            "ruleId": "inference_failure_on_function_invocation"
-          }
-        ]
-      },
-      "docUri": "https://github.com/saropa/saropa_lints/blob/main/ROADMAP.md",
-      "commitSha": "7f9792d6e5d0ae4d6fe36f3663e18a943fbe994e"
-    },
-    {
-      "id": "lints:argument_type_not_assignable:lib/features/cliente/collections/collections_screen.dart:227",
+      "id": "lints:argument_type_not_assignable:lib/features/cliente/collections/collections_screen.dart:393",
       "source": "lints",
       "severity": "error",
       "category": "other",
@@ -543,7 +87,7 @@
       "ruleId": "argument_type_not_assignable",
       "location": {
         "file": "lib/features/cliente/collections/collections_screen.dart",
-        "line": 227
+        "line": 393
       },
       "fix": {
         "kind": "command",
@@ -556,10 +100,10 @@
         ]
       },
       "docUri": "https://github.com/saropa/saropa_lints/blob/main/ROADMAP.md",
-      "commitSha": "7f9792d6e5d0ae4d6fe36f3663e18a943fbe994e"
+      "commitSha": "23d061521d3207c51889593d410b19fa27ff3644"
     },
     {
-      "id": "lints:argument_type_not_assignable:lib/features/cliente/collections/collections_screen.dart:228",
+      "id": "lints:argument_type_not_assignable:lib/features/cliente/collections/collections_screen.dart:394",
       "source": "lints",
       "severity": "error",
       "category": "other",
@@ -567,7 +111,7 @@
       "ruleId": "argument_type_not_assignable",
       "location": {
         "file": "lib/features/cliente/collections/collections_screen.dart",
-        "line": 228
+        "line": 394
       },
       "fix": {
         "kind": "command",
@@ -580,10 +124,10 @@
         ]
       },
       "docUri": "https://github.com/saropa/saropa_lints/blob/main/ROADMAP.md",
-      "commitSha": "7f9792d6e5d0ae4d6fe36f3663e18a943fbe994e"
+      "commitSha": "23d061521d3207c51889593d410b19fa27ff3644"
     },
     {
-      "id": "lints:argument_type_not_assignable:lib/features/cliente/collections/collections_screen.dart:229",
+      "id": "lints:argument_type_not_assignable:lib/features/cliente/collections/collections_screen.dart:395",
       "source": "lints",
       "severity": "error",
       "category": "other",
@@ -591,7 +135,7 @@
       "ruleId": "argument_type_not_assignable",
       "location": {
         "file": "lib/features/cliente/collections/collections_screen.dart",
-        "line": 229
+        "line": 395
       },
       "fix": {
         "kind": "command",
@@ -604,10 +148,10 @@
         ]
       },
       "docUri": "https://github.com/saropa/saropa_lints/blob/main/ROADMAP.md",
-      "commitSha": "7f9792d6e5d0ae4d6fe36f3663e18a943fbe994e"
+      "commitSha": "23d061521d3207c51889593d410b19fa27ff3644"
     },
     {
-      "id": "lints:argument_type_not_assignable:lib/features/cliente/collections/collections_screen.dart:230",
+      "id": "lints:argument_type_not_assignable:lib/features/cliente/collections/collections_screen.dart:396",
       "source": "lints",
       "severity": "error",
       "category": "other",
@@ -615,7 +159,7 @@
       "ruleId": "argument_type_not_assignable",
       "location": {
         "file": "lib/features/cliente/collections/collections_screen.dart",
-        "line": 230
+        "line": 396
       },
       "fix": {
         "kind": "command",
@@ -628,10 +172,10 @@
         ]
       },
       "docUri": "https://github.com/saropa/saropa_lints/blob/main/ROADMAP.md",
-      "commitSha": "7f9792d6e5d0ae4d6fe36f3663e18a943fbe994e"
+      "commitSha": "23d061521d3207c51889593d410b19fa27ff3644"
     },
     {
-      "id": "lints:inference_failure_on_instance_creation:lib/features/cliente/collections/collections_screen.dart:225",
+      "id": "lints:inference_failure_on_instance_creation:lib/features/cliente/collections/collections_screen.dart:391",
       "source": "lints",
       "severity": "warning",
       "category": "other",
@@ -639,7 +183,7 @@
       "ruleId": "inference_failure_on_instance_creation",
       "location": {
         "file": "lib/features/cliente/collections/collections_screen.dart",
-        "line": 225
+        "line": 391
       },
       "fix": {
         "kind": "command",
@@ -652,10 +196,10 @@
         ]
       },
       "docUri": "https://github.com/saropa/saropa_lints/blob/main/ROADMAP.md",
-      "commitSha": "7f9792d6e5d0ae4d6fe36f3663e18a943fbe994e"
+      "commitSha": "23d061521d3207c51889593d410b19fa27ff3644"
     },
     {
-      "id": "lints:argument_type_not_assignable:lib/features/cliente/collections/collections_screen.dart:213",
+      "id": "lints:argument_type_not_assignable:lib/features/cliente/collections/collections_screen.dart:378",
       "source": "lints",
       "severity": "error",
       "category": "other",
@@ -663,7 +207,7 @@
       "ruleId": "argument_type_not_assignable",
       "location": {
         "file": "lib/features/cliente/collections/collections_screen.dart",
-        "line": 213
+        "line": 378
       },
       "fix": {
         "kind": "command",
@@ -676,10 +220,10 @@
         ]
       },
       "docUri": "https://github.com/saropa/saropa_lints/blob/main/ROADMAP.md",
-      "commitSha": "7f9792d6e5d0ae4d6fe36f3663e18a943fbe994e"
+      "commitSha": "23d061521d3207c51889593d410b19fa27ff3644"
     },
     {
-      "id": "lints:argument_type_not_assignable:lib/features/cliente/collections/collections_screen.dart:214",
+      "id": "lints:argument_type_not_assignable:lib/features/cliente/collections/collections_screen.dart:379",
       "source": "lints",
       "severity": "error",
       "category": "other",
@@ -687,7 +231,7 @@
       "ruleId": "argument_type_not_assignable",
       "location": {
         "file": "lib/features/cliente/collections/collections_screen.dart",
-        "line": 214
+        "line": 379
       },
       "fix": {
         "kind": "command",
@@ -700,10 +244,10 @@
         ]
       },
       "docUri": "https://github.com/saropa/saropa_lints/blob/main/ROADMAP.md",
-      "commitSha": "7f9792d6e5d0ae4d6fe36f3663e18a943fbe994e"
+      "commitSha": "23d061521d3207c51889593d410b19fa27ff3644"
     },
     {
-      "id": "lints:argument_type_not_assignable:lib/features/cliente/collections/collections_screen.dart:215",
+      "id": "lints:argument_type_not_assignable:lib/features/cliente/collections/collections_screen.dart:380",
       "source": "lints",
       "severity": "error",
       "category": "other",
@@ -711,7 +255,7 @@
       "ruleId": "argument_type_not_assignable",
       "location": {
         "file": "lib/features/cliente/collections/collections_screen.dart",
-        "line": 215
+        "line": 380
       },
       "fix": {
         "kind": "command",
@@ -724,10 +268,10 @@
         ]
       },
       "docUri": "https://github.com/saropa/saropa_lints/blob/main/ROADMAP.md",
-      "commitSha": "7f9792d6e5d0ae4d6fe36f3663e18a943fbe994e"
+      "commitSha": "23d061521d3207c51889593d410b19fa27ff3644"
     },
     {
-      "id": "lints:argument_type_not_assignable:lib/features/cliente/collections/collections_screen.dart:216",
+      "id": "lints:argument_type_not_assignable:lib/features/cliente/collections/collections_screen.dart:381",
       "source": "lints",
       "severity": "error",
       "category": "other",
@@ -735,7 +279,7 @@
       "ruleId": "argument_type_not_assignable",
       "location": {
         "file": "lib/features/cliente/collections/collections_screen.dart",
-        "line": 216
+        "line": 381
       },
       "fix": {
         "kind": "command",
@@ -748,10 +292,10 @@
         ]
       },
       "docUri": "https://github.com/saropa/saropa_lints/blob/main/ROADMAP.md",
-      "commitSha": "7f9792d6e5d0ae4d6fe36f3663e18a943fbe994e"
+      "commitSha": "23d061521d3207c51889593d410b19fa27ff3644"
     },
     {
-      "id": "lints:argument_type_not_assignable:lib/features/cliente/collections/collections_screen.dart:217",
+      "id": "lints:argument_type_not_assignable:lib/features/cliente/collections/collections_screen.dart:382",
       "source": "lints",
       "severity": "error",
       "category": "other",
@@ -759,7 +303,7 @@
       "ruleId": "argument_type_not_assignable",
       "location": {
         "file": "lib/features/cliente/collections/collections_screen.dart",
-        "line": 217
+        "line": 382
       },
       "fix": {
         "kind": "command",
@@ -772,10 +316,10 @@
         ]
       },
       "docUri": "https://github.com/saropa/saropa_lints/blob/main/ROADMAP.md",
-      "commitSha": "7f9792d6e5d0ae4d6fe36f3663e18a943fbe994e"
+      "commitSha": "23d061521d3207c51889593d410b19fa27ff3644"
     },
     {
-      "id": "lints:argument_type_not_assignable:lib/features/cliente/collections/collections_screen.dart:218",
+      "id": "lints:argument_type_not_assignable:lib/features/cliente/collections/collections_screen.dart:383",
       "source": "lints",
       "severity": "error",
       "category": "other",
@@ -783,7 +327,7 @@
       "ruleId": "argument_type_not_assignable",
       "location": {
         "file": "lib/features/cliente/collections/collections_screen.dart",
-        "line": 218
+        "line": 383
       },
       "fix": {
         "kind": "command",
@@ -796,10 +340,34 @@
         ]
       },
       "docUri": "https://github.com/saropa/saropa_lints/blob/main/ROADMAP.md",
-      "commitSha": "7f9792d6e5d0ae4d6fe36f3663e18a943fbe994e"
+      "commitSha": "23d061521d3207c51889593d410b19fa27ff3644"
     },
     {
-      "id": "lints:argument_type_not_assignable:lib/features/cliente/collections/collections_screen.dart:219",
+      "id": "lints:argument_type_not_assignable:lib/features/cliente/collections/collections_screen.dart:384",
+      "source": "lints",
+      "severity": "error",
+      "category": "other",
+      "title": "The argument type 'dynamic' can't be assigned to the parameter type 'String?'. ",
+      "ruleId": "argument_type_not_assignable",
+      "location": {
+        "file": "lib/features/cliente/collections/collections_screen.dart",
+        "line": 384
+      },
+      "fix": {
+        "kind": "command",
+        "title": "Explain this rule",
+        "command": "saropaLints.explainRule",
+        "args": [
+          {
+            "ruleId": "argument_type_not_assignable"
+          }
+        ]
+      },
+      "docUri": "https://github.com/saropa/saropa_lints/blob/main/ROADMAP.md",
+      "commitSha": "23d061521d3207c51889593d410b19fa27ff3644"
+    },
+    {
+      "id": "lints:argument_type_not_assignable:lib/features/cliente/collections/collections_screen.dart:385",
       "source": "lints",
       "severity": "error",
       "category": "other",
@@ -807,7 +375,7 @@
       "ruleId": "argument_type_not_assignable",
       "location": {
         "file": "lib/features/cliente/collections/collections_screen.dart",
-        "line": 219
+        "line": 385
       },
       "fix": {
         "kind": "command",
@@ -820,10 +388,10 @@
         ]
       },
       "docUri": "https://github.com/saropa/saropa_lints/blob/main/ROADMAP.md",
-      "commitSha": "7f9792d6e5d0ae4d6fe36f3663e18a943fbe994e"
+      "commitSha": "23d061521d3207c51889593d410b19fa27ff3644"
     },
     {
-      "id": "lints:argument_type_not_assignable:lib/features/cliente/collections/collections_screen.dart:220",
+      "id": "lints:argument_type_not_assignable:lib/features/cliente/collections/collections_screen.dart:386",
       "source": "lints",
       "severity": "error",
       "category": "other",
@@ -831,7 +399,7 @@
       "ruleId": "argument_type_not_assignable",
       "location": {
         "file": "lib/features/cliente/collections/collections_screen.dart",
-        "line": 220
+        "line": 386
       },
       "fix": {
         "kind": "command",
@@ -844,7 +412,199 @@
         ]
       },
       "docUri": "https://github.com/saropa/saropa_lints/blob/main/ROADMAP.md",
-      "commitSha": "7f9792d6e5d0ae4d6fe36f3663e18a943fbe994e"
+      "commitSha": "23d061521d3207c51889593d410b19fa27ff3644"
+    },
+    {
+      "id": "lints:prefer_single_quotes:lib/features/cliente/collections/collections_screen.dart:183",
+      "source": "lints",
+      "severity": "info",
+      "category": "other",
+      "title": "Unnecessary use of double quotes.\nTry using single quotes unless the string contains single quotes.",
+      "ruleId": "prefer_single_quotes",
+      "location": {
+        "file": "lib/features/cliente/collections/collections_screen.dart",
+        "line": 183
+      },
+      "fix": {
+        "kind": "command",
+        "title": "Explain this rule",
+        "command": "saropaLints.explainRule",
+        "args": [
+          {
+            "ruleId": "prefer_single_quotes"
+          }
+        ]
+      },
+      "docUri": "https://github.com/saropa/saropa_lints/blob/main/ROADMAP.md",
+      "commitSha": "23d061521d3207c51889593d410b19fa27ff3644"
+    },
+    {
+      "id": "lints:prefer_const_constructors:lib/features/cliente/collections/collections_screen.dart:229",
+      "source": "lints",
+      "severity": "info",
+      "category": "other",
+      "title": "Use 'const' with the constructor to improve performance.\nTry adding the 'const' keyword to the constructor invocation.",
+      "ruleId": "prefer_const_constructors",
+      "location": {
+        "file": "lib/features/cliente/collections/collections_screen.dart",
+        "line": 229
+      },
+      "fix": {
+        "kind": "command",
+        "title": "Explain this rule",
+        "command": "saropaLints.explainRule",
+        "args": [
+          {
+            "ruleId": "prefer_const_constructors"
+          }
+        ]
+      },
+      "docUri": "https://github.com/saropa/saropa_lints/blob/main/ROADMAP.md",
+      "commitSha": "23d061521d3207c51889593d410b19fa27ff3644"
+    },
+    {
+      "id": "lints:prefer_const_literals_to_create_immutables:lib/features/cliente/collections/collections_screen.dart:230",
+      "source": "lints",
+      "severity": "info",
+      "category": "other",
+      "title": "Use 'const' literals as arguments to constructors of '@immutable' classes.\nTry adding 'const' before the literal.",
+      "ruleId": "prefer_const_literals_to_create_immutables",
+      "location": {
+        "file": "lib/features/cliente/collections/collections_screen.dart",
+        "line": 230
+      },
+      "fix": {
+        "kind": "command",
+        "title": "Explain this rule",
+        "command": "saropaLints.explainRule",
+        "args": [
+          {
+            "ruleId": "prefer_const_literals_to_create_immutables"
+          }
+        ]
+      },
+      "docUri": "https://github.com/saropa/saropa_lints/blob/main/ROADMAP.md",
+      "commitSha": "23d061521d3207c51889593d410b19fa27ff3644"
+    },
+    {
+      "id": "lints:prefer_const_constructors:lib/features/cliente/collections/collections_screen.dart:252",
+      "source": "lints",
+      "severity": "info",
+      "category": "other",
+      "title": "Use 'const' with the constructor to improve performance.\nTry adding the 'const' keyword to the constructor invocation.",
+      "ruleId": "prefer_const_constructors",
+      "location": {
+        "file": "lib/features/cliente/collections/collections_screen.dart",
+        "line": 252
+      },
+      "fix": {
+        "kind": "command",
+        "title": "Explain this rule",
+        "command": "saropaLints.explainRule",
+        "args": [
+          {
+            "ruleId": "prefer_const_constructors"
+          }
+        ]
+      },
+      "docUri": "https://github.com/saropa/saropa_lints/blob/main/ROADMAP.md",
+      "commitSha": "23d061521d3207c51889593d410b19fa27ff3644"
+    },
+    {
+      "id": "lints:prefer_const_literals_to_create_immutables:lib/features/cliente/collections/collections_screen.dart:253",
+      "source": "lints",
+      "severity": "info",
+      "category": "other",
+      "title": "Use 'const' literals as arguments to constructors of '@immutable' classes.\nTry adding 'const' before the literal.",
+      "ruleId": "prefer_const_literals_to_create_immutables",
+      "location": {
+        "file": "lib/features/cliente/collections/collections_screen.dart",
+        "line": 253
+      },
+      "fix": {
+        "kind": "command",
+        "title": "Explain this rule",
+        "command": "saropaLints.explainRule",
+        "args": [
+          {
+            "ruleId": "prefer_const_literals_to_create_immutables"
+          }
+        ]
+      },
+      "docUri": "https://github.com/saropa/saropa_lints/blob/main/ROADMAP.md",
+      "commitSha": "23d061521d3207c51889593d410b19fa27ff3644"
+    },
+    {
+      "id": "lints:prefer_const_constructors:lib/features/cliente/collections/collections_screen.dart:337",
+      "source": "lints",
+      "severity": "info",
+      "category": "other",
+      "title": "Use 'const' with the constructor to improve performance.\nTry adding the 'const' keyword to the constructor invocation.",
+      "ruleId": "prefer_const_constructors",
+      "location": {
+        "file": "lib/features/cliente/collections/collections_screen.dart",
+        "line": 337
+      },
+      "fix": {
+        "kind": "command",
+        "title": "Explain this rule",
+        "command": "saropaLints.explainRule",
+        "args": [
+          {
+            "ruleId": "prefer_const_constructors"
+          }
+        ]
+      },
+      "docUri": "https://github.com/saropa/saropa_lints/blob/main/ROADMAP.md",
+      "commitSha": "23d061521d3207c51889593d410b19fa27ff3644"
+    },
+    {
+      "id": "lints:prefer_const_constructors:lib/features/cliente/collections/collections_screen.dart:339",
+      "source": "lints",
+      "severity": "info",
+      "category": "other",
+      "title": "Use 'const' with the constructor to improve performance.\nTry adding the 'const' keyword to the constructor invocation.",
+      "ruleId": "prefer_const_constructors",
+      "location": {
+        "file": "lib/features/cliente/collections/collections_screen.dart",
+        "line": 339
+      },
+      "fix": {
+        "kind": "command",
+        "title": "Explain this rule",
+        "command": "saropaLints.explainRule",
+        "args": [
+          {
+            "ruleId": "prefer_const_constructors"
+          }
+        ]
+      },
+      "docUri": "https://github.com/saropa/saropa_lints/blob/main/ROADMAP.md",
+      "commitSha": "23d061521d3207c51889593d410b19fa27ff3644"
+    },
+    {
+      "id": "lints:prefer_const_literals_to_create_immutables:lib/features/cliente/collections/collections_screen.dart:341",
+      "source": "lints",
+      "severity": "info",
+      "category": "other",
+      "title": "Use 'const' literals as arguments to constructors of '@immutable' classes.\nTry adding 'const' before the literal.",
+      "ruleId": "prefer_const_literals_to_create_immutables",
+      "location": {
+        "file": "lib/features/cliente/collections/collections_screen.dart",
+        "line": 341
+      },
+      "fix": {
+        "kind": "command",
+        "title": "Explain this rule",
+        "command": "saropaLints.explainRule",
+        "args": [
+          {
+            "ruleId": "prefer_const_literals_to_create_immutables"
+          }
+        ]
+      },
+      "docUri": "https://github.com/saropa/saropa_lints/blob/main/ROADMAP.md",
+      "commitSha": "23d061521d3207c51889593d410b19fa27ff3644"
     },
     {
       "id": "lints:inference_failure_on_function_return_type:lib/features/cliente/collections/widgets/filter_bottom_sheet.dart:239",
@@ -868,7 +628,7 @@
         ]
       },
       "docUri": "https://github.com/saropa/saropa_lints/blob/main/ROADMAP.md",
-      "commitSha": "7f9792d6e5d0ae4d6fe36f3663e18a943fbe994e"
+      "commitSha": "23d061521d3207c51889593d410b19fa27ff3644"
     },
     {
       "id": "lints:prefer_const_constructors:lib/features/cliente/dressing/piece_detail_screen.dart:182",
@@ -892,7 +652,7 @@
         ]
       },
       "docUri": "https://github.com/saropa/saropa_lints/blob/main/ROADMAP.md",
-      "commitSha": "7f9792d6e5d0ae4d6fe36f3663e18a943fbe994e"
+      "commitSha": "23d061521d3207c51889593d410b19fa27ff3644"
     },
     {
       "id": "lints:prefer_const_literals_to_create_immutables:lib/features/cliente/dressing/piece_detail_screen.dart:183",
@@ -916,7 +676,7 @@
         ]
       },
       "docUri": "https://github.com/saropa/saropa_lints/blob/main/ROADMAP.md",
-      "commitSha": "7f9792d6e5d0ae4d6fe36f3663e18a943fbe994e"
+      "commitSha": "23d061521d3207c51889593d410b19fa27ff3644"
     },
     {
       "id": "lints:prefer_const_constructors:lib/features/cliente/dressing/piece_detail_screen.dart:225",
@@ -940,7 +700,7 @@
         ]
       },
       "docUri": "https://github.com/saropa/saropa_lints/blob/main/ROADMAP.md",
-      "commitSha": "7f9792d6e5d0ae4d6fe36f3663e18a943fbe994e"
+      "commitSha": "23d061521d3207c51889593d410b19fa27ff3644"
     },
     {
       "id": "lints:prefer_const_literals_to_create_immutables:lib/features/cliente/dressing/piece_detail_screen.dart:231",
@@ -964,7 +724,7 @@
         ]
       },
       "docUri": "https://github.com/saropa/saropa_lints/blob/main/ROADMAP.md",
-      "commitSha": "7f9792d6e5d0ae4d6fe36f3663e18a943fbe994e"
+      "commitSha": "23d061521d3207c51889593d410b19fa27ff3644"
     },
     {
       "id": "lints:prefer_const_constructors:lib/features/cliente/dressing/piece_detail_screen.dart:315",
@@ -988,7 +748,7 @@
         ]
       },
       "docUri": "https://github.com/saropa/saropa_lints/blob/main/ROADMAP.md",
-      "commitSha": "7f9792d6e5d0ae4d6fe36f3663e18a943fbe994e"
+      "commitSha": "23d061521d3207c51889593d410b19fa27ff3644"
     },
     {
       "id": "lints:prefer_const_literals_to_create_immutables:lib/features/cliente/dressing/piece_detail_screen.dart:316",
@@ -1012,7 +772,1807 @@
         ]
       },
       "docUri": "https://github.com/saropa/saropa_lints/blob/main/ROADMAP.md",
-      "commitSha": "7f9792d6e5d0ae4d6fe36f3663e18a943fbe994e"
+      "commitSha": "23d061521d3207c51889593d410b19fa27ff3644"
+    },
+    {
+      "id": "lints:inference_failure_on_instance_creation:lib/features/cliente/dressing/dressing_screen.dart:247",
+      "source": "lints",
+      "severity": "warning",
+      "category": "other",
+      "title": "The type argument(s) of the constructor 'MaterialPageRoute' can't be inferred.\nUse explicit type argument(s) for 'MaterialPageRoute'.",
+      "ruleId": "inference_failure_on_instance_creation",
+      "location": {
+        "file": "lib/features/cliente/dressing/dressing_screen.dart",
+        "line": 247
+      },
+      "fix": {
+        "kind": "command",
+        "title": "Explain this rule",
+        "command": "saropaLints.explainRule",
+        "args": [
+          {
+            "ruleId": "inference_failure_on_instance_creation"
+          }
+        ]
+      },
+      "docUri": "https://github.com/saropa/saropa_lints/blob/main/ROADMAP.md",
+      "commitSha": "23d061521d3207c51889593d410b19fa27ff3644"
+    },
+    {
+      "id": "lints:inference_failure_on_instance_creation:lib/features/cliente/dressing/dressing_screen.dart:274",
+      "source": "lints",
+      "severity": "warning",
+      "category": "other",
+      "title": "The type argument(s) of the constructor 'MaterialPageRoute' can't be inferred.\nUse explicit type argument(s) for 'MaterialPageRoute'.",
+      "ruleId": "inference_failure_on_instance_creation",
+      "location": {
+        "file": "lib/features/cliente/dressing/dressing_screen.dart",
+        "line": 274
+      },
+      "fix": {
+        "kind": "command",
+        "title": "Explain this rule",
+        "command": "saropaLints.explainRule",
+        "args": [
+          {
+            "ruleId": "inference_failure_on_instance_creation"
+          }
+        ]
+      },
+      "docUri": "https://github.com/saropa/saropa_lints/blob/main/ROADMAP.md",
+      "commitSha": "23d061521d3207c51889593d410b19fa27ff3644"
+    },
+    {
+      "id": "lints:inference_failure_on_instance_creation:lib/features/cliente/dressing/dressing_screen.dart:332",
+      "source": "lints",
+      "severity": "warning",
+      "category": "other",
+      "title": "The type argument(s) of the constructor 'MaterialPageRoute' can't be inferred.\nUse explicit type argument(s) for 'MaterialPageRoute'.",
+      "ruleId": "inference_failure_on_instance_creation",
+      "location": {
+        "file": "lib/features/cliente/dressing/dressing_screen.dart",
+        "line": 332
+      },
+      "fix": {
+        "kind": "command",
+        "title": "Explain this rule",
+        "command": "saropaLints.explainRule",
+        "args": [
+          {
+            "ruleId": "inference_failure_on_instance_creation"
+          }
+        ]
+      },
+      "docUri": "https://github.com/saropa/saropa_lints/blob/main/ROADMAP.md",
+      "commitSha": "23d061521d3207c51889593d410b19fa27ff3644"
+    },
+    {
+      "id": "lints:inference_failure_on_instance_creation:lib/features/cliente/dressing/dressing_screen.dart:359",
+      "source": "lints",
+      "severity": "warning",
+      "category": "other",
+      "title": "The type argument(s) of the constructor 'MaterialPageRoute' can't be inferred.\nUse explicit type argument(s) for 'MaterialPageRoute'.",
+      "ruleId": "inference_failure_on_instance_creation",
+      "location": {
+        "file": "lib/features/cliente/dressing/dressing_screen.dart",
+        "line": 359
+      },
+      "fix": {
+        "kind": "command",
+        "title": "Explain this rule",
+        "command": "saropaLints.explainRule",
+        "args": [
+          {
+            "ruleId": "inference_failure_on_instance_creation"
+          }
+        ]
+      },
+      "docUri": "https://github.com/saropa/saropa_lints/blob/main/ROADMAP.md",
+      "commitSha": "23d061521d3207c51889593d410b19fa27ff3644"
+    },
+    {
+      "id": "lints:directives_ordering:lib/features/cliente/dressing/dressing_screen.dart:8",
+      "source": "lints",
+      "severity": "info",
+      "category": "other",
+      "title": "Sort directive sections alphabetically.\nTry sorting the directives.",
+      "ruleId": "directives_ordering",
+      "location": {
+        "file": "lib/features/cliente/dressing/dressing_screen.dart",
+        "line": 8
+      },
+      "fix": {
+        "kind": "command",
+        "title": "Explain this rule",
+        "command": "saropaLints.explainRule",
+        "args": [
+          {
+            "ruleId": "directives_ordering"
+          }
+        ]
+      },
+      "docUri": "https://github.com/saropa/saropa_lints/blob/main/ROADMAP.md",
+      "commitSha": "23d061521d3207c51889593d410b19fa27ff3644"
+    },
+    {
+      "id": "lints:prefer_const_constructors:lib/features/cliente/dressing/dressing_screen.dart:260",
+      "source": "lints",
+      "severity": "info",
+      "category": "other",
+      "title": "Use 'const' with the constructor to improve performance.\nTry adding the 'const' keyword to the constructor invocation.",
+      "ruleId": "prefer_const_constructors",
+      "location": {
+        "file": "lib/features/cliente/dressing/dressing_screen.dart",
+        "line": 260
+      },
+      "fix": {
+        "kind": "command",
+        "title": "Explain this rule",
+        "command": "saropaLints.explainRule",
+        "args": [
+          {
+            "ruleId": "prefer_const_constructors"
+          }
+        ]
+      },
+      "docUri": "https://github.com/saropa/saropa_lints/blob/main/ROADMAP.md",
+      "commitSha": "23d061521d3207c51889593d410b19fa27ff3644"
+    },
+    {
+      "id": "lints:prefer_const_constructors:lib/features/cliente/dressing/dressing_screen.dart:345",
+      "source": "lints",
+      "severity": "info",
+      "category": "other",
+      "title": "Use 'const' with the constructor to improve performance.\nTry adding the 'const' keyword to the constructor invocation.",
+      "ruleId": "prefer_const_constructors",
+      "location": {
+        "file": "lib/features/cliente/dressing/dressing_screen.dart",
+        "line": 345
+      },
+      "fix": {
+        "kind": "command",
+        "title": "Explain this rule",
+        "command": "saropaLints.explainRule",
+        "args": [
+          {
+            "ruleId": "prefer_const_constructors"
+          }
+        ]
+      },
+      "docUri": "https://github.com/saropa/saropa_lints/blob/main/ROADMAP.md",
+      "commitSha": "23d061521d3207c51889593d410b19fa27ff3644"
+    },
+    {
+      "id": "lints:undefined_named_parameter:lib/features/sourceur/inscription/sourceur_inscription_screen.dart:211",
+      "source": "lints",
+      "severity": "error",
+      "category": "other",
+      "title": "The named parameter 'selectionnee' isn't defined.\nTry correcting the name to an existing named parameter's name, or defining a named parameter with the name 'selectionnee'.",
+      "ruleId": "undefined_named_parameter",
+      "location": {
+        "file": "lib/features/sourceur/inscription/sourceur_inscription_screen.dart",
+        "line": 211
+      },
+      "fix": {
+        "kind": "command",
+        "title": "Explain this rule",
+        "command": "saropaLints.explainRule",
+        "args": [
+          {
+            "ruleId": "undefined_named_parameter"
+          }
+        ]
+      },
+      "docUri": "https://github.com/saropa/saropa_lints/blob/main/ROADMAP.md",
+      "commitSha": "23d061521d3207c51889593d410b19fa27ff3644"
+    },
+    {
+      "id": "lints:todo:lib/features/sourceur/inscription/sourceur_inscription_screen.dart:81",
+      "source": "lints",
+      "severity": "info",
+      "category": "other",
+      "title": "TODO: brancher l'appel API d'inscription sourceur quand le backend",
+      "ruleId": "todo",
+      "location": {
+        "file": "lib/features/sourceur/inscription/sourceur_inscription_screen.dart",
+        "line": 81
+      },
+      "fix": {
+        "kind": "command",
+        "title": "Explain this rule",
+        "command": "saropaLints.explainRule",
+        "args": [
+          {
+            "ruleId": "todo"
+          }
+        ]
+      },
+      "docUri": "https://github.com/saropa/saropa_lints/blob/main/ROADMAP.md",
+      "commitSha": "23d061521d3207c51889593d410b19fa27ff3644"
+    },
+    {
+      "id": "lints:undefined_named_parameter:lib/features/sourceur/nouvelle/sourceur_nouvelle_piece_screen.dart:225",
+      "source": "lints",
+      "severity": "error",
+      "category": "other",
+      "title": "The named parameter 'selectionnee' isn't defined.\nTry correcting the name to an existing named parameter's name, or defining a named parameter with the name 'selectionnee'.",
+      "ruleId": "undefined_named_parameter",
+      "location": {
+        "file": "lib/features/sourceur/nouvelle/sourceur_nouvelle_piece_screen.dart",
+        "line": 225
+      },
+      "fix": {
+        "kind": "command",
+        "title": "Explain this rule",
+        "command": "saropaLints.explainRule",
+        "args": [
+          {
+            "ruleId": "undefined_named_parameter"
+          }
+        ]
+      },
+      "docUri": "https://github.com/saropa/saropa_lints/blob/main/ROADMAP.md",
+      "commitSha": "23d061521d3207c51889593d410b19fa27ff3644"
+    },
+    {
+      "id": "lints:todo:lib/features/sourceur/nouvelle/sourceur_nouvelle_piece_screen.dart:59",
+      "source": "lints",
+      "severity": "info",
+      "category": "other",
+      "title": "TODO: brancher l'envoi du dépôt au comité quand le backend",
+      "ruleId": "todo",
+      "location": {
+        "file": "lib/features/sourceur/nouvelle/sourceur_nouvelle_piece_screen.dart",
+        "line": 59
+      },
+      "fix": {
+        "kind": "command",
+        "title": "Explain this rule",
+        "command": "saropaLints.explainRule",
+        "args": [
+          {
+            "ruleId": "todo"
+          }
+        ]
+      },
+      "docUri": "https://github.com/saropa/saropa_lints/blob/main/ROADMAP.md",
+      "commitSha": "23d061521d3207c51889593d410b19fa27ff3644"
+    },
+    {
+      "id": "lints:todo:lib/features/sourceur/nouvelle/sourceur_nouvelle_piece_screen.dart:201",
+      "source": "lints",
+      "severity": "info",
+      "category": "other",
+      "title": "TODO: ouvrir le sélecteur de photos (image_picker).",
+      "ruleId": "todo",
+      "location": {
+        "file": "lib/features/sourceur/nouvelle/sourceur_nouvelle_piece_screen.dart",
+        "line": 201
+      },
+      "fix": {
+        "kind": "command",
+        "title": "Explain this rule",
+        "command": "saropaLints.explainRule",
+        "args": [
+          {
+            "ruleId": "todo"
+          }
+        ]
+      },
+      "docUri": "https://github.com/saropa/saropa_lints/blob/main/ROADMAP.md",
+      "commitSha": "23d061521d3207c51889593d410b19fa27ff3644"
+    },
+    {
+      "id": "lints:undefined_named_parameter:lib/features/sourceur/pieces/sourceur_pieces_screen.dart:113",
+      "source": "lints",
+      "severity": "error",
+      "category": "other",
+      "title": "The named parameter 'selectionnee' isn't defined.\nTry correcting the name to an existing named parameter's name, or defining a named parameter with the name 'selectionnee'.",
+      "ruleId": "undefined_named_parameter",
+      "location": {
+        "file": "lib/features/sourceur/pieces/sourceur_pieces_screen.dart",
+        "line": 113
+      },
+      "fix": {
+        "kind": "command",
+        "title": "Explain this rule",
+        "command": "saropaLints.explainRule",
+        "args": [
+          {
+            "ruleId": "undefined_named_parameter"
+          }
+        ]
+      },
+      "docUri": "https://github.com/saropa/saropa_lints/blob/main/ROADMAP.md",
+      "commitSha": "23d061521d3207c51889593d410b19fa27ff3644"
+    },
+    {
+      "id": "lints:todo:lib/features/sourceur/pieces/sourceur_pieces_screen.dart:78",
+      "source": "lints",
+      "severity": "info",
+      "category": "other",
+      "title": "TODO: afficher les cartes de pièces quand le backend",
+      "ruleId": "todo",
+      "location": {
+        "file": "lib/features/sourceur/pieces/sourceur_pieces_screen.dart",
+        "line": 78
+      },
+      "fix": {
+        "kind": "command",
+        "title": "Explain this rule",
+        "command": "saropaLints.explainRule",
+        "args": [
+          {
+            "ruleId": "todo"
+          }
+        ]
+      },
+      "docUri": "https://github.com/saropa/saropa_lints/blob/main/ROADMAP.md",
+      "commitSha": "23d061521d3207c51889593d410b19fa27ff3644"
+    },
+    {
+      "id": "lints:todo:lib/features/sourceur/revenus/sourceur_revenus_screen.dart:112",
+      "source": "lints",
+      "severity": "info",
+      "category": "other",
+      "title": "TODO: brancher la demande de versement (backend).",
+      "ruleId": "todo",
+      "location": {
+        "file": "lib/features/sourceur/revenus/sourceur_revenus_screen.dart",
+        "line": 112
+      },
+      "fix": {
+        "kind": "command",
+        "title": "Explain this rule",
+        "command": "saropaLints.explainRule",
+        "args": [
+          {
+            "ruleId": "todo"
+          }
+        ]
+      },
+      "docUri": "https://github.com/saropa/saropa_lints/blob/main/ROADMAP.md",
+      "commitSha": "23d061521d3207c51889593d410b19fa27ff3644"
+    },
+    {
+      "id": "lints:todo:lib/features/sourceur/revenus/sourceur_revenus_screen.dart:174",
+      "source": "lints",
+      "severity": "info",
+      "category": "other",
+      "title": "TODO: afficher la liste des ventes quand le backend sera branché.",
+      "ruleId": "todo",
+      "location": {
+        "file": "lib/features/sourceur/revenus/sourceur_revenus_screen.dart",
+        "line": 174
+      },
+      "fix": {
+        "kind": "command",
+        "title": "Explain this rule",
+        "command": "saropaLints.explainRule",
+        "args": [
+          {
+            "ruleId": "todo"
+          }
+        ]
+      },
+      "docUri": "https://github.com/saropa/saropa_lints/blob/main/ROADMAP.md",
+      "commitSha": "23d061521d3207c51889593d410b19fa27ff3644"
+    },
+    {
+      "id": "lints:undefined_getter:test/sourceur_nouvelle_piece_test.dart:43",
+      "source": "lints",
+      "severity": "error",
+      "category": "other",
+      "title": "The getter 'selectionnee' isn't defined for the type 'ClosetChip'.\nTry importing the library that defines 'selectionnee', correcting the name to the name of an existing getter, or defining a getter or field named 'selectionnee'.",
+      "ruleId": "undefined_getter",
+      "location": {
+        "file": "test/sourceur_nouvelle_piece_test.dart",
+        "line": 43
+      },
+      "fix": {
+        "kind": "command",
+        "title": "Explain this rule",
+        "command": "saropaLints.explainRule",
+        "args": [
+          {
+            "ruleId": "undefined_getter"
+          }
+        ]
+      },
+      "docUri": "https://github.com/saropa/saropa_lints/blob/main/ROADMAP.md",
+      "commitSha": "23d061521d3207c51889593d410b19fa27ff3644"
+    },
+    {
+      "id": "lints:undefined_getter:test/sourceur_nouvelle_piece_test.dart:48",
+      "source": "lints",
+      "severity": "error",
+      "category": "other",
+      "title": "The getter 'selectionnee' isn't defined for the type 'ClosetChip'.\nTry importing the library that defines 'selectionnee', correcting the name to the name of an existing getter, or defining a getter or field named 'selectionnee'.",
+      "ruleId": "undefined_getter",
+      "location": {
+        "file": "test/sourceur_nouvelle_piece_test.dart",
+        "line": 48
+      },
+      "fix": {
+        "kind": "command",
+        "title": "Explain this rule",
+        "command": "saropaLints.explainRule",
+        "args": [
+          {
+            "ruleId": "undefined_getter"
+          }
+        ]
+      },
+      "docUri": "https://github.com/saropa/saropa_lints/blob/main/ROADMAP.md",
+      "commitSha": "23d061521d3207c51889593d410b19fa27ff3644"
+    },
+    {
+      "id": "lints:undefined_getter:test/sourceur_nouvelle_piece_test.dart:49",
+      "source": "lints",
+      "severity": "error",
+      "category": "other",
+      "title": "The getter 'selectionnee' isn't defined for the type 'ClosetChip'.\nTry importing the library that defines 'selectionnee', correcting the name to the name of an existing getter, or defining a getter or field named 'selectionnee'.",
+      "ruleId": "undefined_getter",
+      "location": {
+        "file": "test/sourceur_nouvelle_piece_test.dart",
+        "line": 49
+      },
+      "fix": {
+        "kind": "command",
+        "title": "Explain this rule",
+        "command": "saropaLints.explainRule",
+        "args": [
+          {
+            "ruleId": "undefined_getter"
+          }
+        ]
+      },
+      "docUri": "https://github.com/saropa/saropa_lints/blob/main/ROADMAP.md",
+      "commitSha": "23d061521d3207c51889593d410b19fa27ff3644"
+    },
+    {
+      "id": "lints:undefined_getter:test/sourceur_pieces_test.dart:27",
+      "source": "lints",
+      "severity": "error",
+      "category": "other",
+      "title": "The getter 'selectionnee' isn't defined for the type 'ClosetChip'.\nTry importing the library that defines 'selectionnee', correcting the name to the name of an existing getter, or defining a getter or field named 'selectionnee'.",
+      "ruleId": "undefined_getter",
+      "location": {
+        "file": "test/sourceur_pieces_test.dart",
+        "line": 27
+      },
+      "fix": {
+        "kind": "command",
+        "title": "Explain this rule",
+        "command": "saropaLints.explainRule",
+        "args": [
+          {
+            "ruleId": "undefined_getter"
+          }
+        ]
+      },
+      "docUri": "https://github.com/saropa/saropa_lints/blob/main/ROADMAP.md",
+      "commitSha": "23d061521d3207c51889593d410b19fa27ff3644"
+    },
+    {
+      "id": "lints:undefined_getter:test/sourceur_pieces_test.dart:32",
+      "source": "lints",
+      "severity": "error",
+      "category": "other",
+      "title": "The getter 'selectionnee' isn't defined for the type 'ClosetChip'.\nTry importing the library that defines 'selectionnee', correcting the name to the name of an existing getter, or defining a getter or field named 'selectionnee'.",
+      "ruleId": "undefined_getter",
+      "location": {
+        "file": "test/sourceur_pieces_test.dart",
+        "line": 32
+      },
+      "fix": {
+        "kind": "command",
+        "title": "Explain this rule",
+        "command": "saropaLints.explainRule",
+        "args": [
+          {
+            "ruleId": "undefined_getter"
+          }
+        ]
+      },
+      "docUri": "https://github.com/saropa/saropa_lints/blob/main/ROADMAP.md",
+      "commitSha": "23d061521d3207c51889593d410b19fa27ff3644"
+    },
+    {
+      "id": "lints:undefined_getter:test/sourceur_pieces_test.dart:33",
+      "source": "lints",
+      "severity": "error",
+      "category": "other",
+      "title": "The getter 'selectionnee' isn't defined for the type 'ClosetChip'.\nTry importing the library that defines 'selectionnee', correcting the name to the name of an existing getter, or defining a getter or field named 'selectionnee'.",
+      "ruleId": "undefined_getter",
+      "location": {
+        "file": "test/sourceur_pieces_test.dart",
+        "line": 33
+      },
+      "fix": {
+        "kind": "command",
+        "title": "Explain this rule",
+        "command": "saropaLints.explainRule",
+        "args": [
+          {
+            "ruleId": "undefined_getter"
+          }
+        ]
+      },
+      "docUri": "https://github.com/saropa/saropa_lints/blob/main/ROADMAP.md",
+      "commitSha": "23d061521d3207c51889593d410b19fa27ff3644"
+    },
+    {
+      "id": "lints:prefer_const_constructors:lib/features/cliente/dressing/widgets/hero_arche.dart:24",
+      "source": "lints",
+      "severity": "info",
+      "category": "other",
+      "title": "Use 'const' with the constructor to improve performance.\nTry adding the 'const' keyword to the constructor invocation.",
+      "ruleId": "prefer_const_constructors",
+      "location": {
+        "file": "lib/features/cliente/dressing/widgets/hero_arche.dart",
+        "line": 24
+      },
+      "fix": {
+        "kind": "command",
+        "title": "Explain this rule",
+        "command": "saropaLints.explainRule",
+        "args": [
+          {
+            "ruleId": "prefer_const_constructors"
+          }
+        ]
+      },
+      "docUri": "https://github.com/saropa/saropa_lints/blob/main/ROADMAP.md",
+      "commitSha": "23d061521d3207c51889593d410b19fa27ff3644"
+    },
+    {
+      "id": "lints:prefer_const_literals_to_create_immutables:lib/features/cliente/dressing/widgets/hero_arche.dart:26",
+      "source": "lints",
+      "severity": "info",
+      "category": "other",
+      "title": "Use 'const' literals as arguments to constructors of '@immutable' classes.\nTry adding 'const' before the literal.",
+      "ruleId": "prefer_const_literals_to_create_immutables",
+      "location": {
+        "file": "lib/features/cliente/dressing/widgets/hero_arche.dart",
+        "line": 26
+      },
+      "fix": {
+        "kind": "command",
+        "title": "Explain this rule",
+        "command": "saropaLints.explainRule",
+        "args": [
+          {
+            "ruleId": "prefer_const_literals_to_create_immutables"
+          }
+        ]
+      },
+      "docUri": "https://github.com/saropa/saropa_lints/blob/main/ROADMAP.md",
+      "commitSha": "23d061521d3207c51889593d410b19fa27ff3644"
+    },
+    {
+      "id": "lints:prefer_const_constructors:lib/features/cliente/dressing/widgets/hero_arche.dart:70",
+      "source": "lints",
+      "severity": "info",
+      "category": "other",
+      "title": "Use 'const' with the constructor to improve performance.\nTry adding the 'const' keyword to the constructor invocation.",
+      "ruleId": "prefer_const_constructors",
+      "location": {
+        "file": "lib/features/cliente/dressing/widgets/hero_arche.dart",
+        "line": 70
+      },
+      "fix": {
+        "kind": "command",
+        "title": "Explain this rule",
+        "command": "saropaLints.explainRule",
+        "args": [
+          {
+            "ruleId": "prefer_const_constructors"
+          }
+        ]
+      },
+      "docUri": "https://github.com/saropa/saropa_lints/blob/main/ROADMAP.md",
+      "commitSha": "23d061521d3207c51889593d410b19fa27ff3644"
+    },
+    {
+      "id": "lints:prefer_const_literals_to_create_immutables:lib/features/cliente/dressing/widgets/hero_arche.dart:72",
+      "source": "lints",
+      "severity": "info",
+      "category": "other",
+      "title": "Use 'const' literals as arguments to constructors of '@immutable' classes.\nTry adding 'const' before the literal.",
+      "ruleId": "prefer_const_literals_to_create_immutables",
+      "location": {
+        "file": "lib/features/cliente/dressing/widgets/hero_arche.dart",
+        "line": 72
+      },
+      "fix": {
+        "kind": "command",
+        "title": "Explain this rule",
+        "command": "saropaLints.explainRule",
+        "args": [
+          {
+            "ruleId": "prefer_const_literals_to_create_immutables"
+          }
+        ]
+      },
+      "docUri": "https://github.com/saropa/saropa_lints/blob/main/ROADMAP.md",
+      "commitSha": "23d061521d3207c51889593d410b19fa27ff3644"
+    },
+    {
+      "id": "lints:inference_failure_on_instance_creation:lib/features/cliente/dressing/product_detail_screen.dart:400",
+      "source": "lints",
+      "severity": "warning",
+      "category": "other",
+      "title": "The type argument(s) of the constructor 'MaterialPageRoute' can't be inferred.\nUse explicit type argument(s) for 'MaterialPageRoute'.",
+      "ruleId": "inference_failure_on_instance_creation",
+      "location": {
+        "file": "lib/features/cliente/dressing/product_detail_screen.dart",
+        "line": 400
+      },
+      "fix": {
+        "kind": "command",
+        "title": "Explain this rule",
+        "command": "saropaLints.explainRule",
+        "args": [
+          {
+            "ruleId": "inference_failure_on_instance_creation"
+          }
+        ]
+      },
+      "docUri": "https://github.com/saropa/saropa_lints/blob/main/ROADMAP.md",
+      "commitSha": "23d061521d3207c51889593d410b19fa27ff3644"
+    },
+    {
+      "id": "lints:prefer_const_constructors:lib/features/cliente/dressing/product_detail_screen.dart:268",
+      "source": "lints",
+      "severity": "info",
+      "category": "other",
+      "title": "Use 'const' with the constructor to improve performance.\nTry adding the 'const' keyword to the constructor invocation.",
+      "ruleId": "prefer_const_constructors",
+      "location": {
+        "file": "lib/features/cliente/dressing/product_detail_screen.dart",
+        "line": 268
+      },
+      "fix": {
+        "kind": "command",
+        "title": "Explain this rule",
+        "command": "saropaLints.explainRule",
+        "args": [
+          {
+            "ruleId": "prefer_const_constructors"
+          }
+        ]
+      },
+      "docUri": "https://github.com/saropa/saropa_lints/blob/main/ROADMAP.md",
+      "commitSha": "23d061521d3207c51889593d410b19fa27ff3644"
+    },
+    {
+      "id": "lints:prefer_const_literals_to_create_immutables:lib/features/cliente/dressing/product_detail_screen.dart:269",
+      "source": "lints",
+      "severity": "info",
+      "category": "other",
+      "title": "Use 'const' literals as arguments to constructors of '@immutable' classes.\nTry adding 'const' before the literal.",
+      "ruleId": "prefer_const_literals_to_create_immutables",
+      "location": {
+        "file": "lib/features/cliente/dressing/product_detail_screen.dart",
+        "line": 269
+      },
+      "fix": {
+        "kind": "command",
+        "title": "Explain this rule",
+        "command": "saropaLints.explainRule",
+        "args": [
+          {
+            "ruleId": "prefer_const_literals_to_create_immutables"
+          }
+        ]
+      },
+      "docUri": "https://github.com/saropa/saropa_lints/blob/main/ROADMAP.md",
+      "commitSha": "23d061521d3207c51889593d410b19fa27ff3644"
+    },
+    {
+      "id": "lints:prefer_const_constructors:lib/features/cliente/dressing/product_detail_screen.dart:311",
+      "source": "lints",
+      "severity": "info",
+      "category": "other",
+      "title": "Use 'const' with the constructor to improve performance.\nTry adding the 'const' keyword to the constructor invocation.",
+      "ruleId": "prefer_const_constructors",
+      "location": {
+        "file": "lib/features/cliente/dressing/product_detail_screen.dart",
+        "line": 311
+      },
+      "fix": {
+        "kind": "command",
+        "title": "Explain this rule",
+        "command": "saropaLints.explainRule",
+        "args": [
+          {
+            "ruleId": "prefer_const_constructors"
+          }
+        ]
+      },
+      "docUri": "https://github.com/saropa/saropa_lints/blob/main/ROADMAP.md",
+      "commitSha": "23d061521d3207c51889593d410b19fa27ff3644"
+    },
+    {
+      "id": "lints:prefer_const_literals_to_create_immutables:lib/features/cliente/dressing/product_detail_screen.dart:317",
+      "source": "lints",
+      "severity": "info",
+      "category": "other",
+      "title": "Use 'const' literals as arguments to constructors of '@immutable' classes.\nTry adding 'const' before the literal.",
+      "ruleId": "prefer_const_literals_to_create_immutables",
+      "location": {
+        "file": "lib/features/cliente/dressing/product_detail_screen.dart",
+        "line": 317
+      },
+      "fix": {
+        "kind": "command",
+        "title": "Explain this rule",
+        "command": "saropaLints.explainRule",
+        "args": [
+          {
+            "ruleId": "prefer_const_literals_to_create_immutables"
+          }
+        ]
+      },
+      "docUri": "https://github.com/saropa/saropa_lints/blob/main/ROADMAP.md",
+      "commitSha": "23d061521d3207c51889593d410b19fa27ff3644"
+    },
+    {
+      "id": "lints:prefer_interpolation_to_compose_strings:lib/features/cliente/dressing/product_detail_screen.dart:376",
+      "source": "lints",
+      "severity": "info",
+      "category": "other",
+      "title": "Use interpolation to compose strings and values.\nTry using string interpolation to build the composite string.",
+      "ruleId": "prefer_interpolation_to_compose_strings",
+      "location": {
+        "file": "lib/features/cliente/dressing/product_detail_screen.dart",
+        "line": 376
+      },
+      "fix": {
+        "kind": "command",
+        "title": "Explain this rule",
+        "command": "saropaLints.explainRule",
+        "args": [
+          {
+            "ruleId": "prefer_interpolation_to_compose_strings"
+          }
+        ]
+      },
+      "docUri": "https://github.com/saropa/saropa_lints/blob/main/ROADMAP.md",
+      "commitSha": "23d061521d3207c51889593d410b19fa27ff3644"
+    },
+    {
+      "id": "lints:prefer_const_constructors:lib/features/cliente/dressing/product_detail_screen.dart:411",
+      "source": "lints",
+      "severity": "info",
+      "category": "other",
+      "title": "Use 'const' with the constructor to improve performance.\nTry adding the 'const' keyword to the constructor invocation.",
+      "ruleId": "prefer_const_constructors",
+      "location": {
+        "file": "lib/features/cliente/dressing/product_detail_screen.dart",
+        "line": 411
+      },
+      "fix": {
+        "kind": "command",
+        "title": "Explain this rule",
+        "command": "saropaLints.explainRule",
+        "args": [
+          {
+            "ruleId": "prefer_const_constructors"
+          }
+        ]
+      },
+      "docUri": "https://github.com/saropa/saropa_lints/blob/main/ROADMAP.md",
+      "commitSha": "23d061521d3207c51889593d410b19fa27ff3644"
+    },
+    {
+      "id": "lints:prefer_const_literals_to_create_immutables:lib/features/cliente/dressing/product_detail_screen.dart:413",
+      "source": "lints",
+      "severity": "info",
+      "category": "other",
+      "title": "Use 'const' literals as arguments to constructors of '@immutable' classes.\nTry adding 'const' before the literal.",
+      "ruleId": "prefer_const_literals_to_create_immutables",
+      "location": {
+        "file": "lib/features/cliente/dressing/product_detail_screen.dart",
+        "line": 413
+      },
+      "fix": {
+        "kind": "command",
+        "title": "Explain this rule",
+        "command": "saropaLints.explainRule",
+        "args": [
+          {
+            "ruleId": "prefer_const_literals_to_create_immutables"
+          }
+        ]
+      },
+      "docUri": "https://github.com/saropa/saropa_lints/blob/main/ROADMAP.md",
+      "commitSha": "23d061521d3207c51889593d410b19fa27ff3644"
+    },
+    {
+      "id": "lints:inference_failure_on_instance_creation:lib/features/cliente/selection/selection_screen.dart:355",
+      "source": "lints",
+      "severity": "warning",
+      "category": "other",
+      "title": "The type argument(s) of the constructor 'MaterialPageRoute' can't be inferred.\nUse explicit type argument(s) for 'MaterialPageRoute'.",
+      "ruleId": "inference_failure_on_instance_creation",
+      "location": {
+        "file": "lib/features/cliente/selection/selection_screen.dart",
+        "line": 355
+      },
+      "fix": {
+        "kind": "command",
+        "title": "Explain this rule",
+        "command": "saropaLints.explainRule",
+        "args": [
+          {
+            "ruleId": "inference_failure_on_instance_creation"
+          }
+        ]
+      },
+      "docUri": "https://github.com/saropa/saropa_lints/blob/main/ROADMAP.md",
+      "commitSha": "23d061521d3207c51889593d410b19fa27ff3644"
+    },
+    {
+      "id": "lints:unused_import:lib/features/cliente/selection/selection_screen.dart:6",
+      "source": "lints",
+      "severity": "warning",
+      "category": "other",
+      "title": "Unused import: 'payment_screen.dart'.\nTry removing the import directive.",
+      "ruleId": "unused_import",
+      "location": {
+        "file": "lib/features/cliente/selection/selection_screen.dart",
+        "line": 6
+      },
+      "fix": {
+        "kind": "command",
+        "title": "Explain this rule",
+        "command": "saropaLints.explainRule",
+        "args": [
+          {
+            "ruleId": "unused_import"
+          }
+        ]
+      },
+      "docUri": "https://github.com/saropa/saropa_lints/blob/main/ROADMAP.md",
+      "commitSha": "23d061521d3207c51889593d410b19fa27ff3644"
+    },
+    {
+      "id": "lints:unused_element:lib/features/cliente/selection/selection_screen.dart:88",
+      "source": "lints",
+      "severity": "warning",
+      "category": "other",
+      "title": "The declaration '_buildCartItem' isn't referenced.\nTry removing the declaration of '_buildCartItem'.",
+      "ruleId": "unused_element",
+      "location": {
+        "file": "lib/features/cliente/selection/selection_screen.dart",
+        "line": 88
+      },
+      "fix": {
+        "kind": "command",
+        "title": "Explain this rule",
+        "command": "saropaLints.explainRule",
+        "args": [
+          {
+            "ruleId": "unused_element"
+          }
+        ]
+      },
+      "docUri": "https://github.com/saropa/saropa_lints/blob/main/ROADMAP.md",
+      "commitSha": "23d061521d3207c51889593d410b19fa27ff3644"
+    },
+    {
+      "id": "lints:prefer_const_constructors:lib/features/cliente/selection/selection_screen.dart:186",
+      "source": "lints",
+      "severity": "info",
+      "category": "other",
+      "title": "Use 'const' with the constructor to improve performance.\nTry adding the 'const' keyword to the constructor invocation.",
+      "ruleId": "prefer_const_constructors",
+      "location": {
+        "file": "lib/features/cliente/selection/selection_screen.dart",
+        "line": 186
+      },
+      "fix": {
+        "kind": "command",
+        "title": "Explain this rule",
+        "command": "saropaLints.explainRule",
+        "args": [
+          {
+            "ruleId": "prefer_const_constructors"
+          }
+        ]
+      },
+      "docUri": "https://github.com/saropa/saropa_lints/blob/main/ROADMAP.md",
+      "commitSha": "23d061521d3207c51889593d410b19fa27ff3644"
+    },
+    {
+      "id": "lints:prefer_const_literals_to_create_immutables:lib/features/cliente/selection/selection_screen.dart:187",
+      "source": "lints",
+      "severity": "info",
+      "category": "other",
+      "title": "Use 'const' literals as arguments to constructors of '@immutable' classes.\nTry adding 'const' before the literal.",
+      "ruleId": "prefer_const_literals_to_create_immutables",
+      "location": {
+        "file": "lib/features/cliente/selection/selection_screen.dart",
+        "line": 187
+      },
+      "fix": {
+        "kind": "command",
+        "title": "Explain this rule",
+        "command": "saropaLints.explainRule",
+        "args": [
+          {
+            "ruleId": "prefer_const_literals_to_create_immutables"
+          }
+        ]
+      },
+      "docUri": "https://github.com/saropa/saropa_lints/blob/main/ROADMAP.md",
+      "commitSha": "23d061521d3207c51889593d410b19fa27ff3644"
+    },
+    {
+      "id": "lints:inference_failure_on_instance_creation:lib/features/cliente/selection/payment_screen.dart:567",
+      "source": "lints",
+      "severity": "warning",
+      "category": "other",
+      "title": "The type argument(s) of the constructor 'MaterialPageRoute' can't be inferred.\nUse explicit type argument(s) for 'MaterialPageRoute'.",
+      "ruleId": "inference_failure_on_instance_creation",
+      "location": {
+        "file": "lib/features/cliente/selection/payment_screen.dart",
+        "line": 567
+      },
+      "fix": {
+        "kind": "command",
+        "title": "Explain this rule",
+        "command": "saropaLints.explainRule",
+        "args": [
+          {
+            "ruleId": "inference_failure_on_instance_creation"
+          }
+        ]
+      },
+      "docUri": "https://github.com/saropa/saropa_lints/blob/main/ROADMAP.md",
+      "commitSha": "23d061521d3207c51889593d410b19fa27ff3644"
+    },
+    {
+      "id": "lints:prefer_const_constructors:lib/features/cliente/selection/payment_screen.dart:357",
+      "source": "lints",
+      "severity": "info",
+      "category": "other",
+      "title": "Use 'const' with the constructor to improve performance.\nTry adding the 'const' keyword to the constructor invocation.",
+      "ruleId": "prefer_const_constructors",
+      "location": {
+        "file": "lib/features/cliente/selection/payment_screen.dart",
+        "line": 357
+      },
+      "fix": {
+        "kind": "command",
+        "title": "Explain this rule",
+        "command": "saropaLints.explainRule",
+        "args": [
+          {
+            "ruleId": "prefer_const_constructors"
+          }
+        ]
+      },
+      "docUri": "https://github.com/saropa/saropa_lints/blob/main/ROADMAP.md",
+      "commitSha": "23d061521d3207c51889593d410b19fa27ff3644"
+    },
+    {
+      "id": "lints:prefer_const_literals_to_create_immutables:lib/features/cliente/selection/payment_screen.dart:359",
+      "source": "lints",
+      "severity": "info",
+      "category": "other",
+      "title": "Use 'const' literals as arguments to constructors of '@immutable' classes.\nTry adding 'const' before the literal.",
+      "ruleId": "prefer_const_literals_to_create_immutables",
+      "location": {
+        "file": "lib/features/cliente/selection/payment_screen.dart",
+        "line": 359
+      },
+      "fix": {
+        "kind": "command",
+        "title": "Explain this rule",
+        "command": "saropaLints.explainRule",
+        "args": [
+          {
+            "ruleId": "prefer_const_literals_to_create_immutables"
+          }
+        ]
+      },
+      "docUri": "https://github.com/saropa/saropa_lints/blob/main/ROADMAP.md",
+      "commitSha": "23d061521d3207c51889593d410b19fa27ff3644"
+    },
+    {
+      "id": "lints:prefer_const_constructors:lib/features/cliente/selection/payment_screen.dart:360",
+      "source": "lints",
+      "severity": "info",
+      "category": "other",
+      "title": "Use 'const' with the constructor to improve performance.\nTry adding the 'const' keyword to the constructor invocation.",
+      "ruleId": "prefer_const_constructors",
+      "location": {
+        "file": "lib/features/cliente/selection/payment_screen.dart",
+        "line": 360
+      },
+      "fix": {
+        "kind": "command",
+        "title": "Explain this rule",
+        "command": "saropaLints.explainRule",
+        "args": [
+          {
+            "ruleId": "prefer_const_constructors"
+          }
+        ]
+      },
+      "docUri": "https://github.com/saropa/saropa_lints/blob/main/ROADMAP.md",
+      "commitSha": "23d061521d3207c51889593d410b19fa27ff3644"
+    },
+    {
+      "id": "lints:prefer_const_literals_to_create_immutables:lib/features/cliente/selection/payment_screen.dart:361",
+      "source": "lints",
+      "severity": "info",
+      "category": "other",
+      "title": "Use 'const' literals as arguments to constructors of '@immutable' classes.\nTry adding 'const' before the literal.",
+      "ruleId": "prefer_const_literals_to_create_immutables",
+      "location": {
+        "file": "lib/features/cliente/selection/payment_screen.dart",
+        "line": 361
+      },
+      "fix": {
+        "kind": "command",
+        "title": "Explain this rule",
+        "command": "saropaLints.explainRule",
+        "args": [
+          {
+            "ruleId": "prefer_const_literals_to_create_immutables"
+          }
+        ]
+      },
+      "docUri": "https://github.com/saropa/saropa_lints/blob/main/ROADMAP.md",
+      "commitSha": "23d061521d3207c51889593d410b19fa27ff3644"
+    },
+    {
+      "id": "lints:prefer_const_constructors:lib/features/cliente/selection/payment_screen.dart:580",
+      "source": "lints",
+      "severity": "info",
+      "category": "other",
+      "title": "Use 'const' with the constructor to improve performance.\nTry adding the 'const' keyword to the constructor invocation.",
+      "ruleId": "prefer_const_constructors",
+      "location": {
+        "file": "lib/features/cliente/selection/payment_screen.dart",
+        "line": 580
+      },
+      "fix": {
+        "kind": "command",
+        "title": "Explain this rule",
+        "command": "saropaLints.explainRule",
+        "args": [
+          {
+            "ruleId": "prefer_const_constructors"
+          }
+        ]
+      },
+      "docUri": "https://github.com/saropa/saropa_lints/blob/main/ROADMAP.md",
+      "commitSha": "23d061521d3207c51889593d410b19fa27ff3644"
+    },
+    {
+      "id": "lints:prefer_const_literals_to_create_immutables:lib/features/cliente/selection/payment_screen.dart:582",
+      "source": "lints",
+      "severity": "info",
+      "category": "other",
+      "title": "Use 'const' literals as arguments to constructors of '@immutable' classes.\nTry adding 'const' before the literal.",
+      "ruleId": "prefer_const_literals_to_create_immutables",
+      "location": {
+        "file": "lib/features/cliente/selection/payment_screen.dart",
+        "line": 582
+      },
+      "fix": {
+        "kind": "command",
+        "title": "Explain this rule",
+        "command": "saropaLints.explainRule",
+        "args": [
+          {
+            "ruleId": "prefer_const_literals_to_create_immutables"
+          }
+        ]
+      },
+      "docUri": "https://github.com/saropa/saropa_lints/blob/main/ROADMAP.md",
+      "commitSha": "23d061521d3207c51889593d410b19fa27ff3644"
+    },
+    {
+      "id": "lints:prefer_const_constructors:lib/features/cliente/selection/payment_screen.dart:601",
+      "source": "lints",
+      "severity": "info",
+      "category": "other",
+      "title": "Use 'const' with the constructor to improve performance.\nTry adding the 'const' keyword to the constructor invocation.",
+      "ruleId": "prefer_const_constructors",
+      "location": {
+        "file": "lib/features/cliente/selection/payment_screen.dart",
+        "line": 601
+      },
+      "fix": {
+        "kind": "command",
+        "title": "Explain this rule",
+        "command": "saropaLints.explainRule",
+        "args": [
+          {
+            "ruleId": "prefer_const_constructors"
+          }
+        ]
+      },
+      "docUri": "https://github.com/saropa/saropa_lints/blob/main/ROADMAP.md",
+      "commitSha": "23d061521d3207c51889593d410b19fa27ff3644"
+    },
+    {
+      "id": "lints:prefer_const_literals_to_create_immutables:lib/features/cliente/selection/payment_screen.dart:603",
+      "source": "lints",
+      "severity": "info",
+      "category": "other",
+      "title": "Use 'const' literals as arguments to constructors of '@immutable' classes.\nTry adding 'const' before the literal.",
+      "ruleId": "prefer_const_literals_to_create_immutables",
+      "location": {
+        "file": "lib/features/cliente/selection/payment_screen.dart",
+        "line": 603
+      },
+      "fix": {
+        "kind": "command",
+        "title": "Explain this rule",
+        "command": "saropaLints.explainRule",
+        "args": [
+          {
+            "ruleId": "prefer_const_literals_to_create_immutables"
+          }
+        ]
+      },
+      "docUri": "https://github.com/saropa/saropa_lints/blob/main/ROADMAP.md",
+      "commitSha": "23d061521d3207c51889593d410b19fa27ff3644"
+    },
+    {
+      "id": "lints:inference_failure_on_instance_creation:lib/features/cliente/selection/confirmation_screen.dart:381",
+      "source": "lints",
+      "severity": "warning",
+      "category": "other",
+      "title": "The type argument(s) of the constructor 'MaterialPageRoute' can't be inferred.\nUse explicit type argument(s) for 'MaterialPageRoute'.",
+      "ruleId": "inference_failure_on_instance_creation",
+      "location": {
+        "file": "lib/features/cliente/selection/confirmation_screen.dart",
+        "line": 381
+      },
+      "fix": {
+        "kind": "command",
+        "title": "Explain this rule",
+        "command": "saropaLints.explainRule",
+        "args": [
+          {
+            "ruleId": "inference_failure_on_instance_creation"
+          }
+        ]
+      },
+      "docUri": "https://github.com/saropa/saropa_lints/blob/main/ROADMAP.md",
+      "commitSha": "23d061521d3207c51889593d410b19fa27ff3644"
+    },
+    {
+      "id": "lints:inference_failure_on_instance_creation:lib/features/cliente/selection/confirmation_screen.dart:408",
+      "source": "lints",
+      "severity": "warning",
+      "category": "other",
+      "title": "The type argument(s) of the constructor 'MaterialPageRoute' can't be inferred.\nUse explicit type argument(s) for 'MaterialPageRoute'.",
+      "ruleId": "inference_failure_on_instance_creation",
+      "location": {
+        "file": "lib/features/cliente/selection/confirmation_screen.dart",
+        "line": 408
+      },
+      "fix": {
+        "kind": "command",
+        "title": "Explain this rule",
+        "command": "saropaLints.explainRule",
+        "args": [
+          {
+            "ruleId": "inference_failure_on_instance_creation"
+          }
+        ]
+      },
+      "docUri": "https://github.com/saropa/saropa_lints/blob/main/ROADMAP.md",
+      "commitSha": "23d061521d3207c51889593d410b19fa27ff3644"
+    },
+    {
+      "id": "lints:prefer_const_constructors:lib/features/cliente/selection/confirmation_screen.dart:335",
+      "source": "lints",
+      "severity": "info",
+      "category": "other",
+      "title": "Use 'const' with the constructor to improve performance.\nTry adding the 'const' keyword to the constructor invocation.",
+      "ruleId": "prefer_const_constructors",
+      "location": {
+        "file": "lib/features/cliente/selection/confirmation_screen.dart",
+        "line": 335
+      },
+      "fix": {
+        "kind": "command",
+        "title": "Explain this rule",
+        "command": "saropaLints.explainRule",
+        "args": [
+          {
+            "ruleId": "prefer_const_constructors"
+          }
+        ]
+      },
+      "docUri": "https://github.com/saropa/saropa_lints/blob/main/ROADMAP.md",
+      "commitSha": "23d061521d3207c51889593d410b19fa27ff3644"
+    },
+    {
+      "id": "lints:prefer_const_literals_to_create_immutables:lib/features/cliente/selection/confirmation_screen.dart:336",
+      "source": "lints",
+      "severity": "info",
+      "category": "other",
+      "title": "Use 'const' literals as arguments to constructors of '@immutable' classes.\nTry adding 'const' before the literal.",
+      "ruleId": "prefer_const_literals_to_create_immutables",
+      "location": {
+        "file": "lib/features/cliente/selection/confirmation_screen.dart",
+        "line": 336
+      },
+      "fix": {
+        "kind": "command",
+        "title": "Explain this rule",
+        "command": "saropaLints.explainRule",
+        "args": [
+          {
+            "ruleId": "prefer_const_literals_to_create_immutables"
+          }
+        ]
+      },
+      "docUri": "https://github.com/saropa/saropa_lints/blob/main/ROADMAP.md",
+      "commitSha": "23d061521d3207c51889593d410b19fa27ff3644"
+    },
+    {
+      "id": "lints:inference_failure_on_instance_creation:lib/features/cliente/espace/espace_screen.dart:615",
+      "source": "lints",
+      "severity": "warning",
+      "category": "other",
+      "title": "The type argument(s) of the constructor 'MaterialPageRoute' can't be inferred.\nUse explicit type argument(s) for 'MaterialPageRoute'.",
+      "ruleId": "inference_failure_on_instance_creation",
+      "location": {
+        "file": "lib/features/cliente/espace/espace_screen.dart",
+        "line": 615
+      },
+      "fix": {
+        "kind": "command",
+        "title": "Explain this rule",
+        "command": "saropaLints.explainRule",
+        "args": [
+          {
+            "ruleId": "inference_failure_on_instance_creation"
+          }
+        ]
+      },
+      "docUri": "https://github.com/saropa/saropa_lints/blob/main/ROADMAP.md",
+      "commitSha": "23d061521d3207c51889593d410b19fa27ff3644"
+    },
+    {
+      "id": "lints:use_decorated_box:lib/features/cliente/espace/espace_screen.dart:186",
+      "source": "lints",
+      "severity": "info",
+      "category": "other",
+      "title": "Use 'DecoratedBox' rather than a 'Container' with only a 'Decoration'.\nTry replacing the 'Container' with a 'DecoratedBox'.",
+      "ruleId": "use_decorated_box",
+      "location": {
+        "file": "lib/features/cliente/espace/espace_screen.dart",
+        "line": 186
+      },
+      "fix": {
+        "kind": "command",
+        "title": "Explain this rule",
+        "command": "saropaLints.explainRule",
+        "args": [
+          {
+            "ruleId": "use_decorated_box"
+          }
+        ]
+      },
+      "docUri": "https://github.com/saropa/saropa_lints/blob/main/ROADMAP.md",
+      "commitSha": "23d061521d3207c51889593d410b19fa27ff3644"
+    },
+    {
+      "id": "lints:prefer_const_constructors:lib/features/cliente/espace/espace_screen.dart:334",
+      "source": "lints",
+      "severity": "info",
+      "category": "other",
+      "title": "Use 'const' with the constructor to improve performance.\nTry adding the 'const' keyword to the constructor invocation.",
+      "ruleId": "prefer_const_constructors",
+      "location": {
+        "file": "lib/features/cliente/espace/espace_screen.dart",
+        "line": 334
+      },
+      "fix": {
+        "kind": "command",
+        "title": "Explain this rule",
+        "command": "saropaLints.explainRule",
+        "args": [
+          {
+            "ruleId": "prefer_const_constructors"
+          }
+        ]
+      },
+      "docUri": "https://github.com/saropa/saropa_lints/blob/main/ROADMAP.md",
+      "commitSha": "23d061521d3207c51889593d410b19fa27ff3644"
+    },
+    {
+      "id": "lints:prefer_const_literals_to_create_immutables:lib/features/cliente/espace/espace_screen.dart:336",
+      "source": "lints",
+      "severity": "info",
+      "category": "other",
+      "title": "Use 'const' literals as arguments to constructors of '@immutable' classes.\nTry adding 'const' before the literal.",
+      "ruleId": "prefer_const_literals_to_create_immutables",
+      "location": {
+        "file": "lib/features/cliente/espace/espace_screen.dart",
+        "line": 336
+      },
+      "fix": {
+        "kind": "command",
+        "title": "Explain this rule",
+        "command": "saropaLints.explainRule",
+        "args": [
+          {
+            "ruleId": "prefer_const_literals_to_create_immutables"
+          }
+        ]
+      },
+      "docUri": "https://github.com/saropa/saropa_lints/blob/main/ROADMAP.md",
+      "commitSha": "23d061521d3207c51889593d410b19fa27ff3644"
+    },
+    {
+      "id": "lints:prefer_const_constructors:lib/features/cliente/espace/espace_screen.dart:406",
+      "source": "lints",
+      "severity": "info",
+      "category": "other",
+      "title": "Use 'const' with the constructor to improve performance.\nTry adding the 'const' keyword to the constructor invocation.",
+      "ruleId": "prefer_const_constructors",
+      "location": {
+        "file": "lib/features/cliente/espace/espace_screen.dart",
+        "line": 406
+      },
+      "fix": {
+        "kind": "command",
+        "title": "Explain this rule",
+        "command": "saropaLints.explainRule",
+        "args": [
+          {
+            "ruleId": "prefer_const_constructors"
+          }
+        ]
+      },
+      "docUri": "https://github.com/saropa/saropa_lints/blob/main/ROADMAP.md",
+      "commitSha": "23d061521d3207c51889593d410b19fa27ff3644"
+    },
+    {
+      "id": "lints:prefer_const_literals_to_create_immutables:lib/features/cliente/espace/espace_screen.dart:408",
+      "source": "lints",
+      "severity": "info",
+      "category": "other",
+      "title": "Use 'const' literals as arguments to constructors of '@immutable' classes.\nTry adding 'const' before the literal.",
+      "ruleId": "prefer_const_literals_to_create_immutables",
+      "location": {
+        "file": "lib/features/cliente/espace/espace_screen.dart",
+        "line": 408
+      },
+      "fix": {
+        "kind": "command",
+        "title": "Explain this rule",
+        "command": "saropaLints.explainRule",
+        "args": [
+          {
+            "ruleId": "prefer_const_literals_to_create_immutables"
+          }
+        ]
+      },
+      "docUri": "https://github.com/saropa/saropa_lints/blob/main/ROADMAP.md",
+      "commitSha": "23d061521d3207c51889593d410b19fa27ff3644"
+    },
+    {
+      "id": "lints:prefer_const_constructors:lib/features/cliente/espace/espace_screen.dart:482",
+      "source": "lints",
+      "severity": "info",
+      "category": "other",
+      "title": "Use 'const' with the constructor to improve performance.\nTry adding the 'const' keyword to the constructor invocation.",
+      "ruleId": "prefer_const_constructors",
+      "location": {
+        "file": "lib/features/cliente/espace/espace_screen.dart",
+        "line": 482
+      },
+      "fix": {
+        "kind": "command",
+        "title": "Explain this rule",
+        "command": "saropaLints.explainRule",
+        "args": [
+          {
+            "ruleId": "prefer_const_constructors"
+          }
+        ]
+      },
+      "docUri": "https://github.com/saropa/saropa_lints/blob/main/ROADMAP.md",
+      "commitSha": "23d061521d3207c51889593d410b19fa27ff3644"
+    },
+    {
+      "id": "lints:prefer_const_literals_to_create_immutables:lib/features/cliente/espace/espace_screen.dart:483",
+      "source": "lints",
+      "severity": "info",
+      "category": "other",
+      "title": "Use 'const' literals as arguments to constructors of '@immutable' classes.\nTry adding 'const' before the literal.",
+      "ruleId": "prefer_const_literals_to_create_immutables",
+      "location": {
+        "file": "lib/features/cliente/espace/espace_screen.dart",
+        "line": 483
+      },
+      "fix": {
+        "kind": "command",
+        "title": "Explain this rule",
+        "command": "saropaLints.explainRule",
+        "args": [
+          {
+            "ruleId": "prefer_const_literals_to_create_immutables"
+          }
+        ]
+      },
+      "docUri": "https://github.com/saropa/saropa_lints/blob/main/ROADMAP.md",
+      "commitSha": "23d061521d3207c51889593d410b19fa27ff3644"
+    },
+    {
+      "id": "lints:use_decorated_box:lib/features/cliente/espace/espace_screen.dart:549",
+      "source": "lints",
+      "severity": "info",
+      "category": "other",
+      "title": "Use 'DecoratedBox' rather than a 'Container' with only a 'Decoration'.\nTry replacing the 'Container' with a 'DecoratedBox'.",
+      "ruleId": "use_decorated_box",
+      "location": {
+        "file": "lib/features/cliente/espace/espace_screen.dart",
+        "line": 549
+      },
+      "fix": {
+        "kind": "command",
+        "title": "Explain this rule",
+        "command": "saropaLints.explainRule",
+        "args": [
+          {
+            "ruleId": "use_decorated_box"
+          }
+        ]
+      },
+      "docUri": "https://github.com/saropa/saropa_lints/blob/main/ROADMAP.md",
+      "commitSha": "23d061521d3207c51889593d410b19fa27ff3644"
+    },
+    {
+      "id": "lints:use_decorated_box:lib/features/cliente/espace/espace_screen.dart:562",
+      "source": "lints",
+      "severity": "info",
+      "category": "other",
+      "title": "Use 'DecoratedBox' rather than a 'Container' with only a 'Decoration'.\nTry replacing the 'Container' with a 'DecoratedBox'.",
+      "ruleId": "use_decorated_box",
+      "location": {
+        "file": "lib/features/cliente/espace/espace_screen.dart",
+        "line": 562
+      },
+      "fix": {
+        "kind": "command",
+        "title": "Explain this rule",
+        "command": "saropaLints.explainRule",
+        "args": [
+          {
+            "ruleId": "use_decorated_box"
+          }
+        ]
+      },
+      "docUri": "https://github.com/saropa/saropa_lints/blob/main/ROADMAP.md",
+      "commitSha": "23d061521d3207c51889593d410b19fa27ff3644"
+    },
+    {
+      "id": "lints:argument_type_not_assignable:lib/features/cliente/wishlist/wishlist_screen.dart:117",
+      "source": "lints",
+      "severity": "error",
+      "category": "other",
+      "title": "The argument type 'dynamic' can't be assigned to the parameter type 'String'. ",
+      "ruleId": "argument_type_not_assignable",
+      "location": {
+        "file": "lib/features/cliente/wishlist/wishlist_screen.dart",
+        "line": 117
+      },
+      "fix": {
+        "kind": "command",
+        "title": "Explain this rule",
+        "command": "saropaLints.explainRule",
+        "args": [
+          {
+            "ruleId": "argument_type_not_assignable"
+          }
+        ]
+      },
+      "docUri": "https://github.com/saropa/saropa_lints/blob/main/ROADMAP.md",
+      "commitSha": "23d061521d3207c51889593d410b19fa27ff3644"
+    },
+    {
+      "id": "lints:argument_type_not_assignable:lib/features/cliente/wishlist/wishlist_screen.dart:132",
+      "source": "lints",
+      "severity": "error",
+      "category": "other",
+      "title": "The argument type 'dynamic' can't be assigned to the parameter type 'String'. ",
+      "ruleId": "argument_type_not_assignable",
+      "location": {
+        "file": "lib/features/cliente/wishlist/wishlist_screen.dart",
+        "line": 132
+      },
+      "fix": {
+        "kind": "command",
+        "title": "Explain this rule",
+        "command": "saropaLints.explainRule",
+        "args": [
+          {
+            "ruleId": "argument_type_not_assignable"
+          }
+        ]
+      },
+      "docUri": "https://github.com/saropa/saropa_lints/blob/main/ROADMAP.md",
+      "commitSha": "23d061521d3207c51889593d410b19fa27ff3644"
+    },
+    {
+      "id": "lints:argument_type_not_assignable:lib/features/cliente/wishlist/wishlist_screen.dart:145",
+      "source": "lints",
+      "severity": "error",
+      "category": "other",
+      "title": "The argument type 'dynamic' can't be assigned to the parameter type 'String'. ",
+      "ruleId": "argument_type_not_assignable",
+      "location": {
+        "file": "lib/features/cliente/wishlist/wishlist_screen.dart",
+        "line": 145
+      },
+      "fix": {
+        "kind": "command",
+        "title": "Explain this rule",
+        "command": "saropaLints.explainRule",
+        "args": [
+          {
+            "ruleId": "argument_type_not_assignable"
+          }
+        ]
+      },
+      "docUri": "https://github.com/saropa/saropa_lints/blob/main/ROADMAP.md",
+      "commitSha": "23d061521d3207c51889593d410b19fa27ff3644"
+    },
+    {
+      "id": "lints:argument_type_not_assignable:lib/features/cliente/wishlist/wishlist_screen.dart:159",
+      "source": "lints",
+      "severity": "error",
+      "category": "other",
+      "title": "The argument type 'dynamic' can't be assigned to the parameter type 'String'. ",
+      "ruleId": "argument_type_not_assignable",
+      "location": {
+        "file": "lib/features/cliente/wishlist/wishlist_screen.dart",
+        "line": 159
+      },
+      "fix": {
+        "kind": "command",
+        "title": "Explain this rule",
+        "command": "saropaLints.explainRule",
+        "args": [
+          {
+            "ruleId": "argument_type_not_assignable"
+          }
+        ]
+      },
+      "docUri": "https://github.com/saropa/saropa_lints/blob/main/ROADMAP.md",
+      "commitSha": "23d061521d3207c51889593d410b19fa27ff3644"
+    },
+    {
+      "id": "lints:argument_type_not_assignable:lib/features/cliente/wishlist/wishlist_screen.dart:163",
+      "source": "lints",
+      "severity": "error",
+      "category": "other",
+      "title": "The argument type 'dynamic' can't be assigned to the parameter type 'String'. ",
+      "ruleId": "argument_type_not_assignable",
+      "location": {
+        "file": "lib/features/cliente/wishlist/wishlist_screen.dart",
+        "line": 163
+      },
+      "fix": {
+        "kind": "command",
+        "title": "Explain this rule",
+        "command": "saropaLints.explainRule",
+        "args": [
+          {
+            "ruleId": "argument_type_not_assignable"
+          }
+        ]
+      },
+      "docUri": "https://github.com/saropa/saropa_lints/blob/main/ROADMAP.md",
+      "commitSha": "23d061521d3207c51889593d410b19fa27ff3644"
+    },
+    {
+      "id": "lints:argument_type_not_assignable:lib/features/cliente/wishlist/wishlist_screen.dart:173",
+      "source": "lints",
+      "severity": "error",
+      "category": "other",
+      "title": "The argument type 'dynamic' can't be assigned to the parameter type 'String'. ",
+      "ruleId": "argument_type_not_assignable",
+      "location": {
+        "file": "lib/features/cliente/wishlist/wishlist_screen.dart",
+        "line": 173
+      },
+      "fix": {
+        "kind": "command",
+        "title": "Explain this rule",
+        "command": "saropaLints.explainRule",
+        "args": [
+          {
+            "ruleId": "argument_type_not_assignable"
+          }
+        ]
+      },
+      "docUri": "https://github.com/saropa/saropa_lints/blob/main/ROADMAP.md",
+      "commitSha": "23d061521d3207c51889593d410b19fa27ff3644"
+    },
+    {
+      "id": "lints:argument_type_not_assignable:lib/features/cliente/wishlist/wishlist_screen.dart:184",
+      "source": "lints",
+      "severity": "error",
+      "category": "other",
+      "title": "The argument type 'dynamic' can't be assigned to the parameter type 'String'. ",
+      "ruleId": "argument_type_not_assignable",
+      "location": {
+        "file": "lib/features/cliente/wishlist/wishlist_screen.dart",
+        "line": 184
+      },
+      "fix": {
+        "kind": "command",
+        "title": "Explain this rule",
+        "command": "saropaLints.explainRule",
+        "args": [
+          {
+            "ruleId": "argument_type_not_assignable"
+          }
+        ]
+      },
+      "docUri": "https://github.com/saropa/saropa_lints/blob/main/ROADMAP.md",
+      "commitSha": "23d061521d3207c51889593d410b19fa27ff3644"
+    },
+    {
+      "id": "lints:inference_failure_on_instance_creation:lib/features/cliente/wishlist/wishlist_screen.dart:346",
+      "source": "lints",
+      "severity": "warning",
+      "category": "other",
+      "title": "The type argument(s) of the constructor 'MaterialPageRoute' can't be inferred.\nUse explicit type argument(s) for 'MaterialPageRoute'.",
+      "ruleId": "inference_failure_on_instance_creation",
+      "location": {
+        "file": "lib/features/cliente/wishlist/wishlist_screen.dart",
+        "line": 346
+      },
+      "fix": {
+        "kind": "command",
+        "title": "Explain this rule",
+        "command": "saropaLints.explainRule",
+        "args": [
+          {
+            "ruleId": "inference_failure_on_instance_creation"
+          }
+        ]
+      },
+      "docUri": "https://github.com/saropa/saropa_lints/blob/main/ROADMAP.md",
+      "commitSha": "23d061521d3207c51889593d410b19fa27ff3644"
+    },
+    {
+      "id": "lints:prefer_const_constructors:lib/features/cliente/wishlist/wishlist_screen.dart:196",
+      "source": "lints",
+      "severity": "info",
+      "category": "other",
+      "title": "Use 'const' with the constructor to improve performance.\nTry adding the 'const' keyword to the constructor invocation.",
+      "ruleId": "prefer_const_constructors",
+      "location": {
+        "file": "lib/features/cliente/wishlist/wishlist_screen.dart",
+        "line": 196
+      },
+      "fix": {
+        "kind": "command",
+        "title": "Explain this rule",
+        "command": "saropaLints.explainRule",
+        "args": [
+          {
+            "ruleId": "prefer_const_constructors"
+          }
+        ]
+      },
+      "docUri": "https://github.com/saropa/saropa_lints/blob/main/ROADMAP.md",
+      "commitSha": "23d061521d3207c51889593d410b19fa27ff3644"
+    },
+    {
+      "id": "lints:prefer_const_constructors:lib/features/cliente/wishlist/wishlist_screen.dart:215",
+      "source": "lints",
+      "severity": "info",
+      "category": "other",
+      "title": "Use 'const' with the constructor to improve performance.\nTry adding the 'const' keyword to the constructor invocation.",
+      "ruleId": "prefer_const_constructors",
+      "location": {
+        "file": "lib/features/cliente/wishlist/wishlist_screen.dart",
+        "line": 215
+      },
+      "fix": {
+        "kind": "command",
+        "title": "Explain this rule",
+        "command": "saropaLints.explainRule",
+        "args": [
+          {
+            "ruleId": "prefer_const_constructors"
+          }
+        ]
+      },
+      "docUri": "https://github.com/saropa/saropa_lints/blob/main/ROADMAP.md",
+      "commitSha": "23d061521d3207c51889593d410b19fa27ff3644"
+    },
+    {
+      "id": "lints:prefer_single_quotes:lib/features/cliente/wishlist/wishlist_screen.dart:276",
+      "source": "lints",
+      "severity": "info",
+      "category": "other",
+      "title": "Unnecessary use of double quotes.\nTry using single quotes unless the string contains single quotes.",
+      "ruleId": "prefer_single_quotes",
+      "location": {
+        "file": "lib/features/cliente/wishlist/wishlist_screen.dart",
+        "line": 276
+      },
+      "fix": {
+        "kind": "command",
+        "title": "Explain this rule",
+        "command": "saropaLints.explainRule",
+        "args": [
+          {
+            "ruleId": "prefer_single_quotes"
+          }
+        ]
+      },
+      "docUri": "https://github.com/saropa/saropa_lints/blob/main/ROADMAP.md",
+      "commitSha": "23d061521d3207c51889593d410b19fa27ff3644"
+    },
+    {
+      "id": "lints:prefer_const_constructors:lib/features/cliente/wishlist/wishlist_screen.dart:358",
+      "source": "lints",
+      "severity": "info",
+      "category": "other",
+      "title": "Use 'const' with the constructor to improve performance.\nTry adding the 'const' keyword to the constructor invocation.",
+      "ruleId": "prefer_const_constructors",
+      "location": {
+        "file": "lib/features/cliente/wishlist/wishlist_screen.dart",
+        "line": 358
+      },
+      "fix": {
+        "kind": "command",
+        "title": "Explain this rule",
+        "command": "saropaLints.explainRule",
+        "args": [
+          {
+            "ruleId": "prefer_const_constructors"
+          }
+        ]
+      },
+      "docUri": "https://github.com/saropa/saropa_lints/blob/main/ROADMAP.md",
+      "commitSha": "23d061521d3207c51889593d410b19fa27ff3644"
+    },
+    {
+      "id": "lints:prefer_const_literals_to_create_immutables:lib/features/cliente/wishlist/wishlist_screen.dart:360",
+      "source": "lints",
+      "severity": "info",
+      "category": "other",
+      "title": "Use 'const' literals as arguments to constructors of '@immutable' classes.\nTry adding 'const' before the literal.",
+      "ruleId": "prefer_const_literals_to_create_immutables",
+      "location": {
+        "file": "lib/features/cliente/wishlist/wishlist_screen.dart",
+        "line": 360
+      },
+      "fix": {
+        "kind": "command",
+        "title": "Explain this rule",
+        "command": "saropaLints.explainRule",
+        "args": [
+          {
+            "ruleId": "prefer_const_literals_to_create_immutables"
+          }
+        ]
+      },
+      "docUri": "https://github.com/saropa/saropa_lints/blob/main/ROADMAP.md",
+      "commitSha": "23d061521d3207c51889593d410b19fa27ff3644"
     }
   ]
 }
