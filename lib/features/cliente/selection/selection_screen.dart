@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../core/theme/app_theme.dart';
+import '../../../core/theme/closet_colors.dart';
 import '../../../core/widgets/closet_app_bar.dart';
 import '../../../data/models/article.dart';
 import '../../../data/repositories/cart_repository.dart';
@@ -21,7 +21,7 @@ class SelectionScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final cartItems = ref.watch(cartProvider);
+    final cartItems = ref.watch(cartListProvider);
     final total = ref.watch(cartTotalProvider);
     final theme = Theme.of(context);
 
@@ -358,7 +358,7 @@ class _CartSummary extends StatelessWidget {
             child: Row(
               children: [
                 const Icon(Icons.card_giftcard,
-                    size: 18, color: AppTheme.goldCloset),
+                    size: 18, color: ClosetColors.dore),
                 const SizedBox(width: 10),
                 Text(
                   'Ajouter un privilège',
@@ -452,16 +452,16 @@ class _ConditionBadge extends StatelessWidget {
     Color fg;
     switch (condition.toLowerCase()) {
       case 'excellent':
-        bg = const Color(0xFFE8F0FE);
-        fg = const Color(0xFF1A56B0);
+        bg = ClosetColors.conditionExcellentFond;
+        fg = ClosetColors.conditionExcellentTexte;
         break;
       case 'très bon':
-        bg = const Color(0xFFFFF3E0);
-        fg = const Color(0xFFE65100);
+        bg = ClosetColors.conditionTresBonFond;
+        fg = ClosetColors.conditionTresBonTexte;
         break;
       default:
-        bg = const Color(0xFFE8F5E9);
-        fg = const Color(0xFF2E7D32);
+        bg = ClosetColors.fondsSucces;
+        fg = ClosetColors.succes;
     }
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),

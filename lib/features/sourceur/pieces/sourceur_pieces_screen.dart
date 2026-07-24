@@ -1,37 +1,24 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../core/theme/closet_colors.dart';
 import '../../../core/theme/closet_text_styles.dart';
 import '../../../core/widgets/bordure_pointillee.dart';
-import '../../../core/widgets/closet_bottom_nav.dart';
 import '../../../core/widgets/closet_buttons.dart';
 import '../../../core/widgets/closet_chip.dart';
-import '../../../core/widgets/closet_header.dart';
-import '../nouvelle/sourceur_nouvelle_piece_screen.dart';
+import '../../../data/repositories/sourceur_repository.dart';
 
-/// Statuts possibles d'une pièce déposée par le sourceur.
-enum StatutPiece { enRevue, publiee, vendue, refusee }
-
-/// Une pièce déposée (modèle provisoire en attendant le backend).
-class PieceDeposee {
-  const PieceDeposee({required this.nom, required this.statut});
-
-  final String nom;
-  final StatutPiece statut;
-}
-
-/// Liste des dépôts du sourceur (/sourceur/pieces),
-/// filtrable par statut.
-class SourceurPiecesScreen extends StatefulWidget {
-  const SourceurPiecesScreen({super.key, this.pieces = const []});
-
-  final List<PieceDeposee> pieces;
+/// Liste des dépôts du sourceur (/sourceur/pieces)
+class SourceurPiecesScreen extends ConsumerStatefulWidget {
+  const SourceurPiecesScreen({super.key});
 
   @override
-  State<SourceurPiecesScreen> createState() => _SourceurPiecesScreenState();
+  ConsumerState<SourceurPiecesScreen> createState() =>
+      _SourceurPiecesScreenState();
 }
 
-class _SourceurPiecesScreenState extends State<SourceurPiecesScreen> {
+class _SourceurPiecesScreenState extends ConsumerState<SourceurPiecesScreen> {
   static const _filtres = [
     (label: 'Toutes', statut: null),
     (label: 'En revue', statut: StatutPiece.enRevue),
@@ -42,42 +29,42 @@ class _SourceurPiecesScreenState extends State<SourceurPiecesScreen> {
 
   StatutPiece? _filtre;
 
-  List<PieceDeposee> get _piecesFiltrees => _filtre == null
-      ? widget.pieces
-      : widget.pieces.where((p) => p.statut == _filtre).toList();
-
-  void _ouvrirDepot() {
-    Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        builder: (_) => const SourceurNouvellePieceScreen(),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
+    final piecesAsync = ref.watch(mesPiecesProvider);
+
     return Scaffold(
       backgroundColor: ClosetColors.ivoire,
       body: SafeArea(
-        bottom: false,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const ClosetHeader(
-              titre: 'Mes dépôts',
-              wishlistCount: 2,
-              panierCount: 2,
-              notificationsCount: 7,
-            ),
+            _buildTopBar(context),
             _buildFiltres(),
             Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(20, 24, 20, 32),
-                child: _piecesFiltrees.isEmpty
-                    ? _buildAucunePiece()
-                    // TODO: afficher les cartes de pièces quand le backend
-                    // fournira les dépôts (photo, nom, statut, prix).
-                    : const SizedBox.shrink(),
+              child: piecesAsync.when(
+                data: (pieces) {
+                  final filtered = _filtre == null
+                      ? pieces
+                      : pieces.where((p) => p.statut == _filtre).toList();
+                  return SingleChildScrollView(
+                    padding: const EdgeInsets.fromLTRB(20, 24, 20, 32),
+                    child: filtered.isEmpty
+                        ? _buildAucunePiece(context)
+                        : Column(
+                            children: filtered
+                                .map((p) => _PieceCard(piece: p))
+                                .toList(),
+                          ),
+                  );
+                },
+                loading: () => const Center(
+                  child: CircularProgressIndicator(color: ClosetColors.dore),
+                ),
+                error: (e, _) => Center(
+                  child: Text('Erreur de chargement',
+                      style: ClosetTextStyles.corps),
+                ),
               ),
             ),
           ],
@@ -89,7 +76,7 @@ class _SourceurPiecesScreenState extends State<SourceurPiecesScreen> {
         elevation: 2,
         child: InkWell(
           customBorder: const CircleBorder(),
-          onTap: _ouvrirDepot,
+          onTap: () => context.go('/sourceur/nouvelle'),
           child: const SizedBox(
             width: 72,
             height: 72,
@@ -97,14 +84,43 @@ class _SourceurPiecesScreenState extends State<SourceurPiecesScreen> {
           ),
         ),
       ),
-      bottomNavigationBar: ClosetBottomNav(indexActif: -1, onTap: (_) {}),
+    );
+  }
+
+  Widget _buildTopBar(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(20, 16, 20, 12),
+      decoration: const BoxDecoration(
+        color: ClosetColors.ivoire,
+        border: Border(bottom: BorderSide(color: ClosetColors.ligne)),
+      ),
+      child: Row(
+        children: [
+          GestureDetector(
+            onTap: () => context.pop(),
+            child: Container(
+              width: 36,
+              height: 36,
+              decoration: const BoxDecoration(
+                color: ClosetColors.creme,
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.arrow_back_ios_new,
+                  size: 14, color: ClosetColors.noir),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Text('Mes dépôts',
+              style: ClosetTextStyles.titreEcran.copyWith(fontSize: 18)),
+        ],
+      ),
     );
   }
 
   Widget _buildFiltres() {
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
-      padding: const EdgeInsets.symmetric(horizontal: 20),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
       child: Row(
         children: [
           for (final f in _filtres) ...[
@@ -120,7 +136,7 @@ class _SourceurPiecesScreenState extends State<SourceurPiecesScreen> {
     );
   }
 
-  Widget _buildAucunePiece() {
+  Widget _buildAucunePiece(BuildContext context) {
     return BordurePointillee(
       couleur: ClosetColors.dore.withValues(alpha: 0.45),
       child: Container(
@@ -143,10 +159,126 @@ class _SourceurPiecesScreenState extends State<SourceurPiecesScreen> {
             ClosetPrimaryButton(
               label: 'Déposer une pièce',
               icone: Icons.add,
-              onPressed: _ouvrirDepot,
+              onPressed: () => context.go('/sourceur/nouvelle'),
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+/// Carte affichant une pièce déposée
+class _PieceCard extends StatelessWidget {
+  final PieceDeposee piece;
+  const _PieceCard({required this.piece});
+
+  Color _statutBg() {
+    switch (piece.statut) {
+      case StatutPiece.publiee:
+        return ClosetColors.fondsSucces;
+      case StatutPiece.vendue:
+        return ClosetColors.conditionExcellentFond;
+      case StatutPiece.refusee:
+        return ClosetColors.fondsErreur;
+      case StatutPiece.enRevue:
+        return ClosetColors.fondsAlerte;
+    }
+  }
+
+  Color _statutFg() {
+    switch (piece.statut) {
+      case StatutPiece.publiee:
+        return ClosetColors.succes;
+      case StatutPiece.vendue:
+        return ClosetColors.doreEncre;
+      case StatutPiece.refusee:
+        return ClosetColors.erreur;
+      case StatutPiece.enRevue:
+        return ClosetColors.alerte;
+    }
+  }
+
+  String _statutLabel() {
+    switch (piece.statut) {
+      case StatutPiece.publiee:
+        return 'Publiée';
+      case StatutPiece.vendue:
+        return 'Vendue';
+      case StatutPiece.refusee:
+        return 'Refusée';
+      case StatutPiece.enRevue:
+        return 'En revue';
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: ClosetColors.creme,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: ClosetColors.bordure),
+      ),
+      child: Row(
+        children: [
+          // Miniature placeholder
+          Container(
+            width: 60,
+            height: 76,
+            decoration: BoxDecoration(
+              color: ClosetColors.ligne,
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: piece.imageUrl != null
+                ? ClipRRect(
+                    borderRadius: BorderRadius.circular(10),
+                    child: Image.network(piece.imageUrl!,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, _, _) => const Icon(
+                            Icons.image_not_supported,
+                            color: ClosetColors.taupe)),
+                  )
+                : const Icon(Icons.image_not_supported,
+                    color: ClosetColors.taupe),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(piece.nom,
+                    style: ClosetTextStyles.saisie.copyWith(fontSize: 15)),
+                const SizedBox(height: 4),
+                Text(piece.univers,
+                    style: ClosetTextStyles.corps
+                        .copyWith(color: ClosetColors.texteSecondaire)),
+                const SizedBox(height: 8),
+                Text(
+                  '${piece.prix.toInt()} FCFA',
+                  style: ClosetTextStyles.saisie.copyWith(fontSize: 16),
+                ),
+              ],
+            ),
+          ),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+            decoration: BoxDecoration(
+              color: _statutBg(),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Text(
+              _statutLabel(),
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w700,
+                color: _statutFg(),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

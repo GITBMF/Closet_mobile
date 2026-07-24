@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../core/theme/app_theme.dart';
+import '../../../core/theme/closet_colors.dart';
 import '../../../core/widgets/closet_app_bar.dart';
 import '../../../data/models/article.dart';
 import '../../../data/repositories/catalog_repository.dart';
@@ -134,7 +134,7 @@ class CollectionsScreen extends ConsumerWidget {
                 height: 36,
                 decoration: const BoxDecoration(
                   shape: BoxShape.circle,
-                  color: AppTheme.goldCloset,
+                  color: ClosetColors.vert,
                 ),
                 child: const Center(
                   child: Text('C', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
@@ -317,7 +317,7 @@ class CollectionsScreen extends ConsumerWidget {
                 );
               },
               loading: () => const Center(
-                child: CircularProgressIndicator(color: AppTheme.goldCloset),
+                child: CircularProgressIndicator(color: ClosetColors.dore),
               ),
               error: (e, _) => const Center(
                 child: Text('Erreur de chargement'),

@@ -3,36 +3,41 @@ import 'package:flutter/services.dart';
 import 'closet_colors.dart';
 import 'typography.dart';
 
+/// Thème officiel CLOSET.
+/// Les constantes statiques exposées ici sont des ALIASES vers ClosetColors
+/// pour la compatibilité avec les widgets qui les importent directement.
+/// Ne jamais ajouter de nouvelles constantes couleur ici — utiliser ClosetColors.
 class AppTheme {
-  // Couleurs de la charte graphique ClosET
-  static const Color blackCloset = Color(0xFF1D1D1B);
-  static const Color forestGreen = Color(0xFF1C3D2F);
-  static const Color goldCloset = Color(0xFFBC9746);
-  static const Color sandBeige = Color(0xFFE5E1D9);
-  static const Color offWhite = Color(0xFFF5F2EC);
-  static const Color warmCream = Color(0xFFFAF7F2);
-  static const Color greyText = Color(0xFF9A9490);
-  static const Color goldAccent = Color(0xFFBC8F29);
+  // ── Aliases de compatibilité (pointent tous vers ClosetColors) ────────────
+  static const Color blackCloset = ClosetColors.noir;
+  static const Color forestGreen = ClosetColors.vert;
+  /// ⚠️  goldCloset est une référence décorative — ne pas utiliser en CTA fond.
+  static const Color goldCloset = ClosetColors.dore;
+  static const Color sandBeige = Color(0xFFE5E1D9); // Variante sable (chips)
+  static const Color offWhite = Color(0xFFF5F2EC);  // AppBar fond light
+  static const Color warmCream = ClosetColors.creme;
+  static const Color greyText = ClosetColors.taupe;
   static const Color lightSand = Color(0xFFECE8DF);
-  static const Color greenLight = Color(0xFF2C5A43);
+
+  // ── Thème clair ───────────────────────────────────────────────────────────
 
   static ThemeData get lightTheme {
     return ThemeData(
       useMaterial3: true,
       scaffoldBackgroundColor: ClosetColors.beige,
-      primaryColor: forestGreen,
+      primaryColor: ClosetColors.vert,
       colorScheme: const ColorScheme.light(
-        primary: forestGreen,
-        secondary: goldCloset,
+        primary: ClosetColors.vert,
+        secondary: ClosetColors.dore,
         surface: ClosetColors.creme,
-        onPrimary: Colors.white,
-        onSecondary: Colors.white,
-        onSurface: blackCloset,
+        onPrimary: ClosetColors.creme,
+        onSecondary: ClosetColors.noir,
+        onSurface: ClosetColors.noir,
       ),
       textTheme: AppTypography.textTheme,
       appBarTheme: const AppBarTheme(
         backgroundColor: offWhite,
-        foregroundColor: blackCloset,
+        foregroundColor: ClosetColors.noir,
         elevation: 0,
         centerTitle: false,
         systemOverlayStyle: SystemUiOverlayStyle(
@@ -40,10 +45,11 @@ class AppTheme {
           statusBarIconBrightness: Brightness.dark,
         ),
       ),
+      // ── CTA Primaire : VERT FORÊT (jamais doré — charte §3.1) ──────────
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
-          backgroundColor: goldCloset,
-          foregroundColor: Colors.white,
+          backgroundColor: ClosetColors.vert,
+          foregroundColor: ClosetColors.creme,
           elevation: 0,
           textStyle: AppTypography.textTheme.labelLarge?.copyWith(
             fontWeight: FontWeight.w700,
@@ -57,8 +63,8 @@ class AppTheme {
       ),
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
-          foregroundColor: forestGreen,
-          side: const BorderSide(color: forestGreen, width: 1.5),
+          foregroundColor: ClosetColors.vert,
+          side: const BorderSide(color: ClosetColors.vert, width: 1.5),
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(30),
@@ -67,7 +73,7 @@ class AppTheme {
       ),
       chipTheme: ChipThemeData(
         backgroundColor: warmCream,
-        selectedColor: blackCloset,
+        selectedColor: ClosetColors.noir,
         labelStyle: AppTypography.textTheme.bodySmall,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20),
@@ -76,32 +82,34 @@ class AppTheme {
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
       ),
       bottomNavigationBarTheme: const BottomNavigationBarThemeData(
-        backgroundColor: blackCloset,
-        selectedItemColor: goldCloset,
-        unselectedItemColor: Color(0xFF7A7870),
+        backgroundColor: ClosetColors.noir,
+        selectedItemColor: ClosetColors.dore,
+        unselectedItemColor: ClosetColors.navigationInactif,
         type: BottomNavigationBarType.fixed,
         elevation: 0,
       ),
     );
   }
 
+  // ── Thème sombre ──────────────────────────────────────────────────────────
+
   static ThemeData get darkTheme {
     return ThemeData(
       useMaterial3: true,
-      scaffoldBackgroundColor: const Color(0xFF12241D), // Vert nuit
-      primaryColor: const Color(0xFFDCBE72), // Doré clair
+      scaffoldBackgroundColor: ClosetColors.vertFonce,
+      primaryColor: ClosetColors.doreClair,
       colorScheme: const ColorScheme.dark(
-        primary: Color(0xFFDCBE72), // Doré clair
-        secondary: Color(0xFFC6A24B), // Doré lumière
-        surface: Color(0xFF182E25), // Vert sombre pour les cartes
-        onPrimary: Color(0xFF171512), // Texte principal sur doré
-        onSecondary: Colors.white,
-        onSurface: Color(0xFFFBF7EF), // Crème sur fond sombre
+        primary: ClosetColors.doreClair,
+        secondary: ClosetColors.dore,
+        surface: Color(0xFF182E25),
+        onPrimary: ClosetColors.noir,
+        onSecondary: ClosetColors.creme,
+        onSurface: ClosetColors.creme,
       ),
       textTheme: AppTypography.textTheme,
       appBarTheme: const AppBarTheme(
-        backgroundColor: Color(0xFF12241D),
-        foregroundColor: Color(0xFFFBF7EF),
+        backgroundColor: ClosetColors.vertFonce,
+        foregroundColor: ClosetColors.creme,
         elevation: 0,
         centerTitle: false,
         systemOverlayStyle: SystemUiOverlayStyle(
@@ -111,8 +119,8 @@ class AppTheme {
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
-          backgroundColor: const Color(0xFFDCBE72), // Doré clair
-          foregroundColor: const Color(0xFF171512), // Texte principal
+          backgroundColor: ClosetColors.doreClair,
+          foregroundColor: ClosetColors.noir,
           elevation: 0,
           textStyle: AppTypography.textTheme.labelLarge?.copyWith(
             fontWeight: FontWeight.w700,
@@ -126,8 +134,8 @@ class AppTheme {
       ),
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
-          foregroundColor: const Color(0xFFDCBE72),
-          side: const BorderSide(color: Color(0xFFDCBE72), width: 1.5),
+          foregroundColor: ClosetColors.doreClair,
+          side: const BorderSide(color: ClosetColors.doreClair, width: 1.5),
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(30),
@@ -136,8 +144,9 @@ class AppTheme {
       ),
       chipTheme: ChipThemeData(
         backgroundColor: const Color(0xFF182E25),
-        selectedColor: const Color(0xFFDCBE72),
-        labelStyle: AppTypography.textTheme.bodySmall?.copyWith(color: const Color(0xFFFBF7EF)),
+        selectedColor: ClosetColors.doreClair,
+        labelStyle: AppTypography.textTheme.bodySmall
+            ?.copyWith(color: ClosetColors.creme),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20),
           side: const BorderSide(color: Color(0xFF223F33)),
@@ -145,9 +154,9 @@ class AppTheme {
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
       ),
       bottomNavigationBarTheme: const BottomNavigationBarThemeData(
-        backgroundColor: Color(0xFF12241D),
-        selectedItemColor: Color(0xFFDCBE72),
-        unselectedItemColor: Color(0xFF7A7870),
+        backgroundColor: ClosetColors.vertFonce,
+        selectedItemColor: ClosetColors.doreClair,
+        unselectedItemColor: ClosetColors.navigationInactif,
         type: BottomNavigationBarType.fixed,
         elevation: 0,
       ),

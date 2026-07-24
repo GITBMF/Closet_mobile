@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../core/theme/app_theme.dart';
+import '../../../core/theme/closet_colors.dart';
 import '../../../data/repositories/catalog_repository.dart';
 import '../../../data/models/article.dart';
 import '../../../core/widgets/closet_app_bar.dart';
@@ -48,7 +48,7 @@ class DressingScreen extends ConsumerWidget {
           );
         },
         loading: () => const Center(
-          child: CircularProgressIndicator(color: AppTheme.goldCloset),
+          child: CircularProgressIndicator(color: ClosetColors.dore),
         ),
         error: (e, _) => const Center(child: Text('Erreur de chargement')),
       ),
@@ -159,7 +159,7 @@ class _HomeBody extends ConsumerWidget {
                 ),
                 const Padding(
                   padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                  child: Divider(thickness: 0.5, color: Colors.grey),
+                  child: Divider(thickness: 0.5, color: ClosetColors.ligne),
                 ),
               ],
             );

@@ -12,7 +12,7 @@ class AuthRepository {
     ClosetUser(firstName: 'Ahmed', lastName: 'Jalil', email: 'user@closet.com'),
   ];
   static final Map<String, String> _localPasswords = {
-    'user@closet.com': 'password',
+    'user@closet.com': 'closet123',
   };
 
   AuthRepository(this._ref, this._client);

@@ -1,69 +1,94 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../core/theme/closet_colors.dart';
 import '../../../core/theme/closet_text_styles.dart';
-import '../../../core/widgets/closet_bottom_nav.dart';
 import '../../../core/widgets/closet_buttons.dart';
-import '../../../core/widgets/closet_header.dart';
+import '../../../data/repositories/sourceur_repository.dart';
 
-/// Détail des revenus du sourceur (/sourceur/revenus) :
-/// solde disponible, brut / commission / en attente, historique des ventes.
-class SourceurRevenusScreen extends StatelessWidget {
-  const SourceurRevenusScreen({
-    super.key,
-    this.solde = 0,
-    this.brut = 0,
-    this.commission = 0,
-    this.enAttente = 0,
-    this.moyenPaiement = 'MTN MoMo',
-  });
-
-  final int solde;
-  final int brut;
-  final int commission;
-  final int enAttente;
-  final String moyenPaiement;
+/// Détail des revenus du sourceur (/sourceur/revenus)
+class SourceurRevenusScreen extends ConsumerWidget {
+  const SourceurRevenusScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final revenusAsync = ref.watch(revenusSourceurProvider);
+
     return Scaffold(
       backgroundColor: ClosetColors.ivoire,
       body: SafeArea(
-        bottom: false,
         child: Column(
           children: [
-            const ClosetHeader(
-              titre: 'Revenus',
-              sousTitre: 'Atelier',
-              wishlistCount: 2,
-              panierCount: 2,
-              notificationsCount: 6,
-            ),
+            _buildTopBar(context),
             Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildCarteSolde(),
-                    const SizedBox(height: 24),
-                    _buildRecapitulatif(),
-                    const SizedBox(height: 32),
-                    _buildHistorique(),
-                  ],
+              child: revenusAsync.when(
+                data: (revenus) => SingleChildScrollView(
+                  padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildCarteSolde(revenus.solde, revenus.moyenPaiement),
+                      const SizedBox(height: 24),
+                      _buildRecapitulatif(
+                          revenus.brut, revenus.commission, revenus.enAttente),
+                      const SizedBox(height: 32),
+                      _buildHistorique(revenus),
+                    ],
+                  ),
+                ),
+                loading: () => const Center(
+                  child: CircularProgressIndicator(color: ClosetColors.dore),
+                ),
+                error: (e, _) => Center(
+                  child: Text('Erreur de chargement',
+                      style: ClosetTextStyles.corps),
                 ),
               ),
             ),
           ],
         ),
       ),
-      bottomNavigationBar: ClosetBottomNav(indexActif: -1, onTap: (_) {}),
     );
   }
 
-  // ------------------------------------------------------------ Solde
+  Widget _buildTopBar(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(20, 16, 20, 12),
+      decoration: const BoxDecoration(
+        color: ClosetColors.ivoire,
+        border: Border(bottom: BorderSide(color: ClosetColors.ligne)),
+      ),
+      child: Row(
+        children: [
+          GestureDetector(
+            onTap: () => context.pop(),
+            child: Container(
+              width: 36,
+              height: 36,
+              decoration: const BoxDecoration(
+                color: ClosetColors.creme,
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.arrow_back_ios_new,
+                  size: 14, color: ClosetColors.noir),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Revenus',
+                  style: ClosetTextStyles.titreEcran.copyWith(fontSize: 18)),
+              Text('Votre atelier', style: ClosetTextStyles.labelChamp),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
 
-  Widget _buildCarteSolde() {
+  Widget _buildCarteSolde(int solde, String moyenPaiement) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.fromLTRB(24, 44, 24, 32),
@@ -107,22 +132,14 @@ class SourceurRevenusScreen extends StatelessWidget {
           ClosetPrimaryButton(
             label: 'Demander un versement',
             dore: true,
-            onPressed: solde > 0
-                ? () {
-                    // TODO: brancher la demande de versement (backend).
-                  }
-                : null,
+            onPressed: solde > 0 ? () {} : null,
           ),
         ],
       ),
     );
   }
 
-  // ------------------------------------------------------ Récapitulatif
-
-  Widget _buildRecapitulatif() {
-    // IntrinsicHeight égalise la hauteur des tuiles sans imposer de
-    // contrainte infinie (on est dans un scroll à hauteur non bornée).
+  Widget _buildRecapitulatif(int brut, int commission, int enAttente) {
     return IntrinsicHeight(
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -138,7 +155,8 @@ class SourceurRevenusScreen extends StatelessWidget {
             label: 'COMMISSION',
             montant: '− $commission FCFA',
             couleurIcone: ClosetColors.rougeBadge,
-            fondPastille: const Color(0xFFF3DDD7),
+            // Fond pastille commission — doux, conforme charte
+            fondPastille: ClosetColors.fondsErreur,
           ),
           const SizedBox(width: 14),
           _RecapTile(
@@ -151,9 +169,7 @@ class SourceurRevenusScreen extends StatelessWidget {
     );
   }
 
-  // --------------------------------------------------------- Historique
-
-  Widget _buildHistorique() {
+  Widget _buildHistorique(RevenusSourceur revenus) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -166,21 +182,76 @@ class SourceurRevenusScreen extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 8),
-        Text(
-          'Vos pièces adoptées',
-          style: ClosetTextStyles.titreEcran.copyWith(fontSize: 24),
-        ),
+        Text('Vos pièces adoptées',
+            style: ClosetTextStyles.titreEcran.copyWith(fontSize: 24)),
         const SizedBox(height: 24),
-        // TODO: afficher la liste des ventes quand le backend sera branché.
-        Text(
-          'Aucune vente pour le moment. Continuez à déposer vos plus '
-          'belles pièces ✨',
-          style: ClosetTextStyles.corps.copyWith(
-            fontStyle: FontStyle.italic,
-            color: ClosetColors.texteSecondaire,
+        if (revenus.historique.isEmpty)
+          Text(
+            'Aucune vente pour le moment. Continuez à déposer vos plus '
+            'belles pièces ✨',
+            style: ClosetTextStyles.corps.copyWith(
+              fontStyle: FontStyle.italic,
+              color: ClosetColors.texteSecondaire,
+            ),
+          )
+        else
+          ...revenus.historique.map(
+            (v) => _VenteTile(vente: v),
           ),
-        ),
       ],
+    );
+  }
+}
+
+class _VenteTile extends StatelessWidget {
+  final VenteSourceur vente;
+  const _VenteTile({required this.vente});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: ClosetColors.creme,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: ClosetColors.bordure),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 40,
+            height: 40,
+            decoration: const BoxDecoration(
+              color: ClosetColors.fondsSucces,
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(Icons.check, size: 20, color: ClosetColors.succes),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(vente.nomPiece,
+                    style: ClosetTextStyles.saisie.copyWith(fontSize: 15)),
+                Text(
+                  '${vente.date.day}/${vente.date.month}/${vente.date.year}',
+                  style: ClosetTextStyles.corps.copyWith(
+                      fontSize: 12, color: ClosetColors.texteSecondaire),
+                ),
+              ],
+            ),
+          ),
+          Text(
+            '${vente.montant.toInt()} FCFA',
+            style: ClosetTextStyles.saisie.copyWith(
+              fontSize: 16,
+              color: ClosetColors.succes,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

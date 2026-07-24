@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../core/theme/app_theme.dart';
+import '../../core/theme/closet_colors.dart';
 import '../../core/theme/theme_provider.dart';
 import '../../data/models/article.dart';
 import '../../data/repositories/cart_repository.dart';
@@ -71,16 +71,16 @@ class ClosetAppBar extends ConsumerWidget implements PreferredSizeWidget {
               children: [
                 // Asset Logo
                 Image.asset(
-                  isDark ? 'assets/fond sombre.png' : 'assets/iconheader.png',
+                  isDark ? 'assets/logo_fond_sombre.png' : 'assets/iconheader.png',
                   width: 36,
                   height: 36,
                   errorBuilder: (_, _, _) => const DecoratedBox(
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: AppTheme.goldCloset,
+                      color: ClosetColors.vert,
                     ),
                     child: Center(
-                      child: Text('C', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                      child: Text('C', style: TextStyle(color: ClosetColors.creme, fontWeight: FontWeight.bold)),
                     ),
                   ),
                 ),
@@ -139,14 +139,14 @@ class ClosetAppBar extends ConsumerWidget implements PreferredSizeWidget {
                   width: 16,
                   height: 16,
                   decoration: const BoxDecoration(
-                    color: AppTheme.goldCloset,
+                    color: ClosetColors.vert,
                     shape: BoxShape.circle,
                   ),
                   child: Center(
                     child: Text(
                       '$cartCount',
                       style: const TextStyle(
-                        color: Colors.white,
+                        color: ClosetColors.creme,
                         fontSize: 9,
                         fontWeight: FontWeight.bold,
                       ),
@@ -268,7 +268,7 @@ class ArticleCard extends ConsumerWidget {
                         child: Icon(
                           isWishlisted ? Icons.favorite : Icons.favorite_border,
                           size: 16,
-                          color: isWishlisted ? Colors.red : AppTheme.greyText,
+                          color: isWishlisted ? ClosetColors.erreur : ClosetColors.taupe,
                         ),
                       ),
                     ),
@@ -374,16 +374,16 @@ class _ConditionBadge extends StatelessWidget {
     switch (condition.toLowerCase()) {
       case 'neuf avec étiquette':
       case 'neuf':
-        bg = const Color(0xFFE8F5E9);
-        fg = const Color(0xFF2E7D32);
+        bg = ClosetColors.conditionNeufFond;
+        fg = ClosetColors.conditionNeufTexte;
         break;
       case 'excellent':
-        bg = const Color(0xFFE8F0FE);
-        fg = const Color(0xFF1A56B0);
+        bg = ClosetColors.conditionExcellentFond;
+        fg = ClosetColors.conditionExcellentTexte;
         break;
       default:
-        bg = const Color(0xFFFFF3E0);
-        fg = const Color(0xFFE65100);
+        bg = ClosetColors.conditionTresBonFond;
+        fg = ClosetColors.conditionTresBonTexte;
     }
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),

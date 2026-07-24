@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-import 'app_theme.dart';
+import 'closet_colors.dart';
 
 class AppTypography {
   static TextTheme get textTheme {
@@ -49,7 +49,7 @@ class AppTypography {
       bodySmall: GoogleFonts.lato(
         fontSize: 12,
         fontWeight: FontWeight.normal,
-        color: AppTheme.greyText,
+        color: ClosetColors.taupe,
       ),
       
       // Boutons et labels

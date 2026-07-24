@@ -2,12 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../core/theme/app_theme.dart';
+import '../../../core/theme/closet_colors.dart';
 import '../../../core/theme/theme_provider.dart';
 import '../../../data/models/user.dart';
 import '../../../data/repositories/auth_repository.dart';
 import '../../../data/repositories/cart_repository.dart';
 import '../../../data/repositories/wishlist_repository.dart';
+import '../../../data/repositories/sourceur_repository.dart';
 
 class EspaceScreen extends ConsumerWidget {
   const EspaceScreen({super.key});
@@ -15,7 +16,7 @@ class EspaceScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final cartCount = ref.watch<int>(cartCountProvider);
-    final wishlistCount = ref.watch(wishlistProvider).length;
+    final wishlistCount = ref.watch(wishlistListProvider).length;
     final ClosetUser? user = ref.watch<ClosetUser?>(currentUserProvider);
     final theme = Theme.of(context);
     final onSurfaceColor = theme.colorScheme.onSurface;
@@ -58,7 +59,7 @@ class EspaceScreen extends ConsumerWidget {
                             onTap: () {
                               if (user != null) {
                                 // Logout
-                                ref.read<dynamic>(currentUserProvider.notifier).state = null;
+                                ref.read(currentUserProvider.notifier).state = null;
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   const SnackBar(content: Text('Vous avez été déconnecté.')),
                                 );
@@ -120,7 +121,7 @@ class EspaceScreen extends ConsumerWidget {
                                       style: TextStyle(
                                         fontSize: 36,
                                         fontWeight: FontWeight.w800,
-                                        color: AppTheme.goldCloset,
+                                        color: ClosetColors.dore,
                                       ),
                                     ),
                                   ),
@@ -231,13 +232,25 @@ class EspaceScreen extends ConsumerWidget {
                       _MenuItem(
                         icon: Icons.add_circle_outline,
                         label: 'Soumettre une pièce',
-                        onTap: () {},
+                        onTap: () {
+                          final sourceurRepo = ref.read(sourceurRepositoryProvider);
+                          if (sourceurRepo.estInscrit) {
+                            context.push('/sourceur/nouvelle');
+                          } else {
+                            context.push('/sourceur/inscription');
+                          }
+                        },
                         isHighlighted: true,
                       ),
                       _MenuItem(
                         icon: Icons.inventory_2_outlined,
                         label: 'Mes pièces soumises',
-                        onTap: () {},
+                        onTap: () => context.push('/sourceur/pieces'),
+                      ),
+                      _MenuItem(
+                        icon: Icons.storefront_outlined,
+                        label: 'Mon atelier sourceur',
+                        onTap: () => context.push('/sourceur'),
                       ),
                     ],
                   ),

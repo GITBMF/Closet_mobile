@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../core/theme/app_theme.dart';
 import '../../../data/repositories/cart_repository.dart';
 
 enum DeliveryOption { yaoundeDouala, otherCities }
@@ -59,7 +58,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
   @override
   Widget build(BuildContext context) {
     final subtotal = ref.watch(cartTotalProvider);
-    final cartItems = ref.watch(cartProvider);
+    final cartItems = ref.watch(cartListProvider);
     final deliveryOption = ref.watch(deliveryOptionProvider);
     final paymentOption = ref.watch(paymentOptionProvider);
     final deliveryCost = _getDeliveryCost(deliveryOption);
@@ -95,7 +94,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
       body: _step == 2
           ? _ConfirmationView(onGoHome: () {
               // Clear cart after checkout is confirmed
-              ref.read(cartProvider.notifier).state = [];
+              ref.read(cartProvider.notifier).clear();
               context.go('/home');
             })
           : Column(

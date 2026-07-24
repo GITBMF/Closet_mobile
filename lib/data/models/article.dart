@@ -47,6 +47,22 @@ class Article {
     );
   }
 
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'title': title,
+        'description': description,
+        'brand': brand,
+        'size': size,
+        'material': material,
+        'condition': condition,
+        'price': price,
+        'imageUrls': imageUrls,
+        'isFeatured': isFeatured,
+        'universe': universe,
+        'isSoldOut': isSoldOut,
+        'isWishlisted': isWishlisted,
+      };
+
   Article copyWith({
     String? id,
     String? title,
