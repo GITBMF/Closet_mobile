@@ -1,0 +1,139 @@
+{
+  "audit_metadata": {
+    "timestamp": "2026-07-24T13:04:48.572Z",
+    "flutter_version": "3.41.2",
+    "dart_version": "3.11.0",
+    "total_packages_scanned": 3,
+    "execution_time_ms": 61315
+  },
+  "summary": {
+    "total": 3,
+    "vibrant": 0,
+    "stable": 0,
+    "outdated": 0,
+    "abandoned": 3,
+    "end_of_life": 0
+  },
+  "packages": [
+    {
+      "name": "cupertino_icons",
+      "installed_version": "1.0.8",
+      "latest_version": "",
+      "status": "Abandoned",
+      "vibrancy_score": 0,
+      "pub_points": 0,
+      "stars": 0,
+      "is_discontinued": false,
+      "is_unlisted": false,
+      "pub_dev_url": "https://pub.dev/packages/cupertino_icons",
+      "repository_url": "",
+      "license": "MIT",
+      "archive_size_bytes": 343075,
+      "bloat_rating": 5,
+      "file_usage_count": 0,
+      "file_usages": []
+    },
+    {
+      "name": "flutter_lints",
+      "installed_version": "6.0.0",
+      "latest_version": "",
+      "status": "Abandoned",
+      "vibrancy_score": 0,
+      "pub_points": 0,
+      "stars": 0,
+      "is_discontinued": false,
+      "is_unlisted": false,
+      "pub_dev_url": "https://pub.dev/packages/flutter_lints",
+      "repository_url": "",
+      "license": "BSD-3-Clause",
+      "archive_size_bytes": 4980,
+      "bloat_rating": 0,
+      "file_usage_count": 0,
+      "file_usages": []
+    },
+    {
+      "name": "google_fonts",
+      "installed_version": "6.3.2",
+      "latest_version": "",
+      "status": "Abandoned",
+      "vibrancy_score": 0,
+      "pub_points": 0,
+      "stars": 0,
+      "is_discontinued": false,
+      "is_unlisted": false,
+      "pub_dev_url": "https://pub.dev/packages/google_fonts",
+      "repository_url": "",
+      "license": null,
+      "archive_size_bytes": null,
+      "bloat_rating": null,
+      "file_usage_count": 13,
+      "file_usages": [
+        {
+          "file_path": "lib/core/theme/closet_text_styles.dart",
+          "line": 2,
+          "import_line": 2
+        },
+        {
+          "file_path": "lib/core/widgets/piece_card.dart",
+          "line": 2,
+          "import_line": 2
+        },
+        {
+          "file_path": "lib/features/cliente/espace/espace_screen.dart",
+          "line": 2,
+          "import_line": 2
+        },
+        {
+          "file_path": "lib/features/cliente/dressing/dressing_screen.dart",
+          "line": 2,
+          "import_line": 2
+        },
+        {
+          "file_path": "lib/features/cliente/dressing/product_detail_screen.dart",
+          "line": 2,
+          "import_line": 2
+        },
+        {
+          "file_path": "lib/features/cliente/dressing/widgets/hero_arche.dart",
+          "line": 2,
+          "import_line": 2
+        },
+        {
+          "file_path": "lib/features/cliente/dressing/piece_detail_screen.dart",
+          "line": 2,
+          "import_line": 2
+        },
+        {
+          "file_path": "lib/features/cliente/wishlist/wishlist_screen.dart",
+          "line": 2,
+          "import_line": 2
+        },
+        {
+          "file_path": "lib/features/cliente/collections/collections_screen.dart",
+          "line": 2,
+          "import_line": 2
+        },
+        {
+          "file_path": "lib/features/cliente/collections/widgets/filter_bottom_sheet.dart",
+          "line": 2,
+          "import_line": 2
+        },
+        {
+          "file_path": "lib/features/cliente/selection/selection_screen.dart",
+          "line": 2,
+          "import_line": 2
+        },
+        {
+          "file_path": "lib/features/cliente/selection/payment_screen.dart",
+          "line": 2,
+          "import_line": 2
+        },
+        {
+          "file_path": "lib/features/cliente/selection/confirmation_screen.dart",
+          "line": 2,
+          "import_line": 2
+        }
+      ]
+    }
+  ]
+}

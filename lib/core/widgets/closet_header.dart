@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 
 import '../theme/closet_colors.dart';
 import '../theme/closet_text_styles.dart';
+import '../../features/main_layout.dart';
+import '../../features/cliente/espace/notifications_screen.dart';
 
 /// En-tête commun : bouton retour, titre serif et actions circulaires
 /// (recherche, wishlist, panier, notifications) avec pastilles de compteur.
@@ -57,27 +59,57 @@ class ClosetHeader extends StatelessWidget {
               ],
             ),
           ),
-          _ActionCircle(icon: Icons.search, onTap: () {}),
+          _ActionCircle(
+            icon: Icons.search,
+            onTap: () {
+              Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(
+                MaterialPageRoute(
+                  builder: (context) => const MainLayout(initialIndex: 1),
+                ),
+                (route) => false,
+              );
+            },
+          ),
           const SizedBox(width: 8),
           _ActionCircle(
             icon: Icons.favorite_border,
             badgeCount: wishlistCount,
             badgeColor: ClosetColors.rougeBadge,
-            onTap: () {},
+            onTap: () {
+              Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(
+                MaterialPageRoute(
+                  builder: (context) => const MainLayout(initialIndex: 2),
+                ),
+                (route) => false,
+              );
+            },
           ),
           const SizedBox(width: 8),
           _ActionCircle(
             icon: Icons.shopping_bag_outlined,
             badgeCount: panierCount,
             badgeColor: ClosetColors.noir,
-            onTap: () {},
+            onTap: () {
+              Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(
+                MaterialPageRoute(
+                  builder: (context) => const MainLayout(initialIndex: 1),
+                ),
+                (route) => false,
+              );
+            },
           ),
           const SizedBox(width: 8),
           _ActionCircle(
             icon: Icons.notifications_none,
             badgeCount: notificationsCount,
             badgeColor: ClosetColors.dore,
-            onTap: () {},
+            onTap: () {
+              Navigator.of(context, rootNavigator: true).push(
+                MaterialPageRoute(
+                  builder: (context) => const NotificationsScreen(),
+                ),
+              );
+            },
           ),
         ],
       ),

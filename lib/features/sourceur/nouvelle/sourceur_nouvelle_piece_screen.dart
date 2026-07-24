@@ -222,7 +222,7 @@ class _SourceurNouvellePieceScreenState
             for (final u in _univers)
               ClosetChip(
                 label: u,
-                selectionnee: _universChoisi == u,
+                isActive: _universChoisi == u,
                 onTap: () => setState(() => _universChoisi = u),
               ),
           ],

@@ -48,6 +48,30 @@
           "grade": "B"
         }
       }
+    },
+    {
+      "timestamp": "2026-07-24T13:04:48.651Z",
+      "extensionVersion": "14.3.5",
+      "packages": {
+        "cupertino_icons": {
+          "version": "1.0.8",
+          "score": 0,
+          "category": "abandoned",
+          "grade": "E"
+        },
+        "flutter_lints": {
+          "version": "6.0.0",
+          "score": 0,
+          "category": "abandoned",
+          "grade": "E"
+        },
+        "google_fonts": {
+          "version": "6.3.2",
+          "score": 0,
+          "category": "abandoned",
+          "grade": "E"
+        }
+      }
     }
   ]
 }

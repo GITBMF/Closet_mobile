@@ -6,11 +6,13 @@ import '../../../core/widgets/closet_chip.dart';
 import '../../../core/widgets/piece_card.dart';
 import 'widgets/hero_arche.dart';
 import 'product_detail_screen.dart';
+import '../../main_layout.dart';
+import '../espace/notifications_screen.dart';
 
 class DressingScreen extends StatelessWidget {
   const DressingScreen({super.key});
 
-  Widget _buildAppBarAction(IconData icon, {int badgeCount = 0, Color? badgeColor, Color badgeTextColor = Colors.white}) {
+  Widget _buildAppBarAction(IconData icon, {int badgeCount = 0, Color? badgeColor, Color badgeTextColor = Colors.white, VoidCallback? onPressed}) {
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 4),
@@ -24,7 +26,7 @@ class DressingScreen extends StatelessWidget {
         children: [
           IconButton(
             icon: Icon(icon, color: ClosetColors.vertFonce, size: 20),
-            onPressed: () {},
+            onPressed: onPressed ?? () {},
           ),
           if (badgeCount > 0)
             Positioned(
@@ -94,20 +96,26 @@ class DressingScreen extends StatelessWidget {
           padding: const EdgeInsets.only(left: 4.0),
           child: Row(
             children: [
-              Container(
-                width: 36,
-                height: 36,
-                decoration: const BoxDecoration(
-                  color: ClosetColors.doreClair,
-                  shape: BoxShape.circle,
+              GestureDetector(
+                onTap: () => Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(
+                  MaterialPageRoute(builder: (context) => const MainLayout(initialIndex: 0)),
+                  (route) => false,
                 ),
-                alignment: Alignment.center,
-                child: Text(
-                  'C',
-                  style: GoogleFonts.cormorantGaramond(
-                    fontSize: 22,
-                    fontStyle: FontStyle.italic,
-                    color: ClosetColors.vertFonce,
+                child: Container(
+                  width: 36,
+                  height: 36,
+                  decoration: const BoxDecoration(
+                    color: ClosetColors.doreClair,
+                    shape: BoxShape.circle,
+                  ),
+                  alignment: Alignment.center,
+                  child: Text(
+                    'C',
+                    style: GoogleFonts.cormorantGaramond(
+                      fontSize: 22,
+                      fontStyle: FontStyle.italic,
+                      color: ClosetColors.vertFonce,
+                    ),
                   ),
                 ),
               ),
@@ -139,10 +147,10 @@ class DressingScreen extends StatelessWidget {
           ),
         ),
         actions: [
-          _buildAppBarAction(Icons.search),
-          _buildAppBarAction(Icons.favorite_border, badgeCount: 2, badgeColor: ClosetColors.erreur),
-          _buildAppBarAction(Icons.shopping_bag_outlined, badgeCount: 2, badgeColor: ClosetColors.vertFonce),
-          _buildAppBarAction(Icons.notifications_none, badgeCount: 2, badgeColor: ClosetColors.doreClair, badgeTextColor: ClosetColors.vertFonce),
+          _buildAppBarAction(Icons.search, onPressed: () => Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(MaterialPageRoute(builder: (context) => MainLayout(initialIndex: 1)), (route) => false)),
+          _buildAppBarAction(Icons.favorite_border, badgeCount: 2, badgeColor: ClosetColors.erreur, onPressed: () => Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(MaterialPageRoute(builder: (context) => MainLayout(initialIndex: 2)), (route) => false)),
+          _buildAppBarAction(Icons.shopping_bag_outlined, badgeCount: 2, badgeColor: ClosetColors.vertFonce, onPressed: () => Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(MaterialPageRoute(builder: (context) => MainLayout(initialIndex: 1)), (route) => false)),
+          _buildAppBarAction(Icons.notifications_none, badgeCount: 2, badgeColor: ClosetColors.doreClair, badgeTextColor: ClosetColors.vertFonce, onPressed: () => Navigator.of(context, rootNavigator: true).push(MaterialPageRoute(builder: (context) => const NotificationsScreen()))),
           const SizedBox(width: 8),
         ],
       ),
@@ -184,20 +192,51 @@ class DressingScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 12),
-            const SingleChildScrollView(
+            SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               clipBehavior: Clip.none,
               child: Row(
                 children: [
-                  ClosetChip(label: "Tout l'univers", isActive: true),
-                  SizedBox(width: 8),
-                  ClosetChip(label: 'Robes'),
-                  SizedBox(width: 8),
-                  ClosetChip(label: 'Vestes'),
-                  SizedBox(width: 8),
-                  ClosetChip(label: 'Sacs'),
-                  SizedBox(width: 8),
-                  ClosetChip(label: 'Escarpins'),
+                  ClosetChip(
+                    label: "Tout l'univers",
+                    isActive: true,
+                    onTap: () => Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(
+                      MaterialPageRoute(builder: (context) => MainLayout(initialIndex: 1, initialCategory: 'Tout')),
+                      (route) => false,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  ClosetChip(
+                    label: 'Robes',
+                    onTap: () => Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(
+                      MaterialPageRoute(builder: (context) => MainLayout(initialIndex: 1, initialCategory: 'Robes')),
+                      (route) => false,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  ClosetChip(
+                    label: 'Vestes',
+                    onTap: () => Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(
+                      MaterialPageRoute(builder: (context) => MainLayout(initialIndex: 1, initialCategory: 'Vestes')),
+                      (route) => false,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  ClosetChip(
+                    label: 'Sacs',
+                    onTap: () => Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(
+                      MaterialPageRoute(builder: (context) => MainLayout(initialIndex: 1, initialCategory: 'Sacs')),
+                      (route) => false,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  ClosetChip(
+                    label: 'Escarpins',
+                    onTap: () => Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(
+                      MaterialPageRoute(builder: (context) => MainLayout(initialIndex: 1, initialCategory: 'Escarpins')),
+                      (route) => false,
+                    ),
+                  ),
                 ],
               ),
             ),

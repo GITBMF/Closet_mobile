@@ -3,6 +3,8 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../../../core/theme/closet_colors.dart';
 import 'confirmation_screen.dart';
+import '../../main_layout.dart';
+import '../espace/notifications_screen.dart';
 
 class PaymentScreen extends StatefulWidget {
   const PaymentScreen({super.key});
@@ -19,6 +21,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
     int badgeCount = 0,
     Color? badgeColor,
     Color badgeTextColor = Colors.white,
+    VoidCallback? onPressed,
   }) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 4),
@@ -32,7 +35,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
         children: [
           IconButton(
             icon: Icon(icon, color: ClosetColors.vertFonce, size: 20),
-            onPressed: () {},
+            onPressed: onPressed ?? () {},
           ),
           if (badgeCount > 0)
             Positioned(
@@ -255,22 +258,32 @@ class _PaymentScreenState extends State<PaymentScreen> {
           ],
         ),
         actions: [
-          _buildAppBarAction(Icons.search),
+          _buildAppBarAction(
+            Icons.search,
+            onPressed: () => Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(
+              MaterialPageRoute(builder: (context) => const MainLayout(initialIndex: 1)), (route) => false),
+          ),
           _buildAppBarAction(
             Icons.favorite_border,
             badgeCount: 2,
             badgeColor: ClosetColors.erreur,
+            onPressed: () => Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(
+              MaterialPageRoute(builder: (context) => const MainLayout(initialIndex: 2)), (route) => false),
           ),
           _buildAppBarAction(
             Icons.shopping_bag_outlined,
             badgeCount: 2,
             badgeColor: ClosetColors.vertFonce,
+            onPressed: () => Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(
+              MaterialPageRoute(builder: (context) => const MainLayout(initialIndex: 1)), (route) => false),
           ),
           _buildAppBarAction(
             Icons.notifications_none,
             badgeCount: 2,
             badgeColor: ClosetColors.doreClair,
             badgeTextColor: ClosetColors.vertFonce,
+            onPressed: () => Navigator.of(context, rootNavigator: true).push(
+              MaterialPageRoute(builder: (context) => const NotificationsScreen())),
           ),
           const SizedBox(width: 8),
         ],

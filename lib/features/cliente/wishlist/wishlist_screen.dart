@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../../core/theme/closet_colors.dart';
+import '../../../core/widgets/piece_card.dart';
 import '../../main_layout.dart';
+import '../espace/notifications_screen.dart';
 
 class WishlistScreen extends StatefulWidget {
   const WishlistScreen({super.key});
@@ -33,7 +35,7 @@ class _WishlistScreenState extends State<WishlistScreen> {
     },
   ];
 
-  Widget _buildAppBarAction(IconData icon, {int badgeCount = 0, Color? badgeColor, Color badgeTextColor = Colors.white}) {
+  Widget _buildAppBarAction(IconData icon, {int badgeCount = 0, Color? badgeColor, Color badgeTextColor = Colors.white, VoidCallback? onPressed}) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 4),
       decoration: BoxDecoration(
@@ -46,7 +48,7 @@ class _WishlistScreenState extends State<WishlistScreen> {
         children: [
           IconButton(
             icon: Icon(icon, color: ClosetColors.vertFonce, size: 20),
-            onPressed: () {},
+            onPressed: onPressed ?? () {},
           ),
           if (badgeCount > 0)
             Positioned(
@@ -249,17 +251,29 @@ class _WishlistScreenState extends State<WishlistScreen> {
         automaticallyImplyLeading: false,
         title: Row(
           children: [
-            Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(
-                color: Colors.transparent,
-                shape: BoxShape.circle,
-                border: Border.all(color: ClosetColors.ligne),
+            GestureDetector(
+                onTap: () => Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(
+                  MaterialPageRoute(builder: (context) => const MainLayout(initialIndex: 0)),
+                  (route) => false,
+                ),
+                child: Container(
+                  width: 36,
+                  height: 36,
+                  decoration: const BoxDecoration(
+                    color: ClosetColors.doreClair,
+                    shape: BoxShape.circle,
+                  ),
+                  alignment: Alignment.center,
+                  child: Text(
+                    'C',
+                    style: GoogleFonts.cormorantGaramond(
+                      fontSize: 22,
+                      fontStyle: FontStyle.italic,
+                      color: ClosetColors.vertFonce,
+                    ),
+                  ),
+                ),
               ),
-              alignment: Alignment.center,
-              child: const Icon(Icons.chevron_left, color: ClosetColors.vertFonce, size: 24),
-            ),
             const SizedBox(width: 12),
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -286,10 +300,10 @@ class _WishlistScreenState extends State<WishlistScreen> {
           ],
         ),
         actions: [
-          _buildAppBarAction(Icons.search),
-          _buildAppBarAction(Icons.favorite_border, badgeCount: 2, badgeColor: ClosetColors.erreur),
-          _buildAppBarAction(Icons.shopping_bag_outlined),
-          _buildAppBarAction(Icons.notifications_none, badgeCount: 6, badgeColor: ClosetColors.doreClair, badgeTextColor: ClosetColors.vertFonce),
+          _buildAppBarAction(Icons.search, onPressed: () => Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(MaterialPageRoute(builder: (context) => const MainLayout(initialIndex: 1)), (route) => false)),
+          _buildAppBarAction(Icons.favorite_border, badgeCount: 2, badgeColor: ClosetColors.erreur, onPressed: () => Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(MaterialPageRoute(builder: (context) => const MainLayout(initialIndex: 2)), (route) => false)),
+          _buildAppBarAction(Icons.shopping_bag_outlined, onPressed: () => Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(MaterialPageRoute(builder: (context) => const MainLayout(initialIndex: 1)), (route) => false)),
+          _buildAppBarAction(Icons.notifications_none, badgeCount: 6, badgeColor: ClosetColors.doreClair, badgeTextColor: ClosetColors.vertFonce, onPressed: () => Navigator.of(context, rootNavigator: true).push(MaterialPageRoute(builder: (context) => const NotificationsScreen()))),
           const SizedBox(width: 8),
         ],
       ),

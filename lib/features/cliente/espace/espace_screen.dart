@@ -2,7 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../../core/theme/closet_colors.dart';
+import '../../sourceur/inscription/sourceur_inscription_screen.dart';
 import '../selection/confirmation_screen.dart';
+import 'notifications_screen.dart';
+import '../../main_layout.dart';
 
 class EspaceScreen extends StatelessWidget {
   const EspaceScreen({super.key});
@@ -12,6 +15,7 @@ class EspaceScreen extends StatelessWidget {
     int badgeCount = 0,
     Color? badgeColor,
     Color badgeTextColor = Colors.white,
+    VoidCallback? onPressed,
   }) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 4),
@@ -25,7 +29,7 @@ class EspaceScreen extends StatelessWidget {
         children: [
           IconButton(
             icon: Icon(icon, color: ClosetColors.vertFonce, size: 20),
-            onPressed: () {},
+            onPressed: onPressed ?? () {},
           ),
           if (badgeCount > 0)
             Positioned(
@@ -182,7 +186,7 @@ class EspaceScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildMenuItem(String title, {IconData icon = Icons.chevron_right}) {
+  Widget _buildMenuItem(String title, {IconData icon = Icons.chevron_right, VoidCallback? onTap}) {
     return Container(
       decoration: BoxDecoration(
         color: ClosetColors.creme,
@@ -201,7 +205,7 @@ class EspaceScreen extends StatelessWidget {
           ),
         ),
         trailing: Icon(icon, size: 20, color: ClosetColors.vertFonce),
-        onTap: () {},
+        onTap: onTap,
       ),
     );
   }
@@ -217,62 +221,112 @@ class EspaceScreen extends StatelessWidget {
         automaticallyImplyLeading: false,
         title: Row(
           children: [
-            Container(
-              width: 40,
-              height: 40,
-              decoration: const BoxDecoration(
-                color: ClosetColors.doreClair,
-                shape: BoxShape.circle,
-              ),
-              alignment: Alignment.center,
-              child: Text(
-                'C',
-                style: GoogleFonts.cormorantGaramond(
-                  fontSize: 22,
-                  fontStyle: FontStyle.italic,
-                  color: ClosetColors.vertFonce,
+            GestureDetector(
+              onTap: () {
+                Navigator.pushAndRemoveUntil(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => MainLayout(initialIndex: 0),
+                  ),
+                  (route) => false,
+                );
+              },
+              child: Container(
+                width: 40,
+                height: 40,
+                decoration: const BoxDecoration(
+                  color: ClosetColors.doreClair,
+                  shape: BoxShape.circle,
                 ),
-              ),
-            ),
-            const SizedBox(width: 12),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Mon Espace',
+                alignment: Alignment.center,
+                child: Text(
+                  'C',
                   style: GoogleFonts.cormorantGaramond(
                     fontSize: 22,
-                    fontWeight: FontWeight.bold,
                     fontStyle: FontStyle.italic,
                     color: ClosetColors.vertFonce,
                   ),
                 ),
-                const Text(
-                  "L'ÉLÉGANCE DURABLE",
-                  style: TextStyle(
-                    fontSize: 9,
-                    letterSpacing: 1.5,
-                    fontWeight: FontWeight.w700,
-                    color: ClosetColors.doreEncre,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Mon Espace',
+                    style: GoogleFonts.cormorantGaramond(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                      fontStyle: FontStyle.italic,
+                      color: ClosetColors.vertFonce,
+                    ),
+                    overflow: TextOverflow.ellipsis,
                   ),
-                ),
-              ],
+                  const Text(
+                    "L'ÉLÉGANCE DURABLE",
+                    style: TextStyle(
+                      fontSize: 9,
+                      letterSpacing: 1.5,
+                      fontWeight: FontWeight.w700,
+                      color: ClosetColors.doreEncre,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
             ),
           ],
         ),
         actions: [
-          _buildAppBarAction(Icons.search),
+          _buildAppBarAction(
+            Icons.search,
+            onPressed: () {
+              Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(
+                MaterialPageRoute(
+                  builder: (context) => const MainLayout(initialIndex: 1),
+                ),
+                (route) => false,
+              );
+            },
+          ),
           _buildAppBarAction(
             Icons.favorite_border,
             badgeCount: 2,
             badgeColor: ClosetColors.erreur,
+            onPressed: () {
+              Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(
+                MaterialPageRoute(
+                  builder: (context) => const MainLayout(initialIndex: 2),
+                ),
+                (route) => false,
+              );
+            },
           ),
-          _buildAppBarAction(Icons.shopping_bag_outlined),
+          _buildAppBarAction(
+            Icons.shopping_bag_outlined,
+            onPressed: () {
+              Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(
+                MaterialPageRoute(
+                  builder: (context) => const MainLayout(initialIndex: 1),
+                ),
+                (route) => false,
+              );
+            },
+          ),
           _buildAppBarAction(
             Icons.notifications_none,
-            badgeCount: 3,
+            badgeCount: 6,
             badgeColor: ClosetColors.doreClair,
             badgeTextColor: ClosetColors.vertFonce,
+            onPressed: () {
+              Navigator.of(context, rootNavigator: true).push(
+                MaterialPageRoute(
+                  builder: (context) => const NotificationsScreen(),
+                ),
+              );
+            },
           ),
           const SizedBox(width: 8),
         ],
@@ -446,23 +500,34 @@ class EspaceScreen extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 12),
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      decoration: BoxDecoration(
-                        color: const Color(
-                          0xFFC7A87D,
-                        ), // Gold color matches image
-                        borderRadius: BorderRadius.circular(30),
-                      ),
-                      alignment: Alignment.center,
-                      child: const Text(
-                        'REJOINDRE LE CERCLE',
-                        style: TextStyle(
-                          fontSize: 11,
-                          letterSpacing: 1.5,
-                          fontWeight: FontWeight.w700,
-                          color: ClosetColors.vertFonce,
+                    GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder:
+                                (context) => const SourceurInscriptionScreen(),
+                          ),
+                        );
+                      },
+                      child: Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        decoration: BoxDecoration(
+                          color: const Color(
+                            0xFFC7A87D,
+                          ), // Gold color matches image
+                          borderRadius: BorderRadius.circular(30),
+                        ),
+                        alignment: Alignment.center,
+                        child: const Text(
+                          'REJOINDRE LE CERCLE',
+                          style: TextStyle(
+                            fontSize: 11,
+                            letterSpacing: 1.5,
+                            fontWeight: FontWeight.w700,
+                            color: ClosetColors.vertFonce,
+                          ),
                         ),
                       ),
                     ),
@@ -557,7 +622,14 @@ class EspaceScreen extends StatelessWidget {
                     _buildMenuItem('Mes informations'),
                     _buildMenuItem('Adresses de livraison'),
                     _buildMenuItem('Préférences de taille'),
-                    _buildMenuItem('Notifications WhatsApp'),
+                    _buildMenuItem('Notifications WhatsApp', onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const NotificationsScreen(),
+                        ),
+                      );
+                    }),
                     _buildMenuItem('Aide & conciergerie'),
                     Container(
                       decoration: const BoxDecoration(

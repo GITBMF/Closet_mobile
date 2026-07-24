@@ -110,7 +110,7 @@ class _SourceurPiecesScreenState extends State<SourceurPiecesScreen> {
           for (final f in _filtres) ...[
             ClosetChip(
               label: f.label,
-              selectionnee: _filtre == f.statut,
+              isActive: _filtre == f.statut,
               onTap: () => setState(() => _filtre = f.statut),
             ),
             if (f != _filtres.last) const SizedBox(width: 12),

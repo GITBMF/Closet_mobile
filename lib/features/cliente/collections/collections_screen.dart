@@ -4,21 +4,32 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/closet_colors.dart';
 import '../../../core/widgets/piece_card.dart';
 import '../dressing/piece_detail_screen.dart';
+import '../../main_layout.dart';
+import '../espace/notifications_screen.dart';
 
 class CollectionsScreen extends StatefulWidget {
-  const CollectionsScreen({super.key});
+  final String? initialCategory;
+
+  const CollectionsScreen({super.key, this.initialCategory});
 
   @override
   State<CollectionsScreen> createState() => _CollectionsScreenState();
 }
 
 class _CollectionsScreenState extends State<CollectionsScreen> {
-  final List<String> _categories = ['Tout', 'Robes', 'Vestes', 'Sacs', 'Blouses'];
-  String _selectedCategory = 'Tout';
+  final List<String> _categories = ['Tout', 'Robes', 'Vestes', 'Sacs', 'Blouses', 'Escarpins'];
+  late String _selectedCategory;
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedCategory = widget.initialCategory ?? 'Tout';
+  }
 
   final List<Map<String, dynamic>> _pieces = [
     {
       'id': '1',
+      'categorie': 'Robes',
       'maison': 'SANDRO',
       'nom': 'Robe Élégance Durable',
       'prix': '38 500 FCFA',
@@ -31,6 +42,7 @@ class _CollectionsScreenState extends State<CollectionsScreen> {
     },
     {
       'id': '2',
+      'categorie': 'Sacs',
       'maison': 'SÉZANE',
       'nom': 'Sac Cuir Camel',
       'prix': '31 000 FCFA',
@@ -43,6 +55,7 @@ class _CollectionsScreenState extends State<CollectionsScreen> {
     },
     {
       'id': '3',
+      'categorie': 'Vestes',
       'maison': 'MAJE',
       'nom': 'Veste Tweed Crème',
       'prix': '24 500 FCFA',
@@ -55,6 +68,7 @@ class _CollectionsScreenState extends State<CollectionsScreen> {
     },
     {
       'id': '4',
+      'categorie': 'Blouses',
       'maison': 'RUE SEREINE',
       'nom': 'Blouse Ivoire Fluide',
       'prix': '18 500 FCFA',
@@ -67,6 +81,7 @@ class _CollectionsScreenState extends State<CollectionsScreen> {
     },
     {
       'id': '5',
+      'categorie': 'Robes',
       'maison': 'MASSIMO DUTTI',
       'nom': 'Robe Plissée Sable',
       'prix': '22 000 FCFA',
@@ -79,6 +94,7 @@ class _CollectionsScreenState extends State<CollectionsScreen> {
     },
     {
       'id': '6',
+      'categorie': 'Robes',
       'maison': 'MAJE',
       'nom': 'Robe Portefeuille',
       'prix': '',
@@ -97,7 +113,7 @@ class _CollectionsScreenState extends State<CollectionsScreen> {
     });
   }
 
-  Widget _buildAppBarAction(IconData icon, {int badgeCount = 0, Color? badgeColor, Color badgeTextColor = Colors.white}) {
+  Widget _buildAppBarAction(IconData icon, {int badgeCount = 0, Color? badgeColor, Color badgeTextColor = Colors.white, VoidCallback? onPressed}) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 4),
       decoration: BoxDecoration(
@@ -110,7 +126,7 @@ class _CollectionsScreenState extends State<CollectionsScreen> {
         children: [
           IconButton(
             icon: Icon(icon, color: ClosetColors.vertFonce, size: 20),
-            onPressed: () {},
+            onPressed: onPressed ?? () {},
           ),
           if (badgeCount > 0)
             Positioned(
@@ -140,6 +156,10 @@ class _CollectionsScreenState extends State<CollectionsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final filteredPieces = _selectedCategory == 'Tout'
+        ? _pieces
+        : _pieces.where((p) => p['categorie'] == _selectedCategory).toList();
+
     return Scaffold(
       backgroundColor: ClosetColors.beige,
       appBar: AppBar(
@@ -149,20 +169,26 @@ class _CollectionsScreenState extends State<CollectionsScreen> {
         automaticallyImplyLeading: false,
         title: Row(
           children: [
-            Container(
-              width: 40,
-              height: 40,
-              decoration: const BoxDecoration(
-                color: ClosetColors.doreClair,
-                shape: BoxShape.circle,
+            GestureDetector(
+              onTap: () => Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(
+                MaterialPageRoute(builder: (context) => const MainLayout(initialIndex: 0)),
+                (route) => false,
               ),
-              alignment: Alignment.center,
-              child: Text(
-                'C',
-                style: GoogleFonts.cormorantGaramond(
-                  fontSize: 22,
-                  fontStyle: FontStyle.italic,
-                  color: ClosetColors.vertFonce,
+              child: Container(
+                width: 40,
+                height: 40,
+                decoration: const BoxDecoration(
+                  color: ClosetColors.doreClair,
+                  shape: BoxShape.circle,
+                ),
+                alignment: Alignment.center,
+                child: Text(
+                  'C',
+                  style: GoogleFonts.cormorantGaramond(
+                    fontSize: 22,
+                    fontStyle: FontStyle.italic,
+                    color: ClosetColors.vertFonce,
+                  ),
                 ),
               ),
             ),
@@ -193,10 +219,10 @@ class _CollectionsScreenState extends State<CollectionsScreen> {
           ],
         ),
         actions: [
-          _buildAppBarAction(Icons.search),
-          _buildAppBarAction(Icons.favorite_border, badgeCount: 2, badgeColor: ClosetColors.erreur),
-          _buildAppBarAction(Icons.shopping_bag_outlined),
-          _buildAppBarAction(Icons.notifications_none, badgeCount: 6, badgeColor: ClosetColors.doreClair, badgeTextColor: ClosetColors.vertFonce),
+          _buildAppBarAction(Icons.search, onPressed: () => Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(MaterialPageRoute(builder: (context) => MainLayout(initialIndex: 1)), (route) => false)),
+          _buildAppBarAction(Icons.favorite_border, badgeCount: 2, badgeColor: ClosetColors.erreur, onPressed: () => Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(MaterialPageRoute(builder: (context) => MainLayout(initialIndex: 2)), (route) => false)),
+          _buildAppBarAction(Icons.shopping_bag_outlined, onPressed: () => Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(MaterialPageRoute(builder: (context) => MainLayout(initialIndex: 1)), (route) => false)),
+          _buildAppBarAction(Icons.notifications_none, badgeCount: 6, badgeColor: ClosetColors.doreClair, badgeTextColor: ClosetColors.vertFonce, onPressed: () => Navigator.of(context, rootNavigator: true).push(MaterialPageRoute(builder: (context) => const NotificationsScreen()))),
           const SizedBox(width: 8),
         ],
       ),
@@ -339,9 +365,9 @@ class _CollectionsScreenState extends State<CollectionsScreen> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text(
-                  '6 pièces uniques',
-                  style: TextStyle(
+                Text(
+                  '${filteredPieces.length} pièces uniques',
+                  style: const TextStyle(
                     fontSize: 10,
                     fontWeight: FontWeight.w500,
                     color: ClosetColors.taupe,
@@ -371,9 +397,9 @@ class _CollectionsScreenState extends State<CollectionsScreen> {
                 crossAxisSpacing: 12.0,
                 childAspectRatio: 0.53,
               ),
-              itemCount: _pieces.length,
+              itemCount: filteredPieces.length,
               itemBuilder: (context, index) {
-                final piece = _pieces[index];
+                final piece = filteredPieces[index];
                 return PieceCard(
                   maison: piece['maison'],
                   nom: piece['nom'],
@@ -384,7 +410,12 @@ class _CollectionsScreenState extends State<CollectionsScreen> {
                   subtitle: piece['subtitle'],
                   isFavorite: piece['isFavorite'],
                   isSold: piece['isSold'],
-                  onFavoriteTap: () => _toggleFavorite(index),
+                  onFavoriteTap: () {
+                    final originalIndex = _pieces.indexWhere((p) => p['id'] == piece['id']);
+                    if (originalIndex != -1) {
+                      _toggleFavorite(originalIndex);
+                    }
+                  },
                   onTap: () {
                     Navigator.push(
                       context,

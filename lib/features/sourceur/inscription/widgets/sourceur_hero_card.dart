@@ -12,7 +12,7 @@ class SourceurHeroCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.fromLTRB(24, 40, 24, 36),
+      padding: const EdgeInsets.fromLTRB(24, 15, 24, 10),
       decoration: const BoxDecoration(
         color: ClosetColors.vert,
         borderRadius: BorderRadius.vertical(
@@ -31,11 +31,13 @@ class SourceurHeroCard extends StatelessWidget {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(Icons.auto_awesome,
-                    size: 14, color: ClosetColors.noir),
+                const Icon(
+                  Icons.auto_awesome,
+                  size: 14,
+                  color: ClosetColors.noir,
+                ),
                 const SizedBox(width: 8),
-                Text('CERCLE DES SOURCEURS',
-                    style: ClosetTextStyles.badgePill),
+                Text('CERCLE DES SOURCEURS', style: ClosetTextStyles.badgePill),
               ],
             ),
           ),

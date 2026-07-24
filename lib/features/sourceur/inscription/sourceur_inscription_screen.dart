@@ -101,8 +101,8 @@ class _SourceurInscriptionScreenState extends State<SourceurInscriptionScreen> {
             const ClosetHeader(
               titre: 'Devenir Sourceur',
               wishlistCount: 2,
-              panierCount: 2,
-              notificationsCount: 2,
+              panierCount: 0,
+              notificationsCount: 6,
             ),
             Expanded(
               child: SingleChildScrollView(
@@ -146,7 +146,7 @@ class _SourceurInscriptionScreenState extends State<SourceurInscriptionScreen> {
           ],
         ),
       ),
-      bottomNavigationBar: ClosetBottomNav(indexActif: 1, onTap: (_) {}),
+      bottomNavigationBar: ClosetBottomNav(indexActif: 4, onTap: (_) {}),
     );
   }
 
@@ -208,7 +208,7 @@ class _SourceurInscriptionScreenState extends State<SourceurInscriptionScreen> {
             for (final s in _specialites)
               ClosetChip(
                 label: s,
-                selectionnee: _specialite == s,
+                isActive: _specialite == s,
                 onTap: () => setState(() => _specialite = s),
               ),
           ],
@@ -220,53 +220,98 @@ class _SourceurInscriptionScreenState extends State<SourceurInscriptionScreen> {
   // ---------------------------------------------------------------- Étape 3
 
   Widget _buildEtapePaiement() {
+    IconData getIconFor(String moyen) {
+      if (moyen.contains('MoMo') || moyen.contains('MTN')) return Icons.tap_and_play;
+      if (moyen.contains('Orange')) return Icons.phone_android;
+      return Icons.account_balance;
+    }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
           children: [
-            const Icon(Icons.payments_outlined,
-                size: 20, color: ClosetColors.dore),
-            const SizedBox(width: 10),
-            Text('MOYEN DE RÉMUNÉRATION', style: ClosetTextStyles.labelChamp),
+            const Icon(Icons.account_balance_wallet_outlined,
+                size: 20, color: ClosetColors.doreEncre),
+            const SizedBox(width: 8),
+            Text(
+              'MOYEN DE RÉMUNÉRATION',
+              style: ClosetTextStyles.labelChamp.copyWith(color: ClosetColors.doreEncre),
+            ),
           ],
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: 20),
         for (final moyen in _moyensPaiement) ...[
           _PaiementOption(
             label: moyen,
             selectionne: _moyenPaiement == moyen,
+            icone: getIconFor(moyen),
             onTap: () => setState(() => _moyenPaiement = moyen),
           ),
           const SizedBox(height: 14),
         ],
-        const SizedBox(height: 14),
+        const SizedBox(height: 16),
         LabeledField(
-          icone: Icons.phone_outlined,
-          label: 'Numéro',
+          icone: _moyenPaiement == 'Virement bancaire'
+              ? Icons.account_balance_outlined
+              : Icons.phone_outlined,
+          label: _moyenPaiement == 'Virement bancaire'
+              ? 'IBAN / Numéro de compte'
+              : 'Numéro $_moyenPaiement',
           controller: _numeroController,
-          hint: '+237 6 ...',
-          keyboardType: TextInputType.phone,        ),
-        const SizedBox(height: 24),
+          hint: _moyenPaiement == 'Virement bancaire'
+              ? 'Ex: FR76 1234...'
+              : '+237 6 ...',
+          keyboardType: _moyenPaiement == 'Virement bancaire'
+              ? TextInputType.text
+              : TextInputType.phone,
+        ),
+        const SizedBox(height: 32),
         Container(
-          padding: const EdgeInsets.all(18),
+          padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
-            color: ClosetColors.creme,
+            color: Colors.white,
             borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: ClosetColors.bordure),
+            border: Border.all(color: ClosetColors.ligne),
           ),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Icon(Icons.check_circle_outline,
-                  size: 22, color: ClosetColors.vert),
-              const SizedBox(width: 12),
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: const BoxDecoration(
+                  color: ClosetColors.beige,
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Icons.verified_outlined,
+                    size: 20, color: ClosetColors.vertFonce),
+              ),
+              const SizedBox(width: 16),
               Expanded(
-                child: Text(
-                  'En rejoignant le cercle, vous acceptez la charte '
-                  "d'authenticité Clos ET et une commission de 25% "
-                  'sur les ventes.',
-                  style: ClosetTextStyles.corps,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'ENGAGEMENT CLOS ET',
+                      style: TextStyle(
+                        fontSize: 10,
+                        letterSpacing: 1.5,
+                        fontWeight: FontWeight.w700,
+                        color: ClosetColors.taupe,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'En rejoignant le cercle, vous acceptez la charte '
+                      "d'authenticité Clos ET et une commission fixe de 25% "
+                      'sur vos ventes.',
+                      style: ClosetTextStyles.corps.copyWith(
+                        color: ClosetColors.noir,
+                        height: 1.5,
+                        fontSize: 13,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ],
@@ -308,47 +353,71 @@ class _PaiementOption extends StatelessWidget {
     required this.label,
     required this.selectionne,
     required this.onTap,
+    required this.icone,
   });
 
   final String label;
   final bool selectionne;
   final VoidCallback onTap;
+  final IconData icone;
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: selectionne ? ClosetColors.vert : ClosetColors.creme,
-      shape: RoundedRectangleBorder(
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 200),
+      curve: Curves.easeInOut,
+      decoration: BoxDecoration(
+        color: selectionne ? ClosetColors.vertFonce : Colors.white,
         borderRadius: BorderRadius.circular(20),
-        side: BorderSide(
-          color: selectionne ? ClosetColors.vert : ClosetColors.bordure,
+        border: Border.all(
+          color: selectionne ? ClosetColors.vertFonce : ClosetColors.ligne,
+          width: 1.5,
         ),
+        boxShadow: selectionne
+            ? [
+                BoxShadow(
+                  color: ClosetColors.vertFonce.withOpacity(0.15),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                )
+              ]
+            : [],
       ),
       child: InkWell(
         borderRadius: BorderRadius.circular(20),
         onTap: onTap,
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
           child: Row(
             children: [
-              Icon(
-                selectionne
-                    ? Icons.radio_button_checked
-                    : Icons.radio_button_unchecked,
-                size: 24,
-                color: selectionne ? ClosetColors.dore : ClosetColors.noir,
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: selectionne ? Colors.white.withOpacity(0.1) : ClosetColors.beige,
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  icone,
+                  size: 20,
+                  color: selectionne ? ClosetColors.doreClair : ClosetColors.vert,
+                ),
               ),
-              const SizedBox(width: 14),
+              const SizedBox(width: 16),
               Expanded(
                 child: Text(
                   label,
                   style: ClosetTextStyles.saisie.copyWith(
-                    color: selectionne
-                        ? ClosetColors.texteSurVert
-                        : ClosetColors.noir,
+                    fontWeight: selectionne ? FontWeight.w600 : FontWeight.w500,
+                    color: selectionne ? Colors.white : ClosetColors.noir,
                   ),
                 ),
               ),
+              if (selectionne)
+                const Icon(
+                  Icons.check_circle,
+                  color: ClosetColors.doreClair,
+                  size: 22,
+                ),
             ],
           ),
         ),
