@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../core/theme/app_theme.dart';
+import '../../../core/theme/closet_colors.dart';
 import '../../../core/widgets/closet_app_bar.dart';
 import '../../../data/models/article.dart';
 import '../../../data/repositories/wishlist_repository.dart';
@@ -13,7 +13,7 @@ class WishlistScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final wishlistItems = ref.watch(wishlistProvider);
+    final wishlistItems = ref.watch(wishlistListProvider);
     final theme = Theme.of(context);
 
     return Scaffold(
@@ -150,7 +150,7 @@ class _WishlistCard extends ConsumerWidget {
                   },
                   child: const Padding(
                     padding: EdgeInsets.all(8.0),
-                    child: Icon(Icons.favorite, size: 22, color: Colors.redAccent),
+                    child: Icon(Icons.favorite, size: 22, color: ClosetColors.erreur),
                   ),
                 ),
                 const SizedBox(height: 4),

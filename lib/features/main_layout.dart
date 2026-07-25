@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../core/theme/app_theme.dart';
+import '../../core/theme/closet_colors.dart';
 import '../../data/repositories/cart_repository.dart';
 
 class MainLayout extends ConsumerWidget {
@@ -18,7 +18,7 @@ class MainLayout extends ConsumerWidget {
       body: navigationShell,
       bottomNavigationBar: DecoratedBox(
         decoration: const BoxDecoration(
-          color: AppTheme.blackCloset,
+          color: ClosetColors.noir,
           boxShadow: [
             BoxShadow(
               color: Colors.black26,
@@ -120,7 +120,7 @@ class _NavItem extends StatelessWidget {
           children: [
             Icon(
               isSelected ? activeIcon : icon,
-              color: isSelected ? AppTheme.goldCloset : const Color(0xFF7A7870),
+              color: isSelected ? ClosetColors.dore : ClosetColors.navigationInactif,
               size: 22,
             ),
             const SizedBox(height: 4),
@@ -131,7 +131,7 @@ class _NavItem extends StatelessWidget {
                 fontWeight: FontWeight.w600,
                 letterSpacing: 0.5,
                 color:
-                    isSelected ? AppTheme.goldCloset : const Color(0xFF7A7870),
+                    isSelected ? ClosetColors.dore : ClosetColors.navigationInactif,
               ),
             ),
           ],
@@ -177,8 +177,8 @@ class _NavItemWithBadge extends StatelessWidget {
                 Icon(
                   isSelected ? activeIcon : icon,
                   color: isSelected
-                      ? AppTheme.goldCloset
-                      : const Color(0xFF7A7870),
+                      ? ClosetColors.dore
+                      : ClosetColors.navigationInactif,
                   size: 22,
                 ),
                 if (badge > 0)
@@ -189,14 +189,14 @@ class _NavItemWithBadge extends StatelessWidget {
                       width: 16,
                       height: 16,
                       decoration: const BoxDecoration(
-                        color: AppTheme.goldCloset,
+                        color: ClosetColors.vert,
                         shape: BoxShape.circle,
                       ),
                       child: Center(
                         child: Text(
                           '$badge',
                           style: const TextStyle(
-                            color: Colors.white,
+                            color: ClosetColors.creme,
                             fontSize: 9,
                             fontWeight: FontWeight.bold,
                           ),
@@ -214,7 +214,7 @@ class _NavItemWithBadge extends StatelessWidget {
                 fontWeight: FontWeight.w600,
                 letterSpacing: 0.5,
                 color:
-                    isSelected ? AppTheme.goldCloset : const Color(0xFF7A7870),
+                    isSelected ? ClosetColors.dore : ClosetColors.navigationInactif,
               ),
             ),
           ],

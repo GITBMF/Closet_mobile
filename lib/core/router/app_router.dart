@@ -7,11 +7,17 @@ import '../../features/checkout/checkout_screen.dart';
 import '../../features/cliente/collections/collections_screen.dart';
 import '../../features/cliente/dressing/dressing_screen.dart';
 import '../../features/cliente/espace/espace_screen.dart';
+import '../../features/cliente/espace/espace_sub_screens.dart';
 import '../../features/cliente/product/product_screen.dart';
 import '../../features/cliente/selection/selection_screen.dart';
 import '../../features/cliente/wishlist/wishlist_screen.dart';
 import '../../features/main_layout.dart';
 import '../../features/onboarding/onboarding_screen.dart';
+import '../../features/sourceur/atelier/sourceur_atelier_screen.dart';
+import '../../features/sourceur/inscription/sourceur_inscription_screen.dart';
+import '../../features/sourceur/nouvelle/sourceur_nouvelle_piece_screen.dart';
+import '../../features/sourceur/pieces/sourceur_pieces_screen.dart';
+import '../../features/sourceur/revenus/sourceur_revenus_screen.dart';
 import '../../features/splash/splash_screen.dart';
 
 final appRouterProvider = Provider<GoRouter>((ref) {
@@ -23,7 +29,9 @@ final appRouterProvider = Provider<GoRouter>((ref) {
     redirect: (context, state) {
       final isAuthenticated = ref.read(isAuthenticatedProvider);
       final loc = state.matchedLocation;
-      if (!isAuthenticated && (loc == '/checkout' || loc == '/espace')) {
+      if (!isAuthenticated &&
+          (loc == '/checkout' ||
+              loc.startsWith('/sourceur'))) {
         return '/auth';
       }
       return null;
@@ -125,6 +133,70 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         ),
       ),
 
+      // ── Sourceur (outside shell — full screen stack) ────────────────
+      GoRoute(
+        parentNavigatorKey: rootNavigatorKey,
+        path: '/sourceur',
+        pageBuilder: (context, state) => CustomTransitionPage(
+          key: state.pageKey,
+          child: const SourceurAtelierScreen(),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            return SlideTransition(
+              position: Tween<Offset>(
+                begin: const Offset(0, 1),
+                end: Offset.zero,
+              ).animate(CurvedAnimation(
+                parent: animation,
+                curve: Curves.easeOutCubic,
+              )),
+              child: child,
+            );
+          },
+        ),
+        routes: [
+          GoRoute(
+            path: 'inscription',
+            pageBuilder: (context, state) => CustomTransitionPage(
+              key: state.pageKey,
+              child: const SourceurInscriptionScreen(),
+              transitionsBuilder:
+                  (context, animation, secondaryAnimation, child) =>
+                      FadeTransition(opacity: animation, child: child),
+            ),
+          ),
+          GoRoute(
+            path: 'pieces',
+            pageBuilder: (context, state) => CustomTransitionPage(
+              key: state.pageKey,
+              child: const SourceurPiecesScreen(),
+              transitionsBuilder:
+                  (context, animation, secondaryAnimation, child) =>
+                      FadeTransition(opacity: animation, child: child),
+            ),
+          ),
+          GoRoute(
+            path: 'revenus',
+            pageBuilder: (context, state) => CustomTransitionPage(
+              key: state.pageKey,
+              child: const SourceurRevenusScreen(),
+              transitionsBuilder:
+                  (context, animation, secondaryAnimation, child) =>
+                      FadeTransition(opacity: animation, child: child),
+            ),
+          ),
+          GoRoute(
+            path: 'nouvelle',
+            pageBuilder: (context, state) => CustomTransitionPage(
+              key: state.pageKey,
+              child: const SourceurNouvellePieceScreen(),
+              transitionsBuilder:
+                  (context, animation, secondaryAnimation, child) =>
+                      FadeTransition(opacity: animation, child: child),
+            ),
+          ),
+        ],
+      ),
+
       // ── Shell with bottom nav ───────────────────────────────────────
       StatefulShellRoute.indexedStack(
         parentNavigatorKey: rootNavigatorKey,
@@ -174,6 +246,40 @@ final appRouterProvider = Provider<GoRouter>((ref) {
               GoRoute(
                 path: '/espace',
                 builder: (context, state) => const EspaceScreen(),
+                routes: [
+                  GoRoute(
+                    path: 'infos',
+                    builder: (context, state) => const EspaceInfoScreen(),
+                  ),
+                  GoRoute(
+                    path: 'adresses',
+                    builder: (context, state) => const EspaceAdressesScreen(),
+                  ),
+                  GoRoute(
+                    path: 'paiements',
+                    builder: (context, state) => const EspacePaiementsScreen(),
+                  ),
+                  GoRoute(
+                    path: 'alertes',
+                    builder: (context, state) => const EspaceAlertesScreen(),
+                  ),
+                  GoRoute(
+                    path: 'faq',
+                    builder: (context, state) => const EspaceFaqScreen(),
+                  ),
+                  GoRoute(
+                    path: 'contact',
+                    builder: (context, state) => const EspaceContactScreen(),
+                  ),
+                  GoRoute(
+                    path: 'confidentialite',
+                    builder: (context, state) => const EspaceConfidentialiteScreen(),
+                  ),
+                  GoRoute(
+                    path: 'evaluation',
+                    builder: (context, state) => const EspaceEvaluationScreen(),
+                  ),
+                ],
               ),
             ],
           ),

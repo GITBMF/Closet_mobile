@@ -1,77 +1,44 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../core/theme/closet_colors.dart';
 import '../../../core/theme/closet_text_styles.dart';
 import '../../../core/widgets/bordure_pointillee.dart';
-import '../../../core/widgets/closet_bottom_nav.dart';
 import '../../../core/widgets/closet_buttons.dart';
-import '../../../core/widgets/closet_header.dart';
-import '../nouvelle/sourceur_nouvelle_piece_screen.dart';
-import '../pieces/sourceur_pieces_screen.dart';
-import '../revenus/sourceur_revenus_screen.dart';
+import '../../../data/repositories/sourceur_repository.dart';
 
-/// Tableau de bord de l'atelier du sourceur (/sourceur) :
-/// carte identité, revenus, actions rapides et derniers dépôts.
-class SourceurAtelierScreen extends StatelessWidget {
-  const SourceurAtelierScreen({
-    super.key,
-    this.nomAtelier = 'lul',
-    this.ville = 'Yaoundé',
-    this.depuis = 'Juillet 2026',
-    this.depots = 0,
-    this.publiees = 0,
-    this.vendues = 0,
-    this.revenusNet = 0,
-    this.revenusEnAttente = 0,
-    this.revenusBrut = 0,
-  });
-
-  final String nomAtelier;
-  final String ville;
-  final String depuis;
-  final int depots;
-  final int publiees;
-  final int vendues;
-  final int revenusNet;
-  final int revenusEnAttente;
-  final int revenusBrut;
-
-  void _ouvrirDepot(BuildContext context) {
-    Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        builder: (_) => const SourceurNouvellePieceScreen(),
-      ),
-    );
-  }
+/// Tableau de bord de l'atelier du sourceur (/sourceur)
+class SourceurAtelierScreen extends ConsumerWidget {
+  const SourceurAtelierScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final repo = ref.watch<SourceurRepository>(sourceurRepositoryProvider);
+    final profile = repo.profile;
+    final nomAtelier = profile?.nomAtelier ?? 'Mon Atelier';
+    final ville = profile?.ville ?? 'Yaoundé';
+    final depuis = profile?.depuis ?? 'Juillet 2026';
+
     return Scaffold(
       backgroundColor: ClosetColors.ivoire,
       body: SafeArea(
-        bottom: false,
         child: Column(
           children: [
-            ClosetHeader(
-              titre: 'Atelier',
-              sousTitre: nomAtelier,
-              wishlistCount: 2,
-              panierCount: 2,
-              notificationsCount: 3,
-            ),
+            _buildTopBar(context, nomAtelier),
             Expanded(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _buildCarteIdentite(),
+                    _buildCarteIdentite(nomAtelier, ville, depuis, 0, 0, 0),
                     const SizedBox(height: 24),
-                    _buildCarteRevenus(context),
+                    _buildCarteRevenus(context, 0, 0, 0),
                     const SizedBox(height: 24),
-                    _buildActionsRapides(context),
+                    _buildActionsRapides(context, 0),
                     const SizedBox(height: 32),
-                    _buildActivite(context),
+                    _buildActivite(context, 0),
                   ],
                 ),
               ),
@@ -79,13 +46,55 @@ class SourceurAtelierScreen extends StatelessWidget {
           ],
         ),
       ),
-      bottomNavigationBar: ClosetBottomNav(indexActif: -1, onTap: (_) {}),
     );
   }
 
-  // ---------------------------------------------------------- Carte identité
+  Widget _buildTopBar(BuildContext context, String nomAtelier) {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(20, 16, 20, 12),
+      decoration: const BoxDecoration(
+        color: ClosetColors.ivoire,
+        border: Border(bottom: BorderSide(color: ClosetColors.ligne)),
+      ),
+      child: Row(
+        children: [
+          GestureDetector(
+            onTap: () => context.pop(),
+            child: Container(
+              width: 36,
+              height: 36,
+              decoration: const BoxDecoration(
+                color: ClosetColors.creme,
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.arrow_back_ios_new,
+                  size: 14, color: ClosetColors.noir),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Atelier',
+                  style: ClosetTextStyles.titreEcran.copyWith(fontSize: 18)),
+              Text(nomAtelier, style: ClosetTextStyles.labelChamp),
+            ],
+          ),
+          const Spacer(),
+          const Icon(Icons.auto_awesome, size: 18, color: ClosetColors.dore),
+        ],
+      ),
+    );
+  }
 
-  Widget _buildCarteIdentite() {
+  Widget _buildCarteIdentite(
+    String nomAtelier,
+    String ville,
+    String depuis,
+    int depots,
+    int publiees,
+    int vendues,
+  ) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.fromLTRB(20, 44, 20, 24),
@@ -101,13 +110,10 @@ class SourceurAtelierScreen extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(Icons.auto_awesome,
-                  size: 15, color: ClosetColors.dore),
+              const Icon(Icons.auto_awesome, size: 15, color: ClosetColors.dore),
               const SizedBox(width: 8),
-              Text(
-                'CERCLE DES SOURCEURS',
-                style: ClosetTextStyles.labelChamp,
-              ),
+              Text('CERCLE DES SOURCEURS',
+                  style: ClosetTextStyles.labelChamp),
             ],
           ),
           const SizedBox(height: 12),
@@ -137,9 +143,8 @@ class SourceurAtelierScreen extends StatelessWidget {
     );
   }
 
-  // ------------------------------------------------------------ Revenus
-
-  Widget _buildCarteRevenus(BuildContext context) {
+  Widget _buildCarteRevenus(
+      BuildContext context, int revenusNet, int revenusBrut, int revenusEnAttente) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(22),
@@ -168,13 +173,14 @@ class SourceurAtelierScreen extends StatelessWidget {
                   children: [
                     Text(
                       '$revenusNet FCFA',
-                      style: ClosetTextStyles.titreEcran.copyWith(fontSize: 36),
+                      style:
+                          ClosetTextStyles.titreEcran.copyWith(fontSize: 36),
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      'Net après commission Clos ET (25%)',
+                      'Net après commission ClosET (25%)',
                       style: ClosetTextStyles.corps.copyWith(
-                        fontSize: 15,
+                        fontSize: 13,
                         color: ClosetColors.texteSecondaire,
                       ),
                     ),
@@ -187,16 +193,7 @@ class SourceurAtelierScreen extends StatelessWidget {
                 shape: const CircleBorder(),
                 child: InkWell(
                   customBorder: const CircleBorder(),
-                  onTap: () => Navigator.of(context).push(
-                    MaterialPageRoute<void>(
-                      builder: (_) => SourceurRevenusScreen(
-                        solde: revenusNet,
-                        brut: revenusBrut,
-                        commission: revenusBrut - revenusNet,
-                        enAttente: revenusEnAttente,
-                      ),
-                    ),
-                  ),
+                  onTap: () => context.go('/sourceur/revenus'),
                   child: const SizedBox(
                     width: 56,
                     height: 56,
@@ -220,11 +217,7 @@ class SourceurAtelierScreen extends StatelessWidget {
     );
   }
 
-  // ------------------------------------------------------ Actions rapides
-
-  Widget _buildActionsRapides(BuildContext context) {
-    // IntrinsicHeight égalise la hauteur des deux cartes sans imposer de
-    // contrainte infinie (on est dans un scroll à hauteur non bornée).
+  Widget _buildActionsRapides(BuildContext context, int depots) {
     return IntrinsicHeight(
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -232,13 +225,13 @@ class SourceurAtelierScreen extends StatelessWidget {
           Expanded(
             child: _ActionCard(
               fond: ClosetColors.dore,
-              bordure: const Color(0xFFA07E35),
+              bordure: ClosetColors.doreEncre,
               pastille: ClosetColors.noir,
               icone: Icons.add,
               couleurIcone: ClosetColors.dore,
               titre: 'Déposer',
               label: 'NOUVELLE PIÈCE',
-              onTap: () => _ouvrirDepot(context),
+              onTap: () => context.go('/sourceur/nouvelle'),
             ),
           ),
           const SizedBox(width: 16),
@@ -251,11 +244,7 @@ class SourceurAtelierScreen extends StatelessWidget {
               couleurIcone: ClosetColors.texteSurVert,
               titre: 'Mes dépôts',
               label: '$depots PIÈCE${depots == 1 ? '' : 'S'}',
-              onTap: () => Navigator.of(context).push(
-                MaterialPageRoute<void>(
-                  builder: (_) => const SourceurPiecesScreen(),
-                ),
-              ),
+              onTap: () => context.go('/sourceur/pieces'),
             ),
           ),
         ],
@@ -263,9 +252,7 @@ class SourceurAtelierScreen extends StatelessWidget {
     );
   }
 
-  // ------------------------------------------------------------ Activité
-
-  Widget _buildActivite(BuildContext context) {
+  Widget _buildActivite(BuildContext context, int depots) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -277,10 +264,8 @@ class SourceurAtelierScreen extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 8),
-        Text(
-          'Derniers dépôts',
-          style: ClosetTextStyles.titreEcran.copyWith(fontSize: 24),
-        ),
+        Text('Derniers dépôts',
+            style: ClosetTextStyles.titreEcran.copyWith(fontSize: 24)),
         const SizedBox(height: 18),
         if (depots == 0) _buildAucunDepot(context),
       ],
@@ -309,7 +294,7 @@ class SourceurAtelierScreen extends StatelessWidget {
             const SizedBox(height: 24),
             ClosetPrimaryButton(
               label: 'Déposer ma première pièce',
-              onPressed: () => _ouvrirDepot(context),
+              onPressed: () => context.go('/sourceur/nouvelle'),
             ),
           ],
         ),
@@ -459,4 +444,3 @@ class _ActionCard extends StatelessWidget {
     );
   }
 }
-

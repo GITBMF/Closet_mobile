@@ -1,33 +1,64 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/article.dart';
+import '../services/local_storage_service.dart';
 
-class CartNotifier extends Notifier<List<Article>> {
+// ── Local storage provider (async initialisation) ────────────────────────────
+
+final localStorageProvider = FutureProvider<LocalStorageService>((ref) async {
+  return LocalStorageService.create();
+});
+
+// ── Cart ─────────────────────────────────────────────────────────────────────
+
+class CartNotifier extends AsyncNotifier<List<Article>> {
+  late LocalStorageService _storage;
+
   @override
-  List<Article> build() => [];
+  Future<List<Article>> build() async {
+    _storage = await ref.watch(localStorageProvider.future);
+    return _storage.loadCart();
+  }
 
   void addArticle(Article article) {
-    if (!state.any((a) => a.id == article.id)) {
-      state = [...state, article];
+    final current = state.value ?? [];
+    if (!current.any((a) => a.id == article.id)) {
+      final next = [...current, article];
+      state = AsyncData(next);
+      _storage.saveCart(next);
     }
   }
 
   void removeArticle(String id) {
-    state = state.where((a) => a.id != id).toList();
+    final next = (state.value ?? []).where((a) => a.id != id).toList();
+    state = AsyncData(next);
+    _storage.saveCart(next);
   }
 
-  bool isInCart(String id) => state.any((a) => a.id == id);
+  void clear() {
+    state = const AsyncData([]);
+    _storage.saveCart([]);
+  }
 
-  double get total => state.fold(0, (sum, a) => sum + a.price);
+  bool isInCart(String id) =>
+      (state.value ?? []).any((a) => a.id == id);
+
+  double get total =>
+      (state.value ?? []).fold(0, (s, a) => s + a.price);
 }
 
-final cartProvider = NotifierProvider<CartNotifier, List<Article>>(
+final cartProvider = AsyncNotifierProvider<CartNotifier, List<Article>>(
   CartNotifier.new,
 );
 
+/// Synchronous convenience list — falls back to [] while async loads.
+final cartListProvider = Provider<List<Article>>((ref) {
+  return ref.watch(cartProvider).value ?? [];
+});
+
 final cartTotalProvider = Provider<double>((ref) {
-  return ref.watch(cartProvider.notifier).total;
+  return ref.watch(cartListProvider).fold(0, (s, a) => s + a.price);
 });
 
 final cartCountProvider = Provider<int>((ref) {
-  return ref.watch(cartProvider).length;
+  return ref.watch(cartListProvider).length;
 });

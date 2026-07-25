@@ -2,11 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../core/theme/app_theme.dart';
+import '../../../core/theme/closet_colors.dart';
 import '../../../core/theme/theme_provider.dart';
 import '../../../data/models/user.dart';
 import '../../../data/repositories/auth_repository.dart';
 import '../../../data/repositories/cart_repository.dart';
+import '../../../data/repositories/sourceur_repository.dart';
 import '../../../data/repositories/wishlist_repository.dart';
 
 class EspaceScreen extends ConsumerWidget {
@@ -15,8 +16,9 @@ class EspaceScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final cartCount = ref.watch<int>(cartCountProvider);
-    final wishlistCount = ref.watch(wishlistProvider).length;
+    final wishlistCount = ref.watch(wishlistListProvider).length;
     final ClosetUser? user = ref.watch<ClosetUser?>(currentUserProvider);
+    final sourceurRepo = ref.watch<SourceurRepository>(sourceurRepositoryProvider);
     final theme = Theme.of(context);
     final onSurfaceColor = theme.colorScheme.onSurface;
     final isDark = ref.watch<ThemeMode>(themeModeProvider) == ThemeMode.dark;
@@ -58,7 +60,7 @@ class EspaceScreen extends ConsumerWidget {
                             onTap: () {
                               if (user != null) {
                                 // Logout
-                                ref.read<dynamic>(currentUserProvider.notifier).state = null;
+                                ref.read(currentUserProvider.notifier).state = null;
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   const SnackBar(content: Text('Vous avez été déconnecté.')),
                                 );
@@ -120,7 +122,7 @@ class EspaceScreen extends ConsumerWidget {
                                       style: TextStyle(
                                         fontSize: 36,
                                         fontWeight: FontWeight.w800,
-                                        color: AppTheme.goldCloset,
+                                        color: ClosetColors.dore,
                                       ),
                                     ),
                                   ),
@@ -202,24 +204,48 @@ class EspaceScreen extends ConsumerWidget {
                       _MenuItem(
                         icon: Icons.person_outline,
                         label: 'Mes informations',
-                        onTap: () {},
+                        onTap: () {
+                          if (user == null) {
+                            _showLoginRequiredDialog(context);
+                          } else {
+                            context.push('/espace/infos');
+                          }
+                        },
                       ),
                       _MenuItem(
                         icon: Icons.location_on_outlined,
                         label: 'Mes adresses',
-                        onTap: () {},
+                        onTap: () {
+                          if (user == null) {
+                            _showLoginRequiredDialog(context);
+                          } else {
+                            context.push('/espace/adresses');
+                          }
+                        },
                       ),
                       _MenuItem(
                         icon: Icons.credit_card_outlined,
                         label: 'Mes moyens de paiement',
-                        onTap: () {},
+                        onTap: () {
+                          if (user == null) {
+                            _showLoginRequiredDialog(context);
+                          } else {
+                            context.push('/espace/paiements');
+                          }
+                        },
                       ),
                       _MenuItem(
                         icon: Icons.notifications_none,
                         label: 'Mes alertes pièces',
                         badge: '3',
                         badgeColor: theme.colorScheme.primary,
-                        onTap: () {},
+                        onTap: () {
+                          if (user == null) {
+                            _showLoginRequiredDialog(context);
+                          } else {
+                            context.push('/espace/alertes');
+                          }
+                        },
                       ),
                     ],
                   ),
@@ -227,19 +253,33 @@ class EspaceScreen extends ConsumerWidget {
 
                   _MenuSection(
                     title: 'ESPACE SOURCEUR',
-                    items: [
-                      _MenuItem(
-                        icon: Icons.add_circle_outline,
-                        label: 'Soumettre une pièce',
-                        onTap: () {},
-                        isHighlighted: true,
-                      ),
-                      _MenuItem(
-                        icon: Icons.inventory_2_outlined,
-                        label: 'Mes pièces soumises',
-                        onTap: () {},
-                      ),
-                    ],
+                    items: sourceurRepo.estInscrit
+                        ? [
+                            _MenuItem(
+                              icon: Icons.add_circle_outline,
+                              label: 'Soumettre une pièce',
+                              onTap: () => context.push('/sourceur/nouvelle'),
+                              isHighlighted: true,
+                            ),
+                            _MenuItem(
+                              icon: Icons.inventory_2_outlined,
+                              label: 'Mes pièces soumises',
+                              onTap: () => context.push('/sourceur/pieces'),
+                            ),
+                            _MenuItem(
+                              icon: Icons.storefront_outlined,
+                              label: 'Mon atelier sourceur',
+                              onTap: () => context.push('/sourceur'),
+                            ),
+                          ]
+                        : [
+                            _MenuItem(
+                              icon: Icons.star_border_outlined,
+                              label: 'Devenir sourceur',
+                              onTap: () => context.push('/sourceur/inscription'),
+                              isHighlighted: true,
+                            ),
+                          ],
                   ),
                   const SizedBox(height: 20),
 
@@ -249,17 +289,22 @@ class EspaceScreen extends ConsumerWidget {
                       _MenuItem(
                         icon: Icons.help_outline,
                         label: 'FAQ & aide',
-                        onTap: () {},
+                        onTap: () => context.push('/espace/faq'),
                       ),
                       _MenuItem(
                         icon: Icons.chat_bubble_outline,
                         label: 'Nous contacter',
-                        onTap: () {},
+                        onTap: () => context.push('/espace/contact'),
                       ),
                       _MenuItem(
                         icon: Icons.privacy_tip_outlined,
                         label: 'Politique de confidentialité',
-                        onTap: () {},
+                        onTap: () => context.push('/espace/confidentialite'),
+                      ),
+                      _MenuItem(
+                        icon: Icons.star_outline,
+                        label: 'Nous évaluer',
+                        onTap: () => context.push('/espace/evaluation'),
                       ),
                     ],
                   ),
@@ -278,22 +323,63 @@ class EspaceScreen extends ConsumerWidget {
                     ),
                   ),
                   const SizedBox(height: 8),
-                  Center(
-                    child: Text(
-                      'Version 1.0.0',
-                      style: TextStyle(
-                        fontSize: 10,
-                        color: onSurfaceColor.withValues(alpha: 0.5),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 24),
                 ],
               ),
             ),
           ),
         ],
       ),
+    );
+  }
+
+  void _showLoginRequiredDialog(BuildContext context) {
+    showDialog<void>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          backgroundColor: ClosetColors.ivoire,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+          title: const Row(
+            children: [
+              Icon(Icons.lock_outline, color: ClosetColors.vert),
+              SizedBox(width: 10),
+              Text(
+                'Connexion requise',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w700,
+                  color: ClosetColors.noir,
+                ),
+              ),
+            ],
+          ),
+          content: const Text(
+            'Veuillez vous connecter à votre compte ClosET pour accéder à vos informations personnelles.',
+            style: TextStyle(fontSize: 14, color: ClosetColors.noir, height: 1.4),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text(
+                'Annuler',
+                style: TextStyle(color: ClosetColors.taupe, fontWeight: FontWeight.w600),
+              ),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: ClosetColors.vert,
+                foregroundColor: ClosetColors.creme,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+              onPressed: () {
+                Navigator.pop(context);
+                context.push('/auth');
+              },
+              child: const Text('Se connecter'),
+            ),
+          ],
+        );
+      },
     );
   }
 }
