@@ -29,7 +29,7 @@ class SelectionScreen extends ConsumerWidget {
       backgroundColor: theme.scaffoldBackgroundColor,
       appBar: const ClosetAppBar(
         title: 'Ma sélection',
-        subtitle: 'VOTRE DRESSING PERSONNALISÉ',
+        subtitle: 'VOS PIÈCES CHOISIES',
       ),
       body: cartItems.isEmpty
           ? const _EmptyCart()

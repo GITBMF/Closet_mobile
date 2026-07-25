@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/theme/closet_colors.dart';
-import '../../../data/repositories/catalog_repository.dart';
-import '../../../data/repositories/cart_repository.dart';
-import '../../../data/repositories/wishlist_repository.dart';
 import '../../../data/models/article.dart';
+import '../../../data/repositories/cart_repository.dart';
+import '../../../data/repositories/catalog_repository.dart';
+import '../../../data/repositories/wishlist_repository.dart';
 
 final productDetailProvider =
     FutureProvider.family<Article?, String>((ref, id) {
@@ -64,9 +64,11 @@ class _ProductScreenState extends ConsumerState<ProductScreen> {
     final cartItems = ref.watch(cartListProvider);
     final isInCart = cartItems.any((a) => a.id == article.id);
     final isWishlisted = ref.watch(wishlistListProvider).any((a) => a.id == article.id);
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: ClosetColors.creme,
+      backgroundColor: theme.colorScheme.surface,
       extendBodyBehindAppBar: true,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
@@ -76,18 +78,18 @@ class _ProductScreenState extends ConsumerState<ProductScreen> {
           child: Container(
             margin: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: ClosetColors.creme.withValues(alpha: 0.92),
+              color: theme.colorScheme.surface.withValues(alpha: 0.92),
               shape: BoxShape.circle,
             ),
-            child: const Icon(Icons.arrow_back_ios_new,
-                size: 16, color: ClosetColors.noir),
+            child: Icon(Icons.arrow_back_ios_new,
+                size: 16, color: theme.colorScheme.onSurface),
           ),
         ),
         actions: [
           Container(
             margin: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: ClosetColors.creme.withValues(alpha: 0.92),
+              color: theme.colorScheme.surface.withValues(alpha: 0.92),
               shape: BoxShape.circle,
             ),
             child: IconButton(
@@ -95,7 +97,7 @@ class _ProductScreenState extends ConsumerState<ProductScreen> {
                 isWishlisted ? Icons.favorite : Icons.favorite_border,
                 size: 18,
                 // Erreur (terre brûlée) pour wishlist active — charte §3.1
-                color: isWishlisted ? ClosetColors.erreur : ClosetColors.noir,
+                color: isWishlisted ? ClosetColors.erreur : theme.colorScheme.onSurface,
               ),
               onPressed: () {
                 ref.read(wishlistProvider.notifier).toggleWishlist(article);
@@ -122,9 +124,9 @@ class _ProductScreenState extends ConsumerState<ProductScreen> {
                       article.imageUrls[i],
                       fit: BoxFit.cover,
                       width: double.infinity,
-                      errorBuilder: (_, _, _) => ColoredBox(
+                      errorBuilder: (_, _, _) => const ColoredBox(
                         color: ClosetColors.ligne,
-                        child: const Icon(Icons.image_not_supported,
+                        child: Icon(Icons.image_not_supported,
                             size: 48, color: ClosetColors.taupe),
                       ),
                     );
@@ -162,7 +164,7 @@ class _ProductScreenState extends ConsumerState<ProductScreen> {
           // ─── Detail Sheet ───────────────────────────────────────────
           Expanded(
             child: ColoredBox(
-              color: ClosetColors.creme,
+              color: theme.colorScheme.surface,
               child: SingleChildScrollView(
                 padding: const EdgeInsets.fromLTRB(20, 20, 20, 100),
                 child: Column(
@@ -173,10 +175,10 @@ class _ProductScreenState extends ConsumerState<ProductScreen> {
                       children: [
                         Text(
                           article.brand.toUpperCase(),
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 11,
                             fontWeight: FontWeight.w700,
-                            color: ClosetColors.vert,
+                            color: theme.colorScheme.primary,
                             letterSpacing: 1.5,
                           ),
                         ),
@@ -189,10 +191,10 @@ class _ProductScreenState extends ConsumerState<ProductScreen> {
                     // Title
                     Text(
                       article.title,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 28,
                         fontWeight: FontWeight.w700,
-                        color: ClosetColors.noir,
+                        color: theme.colorScheme.onSurface,
                         height: 1.1,
                       ),
                     ),
@@ -201,10 +203,10 @@ class _ProductScreenState extends ConsumerState<ProductScreen> {
                     // Price
                     Text(
                       _formatPrice(article.price),
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 22,
                         fontWeight: FontWeight.w700,
-                        color: ClosetColors.noir,
+                        color: theme.colorScheme.onSurface,
                       ),
                     ),
                     const SizedBox(height: 20),
@@ -213,9 +215,9 @@ class _ProductScreenState extends ConsumerState<ProductScreen> {
                     Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: ClosetColors.beige,
+                        color: theme.scaffoldBackgroundColor,
                         borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: ClosetColors.ligne),
+                        border: Border.all(color: theme.colorScheme.onSurface.withValues(alpha: 0.1)),
                       ),
                       child: Column(
                         children: [
@@ -259,18 +261,18 @@ class _ProductScreenState extends ConsumerState<ProductScreen> {
                     const SizedBox(height: 24),
 
                     // Description éditoriale
-                    const Row(
+                    Row(
                       children: [
-                        Icon(Icons.auto_awesome,
+                        const Icon(Icons.auto_awesome,
                             size: 12, color: ClosetColors.dore),
-                        SizedBox(width: 6),
+                        const SizedBox(width: 6),
                         Text(
                           'À PROPOS DE CETTE PIÈCE',
                           style: TextStyle(
                             fontSize: 9,
                             fontWeight: FontWeight.w700,
                             // doreEncre = seul doré autorisé en texte sur clair
-                            color: ClosetColors.doreEncre,
+                            color: isDark ? theme.colorScheme.primary : ClosetColors.doreEncre,
                             letterSpacing: 2,
                           ),
                         ),
@@ -279,10 +281,10 @@ class _ProductScreenState extends ConsumerState<ProductScreen> {
                     const SizedBox(height: 12),
                     Text(
                       article.description,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 14,
                         fontStyle: FontStyle.italic,
-                        color: ClosetColors.noir,
+                        color: theme.colorScheme.onSurface,
                         height: 1.6,
                       ),
                     ),
@@ -292,22 +294,22 @@ class _ProductScreenState extends ConsumerState<ProductScreen> {
                     Container(
                       padding: const EdgeInsets.all(14),
                       decoration: BoxDecoration(
-                        color: ClosetColors.dore.withValues(alpha: 0.08),
+                        color: theme.colorScheme.secondary.withValues(alpha: 0.08),
                         borderRadius: BorderRadius.circular(10),
                         border: Border.all(
-                            color: ClosetColors.dore.withValues(alpha: 0.3)),
+                            color: theme.colorScheme.secondary.withValues(alpha: 0.3)),
                       ),
-                      child: const Row(
+                      child: Row(
                         children: [
                           Icon(Icons.local_shipping_outlined,
-                              size: 18, color: ClosetColors.vert),
-                          SizedBox(width: 12),
+                              size: 18, color: theme.colorScheme.primary),
+                          const SizedBox(width: 12),
                           Expanded(
                             child: Text(
                               'Livraison délicate — Yaoundé sous 24h, expédition internationale sous 5 jours ouvrés, écrin ClosET inclus.',
                               style: TextStyle(
                                 fontSize: 12,
-                                color: ClosetColors.noir,
+                                color: theme.colorScheme.onSurface,
                                 height: 1.4,
                               ),
                             ),
@@ -327,7 +329,8 @@ class _ProductScreenState extends ConsumerState<ProductScreen> {
       bottomNavigationBar: Container(
         padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
         decoration: BoxDecoration(
-          color: ClosetColors.noir,
+          color: theme.colorScheme.surface,
+          border: Border(top: BorderSide(color: theme.colorScheme.onSurface.withValues(alpha: 0.08))),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withValues(alpha: 0.2),
@@ -342,11 +345,11 @@ class _ProductScreenState extends ConsumerState<ProductScreen> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
+                Text(
                   'À ADOPTER',
                   style: TextStyle(
                     fontSize: 9,
-                    color: ClosetColors.taupe,
+                    color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
                     letterSpacing: 1.5,
                     fontWeight: FontWeight.w600,
                   ),
@@ -354,10 +357,10 @@ class _ProductScreenState extends ConsumerState<ProductScreen> {
                 const SizedBox(height: 2),
                 Text(
                   _formatPrice(article.price),
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w700,
-                    color: ClosetColors.creme,
+                    color: theme.colorScheme.onSurface,
                   ),
                 ),
               ],
@@ -385,12 +388,10 @@ class _ProductScreenState extends ConsumerState<ProductScreen> {
                   duration: const Duration(milliseconds: 200),
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   decoration: BoxDecoration(
-                    // CTA : vert si disponible, taupe si soldout
+                    // CTA : vert/doré si disponible, taupe si soldout
                     color: article.isSoldOut
                         ? ClosetColors.taupe
-                        : isInCart
-                            ? ClosetColors.vert
-                            : ClosetColors.vert,
+                        : theme.colorScheme.primary,
                     borderRadius: BorderRadius.circular(30),
                   ),
                   child: Row(
@@ -401,7 +402,7 @@ class _ProductScreenState extends ConsumerState<ProductScreen> {
                             ? Icons.check_circle_outline
                             : Icons.shopping_bag_outlined,
                         size: 18,
-                        color: ClosetColors.creme,
+                        color: theme.colorScheme.onPrimary,
                       ),
                       const SizedBox(width: 8),
                       Text(
@@ -410,8 +411,8 @@ class _ProductScreenState extends ConsumerState<ProductScreen> {
                             : isInCart
                                 ? 'DÉJÀ DANS MA SÉLECTION'
                                 : 'AJOUTER À MON DRESSING',
-                        style: const TextStyle(
-                          color: ClosetColors.creme,
+                        style: TextStyle(
+                          color: theme.colorScheme.onPrimary,
                           fontSize: 12,
                           fontWeight: FontWeight.w700,
                           letterSpacing: 0.5,
@@ -438,15 +439,16 @@ class _DetailField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           label,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 9,
             fontWeight: FontWeight.w700,
-            color: ClosetColors.taupe,
+            color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
             letterSpacing: 1.2,
           ),
         ),
@@ -456,7 +458,7 @@ class _DetailField extends StatelessWidget {
           style: TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w500,
-            color: valueColor ?? ClosetColors.noir,
+            color: valueColor ?? theme.colorScheme.onSurface,
           ),
         ),
       ],

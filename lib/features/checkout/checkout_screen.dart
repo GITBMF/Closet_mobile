@@ -693,7 +693,7 @@ class _PaymentCard extends StatelessWidget {
                         child: Image.asset(
                           imageAsset!,
                           fit: BoxFit.contain,
-                          errorBuilder: (_, __, ___) => Icon(
+                          errorBuilder: (_, _, _) => Icon(
                             Icons.payment_outlined,
                             size: 20,
                             color: isSelected ? theme.colorScheme.primary : onSurfaceColor.withValues(alpha: 0.6),

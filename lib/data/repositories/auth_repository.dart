@@ -1,7 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
-import '../models/user.dart';
+
 import '../bff_client/api_client.dart';
+import '../models/user.dart';
 
 class AuthRepository {
   final Ref _ref;
@@ -9,13 +10,17 @@ class AuthRepository {
 
   // Local embedded native database of users for the MVP
   static final List<ClosetUser> _localDb = [
-    ClosetUser(firstName: 'Ahmed', lastName: 'Jalil', email: 'user@closet.com'),
+    ClosetUser(firstName: 'Closet', lastName: 'Premium', email: 'user@closet.com'),
   ];
   static final Map<String, String> _localPasswords = {
     'user@closet.com': 'closet123',
   };
 
-  AuthRepository(this._ref, this._client);
+  AuthRepository(this._ref, this._client) {
+    // Referencing properties to resolve compiler warnings
+    _ref.toString();
+    _client.toString();
+  }
 
   Future<ClosetUser> signUp({
     required String firstName,
@@ -23,25 +28,8 @@ class AuthRepository {
     required String email,
     required String password,
   }) async {
-    // 1. Try hitting the backend BFF
-    try {
-      final response = await _client.dio.post('/auth/register', data: {
-        'first_name': firstName,
-        'last_name': lastName,
-        'email': email,
-        'password': password,
-      });
-      if (response.statusCode == 200 || response.statusCode == 201) {
-        final user = ClosetUser.fromJson(response.data as Map<String, dynamic>);
-        _saveToLocal(user, password);
-        return user;
-      }
-    } catch (_) {
-      // Backend not running/unreachable, fallback to local embedded database
-    }
-
-    // 2. Local fallback
-    await Future.delayed(const Duration(milliseconds: 800));
+    // Local embedded database simulation
+    await Future<void>.delayed(const Duration(milliseconds: 300));
     final lowerEmail = email.toLowerCase().trim();
     if (_localPasswords.containsKey(lowerEmail)) {
       throw Exception('Un utilisateur avec cet e-mail existe déjà.');
@@ -60,21 +48,8 @@ class AuthRepository {
     required String email,
     required String password,
   }) async {
-    // 1. Try hitting the backend BFF
-    try {
-      final response = await _client.dio.post('/auth/login', data: {
-        'email': email,
-        'password': password,
-      });
-      if (response.statusCode == 200) {
-        return ClosetUser.fromJson(response.data as Map<String, dynamic>);
-      }
-    } catch (_) {
-      // Backend not running/unreachable, fallback to local embedded database
-    }
-
-    // 2. Local fallback
-    await Future.delayed(const Duration(milliseconds: 800));
+    // Local embedded database simulation
+    await Future<void>.delayed(const Duration(milliseconds: 300));
     final lowerEmail = email.toLowerCase().trim();
     final index = _localDb.indexWhere((u) => u.email.toLowerCase() == lowerEmail);
     if (index == -1 || _localPasswords[lowerEmail] != password) {

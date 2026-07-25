@@ -80,7 +80,7 @@ class _SourceurInscriptionScreenState
   Future<void> _rejoindreLeCercle() async {
     setState(() => _isLoading = true);
     try {
-      final repo = ref.read(sourceurRepositoryProvider);
+      final repo = ref.read<SourceurRepository>(sourceurRepositoryProvider);
       await repo.inscrire(SourceurInscriptionData(
         nomAtelier: _atelierController.text.trim(),
         ville: _villeController.text.trim(),

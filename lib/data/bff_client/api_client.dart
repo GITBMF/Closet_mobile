@@ -1,5 +1,4 @@
 import 'package:dio/dio.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 final bffClientProvider = Provider<BffClient>((ref) {
@@ -10,7 +9,7 @@ class BffClient {
   late final Dio _dio;
 
   BffClient() {
-    final baseUrl = dotenv.env['API_BASE_URL'] ?? 'http://localhost:8000/v1';
+    const baseUrl = 'http://localhost:8000/v1';
     
     _dio = Dio(
       BaseOptions(

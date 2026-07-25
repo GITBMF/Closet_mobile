@@ -7,6 +7,7 @@ import '../../features/checkout/checkout_screen.dart';
 import '../../features/cliente/collections/collections_screen.dart';
 import '../../features/cliente/dressing/dressing_screen.dart';
 import '../../features/cliente/espace/espace_screen.dart';
+import '../../features/cliente/espace/espace_sub_screens.dart';
 import '../../features/cliente/product/product_screen.dart';
 import '../../features/cliente/selection/selection_screen.dart';
 import '../../features/cliente/wishlist/wishlist_screen.dart';
@@ -245,6 +246,40 @@ final appRouterProvider = Provider<GoRouter>((ref) {
               GoRoute(
                 path: '/espace',
                 builder: (context, state) => const EspaceScreen(),
+                routes: [
+                  GoRoute(
+                    path: 'infos',
+                    builder: (context, state) => const EspaceInfoScreen(),
+                  ),
+                  GoRoute(
+                    path: 'adresses',
+                    builder: (context, state) => const EspaceAdressesScreen(),
+                  ),
+                  GoRoute(
+                    path: 'paiements',
+                    builder: (context, state) => const EspacePaiementsScreen(),
+                  ),
+                  GoRoute(
+                    path: 'alertes',
+                    builder: (context, state) => const EspaceAlertesScreen(),
+                  ),
+                  GoRoute(
+                    path: 'faq',
+                    builder: (context, state) => const EspaceFaqScreen(),
+                  ),
+                  GoRoute(
+                    path: 'contact',
+                    builder: (context, state) => const EspaceContactScreen(),
+                  ),
+                  GoRoute(
+                    path: 'confidentialite',
+                    builder: (context, state) => const EspaceConfidentialiteScreen(),
+                  ),
+                  GoRoute(
+                    path: 'evaluation',
+                    builder: (context, state) => const EspaceEvaluationScreen(),
+                  ),
+                ],
               ),
             ],
           ),

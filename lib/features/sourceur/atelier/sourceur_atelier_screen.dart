@@ -14,7 +14,7 @@ class SourceurAtelierScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final repo = ref.watch(sourceurRepositoryProvider);
+    final repo = ref.watch<SourceurRepository>(sourceurRepositoryProvider);
     final profile = repo.profile;
     final nomAtelier = profile?.nomAtelier ?? 'Mon Atelier';
     final ville = profile?.ville ?? 'Yaoundé';
