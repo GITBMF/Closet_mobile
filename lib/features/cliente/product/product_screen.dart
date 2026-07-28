@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../core/theme/app_theme.dart';
-import '../../../data/repositories/catalog_repository.dart';
-import '../../../data/repositories/cart_repository.dart';
+import '../../../core/theme/closet_colors.dart';
 import '../../../data/models/article.dart';
+import '../../../data/repositories/cart_repository.dart';
+import '../../../data/repositories/catalog_repository.dart';
+import '../../../data/repositories/wishlist_repository.dart';
 
 final productDetailProvider =
     FutureProvider.family<Article?, String>((ref, id) {
@@ -49,7 +50,9 @@ class _ProductScreenState extends ConsumerState<ProductScreen> {
         return _buildContent(context, article);
       },
       loading: () => const Scaffold(
-        body: Center(child: CircularProgressIndicator(color: AppTheme.goldCloset)),
+        body: Center(
+          child: CircularProgressIndicator(color: ClosetColors.dore),
+        ),
       ),
       error: (e, _) => const Scaffold(
         body: Center(child: Text('Erreur de chargement')),
@@ -58,11 +61,14 @@ class _ProductScreenState extends ConsumerState<ProductScreen> {
   }
 
   Widget _buildContent(BuildContext context, Article article) {
-    final cart = ref.watch(cartProvider);
-    final isInCart = cart.any((a) => a.id == article.id);
+    final cartItems = ref.watch(cartListProvider);
+    final isInCart = cartItems.any((a) => a.id == article.id);
+    final isWishlisted = ref.watch(wishlistListProvider).any((a) => a.id == article.id);
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: AppTheme.offWhite,
+      backgroundColor: theme.colorScheme.surface,
       extendBodyBehindAppBar: true,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
@@ -72,29 +78,30 @@ class _ProductScreenState extends ConsumerState<ProductScreen> {
           child: Container(
             margin: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.9),
+              color: theme.colorScheme.surface.withValues(alpha: 0.92),
               shape: BoxShape.circle,
             ),
-            child: const Icon(Icons.arrow_back_ios_new,
-                size: 16, color: AppTheme.blackCloset),
+            child: Icon(Icons.arrow_back_ios_new,
+                size: 16, color: theme.colorScheme.onSurface),
           ),
         ),
         actions: [
           Container(
             margin: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.9),
+              color: theme.colorScheme.surface.withValues(alpha: 0.92),
               shape: BoxShape.circle,
             ),
             child: IconButton(
               icon: Icon(
-                article.isWishlisted
-                    ? Icons.favorite
-                    : Icons.favorite_border,
+                isWishlisted ? Icons.favorite : Icons.favorite_border,
                 size: 18,
-                color: article.isWishlisted ? Colors.red : AppTheme.blackCloset,
+                // Erreur (terre brûlée) pour wishlist active — charte §3.1
+                color: isWishlisted ? ClosetColors.erreur : theme.colorScheme.onSurface,
               ),
-              onPressed: () {},
+              onPressed: () {
+                ref.read(wishlistProvider.notifier).toggleWishlist(article);
+              },
             ),
           ),
           const SizedBox(width: 4),
@@ -117,10 +124,10 @@ class _ProductScreenState extends ConsumerState<ProductScreen> {
                       article.imageUrls[i],
                       fit: BoxFit.cover,
                       width: double.infinity,
-                      errorBuilder: (_, _, _) => ColoredBox(
-                        color: AppTheme.sandBeige,
-                        child: const Icon(Icons.image_not_supported,
-                            size: 48, color: AppTheme.greyText),
+                      errorBuilder: (_, _, _) => const ColoredBox(
+                        color: ClosetColors.ligne,
+                        child: Icon(Icons.image_not_supported,
+                            size: 48, color: ClosetColors.taupe),
                       ),
                     );
                   },
@@ -142,8 +149,8 @@ class _ProductScreenState extends ConsumerState<ProductScreen> {
                           height: 6,
                           decoration: BoxDecoration(
                             color: i == _currentImageIndex
-                                ? Colors.white
-                                : Colors.white.withValues(alpha: 0.5),
+                                ? ClosetColors.creme
+                                : ClosetColors.creme.withValues(alpha: 0.5),
                             borderRadius: BorderRadius.circular(3),
                           ),
                         ),
@@ -157,7 +164,7 @@ class _ProductScreenState extends ConsumerState<ProductScreen> {
           // ─── Detail Sheet ───────────────────────────────────────────
           Expanded(
             child: ColoredBox(
-              color: AppTheme.offWhite,
+              color: theme.colorScheme.surface,
               child: SingleChildScrollView(
                 padding: const EdgeInsets.fromLTRB(20, 20, 20, 100),
                 child: Column(
@@ -168,10 +175,10 @@ class _ProductScreenState extends ConsumerState<ProductScreen> {
                       children: [
                         Text(
                           article.brand.toUpperCase(),
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 11,
                             fontWeight: FontWeight.w700,
-                            color: AppTheme.forestGreen,
+                            color: theme.colorScheme.primary,
                             letterSpacing: 1.5,
                           ),
                         ),
@@ -184,10 +191,10 @@ class _ProductScreenState extends ConsumerState<ProductScreen> {
                     // Title
                     Text(
                       article.title,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 28,
                         fontWeight: FontWeight.w700,
-                        color: AppTheme.blackCloset,
+                        color: theme.colorScheme.onSurface,
                         height: 1.1,
                       ),
                     ),
@@ -196,10 +203,10 @@ class _ProductScreenState extends ConsumerState<ProductScreen> {
                     // Price
                     Text(
                       _formatPrice(article.price),
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 22,
                         fontWeight: FontWeight.w700,
-                        color: AppTheme.blackCloset,
+                        color: theme.colorScheme.onSurface,
                       ),
                     ),
                     const SizedBox(height: 20),
@@ -208,9 +215,9 @@ class _ProductScreenState extends ConsumerState<ProductScreen> {
                     Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: AppTheme.warmCream,
+                        color: theme.scaffoldBackgroundColor,
                         borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: AppTheme.sandBeige),
+                        border: Border.all(color: theme.colorScheme.onSurface.withValues(alpha: 0.1)),
                       ),
                       child: Column(
                         children: [
@@ -243,7 +250,7 @@ class _ProductScreenState extends ConsumerState<ProductScreen> {
                                 child: _DetailField(
                                   label: 'AUTHENTICITÉ',
                                   value: '✓ Vérifiée',
-                                  valueColor: AppTheme.forestGreen,
+                                  valueColor: ClosetColors.succes,
                                 ),
                               ),
                             ],
@@ -254,17 +261,18 @@ class _ProductScreenState extends ConsumerState<ProductScreen> {
                     const SizedBox(height: 24),
 
                     // Description éditoriale
-                    const Row(
+                    Row(
                       children: [
-                        Icon(Icons.auto_awesome,
-                            size: 12, color: AppTheme.goldCloset),
-                        SizedBox(width: 6),
+                        const Icon(Icons.auto_awesome,
+                            size: 12, color: ClosetColors.dore),
+                        const SizedBox(width: 6),
                         Text(
                           'À PROPOS DE CETTE PIÈCE',
                           style: TextStyle(
                             fontSize: 9,
                             fontWeight: FontWeight.w700,
-                            color: AppTheme.goldCloset,
+                            // doreEncre = seul doré autorisé en texte sur clair
+                            color: isDark ? theme.colorScheme.primary : ClosetColors.doreEncre,
                             letterSpacing: 2,
                           ),
                         ),
@@ -273,10 +281,10 @@ class _ProductScreenState extends ConsumerState<ProductScreen> {
                     const SizedBox(height: 12),
                     Text(
                       article.description,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 14,
                         fontStyle: FontStyle.italic,
-                        color: AppTheme.blackCloset,
+                        color: theme.colorScheme.onSurface,
                         height: 1.6,
                       ),
                     ),
@@ -286,22 +294,22 @@ class _ProductScreenState extends ConsumerState<ProductScreen> {
                     Container(
                       padding: const EdgeInsets.all(14),
                       decoration: BoxDecoration(
-                        color: AppTheme.goldCloset.withValues(alpha: 0.08),
+                        color: theme.colorScheme.secondary.withValues(alpha: 0.08),
                         borderRadius: BorderRadius.circular(10),
                         border: Border.all(
-                            color: AppTheme.goldCloset.withValues(alpha: 0.3)),
+                            color: theme.colorScheme.secondary.withValues(alpha: 0.3)),
                       ),
-                      child: const Row(
+                      child: Row(
                         children: [
                           Icon(Icons.local_shipping_outlined,
-                              size: 18, color: AppTheme.forestGreen),
-                          SizedBox(width: 12),
+                              size: 18, color: theme.colorScheme.primary),
+                          const SizedBox(width: 12),
                           Expanded(
                             child: Text(
-                              'Livraison délicate — Yaoundé sous 24h, expédition internationale sous 5 jours ouvrés, écrin Clos ET inclus.',
+                              'Livraison délicate — Yaoundé sous 24h, expédition internationale sous 5 jours ouvrés, écrin ClosET inclus.',
                               style: TextStyle(
                                 fontSize: 12,
-                                color: AppTheme.blackCloset,
+                                color: theme.colorScheme.onSurface,
                                 height: 1.4,
                               ),
                             ),
@@ -321,7 +329,8 @@ class _ProductScreenState extends ConsumerState<ProductScreen> {
       bottomNavigationBar: Container(
         padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
         decoration: BoxDecoration(
-          color: AppTheme.blackCloset,
+          color: theme.colorScheme.surface,
+          border: Border(top: BorderSide(color: theme.colorScheme.onSurface.withValues(alpha: 0.08))),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withValues(alpha: 0.2),
@@ -336,11 +345,11 @@ class _ProductScreenState extends ConsumerState<ProductScreen> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
+                Text(
                   'À ADOPTER',
                   style: TextStyle(
                     fontSize: 9,
-                    color: Color(0xFF9A9490),
+                    color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
                     letterSpacing: 1.5,
                     fontWeight: FontWeight.w600,
                   ),
@@ -348,10 +357,10 @@ class _ProductScreenState extends ConsumerState<ProductScreen> {
                 const SizedBox(height: 2),
                 Text(
                   _formatPrice(article.price),
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w700,
-                    color: Colors.white,
+                    color: theme.colorScheme.onSurface,
                   ),
                 ),
               ],
@@ -365,7 +374,7 @@ class _ProductScreenState extends ConsumerState<ProductScreen> {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
                         content: const Text('Pièce ajoutée à votre sélection'),
-                        backgroundColor: AppTheme.forestGreen,
+                        backgroundColor: ClosetColors.vert,
                         behavior: SnackBarBehavior.floating,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10),
@@ -379,11 +388,10 @@ class _ProductScreenState extends ConsumerState<ProductScreen> {
                   duration: const Duration(milliseconds: 200),
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   decoration: BoxDecoration(
+                    // CTA : vert/doré si disponible, taupe si soldout
                     color: article.isSoldOut
-                        ? AppTheme.greyText
-                        : isInCart
-                            ? AppTheme.forestGreen
-                            : AppTheme.goldCloset,
+                        ? ClosetColors.taupe
+                        : theme.colorScheme.primary,
                     borderRadius: BorderRadius.circular(30),
                   ),
                   child: Row(
@@ -394,7 +402,7 @@ class _ProductScreenState extends ConsumerState<ProductScreen> {
                             ? Icons.check_circle_outline
                             : Icons.shopping_bag_outlined,
                         size: 18,
-                        color: Colors.white,
+                        color: theme.colorScheme.onPrimary,
                       ),
                       const SizedBox(width: 8),
                       Text(
@@ -403,8 +411,8 @@ class _ProductScreenState extends ConsumerState<ProductScreen> {
                             : isInCart
                                 ? 'DÉJÀ DANS MA SÉLECTION'
                                 : 'AJOUTER À MON DRESSING',
-                        style: const TextStyle(
-                          color: Colors.white,
+                        style: TextStyle(
+                          color: theme.colorScheme.onPrimary,
                           fontSize: 12,
                           fontWeight: FontWeight.w700,
                           letterSpacing: 0.5,
@@ -431,15 +439,16 @@ class _DetailField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           label,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 9,
             fontWeight: FontWeight.w700,
-            color: AppTheme.greyText,
+            color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
             letterSpacing: 1.2,
           ),
         ),
@@ -449,13 +458,14 @@ class _DetailField extends StatelessWidget {
           style: TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w500,
-            color: valueColor ?? AppTheme.blackCloset,
+            color: valueColor ?? theme.colorScheme.onSurface,
           ),
         ),
       ],
     );
   }
 }
+
 
 class _ConditionBadge extends StatelessWidget {
   final String condition;
@@ -468,16 +478,16 @@ class _ConditionBadge extends StatelessWidget {
     switch (condition.toLowerCase()) {
       case 'neuf avec étiquette':
       case 'neuf':
-        bg = const Color(0xFFE8F5E9);
-        fg = const Color(0xFF2E7D32);
+        bg = ClosetColors.conditionNeufFond;
+        fg = ClosetColors.conditionNeufTexte;
         break;
       case 'excellent':
-        bg = const Color(0xFFE8F0FE);
-        fg = const Color(0xFF1A56B0);
+        bg = ClosetColors.conditionExcellentFond;
+        fg = ClosetColors.conditionExcellentTexte;
         break;
       default:
-        bg = const Color(0xFFFFF3E0);
-        fg = const Color(0xFFE65100);
+        bg = ClosetColors.conditionTresBonFond;
+        fg = ClosetColors.conditionTresBonTexte;
     }
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),

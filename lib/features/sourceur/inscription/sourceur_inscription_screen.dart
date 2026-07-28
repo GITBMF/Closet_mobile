@@ -1,27 +1,27 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../core/theme/closet_colors.dart';
 import '../../../core/theme/closet_text_styles.dart';
-import '../../../core/widgets/closet_bottom_nav.dart';
 import '../../../core/widgets/closet_buttons.dart';
 import '../../../core/widgets/closet_chip.dart';
-import '../../../core/widgets/closet_header.dart';
-import '../atelier/sourceur_atelier_screen.dart';
+import '../../../data/repositories/sourceur_repository.dart';
 import 'widgets/labeled_field.dart';
 import 'widgets/sourceur_hero_card.dart';
 import 'widgets/step_indicator.dart';
 
-/// Parcours d'inscription « Devenir Sourceur » en 3 étapes :
-/// 1. Atelier — 2. Univers — 3. Paiement.
-class SourceurInscriptionScreen extends StatefulWidget {
+/// Parcours d'inscription « Devenir Sourceur » en 3 étapes
+class SourceurInscriptionScreen extends ConsumerStatefulWidget {
   const SourceurInscriptionScreen({super.key});
 
   @override
-  State<SourceurInscriptionScreen> createState() =>
+  ConsumerState<SourceurInscriptionScreen> createState() =>
       _SourceurInscriptionScreenState();
 }
 
-class _SourceurInscriptionScreenState extends State<SourceurInscriptionScreen> {
+class _SourceurInscriptionScreenState
+    extends ConsumerState<SourceurInscriptionScreen> {
   static const _specialites = [
     'Robes',
     'Vestes',
@@ -29,10 +29,10 @@ class _SourceurInscriptionScreenState extends State<SourceurInscriptionScreen> {
     'Accessoires',
     'Multi-univers',
   ];
-  static const _moyensPaiement = ['MTN MoMo', 'Orange Money',
-      'Virement bancaire'];
+  static const _moyensPaiement = ['MTN MoMo', 'Orange Money', 'Virement bancaire'];
 
   final _scrollController = ScrollController();
+  bool _isLoading = false;
 
   // Étape 1 — Atelier
   final _atelierController = TextEditingController();
@@ -79,17 +79,40 @@ class _SourceurInscriptionScreenState extends State<SourceurInscriptionScreen> {
     );
   }
 
-  void _rejoindreLeCercle() {
-    // TODO: brancher l'appel API d'inscription sourceur quand le backend
-    // sera disponible.
-    Navigator.of(context).pushReplacement(
-      MaterialPageRoute<void>(
-        builder: (_) => SourceurAtelierScreen(
-          nomAtelier: _atelierController.text.trim(),
-          ville: _villeController.text.trim(),
-        ),
-      ),
-    );
+  Future<void> _rejoindreLeCercle() async {
+    setState(() => _isLoading = true);
+    try {
+      final repo = ref.read<SourceurRepository>(sourceurRepositoryProvider);
+      await repo.inscrire(SourceurInscriptionData(
+        nomAtelier: _atelierController.text.trim(),
+        ville: _villeController.text.trim(),
+        whatsapp: _whatsappController.text.trim(),
+        univers: _universController.text.trim(),
+        specialite: _specialite,
+        moyenPaiement: _moyenPaiement,
+        numeroPaiement: _numeroController.text.trim(),
+      ));
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Bienvenue dans le Cercle des Sourceurs !'),
+            backgroundColor: ClosetColors.vert,
+          ),
+        );
+        context.go('/sourceur');
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(e.toString()),
+            backgroundColor: ClosetColors.erreur,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
   }
 
   @override
@@ -97,15 +120,9 @@ class _SourceurInscriptionScreenState extends State<SourceurInscriptionScreen> {
     return Scaffold(
       backgroundColor: ClosetColors.ivoire,
       body: SafeArea(
-        bottom: false,
         child: Column(
           children: [
-            const ClosetHeader(
-              titre: 'Devenir Sourceur',
-              wishlistCount: 2,
-              panierCount: 2,
-              notificationsCount: 2,
-            ),
+            _buildTopBar(context),
             Expanded(
               child: SingleChildScrollView(
                 controller: _scrollController,
@@ -129,8 +146,6 @@ class _SourceurInscriptionScreenState extends State<SourceurInscriptionScreen> {
                       _ => _buildEtapePaiement(),
                     },
                     const SizedBox(height: 36),
-                    // Seuls les boutons dépendent du contenu des champs :
-                    // on ne reconstruit qu'eux à chaque frappe.
                     ListenableBuilder(
                       listenable: Listenable.merge([
                         _atelierController,
@@ -148,11 +163,38 @@ class _SourceurInscriptionScreenState extends State<SourceurInscriptionScreen> {
           ],
         ),
       ),
-      bottomNavigationBar: ClosetBottomNav(indexActif: 1, onTap: (_) {}),
     );
   }
 
-  // ---------------------------------------------------------------- Étape 1
+  Widget _buildTopBar(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(20, 16, 20, 12),
+      decoration: const BoxDecoration(
+        color: ClosetColors.ivoire,
+        border: Border(bottom: BorderSide(color: ClosetColors.ligne)),
+      ),
+      child: Row(
+        children: [
+          GestureDetector(
+            onTap: () => context.pop(),
+            child: Container(
+              width: 36,
+              height: 36,
+              decoration: const BoxDecoration(
+                color: ClosetColors.creme,
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.arrow_back_ios_new,
+                  size: 14, color: ClosetColors.noir),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Text('Devenir Sourceur',
+              style: ClosetTextStyles.titreEcran.copyWith(fontSize: 18)),
+        ],
+      ),
+    );
+  }
 
   Widget _buildEtapeAtelier() {
     return Column(
@@ -162,25 +204,26 @@ class _SourceurInscriptionScreenState extends State<SourceurInscriptionScreen> {
           icone: Icons.storefront_outlined,
           label: 'Nom de votre atelier',
           controller: _atelierController,
-          hint: "L'Atelier d'Awa",        ),
+          hint: "L'Atelier d'Awa",
+        ),
         const SizedBox(height: 28),
         LabeledField(
           icone: Icons.location_on_outlined,
           label: 'Ville',
           controller: _villeController,
-          hint: 'Yaoundé',        ),
+          hint: 'Yaoundé',
+        ),
         const SizedBox(height: 28),
         LabeledField(
           icone: Icons.phone_outlined,
           label: 'Téléphone WhatsApp',
           controller: _whatsappController,
           hint: '+237 6 77 45 22 18',
-          keyboardType: TextInputType.phone,        ),
+          keyboardType: TextInputType.phone,
+        ),
       ],
     );
   }
-
-  // ---------------------------------------------------------------- Étape 2
 
   Widget _buildEtapeUnivers() {
     return Column(
@@ -192,12 +235,12 @@ class _SourceurInscriptionScreenState extends State<SourceurInscriptionScreen> {
           controller: _universController,
           hint: 'Racontez votre histoire, votre sensibilité, '
               'vos coups de cœur...',
-          maxLines: 6,        ),
+          maxLines: 6,
+        ),
         const SizedBox(height: 28),
         Row(
           children: [
-            const Icon(Icons.palette_outlined,
-                size: 20, color: ClosetColors.dore),
+            const Icon(Icons.palette_outlined, size: 20, color: ClosetColors.dore),
             const SizedBox(width: 10),
             Text('SPÉCIALITÉ', style: ClosetTextStyles.labelChamp),
           ],
@@ -218,8 +261,6 @@ class _SourceurInscriptionScreenState extends State<SourceurInscriptionScreen> {
       ],
     );
   }
-
-  // ---------------------------------------------------------------- Étape 3
 
   Widget _buildEtapePaiement() {
     return Column(
@@ -247,6 +288,7 @@ class _SourceurInscriptionScreenState extends State<SourceurInscriptionScreen> {
           children: [
             const Icon(Icons.payments_outlined,
                 size: 20, color: ClosetColors.dore),
+            const Icon(Icons.payments_outlined, size: 20, color: ClosetColors.dore),
             const SizedBox(width: 10),
             Text('MOYEN DE RÉMUNÉRATION', style: ClosetTextStyles.labelChamp),
           ],
@@ -266,7 +308,8 @@ class _SourceurInscriptionScreenState extends State<SourceurInscriptionScreen> {
           label: 'Numéro',
           controller: _numeroController,
           hint: '+237 6 ...',
-          keyboardType: TextInputType.phone,        ),
+          keyboardType: TextInputType.phone,
+        ),
         const SizedBox(height: 24),
         Container(
           padding: const EdgeInsets.all(18),
@@ -285,6 +328,8 @@ class _SourceurInscriptionScreenState extends State<SourceurInscriptionScreen> {
                 child: Text(
                   'En rejoignant le cercle, vous acceptez la charte '
                   "d'authenticité Clos ET.",
+                  "d'authenticité ClosET et une commission de 25% "
+                  'sur les ventes.',
                   style: ClosetTextStyles.corps,
                 ),
               ),
@@ -295,16 +340,18 @@ class _SourceurInscriptionScreenState extends State<SourceurInscriptionScreen> {
     );
   }
 
-  // ---------------------------------------------------------------- Boutons
-
   Widget _buildBoutons() {
     final derniereEtape = _etape == 2;
-    final action = derniereEtape ? _rejoindreLeCercle : () => _changerEtape(1);
-    final bouton = ClosetPrimaryButton(
-      label: derniereEtape ? 'Rejoindre le cercle' : 'Continuer',
-      dore: derniereEtape,
-      onPressed: _etapeValide ? action : null,
-    );
+    final bouton = _isLoading
+        ? const Center(
+            child: CircularProgressIndicator(color: ClosetColors.dore))
+        : ClosetPrimaryButton(
+            label: derniereEtape ? 'Rejoindre le cercle' : 'Continuer',
+            dore: derniereEtape,
+            onPressed: _etapeValide
+                ? (derniereEtape ? _rejoindreLeCercle : () => _changerEtape(1))
+                : null,
+          );
 
     if (_etape == 0) return bouton;
     return Row(

@@ -32,7 +32,7 @@ class ClosetApp extends ConsumerWidget {
     final themeMode = ref.watch<ThemeMode>(themeModeProvider);
 
     return MaterialApp.router(
-      title: 'ClosET - L\'élégance durable',
+      title: 'ClosET',
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
       themeMode: themeMode,

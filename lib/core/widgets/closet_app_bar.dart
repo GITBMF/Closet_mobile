@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../core/theme/app_theme.dart';
+import '../../core/theme/closet_colors.dart';
 import '../../core/theme/theme_provider.dart';
 import '../../data/models/article.dart';
 import '../../data/repositories/cart_repository.dart';
@@ -13,12 +13,14 @@ class ClosetAppBar extends ConsumerWidget implements PreferredSizeWidget {
   final String? title;
   final String? subtitle;
   final bool showBackButton;
+  final List<Widget>? actions;
 
   const ClosetAppBar({
     super.key,
     this.title,
     this.subtitle,
     this.showBackButton = false,
+    this.actions,
   });
 
   @override
@@ -71,45 +73,52 @@ class ClosetAppBar extends ConsumerWidget implements PreferredSizeWidget {
               children: [
                 // Asset Logo
                 Image.asset(
-                  isDark ? 'assets/fond sombre.png' : 'assets/iconheader.png',
+                  isDark ? 'assets/logo_fond_sombre.png' : 'assets/iconheader.png',
                   width: 36,
                   height: 36,
                   errorBuilder: (_, _, _) => const DecoratedBox(
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: AppTheme.goldCloset,
+                      color: ClosetColors.vert,
                     ),
                     child: Center(
-                      child: Text('C', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                      child: Text('C', style: TextStyle(color: ClosetColors.creme, fontWeight: FontWeight.bold)),
                     ),
                   ),
                 ),
                 const SizedBox(width: 10),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title ?? 'ClosET',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
-                        color: onSurfaceColor,
-                        letterSpacing: 0.3,
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        title ?? 'ClosET',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                          color: onSurfaceColor,
+                          letterSpacing: 0.3,
+                        ),
                       ),
-                    ),
-                    Text(
-                      subtitle ?? 'L\'ÉLÉGANCE DURABLE',
-                      style: TextStyle(
-                        fontSize: 8,
-                        color: onSurfaceColor.withValues(alpha: 0.6),
-                        letterSpacing: 2,
+                      Text(
+                        subtitle ?? 'L\'ÉLÉGANCE DURABLE',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 8,
+                          color: onSurfaceColor.withValues(alpha: 0.6),
+                          letterSpacing: 2,
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ],
             ),
-      actions: [
+      actions: actions ?? [
         // Search icon navigating to collections
         IconButton(
           icon: const Icon(Icons.search, size: 22),
@@ -139,14 +148,14 @@ class ClosetAppBar extends ConsumerWidget implements PreferredSizeWidget {
                   width: 16,
                   height: 16,
                   decoration: const BoxDecoration(
-                    color: AppTheme.goldCloset,
+                    color: ClosetColors.vert,
                     shape: BoxShape.circle,
                   ),
                   child: Center(
                     child: Text(
                       '$cartCount',
                       style: const TextStyle(
-                        color: Colors.white,
+                        color: ClosetColors.creme,
                         fontSize: 9,
                         fontWeight: FontWeight.bold,
                       ),
@@ -163,21 +172,45 @@ class ClosetAppBar extends ConsumerWidget implements PreferredSizeWidget {
 }
 
 /// Carte article réutilisable reproduisant le design de la maquette
-class ArticleCard extends ConsumerWidget {
+/// Carte article réutilisable reproduisant le design de la maquette
+class ArticleCard extends ConsumerStatefulWidget {
   final Article article;
   final VoidCallback? onTap;
 
   const ArticleCard({super.key, required this.article, this.onTap});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final isWishlisted = ref.watch(wishlistProvider.notifier).isWishlisted(article.id);
-    final isSoldOut = article.isSoldOut;
+  ConsumerState<ArticleCard> createState() => _ArticleCardState();
+}
+
+class _ArticleCardState extends ConsumerState<ArticleCard> {
+  bool? _localWishlisted;
+
+  @override
+  void didUpdateWidget(covariant ArticleCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.article.id != widget.article.id) {
+      _localWishlisted = null;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final wishlist = ref.watch(wishlistListProvider);
+    final isWishlistedReal = wishlist.any((a) => a.id == widget.article.id);
+
+    // Sync local state if it matches the provider state
+    if (_localWishlisted == isWishlistedReal) {
+      _localWishlisted = null;
+    }
+
+    final isWishlisted = _localWishlisted ?? isWishlistedReal;
+    final isSoldOut = widget.article.isSoldOut;
     final theme = Theme.of(context);
     final onSurfaceColor = theme.colorScheme.onSurface;
 
     return GestureDetector(
-      onTap: onTap,
+      onTap: widget.onTap,
       child: DecoratedBox(
         decoration: BoxDecoration(
           color: theme.colorScheme.surface,
@@ -212,7 +245,7 @@ class ArticleCard extends ConsumerWidget {
                           : const ColorFilter.mode(
                               Colors.transparent, BlendMode.multiply),
                       child: Image.network(
-                        article.imageUrls[0],
+                        widget.article.imageUrls[0],
                         width: double.infinity,
                         height: double.infinity,
                         fit: BoxFit.cover,
@@ -250,7 +283,10 @@ class ArticleCard extends ConsumerWidget {
                     right: 8,
                     child: GestureDetector(
                       onTap: () {
-                        ref.read(wishlistProvider.notifier).toggleWishlist(article);
+                        setState(() {
+                          _localWishlisted = !isWishlisted;
+                        });
+                        ref.read(wishlistProvider.notifier).toggleWishlist(widget.article);
                       },
                       child: Container(
                         width: 32,
@@ -268,7 +304,7 @@ class ArticleCard extends ConsumerWidget {
                         child: Icon(
                           isWishlisted ? Icons.favorite : Icons.favorite_border,
                           size: 16,
-                          color: isWishlisted ? Colors.red : AppTheme.greyText,
+                          color: isWishlisted ? ClosetColors.erreur : ClosetColors.taupe,
                         ),
                       ),
                     ),
@@ -283,7 +319,7 @@ class ArticleCard extends ConsumerWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    article.brand.toUpperCase(),
+                    widget.article.brand.toUpperCase(),
                     style: TextStyle(
                       fontSize: 9,
                       fontWeight: FontWeight.w700,
@@ -293,7 +329,7 @@ class ArticleCard extends ConsumerWidget {
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    article.title,
+                    widget.article.title,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
@@ -306,26 +342,37 @@ class ArticleCard extends ConsumerWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(
-                        _formatPrice(article.price),
-                        style: TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w700,
-                          color: onSurfaceColor,
+                      Flexible(
+                        child: Text(
+                          _formatPrice(widget.article.price),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w700,
+                            color: onSurfaceColor,
+                          ),
                         ),
                       ),
+                      const SizedBox(width: 4),
                       if (!isSoldOut)
-                        _ConditionBadge(condition: article.condition),
+                        Flexible(
+                          child: _ConditionBadge(condition: widget.article.condition),
+                        ),
                       if (isSoldOut)
-                        GestureDetector(
-                          onTap: () {},
-                          child: Text(
-                            '⏰ M\'ALERTER',
-                            style: TextStyle(
-                              fontSize: 9,
-                              fontWeight: FontWeight.w700,
-                              color: theme.colorScheme.primary,
-                              letterSpacing: 0.5,
+                        Flexible(
+                          child: GestureDetector(
+                            onTap: () {},
+                            child: Text(
+                              '⏰ M\'ALERTER',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: 9,
+                                fontWeight: FontWeight.w700,
+                                color: theme.colorScheme.primary,
+                                letterSpacing: 0.5,
+                              ),
                             ),
                           ),
                         ),
@@ -333,7 +380,7 @@ class ArticleCard extends ConsumerWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    'T. ${article.size} · ${article.material}',
+                    'T. ${widget.article.size} · ${widget.article.material}',
                     style: TextStyle(
                       fontSize: 10,
                       color: onSurfaceColor.withValues(alpha: 0.6),
@@ -374,16 +421,16 @@ class _ConditionBadge extends StatelessWidget {
     switch (condition.toLowerCase()) {
       case 'neuf avec étiquette':
       case 'neuf':
-        bg = const Color(0xFFE8F5E9);
-        fg = const Color(0xFF2E7D32);
+        bg = ClosetColors.conditionNeufFond;
+        fg = ClosetColors.conditionNeufTexte;
         break;
       case 'excellent':
-        bg = const Color(0xFFE8F0FE);
-        fg = const Color(0xFF1A56B0);
+        bg = ClosetColors.conditionExcellentFond;
+        fg = ClosetColors.conditionExcellentTexte;
         break;
       default:
-        bg = const Color(0xFFFFF3E0);
-        fg = const Color(0xFFE65100);
+        bg = ClosetColors.conditionTresBonFond;
+        fg = ClosetColors.conditionTresBonTexte;
     }
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),

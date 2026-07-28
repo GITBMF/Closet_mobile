@@ -2,14 +2,13 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../core/theme/closet_colors.dart';
 import '../../../core/theme/closet_text_styles.dart';
 import '../../../core/widgets/bordure_pointillee.dart';
-import '../../../core/widgets/closet_bottom_nav.dart';
 import '../../../core/widgets/closet_buttons.dart';
 import '../../../core/widgets/closet_chip.dart';
-import '../../../core/widgets/closet_header.dart';
 import '../inscription/widgets/labeled_field.dart';
 
 /// Formulaire de dépôt d'une nouvelle pièce (/sourceur/nouvelle) :
@@ -78,9 +77,7 @@ class _SourceurNouvellePieceScreenState
   }
 
   void _envoyerAuComite() {
-    // TODO: brancher l'envoi du dépôt au comité quand le backend
-    // sera disponible.
-    Navigator.of(context).pop();
+    if (context.canPop()) context.pop();
   }
 
   @override
@@ -88,15 +85,42 @@ class _SourceurNouvellePieceScreenState
     return Scaffold(
       backgroundColor: ClosetColors.ivoire,
       body: SafeArea(
-        bottom: false,
         child: Column(
           children: [
-            const ClosetHeader(
-              titre: 'Nouvelle pièce',
-              sousTitre: 'Dépôt',
-              wishlistCount: 2,
-              panierCount: 2,
-              notificationsCount: 4,
+            // Top bar with back button
+            Container(
+              padding: const EdgeInsets.fromLTRB(20, 16, 20, 12),
+              decoration: const BoxDecoration(
+                color: ClosetColors.ivoire,
+                border: Border(bottom: BorderSide(color: ClosetColors.ligne)),
+              ),
+              child: Row(
+                children: [
+                  GestureDetector(
+                    onTap: () => context.pop(),
+                    child: Container(
+                      width: 36,
+                      height: 36,
+                      decoration: const BoxDecoration(
+                        color: ClosetColors.creme,
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(Icons.arrow_back_ios_new,
+                          size: 14, color: ClosetColors.noir),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Nouvelle pièce',
+                          style: ClosetTextStyles.titreEcran
+                              .copyWith(fontSize: 18)),
+                      Text('Dépôt', style: ClosetTextStyles.labelChamp),
+                    ],
+                  ),
+                ],
+              ),
             ),
             Expanded(
               child: SingleChildScrollView(
@@ -190,7 +214,6 @@ class _SourceurNouvellePieceScreenState
           ],
         ),
       ),
-      bottomNavigationBar: ClosetBottomNav(indexActif: -1, onTap: (_) {}),
     );
   }
 
