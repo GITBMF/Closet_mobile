@@ -12,6 +12,11 @@ import '../../features/cliente/selection/selection_screen.dart';
 import '../../features/cliente/wishlist/wishlist_screen.dart';
 import '../../features/main_layout.dart';
 import '../../features/onboarding/onboarding_screen.dart';
+import '../../features/sourceur/atelier/sourceur_atelier_screen.dart';
+import '../../features/sourceur/inscription/sourceur_inscription_screen.dart';
+import '../../features/sourceur/nouvelle/sourceur_nouvelle_piece_screen.dart';
+import '../../features/sourceur/pieces/sourceur_pieces_screen.dart';
+import '../../features/sourceur/revenus/sourceur_revenus_screen.dart';
 import '../../features/splash/splash_screen.dart';
 
 final appRouterProvider = Provider<GoRouter>((ref) {
@@ -123,6 +128,33 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             );
           },
         ),
+      ),
+
+      // ── Sourceur (outside shell) ────────────────────────────────────
+      GoRoute(
+        parentNavigatorKey: rootNavigatorKey,
+        path: '/sourceur/inscription',
+        builder: (context, state) => const SourceurInscriptionScreen(),
+      ),
+      GoRoute(
+        parentNavigatorKey: rootNavigatorKey,
+        path: '/sourceur/nouvelle',
+        builder: (context, state) => const SourceurNouvellePieceScreen(),
+      ),
+      GoRoute(
+        parentNavigatorKey: rootNavigatorKey,
+        path: '/sourceur/pieces',
+        builder: (context, state) => const SourceurPiecesScreen(),
+      ),
+      GoRoute(
+        parentNavigatorKey: rootNavigatorKey,
+        path: '/sourceur/revenus',
+        builder: (context, state) => const SourceurRevenusScreen(),
+      ),
+      GoRoute(
+        parentNavigatorKey: rootNavigatorKey,
+        path: '/sourceur/atelier',
+        builder: (context, state) => const SourceurAtelierScreen(nomAtelier: 'Mon Atelier', ville: 'Yaoundé'),
       ),
 
       // ── Shell with bottom nav ───────────────────────────────────────

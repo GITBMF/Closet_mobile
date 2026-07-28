@@ -229,15 +229,30 @@ class EspaceScreen extends ConsumerWidget {
                     title: 'ESPACE SOURCEUR',
                     items: [
                       _MenuItem(
+                        icon: Icons.person_add_alt_1_outlined,
+                        label: 'Devenir Sourceur (Inscription)',
+                        onTap: () => context.push('/sourceur/inscription'),
+                      ),
+                      _MenuItem(
+                        icon: Icons.storefront_outlined,
+                        label: 'Mon Atelier',
+                        onTap: () => context.push('/sourceur/atelier'),
+                      ),
+                      _MenuItem(
                         icon: Icons.add_circle_outline,
                         label: 'Soumettre une pièce',
-                        onTap: () {},
+                        onTap: () => context.push('/sourceur/nouvelle'),
                         isHighlighted: true,
                       ),
                       _MenuItem(
                         icon: Icons.inventory_2_outlined,
                         label: 'Mes pièces soumises',
-                        onTap: () {},
+                        onTap: () => context.push('/sourceur/pieces'),
+                      ),
+                      _MenuItem(
+                        icon: Icons.account_balance_wallet_outlined,
+                        label: 'Mes revenus',
+                        onTap: () => context.push('/sourceur/revenus'),
                       ),
                     ],
                   ),
