@@ -133,6 +133,31 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         ),
       ),
 
+      // ── Sourceur (outside shell) ────────────────────────────────────
+      GoRoute(
+        parentNavigatorKey: rootNavigatorKey,
+        path: '/sourceur/inscription',
+        builder: (context, state) => const SourceurInscriptionScreen(),
+      ),
+      GoRoute(
+        parentNavigatorKey: rootNavigatorKey,
+        path: '/sourceur/nouvelle',
+        builder: (context, state) => const SourceurNouvellePieceScreen(),
+      ),
+      GoRoute(
+        parentNavigatorKey: rootNavigatorKey,
+        path: '/sourceur/pieces',
+        builder: (context, state) => const SourceurPiecesScreen(),
+      ),
+      GoRoute(
+        parentNavigatorKey: rootNavigatorKey,
+        path: '/sourceur/revenus',
+        builder: (context, state) => const SourceurRevenusScreen(),
+      ),
+      GoRoute(
+        parentNavigatorKey: rootNavigatorKey,
+        path: '/sourceur/atelier',
+        builder: (context, state) => const SourceurAtelierScreen(nomAtelier: 'Mon Atelier', ville: 'Yaoundé'),
       // ── Sourceur (outside shell — full screen stack) ────────────────
       GoRoute(
         parentNavigatorKey: rootNavigatorKey,

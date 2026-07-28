@@ -1,4 +1,7 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/theme/closet_colors.dart';
@@ -39,6 +42,9 @@ class _SourceurNouvellePieceScreenState
   String _taille = 'M';
   String _etat = 'Excellent état';
 
+  final List<XFile?> _photos = [null, null, null];
+  final ImagePicker _picker = ImagePicker();
+
   @override
   void dispose() {
     _nomController.dispose();
@@ -52,7 +58,23 @@ class _SourceurNouvellePieceScreenState
       _nomController.text.trim().isNotEmpty &&
       _marqueController.text.trim().isNotEmpty &&
       _prixController.text.trim().isNotEmpty &&
-      _descriptionController.text.trim().isNotEmpty;
+      _descriptionController.text.trim().isNotEmpty &&
+      _photos.any((p) => p != null);
+
+  Future<void> _pickImage(int index) async {
+    final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
+    if (image != null) {
+      setState(() {
+        _photos[index] = image;
+      });
+    }
+  }
+
+  void _supprimerImage(int index) {
+    setState(() {
+      _photos[index] = null;
+    });
+  }
 
   void _envoyerAuComite() {
     if (context.canPop()) context.pop();
@@ -220,9 +242,13 @@ class _SourceurNouvellePieceScreenState
           children: [
             for (var i = 0; i < 3; i++) ...[
               if (i > 0) const SizedBox(width: 14),
-              Expanded(child: _EmplacementPhoto(onTap: () {
-                // TODO: ouvrir le sélecteur de photos (image_picker).
-              })),
+              Expanded(
+                child: _EmplacementPhoto(
+                  fichier: _photos[i],
+                  onTap: () => _pickImage(i),
+                  onDelete: () => _supprimerImage(i),
+                ),
+              ),
             ],
           ],
         ),
@@ -257,9 +283,15 @@ class _SourceurNouvellePieceScreenState
 
 /// Emplacement de photo en arche avec bordure pointillée et « + ».
 class _EmplacementPhoto extends StatelessWidget {
-  const _EmplacementPhoto({required this.onTap});
+  const _EmplacementPhoto({
+    required this.onTap,
+    this.fichier,
+    this.onDelete,
+  });
 
   final VoidCallback onTap;
+  final XFile? fichier;
+  final VoidCallback? onDelete;
 
   static const _forme = BorderRadius.vertical(
     top: Radius.circular(70),
@@ -268,6 +300,38 @@ class _EmplacementPhoto extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (fichier != null) {
+      return Stack(
+        clipBehavior: Clip.none,
+        children: [
+          ClipRRect(
+            borderRadius: _forme,
+            child: Image.file(
+              File(fichier!.path),
+              height: 190,
+              width: double.infinity,
+              fit: BoxFit.cover,
+            ),
+          ),
+          Positioned(
+            top: -8,
+            right: -8,
+            child: GestureDetector(
+              onTap: onDelete,
+              child: Container(
+                padding: const EdgeInsets.all(4),
+                decoration: const BoxDecoration(
+                  color: ClosetColors.noir,
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Icons.close, size: 16, color: ClosetColors.ivoire),
+              ),
+            ),
+          ),
+        ],
+      );
+    }
+
     return BordurePointillee(
       borderRadius: _forme,
       couleur: ClosetColors.dore.withValues(alpha: 0.45),
