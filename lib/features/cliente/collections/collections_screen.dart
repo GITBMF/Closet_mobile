@@ -119,58 +119,17 @@ class CollectionsScreen extends ConsumerWidget {
 
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
-      appBar: AppBar(
-        backgroundColor: theme.appBarTheme.backgroundColor ?? theme.scaffoldBackgroundColor,
-        elevation: 0,
-        automaticallyImplyLeading: false,
-        title: Row(
-          children: [
-            Image.asset(
-              'assets/iconheader.png',
-              width: 36,
-              height: 36,
-              errorBuilder: (_, _, _) => Container(
-                width: 36,
-                height: 36,
-                decoration: const BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: ClosetColors.vert,
-                ),
-                child: const Center(
-                  child: Text('C', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-                ),
-              ),
-            ),
-            const SizedBox(width: 10),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Collections',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
-                    color: onSurfaceColor,
-                  ),
-                ),
-                Text(
-                  'LE DRESSING',
-                  style: TextStyle(
-                    fontSize: 8,
-                    color: onSurfaceColor.withValues(alpha: 0.6),
-                    letterSpacing: 2,
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
+      appBar: ClosetAppBar(
+        title: 'Collections',
+        subtitle: 'LE DRESSING',
         actions: [
           IconButton(
             icon: Icon(
               Icons.tune,
               size: 22,
-              color: hasActiveFilters ? theme.colorScheme.secondary : onSurfaceColor,
+              color: hasActiveFilters
+                  ? theme.colorScheme.secondary
+                  : theme.colorScheme.onSurface,
             ),
             onPressed: () => _showFilterBottomSheet(context, ref),
           ),

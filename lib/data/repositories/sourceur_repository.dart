@@ -1,4 +1,6 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/legacy.dart';
 
 /// Modèle d'une pièce déposée par un sourceur.
 class PieceDeposee {
@@ -113,7 +115,7 @@ class SourceurProfile {
 
 /// Repository sourceur — mock MVP avec simulation de latence réseau.
 /// Brancher sur HTTP quand le backend Dart Frog est prêt (ENV=prod).
-class SourceurRepository {
+class SourceurRepository extends ChangeNotifier {
   // ── Données mock ────────────────────────────────────────────────────────
 
   final List<PieceDeposee> _pieces = [];
@@ -127,6 +129,7 @@ class SourceurRepository {
   Future<void> deposerPiece(PieceDeposee piece) async {
     await Future<void>.delayed(const Duration(milliseconds: 600));
     _pieces.add(piece);
+    notifyListeners();
   }
 
   Future<RevenusSourceur> getRevenus() async {
@@ -157,6 +160,7 @@ class SourceurRepository {
       ville: data.ville,
       depuis: _moisAnnee(),
     );
+    notifyListeners();
     return _profile!;
   }
 
@@ -175,14 +179,14 @@ class SourceurRepository {
 
 // ── Providers ────────────────────────────────────────────────────────────────
 
-final sourceurRepositoryProvider = Provider<SourceurRepository>((ref) {
+final sourceurRepositoryProvider = ChangeNotifierProvider<SourceurRepository>((ref) {
   return SourceurRepository();
 });
 
 final mesPiecesProvider = FutureProvider<List<PieceDeposee>>((ref) {
-  return ref.watch(sourceurRepositoryProvider).getMesPieces();
+  return ref.watch<SourceurRepository>(sourceurRepositoryProvider).getMesPieces();
 });
 
 final revenusSourceurProvider = FutureProvider<RevenusSourceur>((ref) {
-  return ref.watch(sourceurRepositoryProvider).getRevenus();
+  return ref.watch<SourceurRepository>(sourceurRepositoryProvider).getRevenus();
 });

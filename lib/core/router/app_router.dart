@@ -7,6 +7,7 @@ import '../../features/checkout/checkout_screen.dart';
 import '../../features/cliente/collections/collections_screen.dart';
 import '../../features/cliente/dressing/dressing_screen.dart';
 import '../../features/cliente/espace/espace_screen.dart';
+import '../../features/cliente/espace/espace_sub_screens.dart';
 import '../../features/cliente/product/product_screen.dart';
 import '../../features/cliente/selection/selection_screen.dart';
 import '../../features/cliente/wishlist/wishlist_screen.dart';
@@ -132,6 +133,31 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         ),
       ),
 
+      // ── Sourceur (outside shell) ────────────────────────────────────
+      GoRoute(
+        parentNavigatorKey: rootNavigatorKey,
+        path: '/sourceur/inscription',
+        builder: (context, state) => const SourceurInscriptionScreen(),
+      ),
+      GoRoute(
+        parentNavigatorKey: rootNavigatorKey,
+        path: '/sourceur/nouvelle',
+        builder: (context, state) => const SourceurNouvellePieceScreen(),
+      ),
+      GoRoute(
+        parentNavigatorKey: rootNavigatorKey,
+        path: '/sourceur/pieces',
+        builder: (context, state) => const SourceurPiecesScreen(),
+      ),
+      GoRoute(
+        parentNavigatorKey: rootNavigatorKey,
+        path: '/sourceur/revenus',
+        builder: (context, state) => const SourceurRevenusScreen(),
+      ),
+      GoRoute(
+        parentNavigatorKey: rootNavigatorKey,
+        path: '/sourceur/atelier',
+        builder: (context, state) => const SourceurAtelierScreen(nomAtelier: 'Mon Atelier', ville: 'Yaoundé'),
       // ── Sourceur (outside shell — full screen stack) ────────────────
       GoRoute(
         parentNavigatorKey: rootNavigatorKey,
@@ -245,6 +271,40 @@ final appRouterProvider = Provider<GoRouter>((ref) {
               GoRoute(
                 path: '/espace',
                 builder: (context, state) => const EspaceScreen(),
+                routes: [
+                  GoRoute(
+                    path: 'infos',
+                    builder: (context, state) => const EspaceInfoScreen(),
+                  ),
+                  GoRoute(
+                    path: 'adresses',
+                    builder: (context, state) => const EspaceAdressesScreen(),
+                  ),
+                  GoRoute(
+                    path: 'paiements',
+                    builder: (context, state) => const EspacePaiementsScreen(),
+                  ),
+                  GoRoute(
+                    path: 'alertes',
+                    builder: (context, state) => const EspaceAlertesScreen(),
+                  ),
+                  GoRoute(
+                    path: 'faq',
+                    builder: (context, state) => const EspaceFaqScreen(),
+                  ),
+                  GoRoute(
+                    path: 'contact',
+                    builder: (context, state) => const EspaceContactScreen(),
+                  ),
+                  GoRoute(
+                    path: 'confidentialite',
+                    builder: (context, state) => const EspaceConfidentialiteScreen(),
+                  ),
+                  GoRoute(
+                    path: 'evaluation',
+                    builder: (context, state) => const EspaceEvaluationScreen(),
+                  ),
+                ],
               ),
             ],
           ),

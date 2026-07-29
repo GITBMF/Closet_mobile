@@ -13,12 +13,14 @@ class ClosetAppBar extends ConsumerWidget implements PreferredSizeWidget {
   final String? title;
   final String? subtitle;
   final bool showBackButton;
+  final List<Widget>? actions;
 
   const ClosetAppBar({
     super.key,
     this.title,
     this.subtitle,
     this.showBackButton = false,
+    this.actions,
   });
 
   @override
@@ -85,31 +87,38 @@ class ClosetAppBar extends ConsumerWidget implements PreferredSizeWidget {
                   ),
                 ),
                 const SizedBox(width: 10),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title ?? 'ClosET',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
-                        color: onSurfaceColor,
-                        letterSpacing: 0.3,
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        title ?? 'ClosET',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                          color: onSurfaceColor,
+                          letterSpacing: 0.3,
+                        ),
                       ),
-                    ),
-                    Text(
-                      subtitle ?? 'L\'ÉLÉGANCE DURABLE',
-                      style: TextStyle(
-                        fontSize: 8,
-                        color: onSurfaceColor.withValues(alpha: 0.6),
-                        letterSpacing: 2,
+                      Text(
+                        subtitle ?? 'L\'ÉLÉGANCE DURABLE',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 8,
+                          color: onSurfaceColor.withValues(alpha: 0.6),
+                          letterSpacing: 2,
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ],
             ),
-      actions: [
+      actions: actions ?? [
         // Search icon navigating to collections
         IconButton(
           icon: const Icon(Icons.search, size: 22),
@@ -163,21 +172,45 @@ class ClosetAppBar extends ConsumerWidget implements PreferredSizeWidget {
 }
 
 /// Carte article réutilisable reproduisant le design de la maquette
-class ArticleCard extends ConsumerWidget {
+/// Carte article réutilisable reproduisant le design de la maquette
+class ArticleCard extends ConsumerStatefulWidget {
   final Article article;
   final VoidCallback? onTap;
 
   const ArticleCard({super.key, required this.article, this.onTap});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final isWishlisted = ref.watch(wishlistProvider.notifier).isWishlisted(article.id);
-    final isSoldOut = article.isSoldOut;
+  ConsumerState<ArticleCard> createState() => _ArticleCardState();
+}
+
+class _ArticleCardState extends ConsumerState<ArticleCard> {
+  bool? _localWishlisted;
+
+  @override
+  void didUpdateWidget(covariant ArticleCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.article.id != widget.article.id) {
+      _localWishlisted = null;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final wishlist = ref.watch(wishlistListProvider);
+    final isWishlistedReal = wishlist.any((a) => a.id == widget.article.id);
+
+    // Sync local state if it matches the provider state
+    if (_localWishlisted == isWishlistedReal) {
+      _localWishlisted = null;
+    }
+
+    final isWishlisted = _localWishlisted ?? isWishlistedReal;
+    final isSoldOut = widget.article.isSoldOut;
     final theme = Theme.of(context);
     final onSurfaceColor = theme.colorScheme.onSurface;
 
     return GestureDetector(
-      onTap: onTap,
+      onTap: widget.onTap,
       child: DecoratedBox(
         decoration: BoxDecoration(
           color: theme.colorScheme.surface,
@@ -212,7 +245,7 @@ class ArticleCard extends ConsumerWidget {
                           : const ColorFilter.mode(
                               Colors.transparent, BlendMode.multiply),
                       child: Image.network(
-                        article.imageUrls[0],
+                        widget.article.imageUrls[0],
                         width: double.infinity,
                         height: double.infinity,
                         fit: BoxFit.cover,
@@ -250,7 +283,10 @@ class ArticleCard extends ConsumerWidget {
                     right: 8,
                     child: GestureDetector(
                       onTap: () {
-                        ref.read(wishlistProvider.notifier).toggleWishlist(article);
+                        setState(() {
+                          _localWishlisted = !isWishlisted;
+                        });
+                        ref.read(wishlistProvider.notifier).toggleWishlist(widget.article);
                       },
                       child: Container(
                         width: 32,
@@ -283,7 +319,7 @@ class ArticleCard extends ConsumerWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    article.brand.toUpperCase(),
+                    widget.article.brand.toUpperCase(),
                     style: TextStyle(
                       fontSize: 9,
                       fontWeight: FontWeight.w700,
@@ -293,7 +329,7 @@ class ArticleCard extends ConsumerWidget {
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    article.title,
+                    widget.article.title,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
@@ -306,26 +342,37 @@ class ArticleCard extends ConsumerWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(
-                        _formatPrice(article.price),
-                        style: TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w700,
-                          color: onSurfaceColor,
+                      Flexible(
+                        child: Text(
+                          _formatPrice(widget.article.price),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w700,
+                            color: onSurfaceColor,
+                          ),
                         ),
                       ),
+                      const SizedBox(width: 4),
                       if (!isSoldOut)
-                        _ConditionBadge(condition: article.condition),
+                        Flexible(
+                          child: _ConditionBadge(condition: widget.article.condition),
+                        ),
                       if (isSoldOut)
-                        GestureDetector(
-                          onTap: () {},
-                          child: Text(
-                            '⏰ M\'ALERTER',
-                            style: TextStyle(
-                              fontSize: 9,
-                              fontWeight: FontWeight.w700,
-                              color: theme.colorScheme.primary,
-                              letterSpacing: 0.5,
+                        Flexible(
+                          child: GestureDetector(
+                            onTap: () {},
+                            child: Text(
+                              '⏰ M\'ALERTER',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: 9,
+                                fontWeight: FontWeight.w700,
+                                color: theme.colorScheme.primary,
+                                letterSpacing: 0.5,
+                              ),
                             ),
                           ),
                         ),
@@ -333,7 +380,7 @@ class ArticleCard extends ConsumerWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    'T. ${article.size} · ${article.material}',
+                    'T. ${widget.article.size} · ${widget.article.material}',
                     style: TextStyle(
                       fontSize: 10,
                       color: onSurfaceColor.withValues(alpha: 0.6),

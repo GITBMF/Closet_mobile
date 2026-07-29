@@ -44,6 +44,8 @@ class _SourceurInscriptionScreenState
   String? _specialite;
 
   // Étape 3 — Paiement
+  static const _typesCollaboration = ['Dépôt-vente (commission 25%)', 'Vente directe (achat immédiat)'];
+  String _typeCollaboration = _typesCollaboration.first;
   String _moyenPaiement = _moyensPaiement.first;
   final _numeroController = TextEditingController();
 
@@ -80,7 +82,7 @@ class _SourceurInscriptionScreenState
   Future<void> _rejoindreLeCercle() async {
     setState(() => _isLoading = true);
     try {
-      final repo = ref.read(sourceurRepositoryProvider);
+      final repo = ref.read<SourceurRepository>(sourceurRepositoryProvider);
       await repo.inscrire(SourceurInscriptionData(
         nomAtelier: _atelierController.text.trim(),
         ville: _villeController.text.trim(),
@@ -266,6 +268,26 @@ class _SourceurInscriptionScreenState
       children: [
         Row(
           children: [
+            const Icon(Icons.handshake_outlined,
+                size: 20, color: ClosetColors.dore),
+            const SizedBox(width: 10),
+            Text('TYPE DE COLLABORATION', style: ClosetTextStyles.labelChamp),
+          ],
+        ),
+        const SizedBox(height: 16),
+        for (final type in _typesCollaboration) ...[
+          _PaiementOption(
+            label: type,
+            selectionne: _typeCollaboration == type,
+            onTap: () => setState(() => _typeCollaboration = type),
+          ),
+          const SizedBox(height: 14),
+        ],
+        const SizedBox(height: 24),
+        Row(
+          children: [
+            const Icon(Icons.payments_outlined,
+                size: 20, color: ClosetColors.dore),
             const Icon(Icons.payments_outlined, size: 20, color: ClosetColors.dore),
             const SizedBox(width: 10),
             Text('MOYEN DE RÉMUNÉRATION', style: ClosetTextStyles.labelChamp),
@@ -305,6 +327,7 @@ class _SourceurInscriptionScreenState
               Expanded(
                 child: Text(
                   'En rejoignant le cercle, vous acceptez la charte '
+                  "d'authenticité Clos ET.",
                   "d'authenticité ClosET et une commission de 25% "
                   'sur les ventes.',
                   style: ClosetTextStyles.corps,
