@@ -64,14 +64,14 @@ class SourceurRevenusScreen extends ConsumerWidget {
           GestureDetector(
             onTap: () => context.pop(),
             child: Container(
-              width: 36,
-              height: 36,
+              width: 32,
+              height: 32,
               decoration: const BoxDecoration(
                 color: ClosetColors.creme,
                 shape: BoxShape.circle,
               ),
               child: const Icon(Icons.arrow_back_ios_new,
-                  size: 14, color: ClosetColors.noir),
+                  size: 13, color: ClosetColors.noir),
             ),
           ),
           const SizedBox(width: 12),
@@ -79,7 +79,7 @@ class SourceurRevenusScreen extends ConsumerWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text('Revenus',
-                  style: ClosetTextStyles.titreEcran.copyWith(fontSize: 18)),
+                  style: ClosetTextStyles.titreEcran.copyWith(fontSize: 16)),
               Text('Votre atelier', style: ClosetTextStyles.labelChamp),
             ],
           ),
@@ -91,12 +91,12 @@ class SourceurRevenusScreen extends ConsumerWidget {
   Widget _buildCarteSolde(int solde, String moyenPaiement) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.fromLTRB(24, 44, 24, 32),
+      padding: const EdgeInsets.fromLTRB(22, 30, 22, 26),
       decoration: const BoxDecoration(
         color: ClosetColors.vert,
         borderRadius: BorderRadius.vertical(
-          top: Radius.circular(110),
-          bottom: Radius.circular(28),
+          top: Radius.circular(40),
+          bottom: Radius.circular(20),
         ),
       ),
       child: Column(
@@ -105,8 +105,8 @@ class SourceurRevenusScreen extends ConsumerWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               const Icon(Icons.account_balance_wallet_outlined,
-                  size: 18, color: ClosetColors.dore),
-              const SizedBox(width: 10),
+                  size: 15, color: ClosetColors.dore),
+              const SizedBox(width: 8),
               Text('SOLDE DISPONIBLE', style: ClosetTextStyles.labelChamp),
             ],
           ),
@@ -115,7 +115,7 @@ class SourceurRevenusScreen extends ConsumerWidget {
             '$solde FCFA',
             textAlign: TextAlign.center,
             style: ClosetTextStyles.titreHero.copyWith(
-              fontSize: 42,
+              fontSize: 30,
               fontStyle: FontStyle.normal,
             ),
           ),
@@ -124,7 +124,7 @@ class SourceurRevenusScreen extends ConsumerWidget {
             'Versé sur $moyenPaiement',
             textAlign: TextAlign.center,
             style: ClosetTextStyles.corpsSurVert.copyWith(
-              fontSize: 15,
+              fontSize: 14,
               color: ClosetColors.texteSurVert.withValues(alpha: 0.8),
             ),
           ),
@@ -176,14 +176,14 @@ class SourceurRevenusScreen extends ConsumerWidget {
         Row(
           children: [
             const Icon(Icons.check_circle_outline,
-                size: 20, color: ClosetColors.dore),
-            const SizedBox(width: 10),
+                size: 16, color: ClosetColors.dore),
+            const SizedBox(width: 8),
             Text('HISTORIQUE DES VENTES', style: ClosetTextStyles.labelChamp),
           ],
         ),
         const SizedBox(height: 8),
         Text('Vos pièces adoptées',
-            style: ClosetTextStyles.titreEcran.copyWith(fontSize: 24)),
+            style: ClosetTextStyles.titreEcran.copyWith(fontSize: 18)),
         const SizedBox(height: 24),
         if (revenus.historique.isEmpty)
           Text(
@@ -211,30 +211,30 @@ class _VenteTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: ClosetColors.creme,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(12),
         border: Border.all(color: ClosetColors.bordure),
       ),
       child: Row(
         children: [
           Container(
-            width: 40,
-            height: 40,
+            width: 34,
+            height: 34,
             decoration: const BoxDecoration(
               color: ClosetColors.fondsSucces,
               shape: BoxShape.circle,
             ),
-            child: const Icon(Icons.check, size: 20, color: ClosetColors.succes),
+            child: const Icon(Icons.check, size: 17, color: ClosetColors.succes),
           ),
-          const SizedBox(width: 14),
+          const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(vente.nomPiece,
-                    style: ClosetTextStyles.saisie.copyWith(fontSize: 15)),
+                    style: ClosetTextStyles.saisie.copyWith(fontSize: 14)),
                 Text(
                   '${vente.date.day}/${vente.date.month}/${vente.date.year}',
                   style: ClosetTextStyles.corps.copyWith(
@@ -246,7 +246,7 @@ class _VenteTile extends StatelessWidget {
           Text(
             '${vente.montant.toInt()} FCFA',
             style: ClosetTextStyles.saisie.copyWith(
-              fontSize: 16,
+              fontSize: 15,
               color: ClosetColors.succes,
             ),
           ),
@@ -275,28 +275,28 @@ class _RecapTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return Expanded(
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 20),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 16),
         decoration: BoxDecoration(
           color: ClosetColors.creme,
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(12),
           border: Border.all(color: ClosetColors.bordure),
         ),
         child: Column(
           children: [
             Container(
-              width: 40,
-              height: 40,
+              width: 34,
+              height: 34,
               decoration: BoxDecoration(
                 color: fondPastille,
                 shape: BoxShape.circle,
               ),
-              child: Icon(icone, size: 20, color: couleurIcone),
+              child: Icon(icone, size: 17, color: couleurIcone),
             ),
-            const SizedBox(height: 14),
+            const SizedBox(height: 12),
             Text(
               label,
               textAlign: TextAlign.center,
-              style: ClosetTextStyles.labelEtape.copyWith(fontSize: 11),
+              style: ClosetTextStyles.labelEtape.copyWith(fontSize: 10),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
@@ -304,7 +304,7 @@ class _RecapTile extends StatelessWidget {
             Text(
               montant,
               textAlign: TextAlign.center,
-              style: ClosetTextStyles.saisie.copyWith(fontSize: 18),
+              style: ClosetTextStyles.saisie.copyWith(fontSize: 15),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),

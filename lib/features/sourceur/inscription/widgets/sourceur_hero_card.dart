@@ -12,18 +12,18 @@ class SourceurHeroCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.fromLTRB(24, 40, 24, 36),
+      padding: const EdgeInsets.fromLTRB(22, 30, 22, 28),
       decoration: const BoxDecoration(
         color: ClosetColors.vert,
         borderRadius: BorderRadius.vertical(
-          top: Radius.circular(110),
-          bottom: Radius.circular(28),
+          top: Radius.circular(40),
+          bottom: Radius.circular(20),
         ),
       ),
       child: Column(
         children: [
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 9),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
             decoration: BoxDecoration(
               color: ClosetColors.dore,
               borderRadius: BorderRadius.circular(30),
@@ -32,20 +32,20 @@ class SourceurHeroCard extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 const Icon(Icons.auto_awesome,
-                    size: 14, color: ClosetColors.noir),
-                const SizedBox(width: 8),
+                    size: 12, color: ClosetColors.noir),
+                const SizedBox(width: 7),
                 Text('CERCLE DES SOURCEURS',
                     style: ClosetTextStyles.badgePill),
               ],
             ),
           ),
-          const SizedBox(height: 18),
+          const SizedBox(height: 14),
           Text(
             "Confiez vos pièces d'exception",
             textAlign: TextAlign.center,
             style: ClosetTextStyles.titreHero,
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 10),
           Text(
             'Le comité Clos ET authentifie, photographie et met en '
             "lumière vos pièces auprès d'une clientèle raffinée.",

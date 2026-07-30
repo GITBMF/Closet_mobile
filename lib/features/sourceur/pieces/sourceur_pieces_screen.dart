@@ -78,9 +78,9 @@ class _SourceurPiecesScreenState extends ConsumerState<SourceurPiecesScreen> {
           customBorder: const CircleBorder(),
           onTap: () => context.go('/sourceur/nouvelle'),
           child: const SizedBox(
-            width: 72,
-            height: 72,
-            child: Icon(Icons.add, size: 30, color: ClosetColors.noir),
+            width: 58,
+            height: 58,
+            child: Icon(Icons.add, size: 24, color: ClosetColors.noir),
           ),
         ),
       ),
@@ -99,19 +99,19 @@ class _SourceurPiecesScreenState extends ConsumerState<SourceurPiecesScreen> {
           GestureDetector(
             onTap: () => context.pop(),
             child: Container(
-              width: 36,
-              height: 36,
+              width: 32,
+              height: 32,
               decoration: const BoxDecoration(
                 color: ClosetColors.creme,
                 shape: BoxShape.circle,
               ),
               child: const Icon(Icons.arrow_back_ios_new,
-                  size: 14, color: ClosetColors.noir),
+                  size: 13, color: ClosetColors.noir),
             ),
           ),
           const SizedBox(width: 12),
           Text('Mes dépôts',
-              style: ClosetTextStyles.titreEcran.copyWith(fontSize: 18)),
+              style: ClosetTextStyles.titreEcran.copyWith(fontSize: 16)),
         ],
       ),
     );
@@ -141,11 +141,11 @@ class _SourceurPiecesScreenState extends ConsumerState<SourceurPiecesScreen> {
       couleur: ClosetColors.dore.withValues(alpha: 0.45),
       child: Container(
         width: double.infinity,
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 44),
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
         child: Column(
           children: [
             const Icon(Icons.photo_camera_outlined,
-                size: 40, color: ClosetColors.texteSecondaire),
+                size: 32, color: ClosetColors.texteSecondaire),
             const SizedBox(height: 18),
             Text(
               'Aucune pièce pour le moment.',
@@ -219,7 +219,7 @@ class _PieceCard extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: ClosetColors.creme,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(12),
         border: Border.all(color: ClosetColors.bordure),
       ),
       child: Row(
@@ -250,7 +250,7 @@ class _PieceCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(piece.nom,
-                    style: ClosetTextStyles.saisie.copyWith(fontSize: 15)),
+                    style: ClosetTextStyles.saisie.copyWith(fontSize: 14)),
                 const SizedBox(height: 4),
                 Text(piece.univers,
                     style: ClosetTextStyles.corps
@@ -258,7 +258,7 @@ class _PieceCard extends StatelessWidget {
                 const SizedBox(height: 8),
                 Text(
                   '${piece.prix.toInt()} FCFA',
-                  style: ClosetTextStyles.saisie.copyWith(fontSize: 16),
+                  style: ClosetTextStyles.saisie.copyWith(fontSize: 15),
                 ),
               ],
             ),
@@ -272,7 +272,7 @@ class _PieceCard extends StatelessWidget {
             child: Text(
               _statutLabel(),
               style: TextStyle(
-                fontSize: 11,
+                fontSize: 10,
                 fontWeight: FontWeight.w700,
                 color: _statutFg(),
               ),

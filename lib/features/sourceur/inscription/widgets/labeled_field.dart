@@ -33,8 +33,8 @@ class LabeledField extends StatelessWidget {
         Row(
           children: [
             if (icone != null) ...[
-              Icon(icone, size: 20, color: ClosetColors.dore),
-              const SizedBox(width: 5),
+              Icon(icone, size: 16, color: ClosetColors.dore),
+              const SizedBox(width: 6),
             ],
             Expanded(
               child: Text(
@@ -44,11 +44,11 @@ class LabeledField extends StatelessWidget {
             ),
           ],
         ),
-        const SizedBox(height: 3),
+        const SizedBox(height: 8),
         DecoratedBox(
           decoration: BoxDecoration(
             color: ClosetColors.creme,
-            borderRadius: BorderRadius.circular(18),
+            borderRadius: BorderRadius.circular(14),
             border: Border.all(color: ClosetColors.bordure),
           ),
           child: TextField(
@@ -58,14 +58,18 @@ class LabeledField extends StatelessWidget {
             onChanged: onChanged,
             style: ClosetTextStyles.saisie,
             cursorColor: ClosetColors.vert,
+            cursorWidth: 1.5,
+            cursorHeight: 18,
+            cursorRadius: const Radius.circular(1),
             decoration: InputDecoration(
               hintText: hint,
               hintStyle: ClosetTextStyles.saisieHint,
               border: InputBorder.none,
-              // contentPadding: const EdgeInsets.symmetric(
-              //   horizontal: 22,
-              //   vertical: 20,
-              // ),
+              isDense: true,
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 14,
+              ),
             ),
           ),
         ),

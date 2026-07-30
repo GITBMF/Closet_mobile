@@ -32,8 +32,8 @@ class StepIndicator extends StatelessWidget {
       if (i < labels.length - 1) {
         children.add(Expanded(
           child: Container(
-            height: 1.5,
-            margin: const EdgeInsets.only(bottom: 34, left: 8, right: 8),
+            height: 1,
+            margin: const EdgeInsets.only(bottom: 26, left: 8, right: 8),
             color: i < etapeCourante
                 ? ClosetColors.dore
                 : ClosetColors.bordure,
@@ -77,7 +77,7 @@ class _Etape extends StatelessWidget {
           ClosetColors.bordure,
         ),
     };
-    final taille = etat == _EtatEtape.courante ? 46.0 : 38.0;
+    final taille = etat == _EtatEtape.courante ? 36.0 : 30.0;
 
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -89,14 +89,14 @@ class _Etape extends StatelessWidget {
           decoration: BoxDecoration(
             color: fond,
             shape: BoxShape.circle,
-            border: Border.all(color: bordure, width: 1.5),
+            border: Border.all(color: bordure, width: 1),
           ),
           child: Text(
             '$numero',
             style: ClosetTextStyles.numeroEtape.copyWith(color: texte),
           ),
         ),
-        const SizedBox(height: 10),
+        const SizedBox(height: 8),
         Text(label, style: ClosetTextStyles.labelEtape),
       ],
     );

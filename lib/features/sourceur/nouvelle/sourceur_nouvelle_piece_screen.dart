@@ -99,14 +99,14 @@ class _SourceurNouvellePieceScreenState
                   GestureDetector(
                     onTap: () => context.pop(),
                     child: Container(
-                      width: 36,
-                      height: 36,
+                      width: 32,
+                      height: 32,
                       decoration: const BoxDecoration(
                         color: ClosetColors.creme,
                         shape: BoxShape.circle,
                       ),
                       child: const Icon(Icons.arrow_back_ios_new,
-                          size: 14, color: ClosetColors.noir),
+                          size: 13, color: ClosetColors.noir),
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -115,7 +115,7 @@ class _SourceurNouvellePieceScreenState
                     children: [
                       Text('Nouvelle pièce',
                           style: ClosetTextStyles.titreEcran
-                              .copyWith(fontSize: 18)),
+                              .copyWith(fontSize: 16)),
                       Text('Dépôt', style: ClosetTextStyles.labelChamp),
                     ],
                   ),
@@ -129,20 +129,20 @@ class _SourceurNouvellePieceScreenState
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     _buildPhotographies(),
-                    const SizedBox(height: 32),
+                    const SizedBox(height: 24),
                     LabeledField(
                       label: 'Nom de la pièce',
                       controller: _nomController,
                       hint: 'Robe soie ivoire',                    ),
-                    const SizedBox(height: 28),
+                    const SizedBox(height: 22),
                     _buildUnivers(),
-                    const SizedBox(height: 28),
+                    const SizedBox(height: 22),
                     LabeledField(
                       icone: Icons.local_offer_outlined,
                       label: 'Maison / Marque',
                       controller: _marqueController,
                       hint: 'Céline, Hermès, Sézane...',                    ),
-                    const SizedBox(height: 28),
+                    const SizedBox(height: 22),
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -167,21 +167,21 @@ class _SourceurNouvellePieceScreenState
                         ),
                       ],
                     ),
-                    const SizedBox(height: 28),
+                    const SizedBox(height: 22),
                     LabeledField(
                       icone: Icons.account_balance_wallet_outlined,
                       label: 'Prix proposé (FCFA)',
                       controller: _prixController,
                       hint: '45000',
                       keyboardType: TextInputType.number,                    ),
-                    const SizedBox(height: 28),
+                    const SizedBox(height: 22),
                     LabeledField(
                       label: 'Description & storytelling',
                       controller: _descriptionController,
                       hint: 'Portée deux fois, couture impeccable, '
                           'matière noble...',
                       maxLines: 5,                    ),
-                    const SizedBox(height: 36),
+                    const SizedBox(height: 28),
                     // Seul le bouton dépend du contenu des champs :
                     // on ne reconstruit que lui à chaque frappe.
                     ListenableBuilder(
@@ -202,7 +202,7 @@ class _SourceurNouvellePieceScreenState
                       child: Text(
                         'Réponse sous 48h ouvrées',
                         style: ClosetTextStyles.corps.copyWith(
-                          fontSize: 15,
+                          fontSize: 14,
                           color: ClosetColors.texteSecondaire,
                         ),
                       ),
@@ -226,8 +226,8 @@ class _SourceurNouvellePieceScreenState
         Row(
           children: [
             const Icon(Icons.photo_camera_outlined,
-                size: 20, color: ClosetColors.dore),
-            const SizedBox(width: 10),
+                size: 16, color: ClosetColors.dore),
+            const SizedBox(width: 8),
             Text('PHOTOGRAPHIES', style: ClosetTextStyles.labelChamp),
           ],
         ),
@@ -235,7 +235,7 @@ class _SourceurNouvellePieceScreenState
         Text(
           '3 vues minimum : face, dos, détails. Fond neutre, '
           'lumière naturelle.',
-          style: ClosetTextStyles.corps.copyWith(fontSize: 15),
+          style: ClosetTextStyles.corps.copyWith(fontSize: 14),
         ),
         const SizedBox(height: 20),
         Row(
@@ -294,8 +294,8 @@ class _EmplacementPhoto extends StatelessWidget {
   final VoidCallback? onDelete;
 
   static const _forme = BorderRadius.vertical(
-    top: Radius.circular(70),
-    bottom: Radius.circular(24),
+    top: Radius.circular(32),
+    bottom: Radius.circular(16),
   );
 
   @override
@@ -308,7 +308,7 @@ class _EmplacementPhoto extends StatelessWidget {
             borderRadius: _forme,
             child: Image.file(
               File(fichier!.path),
-              height: 190,
+              height: 170,
               width: double.infinity,
               fit: BoxFit.cover,
             ),
@@ -342,8 +342,8 @@ class _EmplacementPhoto extends StatelessWidget {
           borderRadius: _forme,
           onTap: onTap,
           child: const SizedBox(
-            height: 190,
-            child: Icon(Icons.add, size: 28, color: ClosetColors.noir),
+            height: 170,
+            child: Icon(Icons.add, size: 24, color: ClosetColors.noir),
           ),
         ),
       ),
@@ -374,8 +374,8 @@ class _ChampDeroulant extends StatelessWidget {
       children: [
         Row(
           children: [
-            Icon(icone, size: 20, color: ClosetColors.dore),
-            const SizedBox(width: 10),
+            Icon(icone, size: 16, color: ClosetColors.dore),
+            const SizedBox(width: 6),
             Expanded(
               child: Text(
                 label.toUpperCase(),
@@ -385,12 +385,12 @@ class _ChampDeroulant extends StatelessWidget {
             ),
           ],
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 8),
         Container(
-          padding: const EdgeInsets.symmetric(horizontal: 18),
+          padding: const EdgeInsets.symmetric(horizontal: 14),
           decoration: BoxDecoration(
             color: ClosetColors.creme,
-            borderRadius: BorderRadius.circular(24),
+            borderRadius: BorderRadius.circular(14),
             border: Border.all(color: ClosetColors.bordure),
           ),
           child: DropdownButtonHideUnderline(
@@ -401,8 +401,8 @@ class _ChampDeroulant extends StatelessWidget {
                   color: ClosetColors.noir),
               style: ClosetTextStyles.saisie,
               dropdownColor: ClosetColors.creme,
-              borderRadius: BorderRadius.circular(20),
-              padding: const EdgeInsets.symmetric(vertical: 8),
+              borderRadius: BorderRadius.circular(14),
+              padding: const EdgeInsets.symmetric(vertical: 6),
               items: [
                 for (final o in options)
                   DropdownMenuItem(value: o, child: Text(o)),
