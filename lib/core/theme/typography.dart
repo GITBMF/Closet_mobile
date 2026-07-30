@@ -23,30 +23,30 @@ class AppTypography {
         fontWeight: FontWeight.bold,
       ),
       
-      // Sous-titres et éditorial avec Cormorant Garamond
-      titleLarge: GoogleFonts.cormorantGaramond(
+      // Sous-titres et éditorial avec Garamond
+      titleLarge: GoogleFonts.ebGaramond(
         fontSize: 22,
         fontWeight: FontWeight.w600,
       ),
-      titleMedium: GoogleFonts.cormorantGaramond(
+      titleMedium: GoogleFonts.ebGaramond(
         fontSize: 18,
         fontWeight: FontWeight.w600,
       ),
-      titleSmall: GoogleFonts.cormorantGaramond(
+      titleSmall: GoogleFonts.ebGaramond(
         fontSize: 16,
         fontWeight: FontWeight.w600,
       ),
 
-      // Corps de texte et UI avec Lato
-      bodyLarge: GoogleFonts.lato(
+      // Corps de texte avec Cormorant
+      bodyLarge: GoogleFonts.cormorant(
         fontSize: 16,
         fontWeight: FontWeight.normal,
       ),
-      bodyMedium: GoogleFonts.lato(
+      bodyMedium: GoogleFonts.cormorant(
         fontSize: 14,
         fontWeight: FontWeight.normal,
       ),
-      bodySmall: GoogleFonts.lato(
+      bodySmall: GoogleFonts.cormorant(
         fontSize: 12,
         fontWeight: FontWeight.normal,
         color: ClosetColors.taupe,

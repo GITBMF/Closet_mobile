@@ -188,7 +188,7 @@ class EspaceScreen extends ConsumerWidget {
                         },
                         trailing: Switch(
                           value: isDark,
-                          activeThumbColor: theme.colorScheme.secondary,
+                          activeColor: theme.colorScheme.secondary,
                           onChanged: (value) {
                             ref.read<ThemeModeNotifier>(themeModeProvider.notifier).toggleTheme();
                           },
@@ -253,34 +253,6 @@ class EspaceScreen extends ConsumerWidget {
 
                   _MenuSection(
                     title: 'ESPACE SOURCEUR',
-                    items: [
-                      _MenuItem(
-                        icon: Icons.person_add_alt_1_outlined,
-                        label: 'Devenir Sourceur (Inscription)',
-                        onTap: () => context.push('/sourceur/inscription'),
-                      ),
-                      _MenuItem(
-                        icon: Icons.storefront_outlined,
-                        label: 'Mon Atelier',
-                        onTap: () => context.push('/sourceur/atelier'),
-                      ),
-                      _MenuItem(
-                        icon: Icons.add_circle_outline,
-                        label: 'Soumettre une pièce',
-                        onTap: () => context.push('/sourceur/nouvelle'),
-                        isHighlighted: true,
-                      ),
-                      _MenuItem(
-                        icon: Icons.inventory_2_outlined,
-                        label: 'Mes pièces soumises',
-                        onTap: () => context.push('/sourceur/pieces'),
-                      ),
-                      _MenuItem(
-                        icon: Icons.account_balance_wallet_outlined,
-                        label: 'Mes revenus',
-                        onTap: () => context.push('/sourceur/revenus'),
-                      ),
-                    ],
                     items: sourceurRepo.estInscrit
                         ? [
                             _MenuItem(

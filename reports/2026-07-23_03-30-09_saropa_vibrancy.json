@@ -1,0 +1,109 @@
+{
+  "audit_metadata": {
+    "timestamp": "2026-07-23T02:30:09.812Z",
+    "flutter_version": "3.41.2",
+    "dart_version": "3.11.0",
+    "total_packages_scanned": 3,
+    "execution_time_ms": 23290
+  },
+  "summary": {
+    "total": 3,
+    "vibrant": 0,
+    "stable": 3,
+    "outdated": 0,
+    "abandoned": 0,
+    "end_of_life": 0
+  },
+  "packages": [
+    {
+      "name": "cupertino_icons",
+      "installed_version": "1.0.8",
+      "latest_version": "1.0.9",
+      "status": "Stable",
+      "vibrancy_score": 62.5,
+      "pub_points": 160,
+      "stars": 5265,
+      "is_discontinued": false,
+      "is_unlisted": false,
+      "pub_dev_url": "https://pub.dev/packages/cupertino_icons",
+      "repository_url": "https://github.com/flutter/packages/tree/main/third_party/packages/cupertino_icons",
+      "license": "BSD-3-Clause",
+      "archive_size_bytes": 2601144,
+      "bloat_rating": 0,
+      "file_usage_count": 0,
+      "file_usages": []
+    },
+    {
+      "name": "flutter_lints",
+      "installed_version": "6.0.0",
+      "latest_version": "6.0.0",
+      "status": "Stable",
+      "vibrancy_score": 62.5,
+      "pub_points": 160,
+      "stars": 5265,
+      "is_discontinued": false,
+      "is_unlisted": false,
+      "pub_dev_url": "https://pub.dev/packages/flutter_lints",
+      "repository_url": "https://github.com/flutter/packages/tree/main/packages/flutter_lints",
+      "license": "BSD-3-Clause",
+      "archive_size_bytes": 4980,
+      "bloat_rating": 0,
+      "file_usage_count": 0,
+      "file_usages": []
+    },
+    {
+      "name": "google_fonts",
+      "installed_version": "6.3.2",
+      "latest_version": "8.2.0",
+      "status": "Stable",
+      "vibrancy_score": 65,
+      "pub_points": 160,
+      "stars": 5265,
+      "is_discontinued": false,
+      "is_unlisted": false,
+      "pub_dev_url": "https://pub.dev/packages/google_fonts",
+      "repository_url": "https://github.com/flutter/packages/tree/main/packages/google_fonts",
+      "license": "BSD-3-Clause",
+      "archive_size_bytes": 1845212,
+      "bloat_rating": 10,
+      "file_usage_count": 7,
+      "file_usages": [
+        {
+          "file_path": "lib/features/cliente/dressing/dressing_screen.dart",
+          "line": 2,
+          "import_line": 2
+        },
+        {
+          "file_path": "lib/features/cliente/dressing/widgets/hero_arche.dart",
+          "line": 2,
+          "import_line": 2
+        },
+        {
+          "file_path": "lib/features/cliente/dressing/piece_detail_screen.dart",
+          "line": 2,
+          "import_line": 2
+        },
+        {
+          "file_path": "lib/features/cliente/collections/widgets/filter_bottom_sheet.dart",
+          "line": 2,
+          "import_line": 2
+        },
+        {
+          "file_path": "lib/features/cliente/collections/collections_screen.dart",
+          "line": 2,
+          "import_line": 2
+        },
+        {
+          "file_path": "lib/core/theme/closet_text_styles.dart",
+          "line": 2,
+          "import_line": 2
+        },
+        {
+          "file_path": "lib/core/widgets/piece_card.dart",
+          "line": 2,
+          "import_line": 2
+        }
+      ]
+    }
+  ]
+}

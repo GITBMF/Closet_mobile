@@ -36,7 +36,7 @@ class ClosetPrimaryButton extends StatelessWidget {
     }
 
     return SizedBox(
-      height: 64,
+      height: 54,
       child: Material(
         color: fond,
         borderRadius: BorderRadius.circular(40),
@@ -50,8 +50,8 @@ class ClosetPrimaryButton extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   if (icone != null) ...[
-                    Icon(icone, size: 22, color: texte),
-                    const SizedBox(width: 12),
+                    Icon(icone, size: 18, color: texte),
+                    const SizedBox(width: 10),
                   ],
                   Flexible(
                     child: Text(
@@ -84,7 +84,7 @@ class ClosetOutlineButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: 64,
+      height: 54,
       child: Material(
         color: Colors.transparent,
         shape: RoundedRectangleBorder(

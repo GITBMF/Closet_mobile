@@ -131,7 +131,7 @@ class _SourceurInscriptionScreenState
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const SourceurHeroCard(),
-                    const SizedBox(height: 28),
+                    const SizedBox(height: 22),
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 8),
                       child: StepIndicator(
@@ -139,13 +139,13 @@ class _SourceurInscriptionScreenState
                         labels: const ['ATELIER', 'UNIVERS', 'PAIEMENT'],
                       ),
                     ),
-                    const SizedBox(height: 32),
+                    const SizedBox(height: 24),
                     switch (_etape) {
                       0 => _buildEtapeAtelier(),
                       1 => _buildEtapeUnivers(),
                       _ => _buildEtapePaiement(),
                     },
-                    const SizedBox(height: 36),
+                    const SizedBox(height: 28),
                     ListenableBuilder(
                       listenable: Listenable.merge([
                         _atelierController,
@@ -178,19 +178,19 @@ class _SourceurInscriptionScreenState
           GestureDetector(
             onTap: () => context.pop(),
             child: Container(
-              width: 36,
-              height: 36,
+              width: 32,
+              height: 32,
               decoration: const BoxDecoration(
                 color: ClosetColors.creme,
                 shape: BoxShape.circle,
               ),
               child: const Icon(Icons.arrow_back_ios_new,
-                  size: 14, color: ClosetColors.noir),
+                  size: 13, color: ClosetColors.noir),
             ),
           ),
           const SizedBox(width: 12),
           Text('Devenir Sourceur',
-              style: ClosetTextStyles.titreEcran.copyWith(fontSize: 18)),
+              style: ClosetTextStyles.titreEcran.copyWith(fontSize: 16)),
         ],
       ),
     );
@@ -206,14 +206,14 @@ class _SourceurInscriptionScreenState
           controller: _atelierController,
           hint: "L'Atelier d'Awa",
         ),
-        const SizedBox(height: 28),
+        const SizedBox(height: 22),
         LabeledField(
           icone: Icons.location_on_outlined,
           label: 'Ville',
           controller: _villeController,
           hint: 'Yaoundé',
         ),
-        const SizedBox(height: 28),
+        const SizedBox(height: 22),
         LabeledField(
           icone: Icons.phone_outlined,
           label: 'Téléphone WhatsApp',
@@ -237,11 +237,11 @@ class _SourceurInscriptionScreenState
               'vos coups de cœur...',
           maxLines: 6,
         ),
-        const SizedBox(height: 28),
+        const SizedBox(height: 22),
         Row(
           children: [
-            const Icon(Icons.palette_outlined, size: 20, color: ClosetColors.dore),
-            const SizedBox(width: 10),
+            const Icon(Icons.palette_outlined, size: 16, color: ClosetColors.dore),
+            const SizedBox(width: 8),
             Text('SPÉCIALITÉ', style: ClosetTextStyles.labelChamp),
           ],
         ),
@@ -269,8 +269,8 @@ class _SourceurInscriptionScreenState
         Row(
           children: [
             const Icon(Icons.handshake_outlined,
-                size: 20, color: ClosetColors.dore),
-            const SizedBox(width: 10),
+                size: 16, color: ClosetColors.dore),
+            const SizedBox(width: 8),
             Text('TYPE DE COLLABORATION', style: ClosetTextStyles.labelChamp),
           ],
         ),
@@ -281,15 +281,14 @@ class _SourceurInscriptionScreenState
             selectionne: _typeCollaboration == type,
             onTap: () => setState(() => _typeCollaboration = type),
           ),
-          const SizedBox(height: 14),
+          const SizedBox(height: 12),
         ],
         const SizedBox(height: 24),
         Row(
           children: [
             const Icon(Icons.payments_outlined,
-                size: 20, color: ClosetColors.dore),
-            const Icon(Icons.payments_outlined, size: 20, color: ClosetColors.dore),
-            const SizedBox(width: 10),
+                size: 16, color: ClosetColors.dore),
+            const SizedBox(width: 8),
             Text('MOYEN DE RÉMUNÉRATION', style: ClosetTextStyles.labelChamp),
           ],
         ),
@@ -300,7 +299,7 @@ class _SourceurInscriptionScreenState
             selectionne: _moyenPaiement == moyen,
             onTap: () => setState(() => _moyenPaiement = moyen),
           ),
-          const SizedBox(height: 14),
+          const SizedBox(height: 12),
         ],
         const SizedBox(height: 14),
         LabeledField(
@@ -312,22 +311,21 @@ class _SourceurInscriptionScreenState
         ),
         const SizedBox(height: 24),
         Container(
-          padding: const EdgeInsets.all(18),
+          padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
             color: ClosetColors.creme,
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(14),
             border: Border.all(color: ClosetColors.bordure),
           ),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const Icon(Icons.check_circle_outline,
-                  size: 22, color: ClosetColors.vert),
-              const SizedBox(width: 12),
+                  size: 18, color: ClosetColors.vert),
+              const SizedBox(width: 10),
               Expanded(
                 child: Text(
                   'En rejoignant le cercle, vous acceptez la charte '
-                  "d'authenticité Clos ET.",
                   "d'authenticité ClosET et une commission de 25% "
                   'sur les ventes.',
                   style: ClosetTextStyles.corps,
@@ -385,26 +383,26 @@ class _PaiementOption extends StatelessWidget {
     return Material(
       color: selectionne ? ClosetColors.vert : ClosetColors.creme,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(14),
         side: BorderSide(
           color: selectionne ? ClosetColors.vert : ClosetColors.bordure,
         ),
       ),
       child: InkWell(
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(14),
         onTap: onTap,
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 15),
           child: Row(
             children: [
               Icon(
                 selectionne
                     ? Icons.radio_button_checked
                     : Icons.radio_button_unchecked,
-                size: 24,
+                size: 20,
                 color: selectionne ? ClosetColors.dore : ClosetColors.noir,
               ),
-              const SizedBox(width: 14),
+              const SizedBox(width: 12),
               Expanded(
                 child: Text(
                   label,
