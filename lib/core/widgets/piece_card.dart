@@ -161,7 +161,7 @@ class PieceCard extends StatelessWidget {
                 const SizedBox(height: 4),
                 Text(
                   nom,
-                  style: GoogleFonts.cormorantGaramond(
+                  style: GoogleFonts.cormorant(
                     fontSize: 18,
                     fontWeight: FontWeight.w600,
                     color: ClosetColors.noir,
@@ -172,7 +172,7 @@ class PieceCard extends StatelessWidget {
                 const SizedBox(height: 2),
                 Text(
                   isSold ? 'Indisponible' : prix,
-                  style: GoogleFonts.cormorantGaramond(
+                  style: GoogleFonts.cormorant(
                     fontSize: 16,
                     fontWeight: FontWeight.w700,
                     color: isSold ? ClosetColors.taupe : ClosetColors.noir,

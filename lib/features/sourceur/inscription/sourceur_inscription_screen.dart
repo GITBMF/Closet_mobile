@@ -327,7 +327,6 @@ class _SourceurInscriptionScreenState
               Expanded(
                 child: Text(
                   'En rejoignant le cercle, vous acceptez la charte '
-                  "d'authenticité Clos ET.",
                   "d'authenticité ClosET et une commission de 25% "
                   'sur les ventes.',
                   style: ClosetTextStyles.corps,
