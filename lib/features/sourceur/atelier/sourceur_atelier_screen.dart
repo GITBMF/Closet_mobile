@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/closet_colors.dart';
 import '../../../core/theme/closet_text_styles.dart';
-import '../../../core/widgets/bordure_pointillee.dart';
 import '../../../core/widgets/closet_buttons.dart';
 import '../../../data/repositories/sourceur_repository.dart';
 
@@ -19,25 +19,26 @@ class SourceurAtelierScreen extends ConsumerWidget {
     final nomAtelier = profile?.nomAtelier ?? 'Mon Atelier';
     final ville = profile?.ville ?? 'Yaoundé';
     final depuis = profile?.depuis ?? 'Juillet 2026';
+    final theme = Theme.of(context);
 
     return Scaffold(
-      backgroundColor: ClosetColors.ivoire,
+      backgroundColor: theme.scaffoldBackgroundColor,
       body: SafeArea(
         child: Column(
           children: [
-            _buildTopBar(context, nomAtelier),
+            _buildTopBar(context, nomAtelier, theme),
             Expanded(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
+                padding: const EdgeInsets.fromLTRB(AppSpacing.p20, AppSpacing.p8, AppSpacing.p20, AppSpacing.p32),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     _buildCarteIdentite(nomAtelier, ville, depuis, 0, 0, 0),
-                    const SizedBox(height: 24),
-                    _buildCarteRevenus(context, 0, 0, 0),
-                    const SizedBox(height: 24),
+                    const SizedBox(height: AppSpacing.p24),
+                    _buildCarteRevenus(context, 0, 0, 0, theme),
+                    const SizedBox(height: AppSpacing.p24),
                     _buildActionsRapides(context, 0),
-                    const SizedBox(height: 32),
+                    const SizedBox(height: AppSpacing.p32),
                     _buildActivite(context, 0),
                   ],
                 ),
@@ -49,40 +50,49 @@ class SourceurAtelierScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildTopBar(BuildContext context, String nomAtelier) {
-    return Container(
-      padding: const EdgeInsets.fromLTRB(20, 16, 20, 12),
-      decoration: const BoxDecoration(
-        color: ClosetColors.ivoire,
-        border: Border(bottom: BorderSide(color: ClosetColors.ligne)),
+  Widget _buildTopBar(BuildContext context, String nomAtelier, ThemeData theme) {
+    final cs = theme.colorScheme;
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: theme.scaffoldBackgroundColor,
+        border: const Border(bottom: BorderSide(color: ClosetColors.ligne)),
       ),
-      child: Row(
-        children: [
-          GestureDetector(
-            onTap: () => context.pop(),
-            child: Container(
-              width: 32,
-              height: 32,
-              decoration: const BoxDecoration(
-                color: ClosetColors.creme,
-                shape: BoxShape.circle,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(AppSpacing.p20, AppSpacing.p16, AppSpacing.p20, AppSpacing.p12),
+        child: Row(
+          children: [
+            Semantics(
+              button: true,
+              label: 'Retour',
+              child: Tooltip(
+                message: 'Retour',
+                child: GestureDetector(
+                  onTap: () => context.go('/espace'),
+                  child: Container(
+                    width: AppSpacing.minTouchTarget,
+                    height: AppSpacing.minTouchTarget,
+                    decoration: BoxDecoration(
+                      color: cs.surface,
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(Icons.arrow_back_ios_new, size: 13, color: cs.onSurface),
+                  ),
+                ),
               ),
-              child: const Icon(Icons.arrow_back_ios_new,
-                  size: 13, color: ClosetColors.noir),
             ),
-          ),
-          const SizedBox(width: 12),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('Atelier',
-                  style: ClosetTextStyles.titreEcran.copyWith(fontSize: 16)),
-              Text(nomAtelier, style: ClosetTextStyles.labelChamp),
-            ],
-          ),
-          const Spacer(),
-          const Icon(Icons.auto_awesome, size: 16, color: ClosetColors.dore),
-        ],
+            const SizedBox(width: AppSpacing.p12),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Atelier',
+                    style: ClosetTextStyles.titreEcran.copyWith(fontSize: 16, color: cs.onSurface)),
+                Text(nomAtelier, style: ClosetTextStyles.labelChamp),
+              ],
+            ),
+            const Spacer(),
+            const Icon(Icons.auto_awesome, size: 16, color: ClosetColors.dore),
+          ],
+        ),
       ),
     );
   }
@@ -144,75 +154,82 @@ class SourceurAtelierScreen extends ConsumerWidget {
   }
 
   Widget _buildCarteRevenus(
-      BuildContext context, int revenusNet, int revenusBrut, int revenusEnAttente) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(18),
+      BuildContext context, int revenusNet, int revenusBrut, int revenusEnAttente, ThemeData theme) {
+    return DecoratedBox(
       decoration: BoxDecoration(
-        color: ClosetColors.creme,
+        color: theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: ClosetColors.bordure),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              const Icon(Icons.account_balance_wallet_outlined,
-                  size: 16, color: ClosetColors.dore),
-              const SizedBox(width: 8),
-              Text('REVENUS', style: ClosetTextStyles.labelChamp),
-            ],
-          ),
-          const SizedBox(height: 10),
-          Row(
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      '$revenusNet FCFA',
-                      style:
-                          ClosetTextStyles.titreEcran.copyWith(fontSize: 28),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'Net après commission ClosET (25%)',
-                      style: ClosetTextStyles.corps.copyWith(
-                        fontSize: 13,
-                        color: ClosetColors.texteSecondaire,
+      child: Padding(
+        padding: const EdgeInsets.all(AppSpacing.p16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                const Icon(Icons.account_balance_wallet_outlined,
+                    size: 16, color: ClosetColors.dore),
+                const SizedBox(width: AppSpacing.p8),
+                Text('REVENUS', style: ClosetTextStyles.labelChamp),
+              ],
+            ),
+            const SizedBox(height: 10),
+            Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        '$revenusNet FCFA',
+                        style: ClosetTextStyles.titreEcran.copyWith(
+                          fontSize: 28,
+                          color: theme.colorScheme.onSurface,
+                        ),
                       ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 12),
-              Material(
-                color: ClosetColors.dore,
-                shape: const CircleBorder(),
-                child: InkWell(
-                  customBorder: const CircleBorder(),
-                  onTap: () => context.go('/sourceur/revenus'),
-                  child: const SizedBox(
-                    width: 44,
-                    height: 44,
-                    child: Icon(Icons.chevron_right,
-                        size: 22, color: ClosetColors.noir),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Net après commission ClosET (25%)',
+                        style: ClosetTextStyles.corps.copyWith(
+                          fontSize: 13,
+                          color: ClosetColors.texteSecondaire,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 20),
-          Row(
-            children: [
-              _RevenuTile(label: 'EN ATTENTE', montant: revenusEnAttente),
-              const SizedBox(width: 14),
-              _RevenuTile(label: 'BRUT TOTAL', montant: revenusBrut),
-            ],
-          ),
-        ],
+                const SizedBox(width: AppSpacing.p12),
+                Semantics(
+                  button: true,
+                  label: 'Voir mes revenus',
+                  child: Material(
+                    color: ClosetColors.dore,
+                    shape: const CircleBorder(),
+                    child: InkWell(
+                      customBorder: const CircleBorder(),
+                      onTap: () => context.go('/sourceur/revenus'),
+                      child: const SizedBox(
+                        width: AppSpacing.minTouchTarget,
+                        height: AppSpacing.minTouchTarget,
+                        child: Icon(Icons.chevron_right,
+                            size: 22, color: ClosetColors.noir),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: AppSpacing.p20),
+            Row(
+              children: [
+                _RevenuTile(label: 'EN ATTENTE', montant: revenusEnAttente),
+                const SizedBox(width: AppSpacing.p16),
+                _RevenuTile(label: 'BRUT TOTAL', montant: revenusBrut),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -273,25 +290,47 @@ class SourceurAtelierScreen extends ConsumerWidget {
   }
 
   Widget _buildAucunDepot(BuildContext context) {
-    return BordurePointillee(
-      couleur: ClosetColors.dore.withValues(alpha: 0.5),
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+    // État vide transformé en suggestion active (chantier UX Agentive)
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: ClosetColors.ligne, width: 1.5),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.p24, vertical: AppSpacing.p32,
+        ),
         child: Column(
           children: [
-            const Icon(Icons.photo_camera_outlined,
-                size: 32, color: ClosetColors.texteSecondaire),
-            const SizedBox(height: 18),
+            // Icône éditoriale
+            DecoratedBox(
+              decoration: BoxDecoration(
+                color: ClosetColors.dore.withValues(alpha: 0.10),
+                shape: BoxShape.circle,
+              ),
+              child: const Padding(
+                padding: EdgeInsets.all(AppSpacing.p16),
+                child: Icon(Icons.checkroom_outlined, size: 32, color: ClosetColors.dore),
+              ),
+            ),
+            const SizedBox(height: AppSpacing.p16),
             Text(
-              'Aucune pièce déposée pour le moment.',
+              'Pas encore de pièce déposée',
+              textAlign: TextAlign.center,
+              style: ClosetTextStyles.titreEcran.copyWith(fontSize: 16),
+            ),
+            const SizedBox(height: AppSpacing.p8),
+            Text(
+              'Votre première pièce est à portée de main. '
+              'Les sourceurs actifs reçoivent leurs premières ventes sous 30 jours.',
               textAlign: TextAlign.center,
               style: ClosetTextStyles.corps.copyWith(
-                fontStyle: FontStyle.italic,
+                fontSize: 13,
                 color: ClosetColors.texteSecondaire,
               ),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: AppSpacing.p24),
             ClosetPrimaryButton(
               label: 'Déposer ma première pièce',
               onPressed: () => context.go('/sourceur/nouvelle'),

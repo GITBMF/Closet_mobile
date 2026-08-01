@@ -606,7 +606,7 @@ class _EspaceAlertesScreenState extends State<EspaceAlertesScreen> {
                           ),
                           Switch(
                             value: alert['active'] as bool,
-                            activeColor: ClosetColors.dore,
+                            activeThumbColor: ClosetColors.dore,
                             activeTrackColor: ClosetColors.vert,
                             onChanged: (val) {
                               setState(() {

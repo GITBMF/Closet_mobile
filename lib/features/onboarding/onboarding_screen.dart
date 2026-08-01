@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
-import '../../../core/theme/app_theme.dart';
+import '../../../core/theme/closet_colors.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -17,18 +19,18 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   final List<Map<String, dynamic>> _pages = [
     {
-      'title': 'Bienvenue dans votre\ndressing privé',
-      'subtitle': 'L\'expérience de la mode circulaire avec une touche d\'élégance.',
+      'title': 'Le Dressing Privé\nde vos Rêves',
+      'subtitle': 'Une expérience de mode circulaire exclusive, alliant luxe et durabilité au quotidien.',
       'icon': LucideIcons.gem,
     },
     {
-      'title': 'L\'élégance\ndurable',
-      'subtitle': 'Une sélection premium de pièces uniques, choisies avec soin.',
+      'title': 'L\'Élégance\nDurable',
+      'subtitle': 'Une sélection rigoureuse de pièces uniques de collection, expertisées avec le plus grand soin.',
       'icon': LucideIcons.leaf,
     },
     {
-      'title': 'Découvrez des\npièces uniques',
-      'subtitle': 'Trouvez la perle rare qui complétera parfaitement votre style.',
+      'title': 'L\'Atelier\ndes Sourceurs',
+      'subtitle': 'Confiez vos pièces d\'exception à notre comité et suivez vos ventes en toute transparence.',
       'icon': LucideIcons.sparkles,
     },
   ];
@@ -41,47 +43,55 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   void _onNext() {
     if (_currentPage < _pages.length - 1) {
+      HapticFeedback.lightImpact();
       _pageController.nextPage(
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeIn,
+        duration: const Duration(milliseconds: 400),
+        curve: Curves.easeInOutCubic,
       );
     } else {
+      HapticFeedback.mediumImpact();
       context.go('/home');
     }
   }
 
   void _onSkip() {
+    HapticFeedback.mediumImpact();
     context.go('/home');
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.offWhite,
+      backgroundColor: ClosetColors.ivoire,
       body: SafeArea(
         child: Column(
           children: [
-            // Skip button
+            // Bouton Passer en haut à droite
             Align(
               alignment: Alignment.topRight,
-              child: TextButton(
-                onPressed: _onSkip,
-                child: const Text(
-                  'Passer',
-                  style: TextStyle(
-                    color: AppTheme.greyText,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                child: TextButton(
+                  onPressed: _onSkip,
+                  child: Text(
+                    'PASSER',
+                    style: GoogleFonts.lato(
+                      color: ClosetColors.texteSecondaire,
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 1.5,
+                    ),
                   ),
                 ),
               ),
             ),
             
-            // Pages
+            // Carousel de slides
             Expanded(
               child: PageView.builder(
                 controller: _pageController,
                 onPageChanged: (index) {
+                  HapticFeedback.selectionClick();
                   setState(() {
                     _currentPage = index;
                   });
@@ -89,46 +99,57 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 itemCount: _pages.length,
                 itemBuilder: (context, index) {
                   return Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 40.0),
+                    padding: const EdgeInsets.symmetric(horizontal: 32.0),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        // Icon Circle
+                        // Cercle Icône Stylisé
                         Container(
-                          width: 120,
-                          height: 120,
+                          width: 140,
+                          height: 140,
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            color: AppTheme.sandBeige.withValues(alpha: 0.3),
+                            color: ClosetColors.creme,
                             border: Border.all(
-                              color: AppTheme.goldCloset,
-                              width: 1,
+                              color: ClosetColors.dore.withValues(alpha: 0.6),
+                              width: 1.5,
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.03),
+                                blurRadius: 10,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
+                          ),
+                          child: Center(
+                            child: Icon(
+                              _pages[index]['icon'] as IconData,
+                              size: 44,
+                              color: ClosetColors.vert,
                             ),
                           ),
-                          child: Icon(
-                            _pages[index]['icon'] as IconData,
-                            size: 48,
-                            color: AppTheme.forestGreen,
-                          ),
                         ),
-                        const SizedBox(height: 60),
+                        const SizedBox(height: 54),
+                        // Titre en EB Garamond
                         Text(
                           _pages[index]['title'] as String,
                           textAlign: TextAlign.center,
-                          style: const TextStyle(
-                            fontSize: 28,
-                            fontWeight: FontWeight.w800,
-                            color: AppTheme.blackCloset,
-                            height: 1.2,
+                          style: GoogleFonts.ebGaramond(
+                            fontSize: 30,
+                            fontWeight: FontWeight.w700,
+                            color: ClosetColors.noir,
+                            height: 1.25,
                           ),
                         ),
-                        const SizedBox(height: 16),
+                        const SizedBox(height: 18),
+                        // Description en Cormorant
                         Text(
                           _pages[index]['subtitle'] as String,
                           textAlign: TextAlign.center,
-                          style: const TextStyle(
-                            fontSize: 14,
-                            color: AppTheme.greyText,
+                          style: GoogleFonts.cormorant(
+                            fontSize: 16,
+                            color: ClosetColors.noir.withValues(alpha: 0.72),
                             height: 1.5,
                           ),
                         ),
@@ -139,13 +160,13 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               ),
             ),
 
-            // Bottom controls
+            // Barre de contrôle du bas (indicateurs + bouton)
             Padding(
-              padding: const EdgeInsets.all(40.0),
+              padding: const EdgeInsets.fromLTRB(40, 20, 40, 40),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  // Indicators
+                  // Indicateurs circulaires animés
                   Row(
                     children: List.generate(
                       _pages.length,
@@ -156,30 +177,34 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         width: _currentPage == index ? 24 : 6,
                         decoration: BoxDecoration(
                           color: _currentPage == index
-                              ? AppTheme.forestGreen
-                              : AppTheme.sandBeige,
+                              ? ClosetColors.vert
+                              : ClosetColors.dore.withValues(alpha: 0.4),
                           borderRadius: BorderRadius.circular(3),
                         ),
                       ),
                     ),
                   ),
 
-                  // Next / Start button
+                  // Bouton Suivant / Commencer Premium
                   GestureDetector(
                     onTap: _onNext,
                     child: AnimatedContainer(
                       duration: const Duration(milliseconds: 300),
                       padding: const EdgeInsets.symmetric(
-                        horizontal: 24,
-                        vertical: 12,
+                        horizontal: 28,
+                        vertical: 14,
                       ),
                       decoration: BoxDecoration(
-                        color: AppTheme.forestGreen,
+                        color: ClosetColors.vert,
                         borderRadius: BorderRadius.circular(30),
+                        border: Border.all(
+                          color: ClosetColors.dore.withValues(alpha: 0.6),
+                          width: 1,
+                        ),
                         boxShadow: [
                           BoxShadow(
-                            color: AppTheme.forestGreen.withValues(alpha: 0.3),
-                            blurRadius: 12,
+                            color: ClosetColors.vert.withValues(alpha: 0.2),
+                            blurRadius: 10,
                             offset: const Offset(0, 4),
                           ),
                         ],
@@ -191,18 +216,19 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                             _currentPage == _pages.length - 1
                                 ? 'Commencer'
                                 : 'Suivant',
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 14,
-                              fontWeight: FontWeight.w700,
+                            style: GoogleFonts.lato(
+                              color: ClosetColors.creme,
+                              fontSize: 13,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 1,
                             ),
                           ),
                           if (_currentPage != _pages.length - 1) ...[
                             const SizedBox(width: 8),
                             const Icon(
                               Icons.arrow_forward_rounded,
-                              color: Colors.white,
-                              size: 16,
+                              color: ClosetColors.creme,
+                              size: 15,
                             ),
                           ],
                         ],

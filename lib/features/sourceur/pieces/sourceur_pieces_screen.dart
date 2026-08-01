@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -97,7 +98,7 @@ class _SourceurPiecesScreenState extends ConsumerState<SourceurPiecesScreen> {
       child: Row(
         children: [
           GestureDetector(
-            onTap: () => context.pop(),
+            onTap: () => context.go('/sourceur'),
             child: Container(
               width: 32,
               height: 32,
@@ -235,11 +236,18 @@ class _PieceCard extends StatelessWidget {
             child: piece.imageUrl != null
                 ? ClipRRect(
                     borderRadius: BorderRadius.circular(10),
-                    child: Image.network(piece.imageUrl!,
-                        fit: BoxFit.cover,
-                        errorBuilder: (_, _, _) => const Icon(
-                            Icons.image_not_supported,
-                            color: ClosetColors.taupe)),
+                    child: CachedNetworkImage(
+                      imageUrl: piece.imageUrl!,
+                      fit: BoxFit.cover,
+                      placeholder: (context, url) => Container(
+                        color: ClosetColors.ligne,
+                      ),
+                      errorWidget: (context, url, error) => const Icon(
+                        Icons.image_not_supported,
+                        color: ClosetColors.taupe,
+                      ),
+                      fadeInDuration: const Duration(milliseconds: 250),
+                    ),
                   )
                 : const Icon(Icons.image_not_supported,
                     color: ClosetColors.taupe),

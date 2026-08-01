@@ -62,7 +62,7 @@ class SourceurRevenusScreen extends ConsumerWidget {
       child: Row(
         children: [
           GestureDetector(
-            onTap: () => context.pop(),
+            onTap: () => context.go('/sourceur'),
             child: Container(
               width: 32,
               height: 32,

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../data/repositories/sourceur_repository.dart';
 import '../../features/auth/auth_screen.dart';
 import '../../features/checkout/checkout_screen.dart';
 import '../../features/cliente/collections/collections_screen.dart';
@@ -14,10 +15,12 @@ import '../../features/cliente/wishlist/wishlist_screen.dart';
 import '../../features/main_layout.dart';
 import '../../features/onboarding/onboarding_screen.dart';
 import '../../features/sourceur/atelier/sourceur_atelier_screen.dart';
+import '../../features/sourceur/espace/sourceur_espace_screen.dart';
 import '../../features/sourceur/inscription/sourceur_inscription_screen.dart';
 import '../../features/sourceur/nouvelle/sourceur_nouvelle_piece_screen.dart';
 import '../../features/sourceur/pieces/sourceur_pieces_screen.dart';
 import '../../features/sourceur/revenus/sourceur_revenus_screen.dart';
+import '../../features/sourceur/sourceur_layout.dart';
 import '../../features/splash/splash_screen.dart';
 
 final appRouterProvider = Provider<GoRouter>((ref) {
@@ -33,6 +36,14 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           (loc == '/checkout' ||
               loc.startsWith('/sourceur'))) {
         return '/auth';
+      }
+      if (isAuthenticated &&
+          loc.startsWith('/sourceur') &&
+          loc != '/sourceur/inscription') {
+        final sourceurRepo = ref.read(sourceurRepositoryProvider);
+        if (!sourceurRepo.estInscrit) {
+          return '/sourceur/inscription';
+        }
       }
       return null;
     },
@@ -133,68 +144,72 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         ),
       ),
 
-      // ── Sourceur (outside shell — full screen stack) ────────────────
-      GoRoute(
+      // ── Sourceur Shell with bottom nav ───────────────────────────────
+      StatefulShellRoute.indexedStack(
         parentNavigatorKey: rootNavigatorKey,
-        path: '/sourceur',
-        pageBuilder: (context, state) => CustomTransitionPage(
-          key: state.pageKey,
-          child: const SourceurAtelierScreen(),
-          transitionsBuilder: (context, animation, secondaryAnimation, child) {
-            return SlideTransition(
-              position: Tween<Offset>(
-                begin: const Offset(0, 1),
-                end: Offset.zero,
-              ).animate(CurvedAnimation(
-                parent: animation,
-                curve: Curves.easeOutCubic,
-              )),
-              child: child,
-            );
-          },
-        ),
-        routes: [
-          GoRoute(
-            path: 'inscription',
-            pageBuilder: (context, state) => CustomTransitionPage(
-              key: state.pageKey,
-              child: const SourceurInscriptionScreen(),
-              transitionsBuilder:
-                  (context, animation, secondaryAnimation, child) =>
-                      FadeTransition(opacity: animation, child: child),
-            ),
+        builder: (context, state, navigationShell) {
+          return SourceurLayout(navigationShell: navigationShell);
+        },
+        branches: [
+          // 0 — ATELIER
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/sourceur',
+                builder: (context, state) => const SourceurAtelierScreen(),
+              ),
+            ],
           ),
-          GoRoute(
-            path: 'pieces',
-            pageBuilder: (context, state) => CustomTransitionPage(
-              key: state.pageKey,
-              child: const SourceurPiecesScreen(),
-              transitionsBuilder:
-                  (context, animation, secondaryAnimation, child) =>
-                      FadeTransition(opacity: animation, child: child),
-            ),
+          // 1 — DÉPÔTS
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/sourceur/pieces',
+                builder: (context, state) => const SourceurPiecesScreen(),
+              ),
+            ],
           ),
-          GoRoute(
-            path: 'revenus',
-            pageBuilder: (context, state) => CustomTransitionPage(
-              key: state.pageKey,
-              child: const SourceurRevenusScreen(),
-              transitionsBuilder:
-                  (context, animation, secondaryAnimation, child) =>
-                      FadeTransition(opacity: animation, child: child),
-            ),
+          // 2 — CONFIER
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/sourceur/nouvelle',
+                builder: (context, state) => const SourceurNouvellePieceScreen(),
+              ),
+            ],
           ),
-          GoRoute(
-            path: 'nouvelle',
-            pageBuilder: (context, state) => CustomTransitionPage(
-              key: state.pageKey,
-              child: const SourceurNouvellePieceScreen(),
-              transitionsBuilder:
-                  (context, animation, secondaryAnimation, child) =>
-                      FadeTransition(opacity: animation, child: child),
-            ),
+          // 3 — GAINS
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/sourceur/revenus',
+                builder: (context, state) => const SourceurRevenusScreen(),
+              ),
+            ],
+          ),
+          // 4 — ESPACE
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/sourceur/espace',
+                builder: (context, state) => const SourceurEspaceScreen(),
+              ),
+            ],
           ),
         ],
+      ),
+
+      // Inscription (outside shell)
+      GoRoute(
+        parentNavigatorKey: rootNavigatorKey,
+        path: '/sourceur/inscription',
+        pageBuilder: (context, state) => CustomTransitionPage(
+          key: state.pageKey,
+          child: const SourceurInscriptionScreen(),
+          transitionsBuilder:
+              (context, animation, secondaryAnimation, child) =>
+                  FadeTransition(opacity: animation, child: child),
+        ),
       ),
 
       // ── Shell with bottom nav ───────────────────────────────────────

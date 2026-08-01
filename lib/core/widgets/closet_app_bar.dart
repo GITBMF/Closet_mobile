@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../core/theme/app_spacing.dart';
 import '../../core/theme/closet_colors.dart';
+import '../../core/theme/closet_text_styles.dart';
 import '../../core/theme/theme_provider.dart';
 import '../../data/models/article.dart';
 import '../../data/repositories/cart_repository.dart';
@@ -38,31 +40,38 @@ class ClosetAppBar extends ConsumerWidget implements PreferredSizeWidget {
       title: showBackButton
           ? Row(
               children: [
-                GestureDetector(
-                  onTap: () => context.pop(),
-                  child: Icon(Icons.arrow_back_ios_new,
-                      size: 18, color: onSurfaceColor),
+                Semantics(
+                  button: true,
+                  label: 'Retour',
+                  child: Tooltip(
+                    message: 'Retour',
+                    child: GestureDetector(
+                      onTap: () => context.pop(),
+                      child: SizedBox(
+                        width: AppSpacing.minTouchTarget,
+                        height: AppSpacing.minTouchTarget,
+                        child: Icon(Icons.arrow_back_ios_new,
+                            size: 18, color: onSurfaceColor),
+                      ),
+                    ),
+                  ),
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: AppSpacing.p12),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       title ?? '',
-                      style: TextStyle(
+                      style: ClosetTextStyles.titreEcran.copyWith(
                         fontSize: 15,
-                        fontWeight: FontWeight.w700,
                         color: onSurfaceColor,
-                        letterSpacing: 0.5,
                       ),
                     ),
                     if (subtitle != null)
                       Text(
                         subtitle!,
-                        style: TextStyle(
-                          fontSize: 10,
+                        style: ClosetTextStyles.labelChamp.copyWith(
                           color: onSurfaceColor.withValues(alpha: 0.6),
-                          letterSpacing: 1.5,
                         ),
                       ),
                   ],
@@ -86,7 +95,7 @@ class ClosetAppBar extends ConsumerWidget implements PreferredSizeWidget {
                     ),
                   ),
                 ),
-                const SizedBox(width: 10),
+                const SizedBox(width: AppSpacing.p8),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -96,18 +105,16 @@ class ClosetAppBar extends ConsumerWidget implements PreferredSizeWidget {
                         title ?? 'ClosET',
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
+                        style: ClosetTextStyles.titreEcran.copyWith(
                           fontSize: 16,
-                          fontWeight: FontWeight.w700,
                           color: onSurfaceColor,
-                          letterSpacing: 0.3,
                         ),
                       ),
                       Text(
                         subtitle ?? 'L\'ÉLÉGANCE DURABLE',
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
+                        style: ClosetTextStyles.labelChamp.copyWith(
                           fontSize: 8,
                           color: onSurfaceColor.withValues(alpha: 0.6),
                           letterSpacing: 2,
@@ -120,44 +127,59 @@ class ClosetAppBar extends ConsumerWidget implements PreferredSizeWidget {
             ),
       actions: actions ?? [
         // Search icon navigating to collections
-        IconButton(
-          icon: const Icon(Icons.search, size: 22),
-          color: onSurfaceColor,
-          onPressed: () => context.go('/collections'),
+        Semantics(
+          button: true,
+          label: 'Rechercher des pièces',
+          child: IconButton(
+            icon: const Icon(Icons.search, size: 22),
+            color: onSurfaceColor,
+            onPressed: () => context.go('/collections'),
+          ),
         ),
         // Profile
-        IconButton(
-          icon: const Icon(Icons.person_outline, size: 22),
-          color: onSurfaceColor,
-          onPressed: () => context.go('/espace'),
+        Semantics(
+          button: true,
+          label: 'Mon espace',
+          child: IconButton(
+            icon: const Icon(Icons.person_outline, size: 22),
+            color: onSurfaceColor,
+            onPressed: () => context.go('/espace'),
+          ),
         ),
         // Cart with badge
         Stack(
           alignment: Alignment.topRight,
           children: [
-            IconButton(
-              icon: const Icon(Icons.shopping_bag_outlined, size: 22),
-              color: onSurfaceColor,
-              onPressed: () => context.go('/selection'),
+            Semantics(
+              button: true,
+              label: cartCount > 0 ? 'Panier, $cartCount articles' : 'Panier',
+              child: IconButton(
+                icon: const Icon(Icons.shopping_bag_outlined, size: 22),
+                color: onSurfaceColor,
+                onPressed: () => context.go('/selection'),
+              ),
             ),
             if (cartCount > 0)
               Positioned(
                 top: 6,
                 right: 6,
-                child: Container(
-                  width: 16,
-                  height: 16,
-                  decoration: const BoxDecoration(
-                    color: ClosetColors.vert,
-                    shape: BoxShape.circle,
-                  ),
-                  child: Center(
-                    child: Text(
-                      '$cartCount',
-                      style: const TextStyle(
-                        color: ClosetColors.creme,
-                        fontSize: 9,
-                        fontWeight: FontWeight.bold,
+                child: IgnorePointer(
+                  child: DecoratedBox(
+                    decoration: const BoxDecoration(
+                      color: ClosetColors.vert,
+                      shape: BoxShape.circle,
+                    ),
+                    child: SizedBox(
+                      width: 16,
+                      height: 16,
+                      child: Center(
+                        child: Text(
+                          '$cartCount',
+                          style: ClosetTextStyles.labelChamp.copyWith(
+                            color: ClosetColors.creme,
+                            fontSize: 9,
+                          ),
+                        ),
                       ),
                     ),
                   ),
@@ -281,30 +303,44 @@ class _ArticleCardState extends ConsumerState<ArticleCard> {
                   Positioned(
                     top: 8,
                     right: 8,
-                    child: GestureDetector(
-                      onTap: () {
-                        setState(() {
-                          _localWishlisted = !isWishlisted;
-                        });
-                        ref.read(wishlistProvider.notifier).toggleWishlist(widget.article);
-                      },
-                      child: Container(
-                        width: 32,
-                        height: 32,
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.9),
-                          shape: BoxShape.circle,
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.08),
-                              blurRadius: 4,
+                    child: Semantics(
+                      button: true,
+                      label: isWishlisted ? 'Retirer des favoris' : 'Ajouter aux favoris',
+                      child: GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            _localWishlisted = !isWishlisted;
+                          });
+                          ref.read(wishlistProvider.notifier).toggleWishlist(widget.article);
+                        },
+                        child: Container(
+                          width: AppSpacing.minTouchTarget,
+                          height: AppSpacing.minTouchTarget,
+                          alignment: Alignment.center,
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.9),
+                            shape: BoxShape.circle,
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.08),
+                                blurRadius: 4,
+                              ),
+                            ],
+                          ),
+                          child: AnimatedSwitcher(
+                            duration: const Duration(milliseconds: 200),
+                            switchInCurve: Curves.easeOutCubic,
+                            transitionBuilder: (child, animation) => ScaleTransition(
+                              scale: animation,
+                              child: child,
                             ),
-                          ],
-                        ),
-                        child: Icon(
-                          isWishlisted ? Icons.favorite : Icons.favorite_border,
-                          size: 16,
-                          color: isWishlisted ? ClosetColors.erreur : ClosetColors.taupe,
+                            child: Icon(
+                              isWishlisted ? Icons.favorite : Icons.favorite_border,
+                              key: ValueKey(isWishlisted),
+                              size: 20,
+                              color: isWishlisted ? ClosetColors.erreur : ClosetColors.taupe,
+                            ),
+                          ),
                         ),
                       ),
                     ),
