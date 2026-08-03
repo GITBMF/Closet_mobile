@@ -105,12 +105,32 @@ class SourceurProfile {
   final String nomAtelier;
   final String ville;
   final String depuis;
+  final String whatsapp;
+  final String univers;
 
   const SourceurProfile({
     required this.nomAtelier,
     required this.ville,
     required this.depuis,
+    this.whatsapp = '',
+    this.univers = '',
   });
+
+  SourceurProfile copyWith({
+    String? nomAtelier,
+    String? ville,
+    String? depuis,
+    String? whatsapp,
+    String? univers,
+  }) {
+    return SourceurProfile(
+      nomAtelier: nomAtelier ?? this.nomAtelier,
+      ville: ville ?? this.ville,
+      depuis: depuis ?? this.depuis,
+      whatsapp: whatsapp ?? this.whatsapp,
+      univers: univers ?? this.univers,
+    );
+  }
 }
 
 /// Repository sourceur — mock MVP avec simulation de latence réseau.
@@ -159,9 +179,16 @@ class SourceurRepository extends ChangeNotifier {
       nomAtelier: data.nomAtelier,
       ville: data.ville,
       depuis: _moisAnnee(),
+      whatsapp: data.whatsapp,
+      univers: data.univers,
     );
     notifyListeners();
     return _profile!;
+  }
+
+  void updateProfile(SourceurProfile profile) {
+    _profile = profile;
+    notifyListeners();
   }
 
   bool get estInscrit => _profile != null;

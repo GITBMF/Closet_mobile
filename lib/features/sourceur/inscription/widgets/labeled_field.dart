@@ -27,6 +27,7 @@ class LabeledField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -47,23 +48,25 @@ class LabeledField extends StatelessWidget {
         const SizedBox(height: 8),
         DecoratedBox(
           decoration: BoxDecoration(
-            color: ClosetColors.creme,
+            color: cs.surface,
             borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: ClosetColors.bordure),
+            border: Border.all(color: cs.onSurface.withValues(alpha: 0.12)),
           ),
           child: TextField(
             controller: controller,
             maxLines: maxLines,
             keyboardType: keyboardType,
             onChanged: onChanged,
-            style: ClosetTextStyles.saisie,
-            cursorColor: ClosetColors.vert,
+            style: ClosetTextStyles.saisie.copyWith(color: cs.onSurface),
+            cursorColor: cs.primary,
             cursorWidth: 1.5,
             cursorHeight: 18,
             cursorRadius: const Radius.circular(1),
             decoration: InputDecoration(
               hintText: hint,
-              hintStyle: ClosetTextStyles.saisieHint,
+              hintStyle: ClosetTextStyles.saisieHint.copyWith(
+                color: cs.onSurface.withValues(alpha: 0.45),
+              ),
               border: InputBorder.none,
               isDense: true,
               contentPadding: const EdgeInsets.symmetric(
@@ -77,3 +80,4 @@ class LabeledField extends StatelessWidget {
     );
   }
 }
+

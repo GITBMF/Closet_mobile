@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../theme/closet_colors.dart';
@@ -60,13 +61,21 @@ class PieceCard extends StatelessWidget {
                                   topRight: Radius.circular(45),
                                 )
                               : BorderRadius.circular(8),
-                          child: Image.network(
-                            imageUrl!,
+                          child: CachedNetworkImage(
+                            imageUrl: imageUrl!,
                             width: 90,
                             height: 110,
                             fit: BoxFit.cover,
                             color: isSold ? Colors.black.withValues(alpha: 0.5) : null,
                             colorBlendMode: isSold ? BlendMode.darken : null,
+                            placeholder: (context, url) => Container(
+                              color: ClosetColors.ligne,
+                            ),
+                            errorWidget: (context, url, error) => const Icon(
+                              Icons.image_not_supported,
+                              color: ClosetColors.taupe,
+                            ),
+                            fadeInDuration: const Duration(milliseconds: 250),
                           ),
                         )
                       : const SizedBox(),
@@ -166,8 +175,6 @@ class PieceCard extends StatelessWidget {
                     fontWeight: FontWeight.w600,
                     color: ClosetColors.noir,
                   ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
                 ),
                 const SizedBox(height: 2),
                 Text(

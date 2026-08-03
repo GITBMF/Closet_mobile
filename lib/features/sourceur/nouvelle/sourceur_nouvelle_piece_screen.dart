@@ -1,28 +1,33 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:image_picker/image_picker.dart';
 
+import '../../../core/services/notification_service.dart';
+import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/closet_colors.dart';
 import '../../../core/theme/closet_text_styles.dart';
-import '../../../core/widgets/bordure_pointillee.dart';
 import '../../../core/widgets/closet_buttons.dart';
 import '../../../core/widgets/closet_chip.dart';
+import '../../../data/repositories/sourceur_repository.dart';
 import '../inscription/widgets/labeled_field.dart';
+import '../widgets/sourceur_app_bar.dart';
 
 /// Formulaire de dépôt d'une nouvelle pièce (/sourceur/nouvelle) :
 /// photos, nom, univers, marque, taille, état, prix et description.
-class SourceurNouvellePieceScreen extends StatefulWidget {
+class SourceurNouvellePieceScreen extends ConsumerStatefulWidget {
   const SourceurNouvellePieceScreen({super.key});
 
   @override
-  State<SourceurNouvellePieceScreen> createState() =>
+  ConsumerState<SourceurNouvellePieceScreen> createState() =>
       _SourceurNouvellePieceScreenState();
 }
 
 class _SourceurNouvellePieceScreenState
-    extends State<SourceurNouvellePieceScreen> {
+    extends ConsumerState<SourceurNouvellePieceScreen> {
   static const _univers = ['Robes', 'Vestes', 'Sacs', 'Chaussures',
       'Accessoires'];
   static const _tailles = ['XS', 'S', 'M', 'L', 'XL', 'Unique'];
@@ -77,137 +82,123 @@ class _SourceurNouvellePieceScreenState
   }
 
   void _envoyerAuComite() {
-    if (context.canPop()) context.pop();
+    final repo = ref.read<SourceurRepository>(sourceurRepositoryProvider);
+    final nouvellePiece = PieceDeposee(
+      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      nom: _nomController.text.trim(),
+      univers: _universChoisi,
+      prix: double.tryParse(_prixController.text.trim()) ?? 0.0,
+      imageUrl: 'https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=500',
+      statut: StatutPiece.enRevue,
+    );
+    repo.deposerPiece(nouvellePiece);
+
+    HapticFeedback.mediumImpact();
+    context.go('/sourceur/pieces');
+
+    // Déclenche un bandeau de notification 4 secondes plus tard
+    Future.delayed(const Duration(seconds: 4), () {
+      if (mounted) {
+        ref.read<NotificationNotifier>(notificationProvider.notifier).show(
+          'Pièce reçue',
+          'Votre pièce "${nouvellePiece.nom}" est bien en cours d\'examen par notre comité de sélection.',
+        );
+      }
+    });
   }
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Scaffold(
-      backgroundColor: ClosetColors.ivoire,
-      body: SafeArea(
+      backgroundColor: theme.scaffoldBackgroundColor,
+      appBar: const SourceurAppBar(
+        title: 'Nouvelle pièce',
+        subtitle: 'DÉPÔT',
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.fromLTRB(AppSpacing.p20, AppSpacing.p8, AppSpacing.p20, AppSpacing.p32),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Top bar with back button
-            Container(
-              padding: const EdgeInsets.fromLTRB(20, 16, 20, 12),
-              decoration: const BoxDecoration(
-                color: ClosetColors.ivoire,
-                border: Border(bottom: BorderSide(color: ClosetColors.ligne)),
-              ),
-              child: Row(
-                children: [
-                  GestureDetector(
-                    onTap: () => context.pop(),
-                    child: Container(
-                      width: 32,
-                      height: 32,
-                      decoration: const BoxDecoration(
-                        color: ClosetColors.creme,
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Icon(Icons.arrow_back_ios_new,
-                          size: 13, color: ClosetColors.noir),
-                    ),
+            _buildPhotographies(),
+            const SizedBox(height: AppSpacing.p24),
+            LabeledField(
+              label: 'Nom de la pièce',
+              controller: _nomController,
+              hint: 'Robe soie ivoire',
+            ),
+            const SizedBox(height: AppSpacing.p24),
+            _buildUnivers(),
+            const SizedBox(height: AppSpacing.p24),
+            LabeledField(
+              icone: Icons.local_offer_outlined,
+              label: 'Maison / Marque',
+              controller: _marqueController,
+              hint: 'Céline, Hermès, Sézane...',
+            ),
+            const SizedBox(height: AppSpacing.p24),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: _ChampDeroulant(
+                    icone: Icons.straighten_outlined,
+                    label: 'Taille',
+                    valeur: _taille,
+                    options: _tailles,
+                    onChanged: (v) => setState(() => _taille = v),
                   ),
-                  const SizedBox(width: 12),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('Nouvelle pièce',
-                          style: ClosetTextStyles.titreEcran
-                              .copyWith(fontSize: 16)),
-                      Text('Dépôt', style: ClosetTextStyles.labelChamp),
-                    ],
+                ),
+                const SizedBox(width: AppSpacing.p16),
+                Expanded(
+                  child: _ChampDeroulant(
+                    icone: Icons.auto_awesome,
+                    label: 'État',
+                    valeur: _etat,
+                    options: _etats,
+                    onChanged: (v) => setState(() => _etat = v),
                   ),
-                ],
+                ),
+              ],
+            ),
+            const SizedBox(height: AppSpacing.p24),
+            LabeledField(
+              icone: Icons.account_balance_wallet_outlined,
+              label: 'Prix proposé (FCFA)',
+              controller: _prixController,
+              hint: '45000',
+              keyboardType: TextInputType.number,
+            ),
+            const SizedBox(height: AppSpacing.p24),
+            LabeledField(
+              label: 'Description & storytelling',
+              controller: _descriptionController,
+              hint: 'Portée deux fois, couture impeccable, matière noble...',
+              maxLines: 5,
+            ),
+            const SizedBox(height: AppSpacing.p32),
+            ListenableBuilder(
+              listenable: Listenable.merge([
+                _nomController,
+                _marqueController,
+                _prixController,
+                _descriptionController,
+              ]),
+              builder: (_, _) => ClosetPrimaryButton(
+                label: 'Envoyer au comité',
+                dore: true,
+                onPressed: _formulaireValide ? _envoyerAuComite : null,
               ),
             ),
-            Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildPhotographies(),
-                    const SizedBox(height: 24),
-                    LabeledField(
-                      label: 'Nom de la pièce',
-                      controller: _nomController,
-                      hint: 'Robe soie ivoire',                    ),
-                    const SizedBox(height: 22),
-                    _buildUnivers(),
-                    const SizedBox(height: 22),
-                    LabeledField(
-                      icone: Icons.local_offer_outlined,
-                      label: 'Maison / Marque',
-                      controller: _marqueController,
-                      hint: 'Céline, Hermès, Sézane...',                    ),
-                    const SizedBox(height: 22),
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Expanded(
-                          child: _ChampDeroulant(
-                            icone: Icons.straighten_outlined,
-                            label: 'Taille',
-                            valeur: _taille,
-                            options: _tailles,
-                            onChanged: (v) => setState(() => _taille = v),
-                          ),
-                        ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: _ChampDeroulant(
-                            icone: Icons.auto_awesome,
-                            label: 'État',
-                            valeur: _etat,
-                            options: _etats,
-                            onChanged: (v) => setState(() => _etat = v),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 22),
-                    LabeledField(
-                      icone: Icons.account_balance_wallet_outlined,
-                      label: 'Prix proposé (FCFA)',
-                      controller: _prixController,
-                      hint: '45000',
-                      keyboardType: TextInputType.number,                    ),
-                    const SizedBox(height: 22),
-                    LabeledField(
-                      label: 'Description & storytelling',
-                      controller: _descriptionController,
-                      hint: 'Portée deux fois, couture impeccable, '
-                          'matière noble...',
-                      maxLines: 5,                    ),
-                    const SizedBox(height: 28),
-                    // Seul le bouton dépend du contenu des champs :
-                    // on ne reconstruit que lui à chaque frappe.
-                    ListenableBuilder(
-                      listenable: Listenable.merge([
-                        _nomController,
-                        _marqueController,
-                        _prixController,
-                        _descriptionController,
-                      ]),
-                      builder: (_, _) => ClosetPrimaryButton(
-                        label: 'Envoyer au comité',
-                        dore: true,
-                        onPressed: _formulaireValide ? _envoyerAuComite : null,
-                      ),
-                    ),
-                    const SizedBox(height: 14),
-                    Center(
-                      child: Text(
-                        'Réponse sous 48h ouvrées',
-                        style: ClosetTextStyles.corps.copyWith(
-                          fontSize: 14,
-                          color: ClosetColors.texteSecondaire,
-                        ),
-                      ),
-                    ),
-                  ],
+            const SizedBox(height: 14),
+            Center(
+              child: Text(
+                'Réponse sous 48h ouvrées',
+                style: ClosetTextStyles.corps.copyWith(
+                  fontSize: 14,
+                  color: ClosetColors.texteSecondaire,
                 ),
               ),
             ),
@@ -216,6 +207,7 @@ class _SourceurNouvellePieceScreenState
       ),
     );
   }
+
 
   // -------------------------------------------------------- Photographies
 
@@ -241,7 +233,7 @@ class _SourceurNouvellePieceScreenState
         Row(
           children: [
             for (var i = 0; i < 3; i++) ...[
-              if (i > 0) const SizedBox(width: 14),
+              if (i > 0) const SizedBox(width: AppSpacing.p16),
               Expanded(
                 child: _EmplacementPhoto(
                   fichier: _photos[i],
@@ -281,7 +273,7 @@ class _SourceurNouvellePieceScreenState
   }
 }
 
-/// Emplacement de photo en arche avec bordure pointillée et « + ».
+/// Emplacement de photo en arche avec bordure pleine et « + ».
 class _EmplacementPhoto extends StatelessWidget {
   const _EmplacementPhoto({
     required this.onTap,
@@ -300,8 +292,12 @@ class _EmplacementPhoto extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    
+    Widget content;
     if (fichier != null) {
-      return Stack(
+      content = Stack(
+        key: const ValueKey('photo_filled'),
         clipBehavior: Clip.none,
         children: [
           ClipRRect(
@@ -316,37 +312,57 @@ class _EmplacementPhoto extends StatelessWidget {
           Positioned(
             top: -8,
             right: -8,
-            child: GestureDetector(
-              onTap: onDelete,
-              child: Container(
-                padding: const EdgeInsets.all(4),
-                decoration: const BoxDecoration(
-                  color: ClosetColors.noir,
-                  shape: BoxShape.circle,
+            child: Semantics(
+              button: true,
+              label: 'Supprimer la photo',
+              child: Tooltip(
+                message: 'Supprimer',
+                child: GestureDetector(
+                  onTap: onDelete,
+                  child: Container(
+                    width: AppSpacing.minTouchTarget,
+                    height: AppSpacing.minTouchTarget,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: theme.colorScheme.onSurface,
+                      shape: BoxShape.circle,
+                      border: Border.all(color: theme.colorScheme.surface, width: 2),
+                    ),
+                    child: Icon(Icons.close, size: 18, color: theme.colorScheme.surface),
+                  ),
                 ),
-                child: const Icon(Icons.close, size: 16, color: ClosetColors.ivoire),
               ),
             ),
           ),
         ],
       );
-    }
-
-    return BordurePointillee(
-      borderRadius: _forme,
-      couleur: ClosetColors.dore.withValues(alpha: 0.45),
-      child: Material(
-        color: ClosetColors.creme.withValues(alpha: 0.6),
-        borderRadius: _forme,
-        child: InkWell(
+    } else {
+      content = DecoratedBox(
+        key: const ValueKey('photo_empty'),
+        decoration: BoxDecoration(
           borderRadius: _forme,
-          onTap: onTap,
-          child: const SizedBox(
-            height: 170,
-            child: Icon(Icons.add, size: 24, color: ClosetColors.noir),
+          border: Border.all(color: ClosetColors.ligne, width: 1.5),
+        ),
+        child: Material(
+          color: theme.colorScheme.surface,
+          borderRadius: _forme,
+          child: InkWell(
+            borderRadius: _forme,
+            onTap: onTap,
+            child: SizedBox(
+              height: 170,
+              child: Icon(Icons.add, size: 24, color: theme.colorScheme.onSurface),
+            ),
           ),
         ),
-      ),
+      );
+    }
+
+    return AnimatedSwitcher(
+      duration: const Duration(milliseconds: 250),
+      switchInCurve: Curves.easeOutCubic,
+      switchOutCurve: Curves.easeInCubic,
+      child: content,
     );
   }
 }
@@ -380,36 +396,41 @@ class _ChampDeroulant extends StatelessWidget {
               child: Text(
                 label.toUpperCase(),
                 style: ClosetTextStyles.labelChamp,
-                overflow: TextOverflow.ellipsis,
               ),
             ),
           ],
         ),
         const SizedBox(height: 8),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 14),
+        DecoratedBox(
           decoration: BoxDecoration(
-            color: ClosetColors.creme,
+            color: Theme.of(context).colorScheme.surface,
             borderRadius: BorderRadius.circular(14),
             border: Border.all(color: ClosetColors.bordure),
           ),
-          child: DropdownButtonHideUnderline(
-            child: DropdownButton<String>(
-              value: valeur,
-              isExpanded: true,
-              icon: const Icon(Icons.keyboard_arrow_down,
-                  color: ClosetColors.noir),
-              style: ClosetTextStyles.saisie,
-              dropdownColor: ClosetColors.creme,
-              borderRadius: BorderRadius.circular(14),
-              padding: const EdgeInsets.symmetric(vertical: 6),
-              items: [
-                for (final o in options)
-                  DropdownMenuItem(value: o, child: Text(o)),
-              ],
-              onChanged: (v) {
-                if (v != null) onChanged(v);
-              },
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.p16),
+            child: DropdownButtonHideUnderline(
+              child: DropdownButton<String>(
+                value: valeur,
+                isExpanded: true,
+                icon: Icon(
+                  Icons.keyboard_arrow_down,
+                  color: Theme.of(context).colorScheme.onSurface,
+                ),
+                style: ClosetTextStyles.saisie.copyWith(
+                  color: Theme.of(context).colorScheme.onSurface,
+                ),
+                dropdownColor: Theme.of(context).colorScheme.surface,
+                borderRadius: BorderRadius.circular(14),
+                padding: const EdgeInsets.symmetric(vertical: 6),
+                items: [
+                  for (final o in options)
+                    DropdownMenuItem(value: o, child: Text(o)),
+                ],
+                onChanged: (v) {
+                  if (v != null) onChanged(v);
+                },
+              ),
             ),
           ),
         ),
