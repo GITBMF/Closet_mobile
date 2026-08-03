@@ -7,6 +7,7 @@ import '../../../core/theme/closet_colors.dart';
 import '../../../core/theme/closet_text_styles.dart';
 import '../../../core/widgets/closet_buttons.dart';
 import '../../../data/repositories/sourceur_repository.dart';
+import '../widgets/sourceur_app_bar.dart';
 
 /// Tableau de bord de l'atelier du sourceur (/sourceur)
 class SourceurAtelierScreen extends ConsumerWidget {
@@ -23,76 +24,30 @@ class SourceurAtelierScreen extends ConsumerWidget {
 
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
-      body: SafeArea(
-        child: Column(
-          children: [
-            _buildTopBar(context, nomAtelier, theme),
-            Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(AppSpacing.p20, AppSpacing.p8, AppSpacing.p20, AppSpacing.p32),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildCarteIdentite(nomAtelier, ville, depuis, 0, 0, 0),
-                    const SizedBox(height: AppSpacing.p24),
-                    _buildCarteRevenus(context, 0, 0, 0, theme),
-                    const SizedBox(height: AppSpacing.p24),
-                    _buildActionsRapides(context, 0),
-                    const SizedBox(height: AppSpacing.p32),
-                    _buildActivite(context, 0),
-                  ],
-                ),
+      appBar: SourceurAppBar(
+        title: 'Atelier',
+        subtitle: nomAtelier.toUpperCase(),
+      ),
+      body: Column(
+        children: [
+          Expanded(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.fromLTRB(AppSpacing.p20, AppSpacing.p8, AppSpacing.p20, AppSpacing.p32),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildCarteIdentite(nomAtelier, ville, depuis, 0, 0, 0),
+                  const SizedBox(height: AppSpacing.p24),
+                  _buildCarteRevenus(context, 0, 0, 0, theme),
+                  const SizedBox(height: AppSpacing.p24),
+                  _buildActionsRapides(context, 0),
+                  const SizedBox(height: AppSpacing.p32),
+                  _buildActivite(context, 0),
+                ],
               ),
             ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildTopBar(BuildContext context, String nomAtelier, ThemeData theme) {
-    final cs = theme.colorScheme;
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: theme.scaffoldBackgroundColor,
-        border: const Border(bottom: BorderSide(color: ClosetColors.ligne)),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(AppSpacing.p20, AppSpacing.p16, AppSpacing.p20, AppSpacing.p12),
-        child: Row(
-          children: [
-            Semantics(
-              button: true,
-              label: 'Retour',
-              child: Tooltip(
-                message: 'Retour',
-                child: GestureDetector(
-                  onTap: () => context.go('/espace'),
-                  child: Container(
-                    width: AppSpacing.minTouchTarget,
-                    height: AppSpacing.minTouchTarget,
-                    decoration: BoxDecoration(
-                      color: cs.surface,
-                      shape: BoxShape.circle,
-                    ),
-                    child: Icon(Icons.arrow_back_ios_new, size: 13, color: cs.onSurface),
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(width: AppSpacing.p12),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('Atelier',
-                    style: ClosetTextStyles.titreEcran.copyWith(fontSize: 16, color: cs.onSurface)),
-                Text(nomAtelier, style: ClosetTextStyles.labelChamp),
-              ],
-            ),
-            const Spacer(),
-            const Icon(Icons.auto_awesome, size: 16, color: ClosetColors.dore),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -235,6 +190,7 @@ class SourceurAtelierScreen extends ConsumerWidget {
   }
 
   Widget _buildActionsRapides(BuildContext context, int depots) {
+    final theme = Theme.of(context);
     return IntrinsicHeight(
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -254,8 +210,8 @@ class SourceurAtelierScreen extends ConsumerWidget {
           const SizedBox(width: 16),
           Expanded(
             child: _ActionCard(
-              fond: ClosetColors.creme,
-              bordure: ClosetColors.bordure,
+              fond: theme.colorScheme.surface,
+              bordure: theme.dividerColor.withValues(alpha: 0.15),
               pastille: ClosetColors.vert,
               icone: Icons.inventory_2_outlined,
               couleurIcone: ClosetColors.texteSurVert,
@@ -388,12 +344,14 @@ class _RevenuTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Expanded(
       child: Container(
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
-          color: ClosetColors.ivoire,
+          color: theme.colorScheme.surface,
           borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: theme.dividerColor.withValues(alpha: 0.15)),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -473,7 +431,7 @@ class _ActionCard extends StatelessWidget {
                 label,
                 style: ClosetTextStyles.labelEtape.copyWith(
                   fontSize: 10,
-                  color: ClosetColors.noir.withValues(alpha: 0.75),
+                  color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.75),
                 ),
               ),
             ],

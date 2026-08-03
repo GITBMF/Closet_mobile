@@ -45,7 +45,6 @@ class ClosetHeader extends StatelessWidget {
                 Text(
                   titre,
                   style: ClosetTextStyles.titreEcran,
-                  overflow: TextOverflow.ellipsis,
                 ),
                 if (sousTitre != null)
                   Text(
@@ -53,7 +52,6 @@ class ClosetHeader extends StatelessWidget {
                     style: ClosetTextStyles.labelEtape.copyWith(
                       color: ClosetColors.texteSecondaire,
                     ),
-                    overflow: TextOverflow.ellipsis,
                   ),
               ],
             ),

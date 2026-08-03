@@ -47,7 +47,20 @@ class _SourceurEspaceScreenState extends ConsumerState<SourceurEspaceScreen> {
                 _showEditModal(context, repo, profile, theme);
               }
             },
-          )
+          ),
+          IconButton(
+            icon: const Icon(Icons.account_balance_wallet_outlined, size: 22),
+            color: onSurfaceColor,
+            tooltip: 'Mes revenus',
+            onPressed: () => context.go('/sourceur/revenus'),
+          ),
+          IconButton(
+            icon: const Icon(Icons.person_outline, size: 22),
+            color: onSurfaceColor,
+            tooltip: 'Espace client',
+            onPressed: () => context.go('/espace'),
+          ),
+          const SizedBox(width: 4),
         ],
       ),
       body: SingleChildScrollView(
@@ -110,7 +123,7 @@ class _SourceurEspaceScreenState extends ConsumerState<SourceurEspaceScreen> {
                   ),
                   if (whatsapp.isNotEmpty || univers.isNotEmpty) ...[
                     const SizedBox(height: 16),
-                    const Divider(color: ClosetColors.ligne),
+                    Divider(color: theme.dividerColor.withValues(alpha: 0.2)),
                     const SizedBox(height: 12),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceAround,

@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 
 import '../../../core/theme/closet_colors.dart';
 import '../../../core/theme/closet_text_styles.dart';
 import '../../../core/widgets/closet_buttons.dart';
 import '../../../data/repositories/sourceur_repository.dart';
+import '../widgets/sourceur_app_bar.dart';
 
 /// Détail des revenus du sourceur (/sourceur/revenus)
 class SourceurRevenusScreen extends ConsumerWidget {
@@ -16,77 +16,37 @@ class SourceurRevenusScreen extends ConsumerWidget {
     final revenusAsync = ref.watch(revenusSourceurProvider);
 
     return Scaffold(
-      backgroundColor: ClosetColors.ivoire,
-      body: SafeArea(
-        child: Column(
-          children: [
-            _buildTopBar(context),
-            Expanded(
-              child: revenusAsync.when(
-                data: (revenus) => SingleChildScrollView(
-                  padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _buildCarteSolde(revenus.solde, revenus.moyenPaiement),
-                      const SizedBox(height: 24),
-                      _buildRecapitulatif(
-                          revenus.brut, revenus.commission, revenus.enAttente),
-                      const SizedBox(height: 32),
-                      _buildHistorique(revenus),
-                    ],
-                  ),
-                ),
-                loading: () => const Center(
-                  child: CircularProgressIndicator(color: ClosetColors.dore),
-                ),
-                error: (e, _) => Center(
-                  child: Text('Erreur de chargement',
-                      style: ClosetTextStyles.corps),
-                ),
-              ),
-            ),
-          ],
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      appBar: const SourceurAppBar(
+        title: 'Revenus',
+        subtitle: 'VOTRE ATELIER',
+      ),
+      body: revenusAsync.when(
+        data: (revenus) => SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildCarteSolde(revenus.solde, revenus.moyenPaiement),
+              const SizedBox(height: 24),
+              _buildRecapitulatif(
+                  revenus.brut, revenus.commission, revenus.enAttente),
+              const SizedBox(height: 32),
+              _buildHistorique(revenus),
+            ],
+          ),
+        ),
+        loading: () => const Center(
+          child: CircularProgressIndicator(color: ClosetColors.dore),
+        ),
+        error: (e, _) => Center(
+          child: Text('Erreur de chargement',
+              style: ClosetTextStyles.corps),
         ),
       ),
     );
   }
 
-  Widget _buildTopBar(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.fromLTRB(20, 16, 20, 12),
-      decoration: const BoxDecoration(
-        color: ClosetColors.ivoire,
-        border: Border(bottom: BorderSide(color: ClosetColors.ligne)),
-      ),
-      child: Row(
-        children: [
-          GestureDetector(
-            onTap: () => context.go('/sourceur'),
-            child: Container(
-              width: 32,
-              height: 32,
-              decoration: const BoxDecoration(
-                color: ClosetColors.creme,
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(Icons.arrow_back_ios_new,
-                  size: 13, color: ClosetColors.noir),
-            ),
-          ),
-          const SizedBox(width: 12),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('Revenus',
-                  style: ClosetTextStyles.titreEcran.copyWith(fontSize: 16)),
-              Text('Votre atelier', style: ClosetTextStyles.labelChamp),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
 
   Widget _buildCarteSolde(int solde, String moyenPaiement) {
     return Container(
@@ -209,21 +169,22 @@ class _VenteTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: ClosetColors.creme,
+        color: cs.surface,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: ClosetColors.bordure),
+        border: Border.all(color: cs.onSurface.withValues(alpha: 0.1)),
       ),
       child: Row(
         children: [
           Container(
             width: 34,
             height: 34,
-            decoration: const BoxDecoration(
-              color: ClosetColors.fondsSucces,
+            decoration: BoxDecoration(
+              color: ClosetColors.succes.withValues(alpha: 0.15),
               shape: BoxShape.circle,
             ),
             child: const Icon(Icons.check, size: 17, color: ClosetColors.succes),
@@ -234,11 +195,13 @@ class _VenteTile extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(vente.nomPiece,
-                    style: ClosetTextStyles.saisie.copyWith(fontSize: 14)),
+                    style: ClosetTextStyles.saisie.copyWith(
+                        fontSize: 14, color: cs.onSurface)),
                 Text(
                   '${vente.date.day}/${vente.date.month}/${vente.date.year}',
                   style: ClosetTextStyles.corps.copyWith(
-                      fontSize: 12, color: ClosetColors.texteSecondaire),
+                      fontSize: 12,
+                      color: cs.onSurface.withValues(alpha: 0.55)),
                 ),
               ],
             ),
@@ -262,24 +225,25 @@ class _RecapTile extends StatelessWidget {
     required this.label,
     required this.montant,
     this.couleurIcone = ClosetColors.noir,
-    this.fondPastille = ClosetColors.ivoire,
+    this.fondPastille,
   });
 
   final IconData icone;
   final String label;
   final String montant;
   final Color couleurIcone;
-  final Color fondPastille;
+  final Color? fondPastille;
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Expanded(
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 16),
         decoration: BoxDecoration(
-          color: ClosetColors.creme,
+          color: cs.surface,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: ClosetColors.bordure),
+          border: Border.all(color: cs.onSurface.withValues(alpha: 0.1)),
         ),
         child: Column(
           children: [
@@ -287,26 +251,24 @@ class _RecapTile extends StatelessWidget {
               width: 34,
               height: 34,
               decoration: BoxDecoration(
-                color: fondPastille,
+                color: fondPastille ?? cs.onSurface.withValues(alpha: 0.05),
                 shape: BoxShape.circle,
               ),
-              child: Icon(icone, size: 17, color: couleurIcone),
+              child: Icon(icone, size: 17, color: fondPastille != null ? couleurIcone : cs.onSurface),
             ),
             const SizedBox(height: 12),
             Text(
               label,
               textAlign: TextAlign.center,
-              style: ClosetTextStyles.labelEtape.copyWith(fontSize: 10),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
+              style: ClosetTextStyles.labelEtape.copyWith(
+                  fontSize: 10, color: cs.onSurface),
             ),
             const SizedBox(height: 6),
             Text(
               montant,
               textAlign: TextAlign.center,
-              style: ClosetTextStyles.saisie.copyWith(fontSize: 15),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
+              style: ClosetTextStyles.saisie.copyWith(
+                  fontSize: 15, color: cs.onSurface),
             ),
           ],
         ),

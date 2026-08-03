@@ -14,6 +14,7 @@ import '../../../core/widgets/closet_buttons.dart';
 import '../../../core/widgets/closet_chip.dart';
 import '../../../data/repositories/sourceur_repository.dart';
 import '../inscription/widgets/labeled_field.dart';
+import '../widgets/sourceur_app_bar.dart';
 
 /// Formulaire de dépôt d'une nouvelle pièce (/sourceur/nouvelle) :
 /// photos, nom, univers, marque, taille, état, prix et description.
@@ -109,141 +110,95 @@ class _SourceurNouvellePieceScreenState
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
 
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
-      body: SafeArea(
+      appBar: const SourceurAppBar(
+        title: 'Nouvelle pièce',
+        subtitle: 'DÉPÔT',
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.fromLTRB(AppSpacing.p20, AppSpacing.p8, AppSpacing.p20, AppSpacing.p32),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Top bar with back button
-            Container(
-              padding: const EdgeInsets.fromLTRB(AppSpacing.p20, AppSpacing.p16, AppSpacing.p20, AppSpacing.p12),
-              decoration: BoxDecoration(
-                color: theme.scaffoldBackgroundColor,
-                border: const Border(bottom: BorderSide(color: ClosetColors.ligne)),
-              ),
-              child: Row(
-                children: [
-                  Semantics(
-                    button: true,
-                    label: 'Retour',
-                    child: Tooltip(
-                      message: 'Retour',
-                      child: GestureDetector(
-                        onTap: () => context.go('/sourceur'),
-                        child: Container(
-                          width: AppSpacing.minTouchTarget,
-                          height: AppSpacing.minTouchTarget,
-                          decoration: BoxDecoration(
-                            color: colorScheme.surface,
-                            shape: BoxShape.circle,
-                          ),
-                          child: Icon(Icons.storefront_outlined,
-                              size: 16, color: colorScheme.onSurface),
-                        ),
-                      ),
-                    ),
+            _buildPhotographies(),
+            const SizedBox(height: AppSpacing.p24),
+            LabeledField(
+              label: 'Nom de la pièce',
+              controller: _nomController,
+              hint: 'Robe soie ivoire',
+            ),
+            const SizedBox(height: AppSpacing.p24),
+            _buildUnivers(),
+            const SizedBox(height: AppSpacing.p24),
+            LabeledField(
+              icone: Icons.local_offer_outlined,
+              label: 'Maison / Marque',
+              controller: _marqueController,
+              hint: 'Céline, Hermès, Sézane...',
+            ),
+            const SizedBox(height: AppSpacing.p24),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: _ChampDeroulant(
+                    icone: Icons.straighten_outlined,
+                    label: 'Taille',
+                    valeur: _taille,
+                    options: _tailles,
+                    onChanged: (v) => setState(() => _taille = v),
                   ),
-                  const SizedBox(width: 12),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('Nouvelle pièce',
-                          style: ClosetTextStyles.titreEcran
-                              .copyWith(fontSize: 16)),
-                      Text('Dépôt', style: ClosetTextStyles.labelChamp),
-                    ],
+                ),
+                const SizedBox(width: AppSpacing.p16),
+                Expanded(
+                  child: _ChampDeroulant(
+                    icone: Icons.auto_awesome,
+                    label: 'État',
+                    valeur: _etat,
+                    options: _etats,
+                    onChanged: (v) => setState(() => _etat = v),
                   ),
-                ],
+                ),
+              ],
+            ),
+            const SizedBox(height: AppSpacing.p24),
+            LabeledField(
+              icone: Icons.account_balance_wallet_outlined,
+              label: 'Prix proposé (FCFA)',
+              controller: _prixController,
+              hint: '45000',
+              keyboardType: TextInputType.number,
+            ),
+            const SizedBox(height: AppSpacing.p24),
+            LabeledField(
+              label: 'Description & storytelling',
+              controller: _descriptionController,
+              hint: 'Portée deux fois, couture impeccable, matière noble...',
+              maxLines: 5,
+            ),
+            const SizedBox(height: AppSpacing.p32),
+            ListenableBuilder(
+              listenable: Listenable.merge([
+                _nomController,
+                _marqueController,
+                _prixController,
+                _descriptionController,
+              ]),
+              builder: (_, _) => ClosetPrimaryButton(
+                label: 'Envoyer au comité',
+                dore: true,
+                onPressed: _formulaireValide ? _envoyerAuComite : null,
               ),
             ),
-            Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(AppSpacing.p20, AppSpacing.p8, AppSpacing.p20, AppSpacing.p32),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildPhotographies(),
-                    const SizedBox(height: AppSpacing.p24),
-                    LabeledField(
-                      label: 'Nom de la pièce',
-                      controller: _nomController,
-                      hint: 'Robe soie ivoire',                    ),
-                    const SizedBox(height: AppSpacing.p24),
-                    _buildUnivers(),
-                    const SizedBox(height: AppSpacing.p24),
-                    LabeledField(
-                      icone: Icons.local_offer_outlined,
-                      label: 'Maison / Marque',
-                      controller: _marqueController,
-                      hint: 'Céline, Hermès, Sézane...',                    ),
-                    const SizedBox(height: AppSpacing.p24),
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Expanded(
-                          child: _ChampDeroulant(
-                            icone: Icons.straighten_outlined,
-                            label: 'Taille',
-                            valeur: _taille,
-                            options: _tailles,
-                            onChanged: (v) => setState(() => _taille = v),
-                          ),
-                        ),
-                        const SizedBox(width: AppSpacing.p16),
-                        Expanded(
-                          child: _ChampDeroulant(
-                            icone: Icons.auto_awesome,
-                            label: 'État',
-                            valeur: _etat,
-                            options: _etats,
-                            onChanged: (v) => setState(() => _etat = v),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: AppSpacing.p24),
-                    LabeledField(
-                      icone: Icons.account_balance_wallet_outlined,
-                      label: 'Prix proposé (FCFA)',
-                      controller: _prixController,
-                      hint: '45000',
-                      keyboardType: TextInputType.number,                    ),
-                    const SizedBox(height: AppSpacing.p24),
-                    LabeledField(
-                      label: 'Description & storytelling',
-                      controller: _descriptionController,
-                      hint: 'Portée deux fois, couture impeccable, '
-                          'matière noble...',
-                      maxLines: 5,                    ),
-                    const SizedBox(height: AppSpacing.p32),
-                    // Seul le bouton dépend du contenu des champs :
-                    // on ne reconstruit que lui à chaque frappe.
-                    ListenableBuilder(
-                      listenable: Listenable.merge([
-                        _nomController,
-                        _marqueController,
-                        _prixController,
-                        _descriptionController,
-                      ]),
-                      builder: (_, _) => ClosetPrimaryButton(
-                        label: 'Envoyer au comité',
-                        dore: true,
-                        onPressed: _formulaireValide ? _envoyerAuComite : null,
-                      ),
-                    ),
-                    const SizedBox(height: 14),
-                    Center(
-                      child: Text(
-                        'Réponse sous 48h ouvrées',
-                        style: ClosetTextStyles.corps.copyWith(
-                          fontSize: 14,
-                          color: ClosetColors.texteSecondaire,
-                        ),
-                      ),
-                    ),
-                  ],
+            const SizedBox(height: 14),
+            Center(
+              child: Text(
+                'Réponse sous 48h ouvrées',
+                style: ClosetTextStyles.corps.copyWith(
+                  fontSize: 14,
+                  color: ClosetColors.texteSecondaire,
                 ),
               ),
             ),
@@ -252,6 +207,7 @@ class _SourceurNouvellePieceScreenState
       ),
     );
   }
+
 
   // -------------------------------------------------------- Photographies
 
@@ -440,7 +396,6 @@ class _ChampDeroulant extends StatelessWidget {
               child: Text(
                 label.toUpperCase(),
                 style: ClosetTextStyles.labelChamp,
-                overflow: TextOverflow.ellipsis,
               ),
             ),
           ],

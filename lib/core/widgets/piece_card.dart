@@ -175,8 +175,6 @@ class PieceCard extends StatelessWidget {
                     fontWeight: FontWeight.w600,
                     color: ClosetColors.noir,
                   ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
                 ),
                 const SizedBox(height: 2),
                 Text(

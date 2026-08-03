@@ -117,8 +117,9 @@ class _SourceurInscriptionScreenState
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Scaffold(
-      backgroundColor: ClosetColors.ivoire,
+      backgroundColor: theme.scaffoldBackgroundColor,
       body: SafeArea(
         child: Column(
           children: [
@@ -167,11 +168,12 @@ class _SourceurInscriptionScreenState
   }
 
   Widget _buildTopBar(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.fromLTRB(20, 16, 20, 12),
-      decoration: const BoxDecoration(
-        color: ClosetColors.ivoire,
-        border: Border(bottom: BorderSide(color: ClosetColors.ligne)),
+      decoration: BoxDecoration(
+        color: Theme.of(context).scaffoldBackgroundColor,
+        border: Border(bottom: BorderSide(color: cs.onSurface.withValues(alpha: 0.1))),
       ),
       child: Row(
         children: [
@@ -180,17 +182,18 @@ class _SourceurInscriptionScreenState
             child: Container(
               width: 32,
               height: 32,
-              decoration: const BoxDecoration(
-                color: ClosetColors.creme,
+              decoration: BoxDecoration(
+                color: cs.surface,
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.arrow_back_ios_new,
-                  size: 13, color: ClosetColors.noir),
+              child: Icon(Icons.arrow_back_ios_new,
+                  size: 13, color: cs.onSurface),
             ),
           ),
           const SizedBox(width: 12),
           Text('Devenir Sourceur',
-              style: ClosetTextStyles.titreEcran.copyWith(fontSize: 16)),
+              style: ClosetTextStyles.titreEcran.copyWith(
+                  fontSize: 16, color: cs.onSurface)),
         ],
       ),
     );
@@ -313,9 +316,9 @@ class _SourceurInscriptionScreenState
         Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: ClosetColors.creme,
+            color: Theme.of(context).colorScheme.surface,
             borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: ClosetColors.bordure),
+            border: Border.all(color: Theme.of(context).dividerColor.withValues(alpha: 0.15)),
           ),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -380,12 +383,13 @@ class _PaiementOption extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Material(
-      color: selectionne ? ClosetColors.vert : ClosetColors.creme,
+      color: selectionne ? ClosetColors.vert : cs.surface,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(14),
         side: BorderSide(
-          color: selectionne ? ClosetColors.vert : ClosetColors.bordure,
+          color: selectionne ? ClosetColors.vert : cs.onSurface.withValues(alpha: 0.12),
         ),
       ),
       child: InkWell(
@@ -400,7 +404,7 @@ class _PaiementOption extends StatelessWidget {
                     ? Icons.radio_button_checked
                     : Icons.radio_button_unchecked,
                 size: 20,
-                color: selectionne ? ClosetColors.dore : ClosetColors.noir,
+                color: selectionne ? ClosetColors.dore : cs.onSurface,
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -409,7 +413,7 @@ class _PaiementOption extends StatelessWidget {
                   style: ClosetTextStyles.saisie.copyWith(
                     color: selectionne
                         ? ClosetColors.texteSurVert
-                        : ClosetColors.noir,
+                        : cs.onSurface,
                   ),
                 ),
               ),

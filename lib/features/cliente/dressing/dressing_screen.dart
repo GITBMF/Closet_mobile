@@ -206,8 +206,6 @@ class _FeaturedBanner extends StatelessWidget {
                       const SizedBox(height: 8),
                       Text(
                         article.title,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
                         style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.w800,
@@ -218,8 +216,6 @@ class _FeaturedBanner extends StatelessWidget {
                       const SizedBox(height: 4),
                       Text(
                         '${article.brand} · ${article.material} · T. ${article.size}',
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
                         style: TextStyle(
                           fontSize: 10,
                           color: onSurfaceColor.withValues(alpha: 0.6),

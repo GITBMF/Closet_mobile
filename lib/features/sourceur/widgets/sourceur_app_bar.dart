@@ -60,8 +60,6 @@ class SourceurAppBar extends ConsumerWidget implements PreferredSizeWidget {
               children: [
                 Text(
                   title,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w700,
@@ -71,8 +69,6 @@ class SourceurAppBar extends ConsumerWidget implements PreferredSizeWidget {
                 ),
                 Text(
                   subtitle ?? 'CERCLE DES SOURCEURS',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
                   style: TextStyle(
                     fontSize: 8,
                     color: isDark ? ClosetColors.doreClair : ClosetColors.dore,
@@ -88,12 +84,14 @@ class SourceurAppBar extends ConsumerWidget implements PreferredSizeWidget {
         IconButton(
           icon: const Icon(Icons.account_balance_wallet_outlined, size: 22),
           color: onSurfaceColor,
+          tooltip: 'Mes revenus',
           onPressed: () => context.go('/sourceur/revenus'),
         ),
         IconButton(
           icon: const Icon(Icons.person_outline, size: 22),
           color: onSurfaceColor,
-          onPressed: () => context.go('/sourceur/espace'),
+          tooltip: 'Espace client',
+          onPressed: () => context.go('/espace'),
         ),
         const SizedBox(width: 4),
       ],

@@ -83,8 +83,6 @@ class ClosetBottomNav extends StatelessWidget {
                             ? ClosetColors.doreClair
                             : ClosetColors.texteSurVert.withValues(alpha: 0.7),
                       ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
                     ),
                     const SizedBox(height: 4),
                     Container(

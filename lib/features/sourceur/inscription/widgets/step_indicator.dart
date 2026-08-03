@@ -18,6 +18,7 @@ class StepIndicator extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     final children = <Widget>[];
     for (var i = 0; i < labels.length; i++) {
       children.add(_Etape(
@@ -36,7 +37,7 @@ class StepIndicator extends StatelessWidget {
             margin: const EdgeInsets.only(bottom: 26, left: 8, right: 8),
             color: i < etapeCourante
                 ? ClosetColors.dore
-                : ClosetColors.bordure,
+                : cs.onSurface.withValues(alpha: 0.15),
           ),
         ));
       }
@@ -60,6 +61,7 @@ class _Etape extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     final (fond, texte, bordure) = switch (etat) {
       _EtatEtape.courante => (
           ClosetColors.vert,
@@ -72,9 +74,9 @@ class _Etape extends StatelessWidget {
           ClosetColors.dore,
         ),
       _EtatEtape.aVenir => (
-          ClosetColors.creme,
-          ClosetColors.noir,
-          ClosetColors.bordure,
+          cs.surface,
+          cs.onSurface,
+          cs.onSurface.withValues(alpha: 0.15),
         ),
     };
     final taille = etat == _EtatEtape.courante ? 36.0 : 30.0;
@@ -97,7 +99,8 @@ class _Etape extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 8),
-        Text(label, style: ClosetTextStyles.labelEtape),
+        Text(label,
+            style: ClosetTextStyles.labelEtape.copyWith(color: cs.onSurface)),
       ],
     );
   }

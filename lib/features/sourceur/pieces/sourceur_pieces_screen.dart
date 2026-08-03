@@ -5,10 +5,10 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/theme/closet_colors.dart';
 import '../../../core/theme/closet_text_styles.dart';
-import '../../../core/widgets/bordure_pointillee.dart';
 import '../../../core/widgets/closet_buttons.dart';
 import '../../../core/widgets/closet_chip.dart';
 import '../../../data/repositories/sourceur_repository.dart';
+import '../widgets/sourceur_app_bar.dart';
 
 /// Liste des dépôts du sourceur (/sourceur/pieces)
 class SourceurPiecesScreen extends ConsumerStatefulWidget {
@@ -34,42 +34,46 @@ class _SourceurPiecesScreenState extends ConsumerState<SourceurPiecesScreen> {
   Widget build(BuildContext context) {
     final piecesAsync = ref.watch(mesPiecesProvider);
 
+    final theme = Theme.of(context);
+    final cs = theme.colorScheme;
+
     return Scaffold(
-      backgroundColor: ClosetColors.ivoire,
-      body: SafeArea(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildTopBar(context),
-            _buildFiltres(),
-            Expanded(
-              child: piecesAsync.when(
-                data: (pieces) {
-                  final filtered = _filtre == null
-                      ? pieces
-                      : pieces.where((p) => p.statut == _filtre).toList();
-                  return SingleChildScrollView(
-                    padding: const EdgeInsets.fromLTRB(20, 24, 20, 32),
-                    child: filtered.isEmpty
-                        ? _buildAucunePiece(context)
-                        : Column(
-                            children: filtered
-                                .map((p) => _PieceCard(piece: p))
-                                .toList(),
-                          ),
-                  );
-                },
-                loading: () => const Center(
-                  child: CircularProgressIndicator(color: ClosetColors.dore),
-                ),
-                error: (e, _) => Center(
-                  child: Text('Erreur de chargement',
-                      style: ClosetTextStyles.corps),
-                ),
+      backgroundColor: theme.scaffoldBackgroundColor,
+      appBar: const SourceurAppBar(
+        title: 'Mes dépôts',
+        subtitle: 'VOS PIÈCES EN DÉPÔT',
+      ),
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildFiltres(),
+          Expanded(
+            child: piecesAsync.when(
+              data: (pieces) {
+                final filtered = _filtre == null
+                    ? pieces
+                    : pieces.where((p) => p.statut == _filtre).toList();
+                return SingleChildScrollView(
+                  padding: const EdgeInsets.fromLTRB(20, 24, 20, 32),
+                  child: filtered.isEmpty
+                      ? _buildAucunePiece(context, cs)
+                      : Column(
+                          children: filtered
+                              .map((p) => _PieceCard(piece: p))
+                              .toList(),
+                        ),
+                );
+              },
+              loading: () => const Center(
+                child: CircularProgressIndicator(color: ClosetColors.dore),
+              ),
+              error: (e, _) => Center(
+                child: Text('Erreur de chargement',
+                    style: ClosetTextStyles.corps),
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
       floatingActionButton: Material(
         color: ClosetColors.dore,
@@ -88,35 +92,6 @@ class _SourceurPiecesScreenState extends ConsumerState<SourceurPiecesScreen> {
     );
   }
 
-  Widget _buildTopBar(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.fromLTRB(20, 16, 20, 12),
-      decoration: const BoxDecoration(
-        color: ClosetColors.ivoire,
-        border: Border(bottom: BorderSide(color: ClosetColors.ligne)),
-      ),
-      child: Row(
-        children: [
-          GestureDetector(
-            onTap: () => context.go('/sourceur'),
-            child: Container(
-              width: 32,
-              height: 32,
-              decoration: const BoxDecoration(
-                color: ClosetColors.creme,
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(Icons.arrow_back_ios_new,
-                  size: 13, color: ClosetColors.noir),
-            ),
-          ),
-          const SizedBox(width: 12),
-          Text('Mes dépôts',
-              style: ClosetTextStyles.titreEcran.copyWith(fontSize: 16)),
-        ],
-      ),
-    );
-  }
 
   Widget _buildFiltres() {
     return SingleChildScrollView(
@@ -137,33 +112,35 @@ class _SourceurPiecesScreenState extends ConsumerState<SourceurPiecesScreen> {
     );
   }
 
-  Widget _buildAucunePiece(BuildContext context) {
-    return BordurePointillee(
-      couleur: ClosetColors.dore.withValues(alpha: 0.45),
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
-        child: Column(
-          children: [
-            const Icon(Icons.photo_camera_outlined,
-                size: 32, color: ClosetColors.texteSecondaire),
-            const SizedBox(height: 18),
-            Text(
-              'Aucune pièce pour le moment.',
-              textAlign: TextAlign.center,
-              style: ClosetTextStyles.corps.copyWith(
-                fontStyle: FontStyle.italic,
-                color: ClosetColors.texteSecondaire,
-              ),
+  Widget _buildAucunePiece(BuildContext context, ColorScheme cs) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+      decoration: BoxDecoration(
+        color: cs.surface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: ClosetColors.dore.withValues(alpha: 0.45), width: 1.5),
+      ),
+      child: Column(
+        children: [
+          Icon(Icons.photo_camera_outlined,
+              size: 32, color: cs.onSurface.withValues(alpha: 0.45)),
+          const SizedBox(height: 18),
+          Text(
+            'Aucune pièce pour le moment.',
+            textAlign: TextAlign.center,
+            style: ClosetTextStyles.corps.copyWith(
+              fontStyle: FontStyle.italic,
+              color: cs.onSurface.withValues(alpha: 0.55),
             ),
-            const SizedBox(height: 24),
-            ClosetPrimaryButton(
-              label: 'Déposer une pièce',
-              icone: Icons.add,
-              onPressed: () => context.go('/sourceur/nouvelle'),
-            ),
-          ],
-        ),
+          ),
+          const SizedBox(height: 24),
+          ClosetPrimaryButton(
+            label: 'Déposer une pièce',
+            icone: Icons.add,
+            onPressed: () => context.go('/sourceur/nouvelle'),
+          ),
+        ],
       ),
     );
   }
@@ -215,22 +192,23 @@ class _PieceCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: ClosetColors.creme,
+        color: cs.surface,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: ClosetColors.bordure),
+        border: Border.all(color: cs.onSurface.withValues(alpha: 0.1)),
       ),
       child: Row(
         children: [
-          // Miniature placeholder
+          // Miniature
           Container(
             width: 60,
             height: 76,
             decoration: BoxDecoration(
-              color: ClosetColors.ligne,
+              color: cs.onSurface.withValues(alpha: 0.07),
               borderRadius: BorderRadius.circular(10),
             ),
             child: piece.imageUrl != null
@@ -240,17 +218,17 @@ class _PieceCard extends StatelessWidget {
                       imageUrl: piece.imageUrl!,
                       fit: BoxFit.cover,
                       placeholder: (context, url) => Container(
-                        color: ClosetColors.ligne,
+                        color: cs.onSurface.withValues(alpha: 0.07),
                       ),
-                      errorWidget: (context, url, error) => const Icon(
+                      errorWidget: (context, url, error) => Icon(
                         Icons.image_not_supported,
-                        color: ClosetColors.taupe,
+                        color: cs.onSurface.withValues(alpha: 0.35),
                       ),
                       fadeInDuration: const Duration(milliseconds: 250),
                     ),
                   )
-                : const Icon(Icons.image_not_supported,
-                    color: ClosetColors.taupe),
+                : Icon(Icons.image_not_supported,
+                    color: cs.onSurface.withValues(alpha: 0.35)),
           ),
           const SizedBox(width: 14),
           Expanded(
@@ -258,15 +236,17 @@ class _PieceCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(piece.nom,
-                    style: ClosetTextStyles.saisie.copyWith(fontSize: 14)),
+                    style: ClosetTextStyles.saisie.copyWith(
+                        fontSize: 14, color: cs.onSurface)),
                 const SizedBox(height: 4),
                 Text(piece.univers,
                     style: ClosetTextStyles.corps
-                        .copyWith(color: ClosetColors.texteSecondaire)),
+                        .copyWith(color: cs.onSurface.withValues(alpha: 0.55))),
                 const SizedBox(height: 8),
                 Text(
                   '${piece.prix.toInt()} FCFA',
-                  style: ClosetTextStyles.saisie.copyWith(fontSize: 15),
+                  style: ClosetTextStyles.saisie.copyWith(
+                      fontSize: 15, color: cs.onSurface),
                 ),
               ],
             ),

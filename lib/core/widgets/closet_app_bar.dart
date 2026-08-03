@@ -103,8 +103,6 @@ class ClosetAppBar extends ConsumerWidget implements PreferredSizeWidget {
                     children: [
                       Text(
                         title ?? 'ClosET',
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
                         style: ClosetTextStyles.titreEcran.copyWith(
                           fontSize: 16,
                           color: onSurfaceColor,
@@ -112,8 +110,6 @@ class ClosetAppBar extends ConsumerWidget implements PreferredSizeWidget {
                       ),
                       Text(
                         subtitle ?? 'L\'ÉLÉGANCE DURABLE',
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
                         style: ClosetTextStyles.labelChamp.copyWith(
                           fontSize: 8,
                           color: onSurfaceColor.withValues(alpha: 0.6),
@@ -366,8 +362,6 @@ class _ArticleCardState extends ConsumerState<ArticleCard> {
                   const SizedBox(height: 2),
                   Text(
                     widget.article.title,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
                     style: TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w600,
@@ -381,8 +375,6 @@ class _ArticleCardState extends ConsumerState<ArticleCard> {
                       Flexible(
                         child: Text(
                           _formatPrice(widget.article.price),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
                           style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.w700,
@@ -401,8 +393,6 @@ class _ArticleCardState extends ConsumerState<ArticleCard> {
                             onTap: () {},
                             child: Text(
                               '⏰ M\'ALERTER',
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
                               style: TextStyle(
                                 fontSize: 9,
                                 fontWeight: FontWeight.w700,
