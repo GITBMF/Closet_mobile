@@ -9,7 +9,7 @@ class BffClient {
   late final Dio _dio;
 
   BffClient() {
-    const baseUrl = 'http://localhost:8000/v1';
+    const baseUrl = 'https://closet-backend-be8g.onrender.com/api/v1';
     
     _dio = Dio(
       BaseOptions(
@@ -27,9 +27,6 @@ class BffClient {
     _dio.interceptors.add(
       InterceptorsWrapper(
         onRequest: (options, handler) {
-          // TODO: Ajouter le token JWT de l'utilisateur ou du sourceur ici
-          // final token = await _getToken();
-          // options.headers['Authorization'] = 'Bearer $token';
           return handler.next(options);
         },
         onError: (DioException e, handler) {
@@ -41,4 +38,12 @@ class BffClient {
   }
 
   Dio get dio => _dio;
+
+  void setAccessToken(String token) {
+    _dio.options.headers['Authorization'] = 'Bearer $token';
+  }
+
+  void clearAccessToken() {
+    _dio.options.headers.remove('Authorization');
+  }
 }
