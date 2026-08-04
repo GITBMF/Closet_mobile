@@ -12,9 +12,25 @@ class ClosetUser {
   });
 
   factory ClosetUser.fromJson(Map<String, dynamic> json) {
+    final fullName = (json['full_name'] ?? json['fullName']) as String?;
+    final firstName = (json['first_name'] ?? json['firstName']) as String?;
+    final lastName = (json['last_name'] ?? json['lastName']) as String?;
+
+    String parsedFirstName = '';
+    String parsedLastName = '';
+
+    if (firstName != null && firstName.isNotEmpty) {
+      parsedFirstName = firstName;
+      parsedLastName = lastName ?? '';
+    } else if (fullName != null && fullName.isNotEmpty) {
+      final parts = fullName.trim().split(RegExp(r'\s+'));
+      parsedFirstName = parts.first;
+      parsedLastName = parts.length > 1 ? parts.sublist(1).join(' ') : '';
+    }
+
     return ClosetUser(
-      firstName: (json['first_name'] ?? json['firstName'] ?? '') as String,
-      lastName: (json['last_name'] ?? json['lastName'] ?? '') as String,
+      firstName: parsedFirstName,
+      lastName: parsedLastName,
       email: (json['email'] ?? '') as String,
       token: (json['token'] ?? json['access_token']) as String?,
     );

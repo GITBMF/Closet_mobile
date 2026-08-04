@@ -31,6 +31,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
   final _passwordController = TextEditingController();
   final _nameController = TextEditingController(); // used as First Name (Prénom)
   final _lastNameController = TextEditingController(); // used as Last Name (Nom)
+  final _phoneController = TextEditingController();
   bool _obscurePassword = true;
   bool _isLoading = false;
   late AnimationController _animController;
@@ -53,6 +54,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
     _passwordController.dispose();
     _nameController.dispose();
     _lastNameController.dispose();
+    _phoneController.dispose();
     _animController.dispose();
     super.dispose();
   }
@@ -72,9 +74,16 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
     if (!isLogin) {
       final firstName = _nameController.text.trim();
       final lastName = _lastNameController.text.trim();
+      final phone = _phoneController.text.trim();
       if (firstName.isEmpty || lastName.isEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Veuillez renseigner votre nom et prénom.')),
+        );
+        return;
+      }
+      if (phone.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Veuillez renseigner votre numéro de téléphone.')),
         );
         return;
       }
@@ -84,25 +93,35 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
 
     try {
       final authRepo = ref.read(authRepositoryProvider);
-      ClosetUser user;
+      ClosetUser? user;
       if (isLogin) {
         user = await authRepo.logIn(email: email, password: password);
       } else {
-        user = await authRepo.signUp(
+        await authRepo.signUp(
           firstName: _nameController.text,
           lastName: _lastNameController.text,
           email: email,
           password: password,
+          phone: _phoneController.text,
         );
       }
 
       if (mounted) {
-        ref.read(currentUserProvider.notifier).state = user;
-        
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(isLogin ? 'Bon retour, ${user.firstName} !' : 'Inscription réussie !')),
-        );
-        context.go('/home');
+        if (isLogin && user != null) {
+          ref.read(currentUserProvider.notifier).state = user;
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Bon retour, ${user.firstName} !')),
+          );
+          context.go('/home');
+        } else {
+          ref.read(authModeProvider.notifier).state = AuthMode.login;
+          _passwordController.clear();
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Inscription réussie ! Veuillez vous connecter.'),
+            ),
+          );
+        }
       }
     } catch (e) {
       if (mounted) {
@@ -289,6 +308,13 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
                           controller: _lastNameController,
                           label: 'Votre nom',
                           icon: Icons.person_outline,
+                        ),
+                        const SizedBox(height: 14),
+                        _AuthField(
+                          controller: _phoneController,
+                          label: 'Numéro de téléphone',
+                          icon: Icons.phone_outlined,
+                          keyboardType: TextInputType.phone,
                         ),
                         const SizedBox(height: 14),
                       ],
