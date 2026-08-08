@@ -204,7 +204,7 @@ class _SourceurEspaceScreenState extends ConsumerState<SourceurEspaceScreen> {
                 onChanged: (value) {
                   ref.read<ThemeModeNotifier>(themeModeProvider.notifier).toggleTheme();
                 },
-                activeThumbColor: isDark ? ClosetColors.doreClair : ClosetColors.dore,
+                activeColor: isDark ? ClosetColors.doreClair : ClosetColors.dore,
                 secondary: Icon(
                   Icons.dark_mode_outlined,
                   color: onSurfaceColor,
