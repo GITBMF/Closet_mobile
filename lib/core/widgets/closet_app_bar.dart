@@ -5,18 +5,20 @@ import 'package:go_router/go_router.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/theme/closet_colors.dart';
 import '../../core/theme/closet_text_styles.dart';
-import '../../core/theme/theme_provider.dart';
 import '../../data/models/article.dart';
+import '../../data/models/user.dart';
+import '../../data/repositories/auth_repository.dart';
 import '../../data/repositories/cart_repository.dart';
 import '../../data/repositories/wishlist_repository.dart';
+import 'piece_card.dart';
 
-/// AppBar réutilisable avec logo ClosET et icônes d'action
+/// En-tête principal — transcription de la maquette `11:30`.
+///
+/// À gauche « Bienvenue, » (EB Garamond) puis le nom de la cliente
+/// (Cormorant, doré encre). Au centre le logo. À droite deux boutons ronds
+/// de 42, fond clair cerclé d'or : panier et notifications. Un filet doré
+/// ferme l'en-tête.
 class ClosetAppBar extends ConsumerWidget implements PreferredSizeWidget {
-  final String? title;
-  final String? subtitle;
-  final bool showBackButton;
-  final List<Widget>? actions;
-
   const ClosetAppBar({
     super.key,
     this.title,
@@ -25,157 +27,200 @@ class ClosetAppBar extends ConsumerWidget implements PreferredSizeWidget {
     this.actions,
   });
 
+  final String? title;
+  final String? subtitle;
+  final bool showBackButton;
+  final List<Widget>? actions;
+
   @override
-  Size get preferredSize => const Size.fromHeight(64);  @override
+  Size get preferredSize => const Size.fromHeight(62);
+
+  @override
   Widget build(BuildContext context, WidgetRef ref) {
     final cartCount = ref.watch(cartCountProvider);
-    final theme = Theme.of(context);
-    final onSurfaceColor = theme.colorScheme.onSurface;
-    final isDark = ref.watch(themeModeProvider) == ThemeMode.dark;
+    final user = ref.watch(currentUserProvider);
 
-    return AppBar(
-      backgroundColor: theme.appBarTheme.backgroundColor ?? theme.scaffoldBackgroundColor,
-      elevation: 0,
-      automaticallyImplyLeading: false,
-      title: showBackButton
-          ? Row(
-              children: [
+    return DecoratedBox(
+      decoration: const BoxDecoration(
+        color: ClosetColors.beige,
+        border: Border(
+          bottom: BorderSide(
+            color: ClosetColors.fond400,
+            width: AppStroke.fin,
+          ),
+        ),
+      ),
+      child: SizedBox(
+        height: preferredSize.height,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.p20),
+          child: Row(
+            children: [
+              if (showBackButton) ...[
                 Semantics(
                   button: true,
                   label: 'Retour',
-                  child: Tooltip(
-                    message: 'Retour',
-                    child: GestureDetector(
-                      onTap: () => context.pop(),
-                      child: SizedBox(
-                        width: AppSpacing.minTouchTarget,
-                        height: AppSpacing.minTouchTarget,
-                        child: Icon(Icons.arrow_back_ios_new,
-                            size: 18, color: onSurfaceColor),
+                  child: GestureDetector(
+                    onTap: () => context.pop(),
+                    child: const SizedBox(
+                      width: AppSpacing.minTouchTarget,
+                      height: AppSpacing.minTouchTarget,
+                      child: Icon(
+                        Icons.arrow_back_ios_new,
+                        size: 18,
+                        color: ClosetColors.noir,
                       ),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: AppSpacing.p12),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title ?? '',
-                      style: ClosetTextStyles.titreEcran.copyWith(
-                        fontSize: 15,
-                        color: onSurfaceColor,
-                      ),
-                    ),
-                    if (subtitle != null)
-                      Text(
-                        subtitle!,
-                        style: ClosetTextStyles.labelChamp.copyWith(
-                          color: onSurfaceColor.withValues(alpha: 0.6),
-                        ),
-                      ),
-                  ],
-                ),
-              ],
-            )
-          : Row(
-              children: [
-                // Asset Logo
-                Image.asset(
-                  isDark ? 'assets/logo_fond_sombre.png' : 'assets/iconheader.png',
-                  width: 36,
-                  height: 36,
-                  errorBuilder: (_, _, _) => const DecoratedBox(
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: ClosetColors.vert,
-                    ),
-                    child: Center(
-                      child: Text('C', style: TextStyle(color: ClosetColors.creme, fontWeight: FontWeight.bold)),
                     ),
                   ),
                 ),
                 const SizedBox(width: AppSpacing.p8),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        title ?? 'ClosET',
-                        style: ClosetTextStyles.titreEcran.copyWith(
-                          fontSize: 16,
-                          color: onSurfaceColor,
-                        ),
-                      ),
-                      Text(
-                        subtitle ?? 'L\'ÉLÉGANCE DURABLE',
-                        style: ClosetTextStyles.labelChamp.copyWith(
-                          fontSize: 8,
-                          color: onSurfaceColor.withValues(alpha: 0.6),
-                          letterSpacing: 2,
-                        ),
-                      ),
-                    ],
+              ],
+              Expanded(child: _Salutation(title: title, subtitle: subtitle, user: user)),
+              Image.asset(
+                'assets/iconheader.png',
+                width: 73,
+                height: 29,
+                fit: BoxFit.contain,
+                errorBuilder: (_, _, _) => Text(
+                  'CLOS|ET',
+                  style: ClosetTextStyles.titreBloc.copyWith(
+                    color: ClosetColors.noir,
                   ),
                 ),
-              ],
-            ),
-      actions: actions ?? [
-        // Search icon navigating to collections
-        Semantics(
-          button: true,
-          label: 'Rechercher des pièces',
-          child: IconButton(
-            icon: const Icon(Icons.search, size: 22),
-            color: onSurfaceColor,
-            onPressed: () => context.go('/collections'),
-          ),
-        ),
-        // Profile
-        Semantics(
-          button: true,
-          label: 'Mon espace',
-          child: IconButton(
-            icon: const Icon(Icons.person_outline, size: 22),
-            color: onSurfaceColor,
-            onPressed: () => context.go('/espace'),
-          ),
-        ),
-        // Cart with badge
-        Stack(
-          alignment: Alignment.topRight,
-          children: [
-            Semantics(
-              button: true,
-              label: cartCount > 0 ? 'Panier, $cartCount articles' : 'Panier',
-              child: IconButton(
-                icon: const Icon(Icons.shopping_bag_outlined, size: 22),
-                color: onSurfaceColor,
-                onPressed: () => context.go('/selection'),
               ),
+              Expanded(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: actions ??
+                      [
+                        _BoutonRond(
+                          icone: Icons.shopping_basket_outlined,
+                          label: cartCount > 0
+                              ? 'Panier, $cartCount articles'
+                              : 'Panier',
+                          pastille: cartCount > 0 ? cartCount : null,
+                          onTap: () => context.go('/selection'),
+                        ),
+                        const SizedBox(width: AppSpacing.gapListe),
+                        _BoutonRond(
+                          icone: Icons.notifications_none_rounded,
+                          label: 'Notifications',
+                          onTap: () => context.go('/espace/alertes'),
+                        ),
+                      ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _Salutation extends StatelessWidget {
+  const _Salutation({
+    required this.title,
+    required this.subtitle,
+    required this.user,
+  });
+
+  final String? title;
+  final String? subtitle;
+  final ClosetUser? user;
+
+  @override
+  Widget build(BuildContext context) {
+    final nom = subtitle ??
+        (user == null
+            ? 'Invitée'
+            : 'Mme ${user!.firstName} ${user!.lastName.isEmpty ? '' : '${user!.lastName[0]}.'}'
+                .trim());
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisAlignment: MainAxisAlignment.center,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          title ?? 'Bienvenue,',
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: ClosetTextStyles.prix.copyWith(
+            fontWeight: FontWeight.w600,
+            letterSpacing: 0.28,
+            color: ClosetColors.noir,
+          ),
+        ),
+        Text(
+          nom,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: ClosetTextStyles.titreBloc.copyWith(
+            fontSize: 14,
+            fontWeight: FontWeight.w700,
+            letterSpacing: 0.28,
+            color: ClosetColors.doreEncre,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// Bouton rond de l'en-tête : 42 de diamètre, fond `#F3F3F3`, cerclé d'or.
+class _BoutonRond extends StatelessWidget {
+  const _BoutonRond({
+    required this.icone,
+    required this.label,
+    required this.onTap,
+    this.pastille,
+  });
+
+  final IconData icone;
+  final String label;
+  final VoidCallback onTap;
+  final int? pastille;
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      button: true,
+      label: label,
+      child: GestureDetector(
+        onTap: onTap,
+        child: Stack(
+          clipBehavior: Clip.none,
+          children: [
+            Container(
+              width: 42,
+              height: 42,
+              decoration: BoxDecoration(
+                color: ClosetColors.carteFond,
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: ClosetColors.fond300,
+                  width: AppStroke.fin,
+                ),
+              ),
+              child: Icon(icone, size: 20, color: ClosetColors.vert),
             ),
-            if (cartCount > 0)
+            if (pastille != null)
               Positioned(
-                top: 6,
-                right: 6,
+                top: -2,
+                right: -2,
                 child: IgnorePointer(
-                  child: DecoratedBox(
+                  child: Container(
+                    padding: const EdgeInsets.all(AppSpacing.p4),
                     decoration: const BoxDecoration(
                       color: ClosetColors.vert,
                       shape: BoxShape.circle,
                     ),
-                    child: SizedBox(
-                      width: 16,
-                      height: 16,
-                      child: Center(
-                        child: Text(
-                          '$cartCount',
-                          style: ClosetTextStyles.labelChamp.copyWith(
-                            color: ClosetColors.creme,
-                            fontSize: 9,
-                          ),
-                        ),
+                    child: Text(
+                      '$pastille',
+                      style: ClosetTextStyles.micro.copyWith(
+                        color: ClosetColors.creme,
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
                   ),
@@ -183,19 +228,21 @@ class ClosetAppBar extends ConsumerWidget implements PreferredSizeWidget {
               ),
           ],
         ),
-        const SizedBox(width: 4),
-      ],
+      ),
     );
   }
 }
 
-/// Carte article réutilisable reproduisant le design de la maquette
-/// Carte article réutilisable reproduisant le design de la maquette
+/// Carte article branchée sur la wishlist.
+///
+/// L'habillage est entièrement délégué à [PieceCard] : il n'existe qu'une
+/// seule implémentation de carte produit dans l'app. Cette classe n'apporte
+/// que la liaison au modèle [Article] et le basculement de la wishlist.
 class ArticleCard extends ConsumerStatefulWidget {
+  const ArticleCard({super.key, required this.article, this.onTap});
+
   final Article article;
   final VoidCallback? onTap;
-
-  const ArticleCard({super.key, required this.article, this.onTap});
 
   @override
   ConsumerState<ArticleCard> createState() => _ArticleCardState();
@@ -217,261 +264,40 @@ class _ArticleCardState extends ConsumerState<ArticleCard> {
     final wishlist = ref.watch(wishlistListProvider);
     final isWishlistedReal = wishlist.any((a) => a.id == widget.article.id);
 
-    // Sync local state if it matches the provider state
+    // Remet l'état optimiste à zéro dès que le provider l'a rattrapé.
     if (_localWishlisted == isWishlistedReal) {
       _localWishlisted = null;
     }
-
     final isWishlisted = _localWishlisted ?? isWishlistedReal;
-    final isSoldOut = widget.article.isSoldOut;
-    final theme = Theme.of(context);
-    final onSurfaceColor = theme.colorScheme.onSurface;
 
-    return GestureDetector(
+    final article = widget.article;
+
+    return PieceCard(
+      maison: article.brand,
+      nom: article.title,
+      prix: formatPrixFcfa(article.price),
+      attribut: 'T.${article.size}. ${article.material}',
+      imageUrl: article.imageUrls.isEmpty ? null : article.imageUrls.first,
+      statusBadgeText: article.condition,
+      isFavorite: isWishlisted,
+      isSold: article.isSoldOut,
       onTap: widget.onTap,
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          color: theme.colorScheme.surface,
-          borderRadius: BorderRadius.circular(12),
-          boxShadow: [
-            BoxShadow(
-              color: onSurfaceColor.withValues(alpha: 0.06),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Image zone with wish + sold-out overlay
-            Expanded(
-              child: Stack(
-                children: [
-                  ClipRRect(
-                    borderRadius: const BorderRadius.vertical(
-                      top: Radius.circular(12),
-                    ),
-                    child: ColorFiltered(
-                      colorFilter: isSoldOut
-                          ? const ColorFilter.matrix([
-                              0.2126, 0.7152, 0.0722, 0, 0,
-                              0.2126, 0.7152, 0.0722, 0, 0,
-                              0.2126, 0.7152, 0.0722, 0, 0,
-                              0,      0,      0,      1, 0,
-                            ])
-                          : const ColorFilter.mode(
-                              Colors.transparent, BlendMode.multiply),
-                      child: Image.network(
-                        widget.article.imageUrls[0],
-                        width: double.infinity,
-                        height: double.infinity,
-                        fit: BoxFit.cover,
-                        errorBuilder: (_, _, _) => Container(
-                          color: Colors.grey.shade300,
-                        ),
-                      ),
-                    ),
-                  ),
-                  // Sold-out badge
-                  if (isSoldOut)
-                    Positioned(
-                      top: 10,
-                      left: 10,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 8, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: Colors.black.withValues(alpha: 0.75),
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                        child: const Text(
-                          'Déjà adoptée',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 10,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                    ),
-                  // Heart button
-                  Positioned(
-                    top: 8,
-                    right: 8,
-                    child: Semantics(
-                      button: true,
-                      label: isWishlisted ? 'Retirer des favoris' : 'Ajouter aux favoris',
-                      child: GestureDetector(
-                        onTap: () {
-                          setState(() {
-                            _localWishlisted = !isWishlisted;
-                          });
-                          ref.read(wishlistProvider.notifier).toggleWishlist(widget.article);
-                        },
-                        child: Container(
-                          width: AppSpacing.minTouchTarget,
-                          height: AppSpacing.minTouchTarget,
-                          alignment: Alignment.center,
-                          decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.9),
-                            shape: BoxShape.circle,
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withValues(alpha: 0.08),
-                                blurRadius: 4,
-                              ),
-                            ],
-                          ),
-                          child: AnimatedSwitcher(
-                            duration: const Duration(milliseconds: 200),
-                            switchInCurve: Curves.easeOutCubic,
-                            transitionBuilder: (child, animation) => ScaleTransition(
-                              scale: animation,
-                              child: child,
-                            ),
-                            child: Icon(
-                              isWishlisted ? Icons.favorite : Icons.favorite_border,
-                              key: ValueKey(isWishlisted),
-                              size: 20,
-                              color: isWishlisted ? ClosetColors.erreur : ClosetColors.taupe,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            // Info zone
-            Padding(
-              padding: const EdgeInsets.fromLTRB(10, 8, 10, 10),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    widget.article.brand.toUpperCase(),
-                    style: TextStyle(
-                      fontSize: 9,
-                      fontWeight: FontWeight.w700,
-                      color: theme.colorScheme.primary,
-                      letterSpacing: 1.2,
-                    ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    widget.article.title,
-                    style: TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                      color: onSurfaceColor,
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Flexible(
-                        child: Text(
-                          _formatPrice(widget.article.price),
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w700,
-                            color: onSurfaceColor,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 4),
-                      if (!isSoldOut)
-                        Flexible(
-                          child: _ConditionBadge(condition: widget.article.condition),
-                        ),
-                      if (isSoldOut)
-                        Flexible(
-                          child: GestureDetector(
-                            onTap: () {},
-                            child: Text(
-                              '⏰ M\'ALERTER',
-                              style: TextStyle(
-                                fontSize: 9,
-                                fontWeight: FontWeight.w700,
-                                color: theme.colorScheme.primary,
-                                letterSpacing: 0.5,
-                              ),
-                            ),
-                          ),
-                        ),
-                    ],
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    'T. ${widget.article.size} · ${widget.article.material}',
-                    style: TextStyle(
-                      fontSize: 10,
-                      color: onSurfaceColor.withValues(alpha: 0.6),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
+      onFavoriteTap: () {
+        setState(() => _localWishlisted = !isWishlisted);
+        ref.read(wishlistProvider.notifier).toggleWishlist(article);
+      },
     );
-  }
-
-  String _formatPrice(double price) {
-    // Format: "38 500 FCFA"
-    final intPrice = price.toInt();
-    if (intPrice >= 1000) {
-      final thousands = intPrice ~/ 1000;
-      final remainder = intPrice % 1000;
-      if (remainder == 0) {
-        return '$thousands 000 FCFA';
-      }
-      return '$thousands ${remainder.toString().padLeft(3, '0')} FCFA';
-    }
-    return '$intPrice FCFA';
   }
 }
 
-class _ConditionBadge extends StatelessWidget {
-  final String condition;
-  const _ConditionBadge({required this.condition});
-
-  @override
-  Widget build(BuildContext context) {
-    Color bg;
-    Color fg;
-    switch (condition.toLowerCase()) {
-      case 'neuf avec étiquette':
-      case 'neuf':
-        bg = ClosetColors.conditionNeufFond;
-        fg = ClosetColors.conditionNeufTexte;
-        break;
-      case 'excellent':
-        bg = ClosetColors.conditionExcellentFond;
-        fg = ClosetColors.conditionExcellentTexte;
-        break;
-      default:
-        bg = ClosetColors.conditionTresBonFond;
-        fg = ClosetColors.conditionTresBonTexte;
-    }
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-      decoration: BoxDecoration(
-        color: bg,
-        borderRadius: BorderRadius.circular(4),
-      ),
-      child: Text(
-        condition,
-        style: TextStyle(
-          fontSize: 9,
-          fontWeight: FontWeight.w700,
-          color: fg,
-        ),
-      ),
-    );
+/// Format des montants de la maquette : « 38.500 FCFA ».
+String formatPrixFcfa(double prix) {
+  final entier = prix.round();
+  final chiffres = entier.toString();
+  final buffer = StringBuffer();
+  for (var i = 0; i < chiffres.length; i++) {
+    if (i > 0 && (chiffres.length - i) % 3 == 0) buffer.write('.');
+    buffer.write(chiffres[i]);
   }
+  return '$buffer FCFA';
 }

@@ -22,6 +22,8 @@ import '../../features/sourceur/pieces/sourceur_pieces_screen.dart';
 import '../../features/sourceur/revenus/sourceur_revenus_screen.dart';
 import '../../features/sourceur/sourceur_layout.dart';
 import '../../features/splash/splash_screen.dart';
+import '../../features/transaction/transaction_flow_screen.dart';
+import '../../features/transaction/transaction_models.dart';
 
 final appRouterProvider = Provider<GoRouter>((ref) {
   final rootNavigatorKey = GlobalKey<NavigatorState>();
@@ -32,9 +34,12 @@ final appRouterProvider = Provider<GoRouter>((ref) {
     redirect: (context, state) {
       final isAuthenticated = ref.read(isAuthenticatedProvider);
       final loc = state.matchedLocation;
+
+      // Routes engageant de l'argent ou l'identité : authentification requise.
+      // `/transaction` en fait partie — il débite ou reverse des fonds.
+      const routesProtegees = {'/checkout', '/transaction'};
       if (!isAuthenticated &&
-          (loc == '/checkout' ||
-              loc.startsWith('/sourceur'))) {
+          (routesProtegees.contains(loc) || loc.startsWith('/sourceur'))) {
         return '/auth';
       }
       if (isAuthenticated &&
@@ -142,6 +147,51 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             );
           },
         ),
+      ),
+
+      // ── Tunnel de transaction (hors shell, sans retour arrière) ─────
+      // Les 4 étapes (PIN → traitement → succès → reçu) vivent dans une
+      // seule route : voir TransactionFlowScreen.
+      GoRoute(
+        parentNavigatorKey: rootNavigatorKey,
+        path: '/transaction',
+        pageBuilder: (context, state) {
+          final demande = state.extra as DemandeTransaction?;
+          if (demande == null) {
+            return CustomTransitionPage(
+              key: state.pageKey,
+              child: const Scaffold(
+                body: Center(child: Text('Transaction introuvable')),
+              ),
+              transitionsBuilder: (context, animation, _, child) =>
+                  FadeTransition(opacity: animation, child: child),
+            );
+          }
+          return CustomTransitionPage(
+            key: state.pageKey,
+            child: TransactionFlowScreen(
+              demande: demande,
+              // TODO(backend): brancher l'endpoint de transaction. Le tunnel
+              // exige un exécuteur : il ne peut pas afficher un succès sans
+              // opération réelle, et le reçu doit être émis par le serveur.
+              executer: (demande, pin) => throw const TransactionRefusee(
+                'Le service de transaction n’est pas encore disponible.',
+              ),
+            ),
+            transitionsBuilder: (context, animation, _, child) {
+              return SlideTransition(
+                position: Tween<Offset>(
+                  begin: const Offset(0, 1),
+                  end: Offset.zero,
+                ).animate(CurvedAnimation(
+                  parent: animation,
+                  curve: Curves.easeOutCubic,
+                )),
+                child: child,
+              );
+            },
+          );
+        },
       ),
 
       // ── Sourceur Shell with bottom nav ───────────────────────────────
