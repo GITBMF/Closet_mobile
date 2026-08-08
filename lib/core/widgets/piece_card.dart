@@ -1,20 +1,18 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+
+import '../theme/app_spacing.dart';
 import '../theme/closet_colors.dart';
+import '../theme/closet_text_styles.dart';
 
+/// Carte produit — transcription du composant « Product Card » de `11:30`.
+///
+/// 169 × 249, fond gris très clair `#F3F3F3` bordé `#E6E6E6`, rayon 8.
+/// L'image occupe la partie haute sur toute la largeur ; le badge d'état est
+/// posé en haut à gauche, le cœur en haut à droite dans un cercle blanc.
+/// Sous l'image : maison en petites capitales dorées, nom en Cormorant
+/// Garamond, prix en EB Garamond.
 class PieceCard extends StatelessWidget {
-  final String maison;
-  final String nom;
-  final String prix;
-  final String? imageUrl;
-  final bool isImageArche;
-  final String? statusBadgeText;
-  final bool isFavorite;
-  final bool isSold;
-  final VoidCallback? onFavoriteTap;
-  final VoidCallback? onTap;
-
   const PieceCard({
     super.key,
     required this.maison,
@@ -29,168 +27,209 @@ class PieceCard extends StatelessWidget {
     this.onTap,
   });
 
+  final String maison;
+  final String nom;
+  final String prix;
+  final String? imageUrl;
+
+  /// Image en arche (coins supérieurs très arrondis).
+  final bool isImageArche;
+
+  final String? statusBadgeText;
+  final bool isFavorite;
+  final bool isSold;
+  final VoidCallback? onFavoriteTap;
+  final VoidCallback? onTap;
+
+  /// Hauteur de la zone image dans la maquette.
+  static const double _hauteurImage = 160;
+
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
       child: DecoratedBox(
-      decoration: BoxDecoration(
-        color: ClosetColors.creme,
-        border: Border.all(color: ClosetColors.ligne),
-        borderRadius: BorderRadius.circular(16),
+        decoration: BoxDecoration(
+          color: ClosetColors.carteFond,
+          border: Border.all(
+            color: ClosetColors.carteBordure,
+            width: AppStroke.fin,
+          ),
+          borderRadius: BorderRadius.circular(AppRadius.carte),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _Visuel(
+              imageUrl: imageUrl,
+              hauteur: _hauteurImage,
+              arche: isImageArche,
+              isSold: isSold,
+              statusBadgeText: statusBadgeText,
+              isFavorite: isFavorite,
+              onFavoriteTap: onFavoriteTap,
+            ),
+            Padding(
+              padding: const EdgeInsets.all(AppSpacing.p8),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    maison.toUpperCase(),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: ClosetTextStyles.microLegende.copyWith(
+                      color: ClosetColors.dore,
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.p4),
+                  Text(
+                    nom,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: ClosetTextStyles.nomProduit,
+                  ),
+                  const SizedBox(height: AppSpacing.p4),
+                  Text(
+                    isSold ? 'Indisponible' : prix,
+                    style: ClosetTextStyles.prix.copyWith(
+                      color: isSold ? ClosetColors.taupe : ClosetColors.noir,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+    );
+  }
+}
+
+class _Visuel extends StatelessWidget {
+  const _Visuel({
+    required this.imageUrl,
+    required this.hauteur,
+    required this.arche,
+    required this.isSold,
+    required this.statusBadgeText,
+    required this.isFavorite,
+    required this.onFavoriteTap,
+  });
+
+  final String? imageUrl;
+  final double hauteur;
+  final bool arche;
+  final bool isSold;
+  final String? statusBadgeText;
+  final bool isFavorite;
+  final VoidCallback? onFavoriteTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final rayon = arche
+        ? const BorderRadius.vertical(top: Radius.circular(45))
+        : const BorderRadius.vertical(top: Radius.circular(AppRadius.carte));
+
+    return SizedBox(
+      height: hauteur,
+      width: double.infinity,
+      child: Stack(
+        fit: StackFit.expand,
         children: [
-          Container(
-            height: 140,
-            width: double.infinity,
-            decoration: const BoxDecoration(
-              color: ClosetColors.beige, 
-              borderRadius: BorderRadius.vertical(top: Radius.circular(15)),
-            ),
-            child: Stack(
-              children: [
-                Align(
-                  alignment: Alignment.bottomCenter,
-                  child: imageUrl != null
-                      ? ClipRRect(
-                          borderRadius: isImageArche
-                              ? const BorderRadius.only(
-                                  topLeft: Radius.circular(45),
-                                  topRight: Radius.circular(45),
-                                )
-                              : BorderRadius.circular(8),
-                          child: CachedNetworkImage(
-                            imageUrl: imageUrl!,
-                            width: 90,
-                            height: 110,
-                            fit: BoxFit.cover,
-                            color: isSold ? Colors.black.withValues(alpha: 0.5) : null,
-                            colorBlendMode: isSold ? BlendMode.darken : null,
-                            placeholder: (context, url) => Container(
-                              color: ClosetColors.ligne,
-                            ),
-                            errorWidget: (context, url, error) => const Icon(
-                              Icons.image_not_supported,
-                              color: ClosetColors.taupe,
-                            ),
-                            fadeInDuration: const Duration(milliseconds: 250),
-                          ),
-                        )
-                      : const SizedBox(),
-                ),
-
-                if (statusBadgeText != null && !isSold)
-                  Positioned(
-                    top: 10,
-                    left: 10,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: ClosetColors.vertFonce,
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Text(
-                        statusBadgeText!.toUpperCase(),
-                        style: const TextStyle(
-                          fontSize: 9,
-                          fontWeight: FontWeight.w800,
-                          letterSpacing: 1.0,
-                          color: ClosetColors.doreClair,
-                        ),
+          ClipRRect(
+            borderRadius: rayon,
+            child: imageUrl == null
+                ? const ColoredBox(color: ClosetColors.beige)
+                : CachedNetworkImage(
+                    imageUrl: imageUrl!,
+                    fit: BoxFit.cover,
+                    color: isSold ? Colors.black.withValues(alpha: 0.5) : null,
+                    colorBlendMode: isSold ? BlendMode.darken : null,
+                    placeholder: (context, url) =>
+                        const ColoredBox(color: ClosetColors.ligne),
+                    errorWidget: (context, url, error) => const ColoredBox(
+                      color: ClosetColors.beige,
+                      child: Icon(
+                        Icons.image_not_supported,
+                        color: ClosetColors.taupe,
                       ),
                     ),
+                    fadeInDuration: const Duration(milliseconds: 250),
                   ),
-
-                if (!isSold)
-                  Positioned(
-                    top: 10,
-                    right: 10,
-                    child: GestureDetector(
-                      onTap: onFavoriteTap,
-                      child: Container(
-                        padding: const EdgeInsets.all(6),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          shape: BoxShape.circle,
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.05),
-                              blurRadius: 4,
-                              offset: const Offset(0, 2),
-                            ),
-                          ],
-                        ),
-                        child: Icon(
-                          isFavorite ? Icons.favorite : Icons.favorite_border,
-                          color: isFavorite ? const Color(0xFF8B2516) : ClosetColors.vertFonce,
-                          size: 16,
-                        ),
-                      ),
-                    ),
-                  ),
-
-                if (isSold)
-                  Positioned(
-                    bottom: 0,
-                    left: 0,
-                    right: 0,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(vertical: 6),
-                      color: ClosetColors.vertFonce.withValues(alpha: 0.9),
-                      child: const Text(
-                        'A trouvé son dressing',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 10,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-                  ),
-              ],
-            ),
           ),
-          Padding(
-            padding: const EdgeInsets.all(12.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  maison.toUpperCase(),
-                  style: const TextStyle(
-                    fontSize: 10,
-                    letterSpacing: 1.5,
-                    fontWeight: FontWeight.w700,
-                    color: ClosetColors.taupe,
+          if (statusBadgeText != null && !isSold)
+            Positioned(
+              top: AppSpacing.p8,
+              left: AppSpacing.p8,
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.p12,
+                  vertical: AppSpacing.p4,
+                ),
+                decoration: BoxDecoration(
+                  color: ClosetColors.emeraude100,
+                  borderRadius: BorderRadius.circular(AppRadius.vignette),
+                ),
+                child: Text(
+                  statusBadgeText!.toUpperCase(),
+                  style: ClosetTextStyles.attribut.copyWith(
+                    color: ClosetColors.emeraude500,
                   ),
                 ),
-                const SizedBox(height: 4),
-                Text(
-                  nom,
-                  style: GoogleFonts.cormorant(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w600,
-                    color: ClosetColors.noir,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  isSold ? 'Indisponible' : prix,
-                  style: GoogleFonts.cormorant(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
-                    color: isSold ? ClosetColors.taupe : ClosetColors.noir,
-                  ),
-                ),
-              ],
+              ),
             ),
-          ),
+          if (!isSold)
+            Positioned(
+              top: AppSpacing.p8,
+              right: AppSpacing.p8,
+              child: Semantics(
+                button: true,
+                label: isFavorite
+                    ? 'Retirer de la wishlist'
+                    : 'Ajouter à la wishlist',
+                child: GestureDetector(
+                  onTap: onFavoriteTap,
+                  child: Container(
+                    padding: const EdgeInsets.all(6),
+                    decoration: const BoxDecoration(
+                      color: Colors.white,
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      isFavorite ? Icons.favorite : Icons.favorite_border,
+                      color: isFavorite
+                          ? ClosetColors.erreurCouture
+                          : ClosetColors.vertFonce,
+                      size: 16,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          if (isSold)
+            Positioned(
+              bottom: 0,
+              left: 0,
+              right: 0,
+              child: ColoredBox(
+                color: ClosetColors.vertFonce.withValues(alpha: 0.9),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: AppSpacing.p4),
+                  child: Text(
+                    'A trouvé son dressing',
+                    textAlign: TextAlign.center,
+                    style: ClosetTextStyles.detail.copyWith(
+                      color: ClosetColors.creme,
+                    ),
+                  ),
+                ),
+              ),
+            ),
         ],
       ),
-    ),
     );
   }
 }
