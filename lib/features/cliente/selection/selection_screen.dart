@@ -1,134 +1,169 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/closet_colors.dart';
+import '../../../core/theme/closet_text_styles.dart';
 import '../../../core/widgets/closet_app_bar.dart';
+import '../../../core/widgets/closet_sections.dart';
 import '../../../data/models/article.dart';
 import '../../../data/repositories/cart_repository.dart';
 import '../../auth/auth_screen.dart';
 
-class SelectionScreen extends ConsumerWidget {
+/// Frais de livraison — valeur de la maquette (`16:3448`).
+///
+/// TODO(backend): les frais doivent venir du serveur, ils dépendent de la
+/// zone de livraison. Constante figée tant que l'endpoint n'existe pas.
+const double fraisLivraison = 3500;
+
+/// Ma sélection — transcription de la maquette `16:3448`.
+///
+/// Liste des pièces mises de côté, champ de code privilège, récapitulatif
+/// sous-total / livraison / total, puis bouton de finalisation.
+class SelectionScreen extends ConsumerStatefulWidget {
   const SelectionScreen({super.key});
 
-  String _formatPrice(double price) {
-    final intPrice = price.toInt();
-    final thousands = intPrice ~/ 1000;
-    final remainder = intPrice % 1000;
-    if (remainder == 0) return '$thousands 000 FCFA';
-    return '$thousands ${remainder.toString().padLeft(3, '0')} FCFA';
+  @override
+  ConsumerState<SelectionScreen> createState() => _SelectionScreenState();
+}
+
+class _SelectionScreenState extends ConsumerState<SelectionScreen> {
+  final _codePrivilege = TextEditingController();
+
+  @override
+  void dispose() {
+    _codePrivilege.dispose();
+    super.dispose();
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final cartItems = ref.watch(cartListProvider);
-    final total = ref.watch(cartTotalProvider);
-    final theme = Theme.of(context);
+  Widget build(BuildContext context) {
+    final pieces = ref.watch(cartListProvider);
+    final sousTotal = ref.watch(cartTotalProvider);
 
     return Scaffold(
-      backgroundColor: theme.scaffoldBackgroundColor,
-      appBar: const ClosetAppBar(
-        title: 'Ma sélection',
-        subtitle: 'VOS PIÈCES CHOISIES',
-      ),
-      body: cartItems.isEmpty
-          ? const _EmptyCart()
-          : Column(
-              children: [
-                Expanded(
-                  child: ListView.separated(
-                    padding: const EdgeInsets.all(16),
-                    itemCount: cartItems.length,
-                    separatorBuilder: (_, _) => const SizedBox(height: 12),
-                    itemBuilder: (context, i) {
-                      return _CartItem(
-                        article: cartItems[i],
-                        onRemove: () => ref
-                            .read(cartProvider.notifier)
-                            .removeArticle(cartItems[i].id),
-                        onTap: () =>
-                            context.push('/product/${cartItems[i].id}'),
-                      );
-                    },
+      backgroundColor: ClosetColors.beige,
+      appBar: const ClosetAppBar(),
+      body: pieces.isEmpty
+          ? const _SelectionVide()
+          : SingleChildScrollView(
+              padding: const EdgeInsets.only(bottom: AppSpacing.p32),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: AppSpacing.p12),
+                  const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: AppSpacing.p20),
+                    child: ClosetTitreEcran('Ma sélection'),
                   ),
-                ),
-                _CartSummary(
-                  items: cartItems,
-                  total: total,
-                  formatPrice: _formatPrice,
-                ),
-              ],
+                  const SizedBox(height: AppSpacing.p20),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: AppSpacing.p24),
+                    child: Text(
+                      pieces.length == 1
+                          ? '1 pièce unique mise de côté pour vous.'
+                          : '${pieces.length} pièces uniques mises de côté '
+                              'pour vous.',
+                      style: ClosetTextStyles.citation.copyWith(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w400,
+                        letterSpacing: -0.28,
+                        color: ClosetColors.neutre700,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.p20),
+                  for (final piece in pieces) ...[
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppSpacing.p20,
+                      ),
+                      child: _LignePiece(
+                        article: piece,
+                        onRetirer: () => ref
+                            .read(cartProvider.notifier)
+                            .removeArticle(piece.id),
+                        onTap: () => context.push('/product/${piece.id}'),
+                      ),
+                    ),
+                    const SizedBox(height: AppSpacing.p12),
+                  ],
+                  const SizedBox(height: AppSpacing.p8),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.p20,
+                    ),
+                    child: _CodePrivilege(controller: _codePrivilege),
+                  ),
+                  const SizedBox(height: AppSpacing.p24),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.p20,
+                    ),
+                    child: _Recapitulatif(
+                      sousTotal: sousTotal,
+                      livraison: fraisLivraison,
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.p24),
+                  const _BoutonFinaliser(),
+                ],
+              ),
             ),
     );
   }
 }
 
-// ── Empty State ──────────────────────────────────────────────────────────────
-
-class _EmptyCart extends StatelessWidget {
-  const _EmptyCart();
+class _SelectionVide extends StatelessWidget {
+  const _SelectionVide();
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final onSurfaceColor = theme.colorScheme.onSurface;
-
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(40),
+        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.p32),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Container(
-              width: 80,
-              height: 80,
-              decoration: BoxDecoration(
-                color: theme.colorScheme.primary.withValues(alpha: 0.1),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(
-                Icons.shopping_bag_outlined,
-                size: 36,
-                color: theme.colorScheme.primary.withValues(alpha: 0.6),
-              ),
+            const Icon(
+              Icons.shopping_basket_outlined,
+              size: 48,
+              color: ClosetColors.fond300,
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: AppSpacing.p20),
             Text(
-              'Votre dressing attend\nsa prochaine pièce',
+              'Votre sélection est vide',
               textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w700,
-                color: onSurfaceColor,
-                height: 1.3,
-              ),
+              style: ClosetTextStyles.titreSection,
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: AppSpacing.p12),
             Text(
-              'Explorez nos collections pour trouver\nla pièce qui vous ressemble.',
+              'Parcourez le dressing et mettez de côté les pièces qui vous '
+              'ressemblent.',
               textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 13,
-                color: onSurfaceColor.withValues(alpha: 0.6),
-                height: 1.5,
+              style: ClosetTextStyles.citation.copyWith(
+                color: ClosetColors.taupe,
               ),
             ),
-            const SizedBox(height: 32),
-            GestureDetector(
-              onTap: () => context.go('/collections'),
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                    horizontal: 28, vertical: 14),
-                decoration: BoxDecoration(
-                  color: theme.colorScheme.primary,
-                  borderRadius: BorderRadius.circular(30),
-                ),
-                child: Text(
-                  'Découvrir les collections',
-                  style: TextStyle(
-                    color: theme.colorScheme.onPrimary,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
+            const SizedBox(height: AppSpacing.p24),
+            SizedBox(
+              width: 240,
+              height: 44,
+              child: Material(
+                color: ClosetColors.vert,
+                borderRadius: BorderRadius.circular(AppRadius.cercle),
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(AppRadius.cercle),
+                  onTap: () => context.go('/collections'),
+                  child: Center(
+                    child: Text(
+                      'Découvrir les collections',
+                      style: ClosetTextStyles.bouton.copyWith(
+                        color: Colors.white,
+                      ),
+                    ),
                   ),
                 ),
               ),
@@ -140,134 +175,110 @@ class _EmptyCart extends StatelessWidget {
   }
 }
 
-// ── Cart Item Card ───────────────────────────────────────────────────────────
-
-class _CartItem extends StatelessWidget {
-  final Article article;
-  final VoidCallback onRemove;
-  final VoidCallback onTap;
-
-  const _CartItem({
+/// Ligne de pièce : carte blanche 350 × 146 cerclée d'or, visuel 107 × 127.
+class _LignePiece extends StatelessWidget {
+  const _LignePiece({
     required this.article,
-    required this.onRemove,
+    required this.onRetirer,
     required this.onTap,
   });
 
-  String _formatPrice(double price) {
-    final intPrice = price.toInt();
-    final thousands = intPrice ~/ 1000;
-    final remainder = intPrice % 1000;
-    if (remainder == 0) return '$thousands 000 FCFA';
-    return '$thousands ${remainder.toString().padLeft(3, '0')} FCFA';
-  }
+  final Article article;
+  final VoidCallback onRetirer;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final onSurfaceColor = theme.colorScheme.onSurface;
-
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.all(12),
+        height: 146,
+        padding: const EdgeInsets.all(AppSpacing.p8),
         decoration: BoxDecoration(
-          color: theme.colorScheme.surface,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: theme.colorScheme.primary.withValues(alpha: 0.1)),
-          boxShadow: [
-            BoxShadow(
-              color: onSurfaceColor.withValues(alpha: 0.04),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
-          ],
+          color: Colors.white,
+          border: Border.all(color: ClosetColors.fond300, width: AppStroke.fin),
+          borderRadius: BorderRadius.circular(AppRadius.carte),
         ),
         child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Image
             ClipRRect(
-              borderRadius: BorderRadius.circular(8),
-              child: article.imageUrls.isNotEmpty
-                  ? Image.network(
-                      article.imageUrls.first,
-                      width: 80,
-                      height: 100,
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, _, _) => Container(
-                        width: 80,
-                        height: 100,
-                        color: theme.colorScheme.primary.withValues(alpha: 0.1),
-                        child: const Icon(Icons.image_not_supported_outlined),
+              borderRadius: BorderRadius.circular(4),
+              child: SizedBox(
+                width: 107,
+                height: 127,
+                child: article.imageUrls.isEmpty
+                    ? const ColoredBox(color: Color(0xFFD9D9D9))
+                    : CachedNetworkImage(
+                        imageUrl: article.imageUrls.first,
+                        fit: BoxFit.cover,
+                        placeholder: (_, _) =>
+                            const ColoredBox(color: Color(0xFFD9D9D9)),
+                        errorWidget: (_, _, _) =>
+                            const ColoredBox(color: Color(0xFFD9D9D9)),
                       ),
-                    )
-                  : Container(
-                      width: 80,
-                      height: 100,
-                      color: theme.colorScheme.primary.withValues(alpha: 0.1),
-                      child: const Icon(Icons.image_not_supported_outlined),
-                    ),
+              ),
             ),
-            const SizedBox(width: 14),
-
-            // Details
+            const SizedBox(width: AppSpacing.p12),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  const SizedBox(height: AppSpacing.p4),
                   Text(
                     article.brand.toUpperCase(),
-                    style: TextStyle(
-                      fontSize: 9,
-                      fontWeight: FontWeight.w700,
-                      color: theme.colorScheme.primary,
-                      letterSpacing: 1.2,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: ClosetTextStyles.attribut.copyWith(
+                      color: ClosetColors.fond400,
                     ),
                   ),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: 5),
                   Text(
                     article.title,
-                    style: TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w700,
-                      color: onSurfaceColor,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: ClosetTextStyles.nomProduit.copyWith(
+                      fontSize: 14,
+                      letterSpacing: -0.28,
                     ),
                   ),
-                  const SizedBox(height: 4),
-                  Text(
-                    'T. ${article.size} · ${article.material}',
-                    style: TextStyle(
-                      fontSize: 11,
-                      color: onSurfaceColor.withValues(alpha: 0.6),
+                  const SizedBox(height: AppSpacing.p8),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.p12,
+                      vertical: AppSpacing.p4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: ClosetColors.emeraude100,
+                      borderRadius: BorderRadius.circular(AppRadius.vignette),
+                    ),
+                    child: Text(
+                      article.condition,
+                      style: ClosetTextStyles.attribut.copyWith(
+                        color: ClosetColors.emeraude500,
+                      ),
                     ),
                   ),
-                  const SizedBox(height: 4),
-                  _ConditionBadge(condition: article.condition),
-                  const SizedBox(height: 8),
+                  const Spacer(),
                   Text(
-                    _formatPrice(article.price),
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
-                      color: onSurfaceColor,
+                    formatPrixFcfa(article.price),
+                    style: ClosetTextStyles.prixGrand.copyWith(
+                      color: ClosetColors.vert,
                     ),
                   ),
                 ],
               ),
             ),
-
-            // Remove button
-            GestureDetector(
-              onTap: onRemove,
-              child: Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: theme.colorScheme.primary.withValues(alpha: 0.1),
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(
-                  Icons.close,
-                  size: 16,
-                  color: onSurfaceColor.withValues(alpha: 0.6),
+            Semantics(
+              button: true,
+              label: 'Retirer de ma sélection',
+              child: GestureDetector(
+                onTap: onRetirer,
+                child: const SizedBox(
+                  width: 28,
+                  height: 28,
+                  child: Icon(Icons.close, size: 15, color: Colors.black),
                 ),
               ),
             ),
@@ -278,199 +289,221 @@ class _CartItem extends StatelessWidget {
   }
 }
 
-// ── Cart Summary / Checkout ──────────────────────────────────────────────────
+/// Carte « Code privilège » : champ 189 × 38 et bouton vert 114 × 38.
+class _CodePrivilege extends StatelessWidget {
+  const _CodePrivilege({required this.controller});
 
-class _CartSummary extends StatelessWidget {
-  final List<Article> items;
-  final double total;
-  final String Function(double) formatPrice;
-
-  const _CartSummary({
-    required this.items,
-    required this.total,
-    required this.formatPrice,
-  });
+  final TextEditingController controller;
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final onSurfaceColor = theme.colorScheme.onSurface;
-
     return Container(
-      padding: const EdgeInsets.fromLTRB(20, 20, 20, 32),
+      padding: const EdgeInsets.all(AppSpacing.p16),
       decoration: BoxDecoration(
-        color: theme.colorScheme.surface,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-        border: Border.all(color: theme.colorScheme.primary.withValues(alpha: 0.1)),
-        boxShadow: [
-          BoxShadow(
-            color: onSurfaceColor.withValues(alpha: 0.08),
-            blurRadius: 20,
-            offset: const Offset(0, -4),
-          ),
-        ],
+        color: Colors.white,
+        border: Border.all(color: ClosetColors.fond300, width: AppStroke.fin),
+        borderRadius: BorderRadius.circular(AppRadius.carte),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Handle bar
-          Center(
-            child: Container(
-              width: 40,
-              height: 4,
-              margin: const EdgeInsets.only(bottom: 16),
-              decoration: BoxDecoration(
-                color: theme.colorScheme.primary.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-          ),
-
           Row(
             children: [
-              Text(
-                'Récapitulatif',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
-                  color: onSurfaceColor,
-                ),
+              const Icon(
+                Icons.local_offer_outlined,
+                size: 13,
+                color: ClosetColors.fond500,
               ),
-              const Spacer(),
+              const SizedBox(width: AppSpacing.gapChip),
               Text(
-                '${items.length} pièce${items.length > 1 ? "s" : ""}',
-                style: TextStyle(
-                  fontSize: 12,
-                  color: onSurfaceColor.withValues(alpha: 0.6),
+                'Code privilège'.toUpperCase(),
+                style: ClosetTextStyles.meta.copyWith(
+                  letterSpacing: 1.30,
+                  color: ClosetColors.fond500,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 16),
-
-          // Promo code
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            decoration: BoxDecoration(
-              border: Border.all(color: theme.colorScheme.primary.withValues(alpha: 0.1)),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Row(
-              children: [
-                const Icon(Icons.card_giftcard,
-                    size: 18, color: ClosetColors.dore),
-                const SizedBox(width: 10),
-                Text(
-                  'Ajouter un privilège',
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: onSurfaceColor.withValues(alpha: 0.6),
+          const SizedBox(height: AppSpacing.p12),
+          Row(
+            children: [
+              Expanded(
+                child: SizedBox(
+                  height: 38,
+                  child: TextField(
+                    controller: controller,
+                    textCapitalization: TextCapitalization.characters,
+                    style: ClosetTextStyles.nomProduit.copyWith(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w300,
+                    ),
+                    decoration: InputDecoration(
+                      hintText: 'cercle-privilège',
+                      hintStyle: ClosetTextStyles.nomProduit.copyWith(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w300,
+                        color: ClosetColors.placeholderGris,
+                      ),
+                      isDense: true,
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: AppSpacing.p12,
+                      ),
+                      border: _bordure(),
+                      enabledBorder: _bordure(),
+                      focusedBorder: _bordure(),
+                    ),
                   ),
                 ),
-                const Spacer(),
-                Icon(Icons.chevron_right,
-                    size: 18, color: onSurfaceColor.withValues(alpha: 0.6)),
-              ],
-            ),
-          ),
-          const SizedBox(height: 16),
-
-          // Total
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                'Total',
-                style: TextStyle(
-                  fontSize: 14,
-                  color: onSurfaceColor,
-                ),
               ),
-              Text(
-                formatPrice(total),
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w800,
-                  color: onSurfaceColor,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-
-          // CTA button
-          SizedBox(
-            width: double.infinity,
-            child: Consumer(
-              builder: (context, ref, _) {
-                final bool isAuthenticated = ref.watch<bool>(isAuthenticatedProvider);
-                return GestureDetector(
-                  onTap: () {
-                    if (!isAuthenticated) {
-                      context.push('/auth');
-                    } else {
-                      context.push('/checkout');
-                    }
-                  },
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    decoration: BoxDecoration(
-                      color: theme.colorScheme.primary,
-                      borderRadius: BorderRadius.circular(30),
+              const SizedBox(width: AppSpacing.p16),
+              SizedBox(
+                width: 114,
+                height: 38,
+                child: Material(
+                  color: ClosetColors.vert,
+                  borderRadius: BorderRadius.circular(AppRadius.cercle),
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(AppRadius.cercle),
+                    onTap: () => ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Codes privilège bientôt disponibles.'),
+                      ),
                     ),
                     child: Center(
                       child: Text(
-                        'FINALISER MA SÉLECTION',
-                        style: TextStyle(
-                          color: theme.colorScheme.onPrimary,
-                          fontSize: 13,
-                          fontWeight: FontWeight.w800,
-                          letterSpacing: 1,
+                        'Appliquer',
+                        style: ClosetTextStyles.actionPetite.copyWith(
+                          color: Colors.white,
                         ),
                       ),
                     ),
                   ),
-                );
-              },
-            ),
+                ),
+              ),
+            ],
           ),
         ],
       ),
     );
   }
+
+  static OutlineInputBorder _bordure() => OutlineInputBorder(
+        borderRadius: BorderRadius.circular(5),
+        borderSide: const BorderSide(
+          color: ClosetColors.fond300,
+          width: AppStroke.fin,
+        ),
+      );
 }
 
-// ── Condition Badge ──────────────────────────────────────────────────────────
+/// Sous-total, livraison, puis total à régler séparé par un filet doré.
+class _Recapitulatif extends StatelessWidget {
+  const _Recapitulatif({required this.sousTotal, required this.livraison});
 
-class _ConditionBadge extends StatelessWidget {
-  final String condition;
-  const _ConditionBadge({required this.condition});
+  final double sousTotal;
+  final double livraison;
 
   @override
   Widget build(BuildContext context) {
-    Color bg;
-    Color fg;
-    switch (condition.toLowerCase()) {
-      case 'excellent':
-        bg = ClosetColors.conditionExcellentFond;
-        fg = ClosetColors.conditionExcellentTexte;
-        break;
-      case 'très bon':
-        bg = ClosetColors.conditionTresBonFond;
-        fg = ClosetColors.conditionTresBonTexte;
-        break;
-      default:
-        bg = ClosetColors.fondsSucces;
-        fg = ClosetColors.succes;
-    }
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-      decoration:
-          BoxDecoration(color: bg, borderRadius: BorderRadius.circular(4)),
-      child: Text(
-        condition,
-        style: TextStyle(
-            fontSize: 9, fontWeight: FontWeight.w700, color: fg),
+    return Column(
+      children: [
+        _LigneMontant(
+          label: 'Sous-total',
+          montant: sousTotal,
+          couleurLabel: ClosetColors.fond500,
+        ),
+        const SizedBox(height: AppSpacing.p20),
+        _LigneMontant(
+          label: 'Livraison délicate',
+          montant: livraison,
+          couleurLabel: ClosetColors.fond500,
+        ),
+        const SizedBox(height: AppSpacing.p16),
+        const Divider(
+          color: ClosetColors.fond400,
+          thickness: AppStroke.fin,
+          height: AppStroke.fin,
+        ),
+        const SizedBox(height: AppSpacing.p16),
+        _LigneMontant(
+          label: 'total à régler',
+          montant: sousTotal + livraison,
+          couleurLabel: ClosetColors.noir,
+          grand: true,
+        ),
+      ],
+    );
+  }
+}
+
+class _LigneMontant extends StatelessWidget {
+  const _LigneMontant({
+    required this.label,
+    required this.montant,
+    required this.couleurLabel,
+    this.grand = false,
+  });
+
+  final String label;
+  final double montant;
+  final Color couleurLabel;
+  final bool grand;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: [
+        Text(
+          label.toUpperCase(),
+          style: ClosetTextStyles.meta.copyWith(color: couleurLabel),
+        ),
+        Text(
+          formatPrixFcfa(montant),
+          style: grand
+              ? ClosetTextStyles.prixGrand.copyWith(color: ClosetColors.vert)
+              : ClosetTextStyles.prix.copyWith(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: 0.30,
+                  color: ClosetColors.vert,
+                ),
+        ),
+      ],
+    );
+  }
+}
+
+/// CTA « Finaliser Ma sélection » : 312 × 44, vert profond, rayon 100.
+///
+/// Redirige vers l'authentification si la cliente n'est pas connectée — le
+/// paiement ne doit jamais démarrer sur une session anonyme.
+class _BoutonFinaliser extends ConsumerWidget {
+  const _BoutonFinaliser();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final connectee = ref.watch<bool>(isAuthenticatedProvider);
+
+    return Center(
+      child: SizedBox(
+        width: 312,
+        height: 44,
+        child: Material(
+          color: ClosetColors.vert,
+          borderRadius: BorderRadius.circular(AppRadius.cercle),
+          child: InkWell(
+            borderRadius: BorderRadius.circular(AppRadius.cercle),
+            onTap: () => context.push(connectee ? '/checkout' : '/auth'),
+            child: Center(
+              child: Text(
+                'Finaliser Ma sélection',
+                style: ClosetTextStyles.bouton.copyWith(color: Colors.white),
+              ),
+            ),
+          ),
+        ),
       ),
     );
   }

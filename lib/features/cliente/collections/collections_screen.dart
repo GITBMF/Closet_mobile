@@ -2,8 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/closet_colors.dart';
+import '../../../core/theme/closet_text_styles.dart';
 import '../../../core/widgets/closet_app_bar.dart';
+import '../../../core/widgets/closet_chip.dart';
+import '../../../core/widgets/closet_sections.dart';
 import '../../../data/models/article.dart';
 import '../../../data/repositories/catalog_repository.dart';
 
@@ -46,12 +50,18 @@ class PriceFilterNotifier extends Notifier<double?> {
 }
 
 // State providers for search and filtering
-final selectedUniverseProvider = NotifierProvider<UniverseNotifier, String>(UniverseNotifier.new);
-final searchQueryProvider = NotifierProvider<SearchQueryNotifier, String>(SearchQueryNotifier.new);
-final filterBrandProvider = NotifierProvider<BrandFilterNotifier, String?>(BrandFilterNotifier.new);
-final filterSizeProvider = NotifierProvider<SizeFilterNotifier, String?>(SizeFilterNotifier.new);
-final filterConditionProvider = NotifierProvider<ConditionFilterNotifier, String?>(ConditionFilterNotifier.new);
-final filterPriceProvider = NotifierProvider<PriceFilterNotifier, double?>(PriceFilterNotifier.new);
+final selectedUniverseProvider =
+    NotifierProvider<UniverseNotifier, String>(UniverseNotifier.new);
+final searchQueryProvider =
+    NotifierProvider<SearchQueryNotifier, String>(SearchQueryNotifier.new);
+final filterBrandProvider =
+    NotifierProvider<BrandFilterNotifier, String?>(BrandFilterNotifier.new);
+final filterSizeProvider =
+    NotifierProvider<SizeFilterNotifier, String?>(SizeFilterNotifier.new);
+final filterConditionProvider = NotifierProvider<ConditionFilterNotifier,
+    String?>(ConditionFilterNotifier.new);
+final filterPriceProvider =
+    NotifierProvider<PriceFilterNotifier, double?>(PriceFilterNotifier.new);
 
 // Reactive filtering provider
 final filteredArticlesProvider = FutureProvider<List<Article>>((ref) async {
@@ -78,7 +88,8 @@ final filteredArticlesProvider = FutureProvider<List<Article>>((ref) async {
     if (size != null && a.size.toLowerCase() != size.toLowerCase()) {
       return false;
     }
-    if (condition != null && a.condition.toLowerCase() != condition.toLowerCase()) {
+    if (condition != null &&
+        a.condition.toLowerCase() != condition.toLowerCase()) {
       return false;
     }
     if (maxPrice != null && a.price > maxPrice) {
@@ -88,10 +99,14 @@ final filteredArticlesProvider = FutureProvider<List<Article>>((ref) async {
   }).toList();
 });
 
-class CollectionsScreen extends ConsumerWidget {
+/// Collections — transcription des maquettes `14:1281` et `16:2260`.
+///
+/// Titre « Toutes les pièces », bouton de filtres et pilule de tri, barre de
+/// recherche en pilule, puces d'univers, puis grille de deux colonnes.
+class CollectionsScreen extends ConsumerStatefulWidget {
   const CollectionsScreen({super.key});
 
-  static const List<String> _universes = [
+  static const List<String> universes = [
     'Tout l\'univers',
     'Robes',
     'Vestes',
@@ -104,441 +119,361 @@ class CollectionsScreen extends ConsumerWidget {
   ];
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final selectedUniverse = ref.watch<String>(selectedUniverseProvider);
-    final searchQuery = ref.watch<String>(searchQueryProvider);
-    final catalogAsync = ref.watch<AsyncValue<List<Article>>>(filteredArticlesProvider);
-    final theme = Theme.of(context);
-    final onSurfaceColor = theme.colorScheme.onSurface;
+  ConsumerState<CollectionsScreen> createState() => _CollectionsScreenState();
+}
 
-    // Checks if any filters are active to colorize filter icon
-    final hasActiveFilters = ref.watch<String?>(filterBrandProvider) != null ||
-        ref.watch<String?>(filterSizeProvider) != null ||
-        ref.watch<String?>(filterConditionProvider) != null ||
-        ref.watch<double?>(filterPriceProvider) != null;
+class _CollectionsScreenState extends ConsumerState<CollectionsScreen> {
+  late final TextEditingController _recherche;
+
+  @override
+  void initState() {
+    super.initState();
+    _recherche = TextEditingController(text: ref.read(searchQueryProvider));
+  }
+
+  @override
+  void dispose() {
+    _recherche.dispose();
+    super.dispose();
+  }
+
+  bool get _filtresActifs =>
+      ref.watch<String?>(filterBrandProvider) != null ||
+      ref.watch<String?>(filterSizeProvider) != null ||
+      ref.watch<String?>(filterConditionProvider) != null ||
+      ref.watch<double?>(filterPriceProvider) != null;
+
+  void _reinitialiserFiltres() {
+    ref.read(filterBrandProvider.notifier).setBrand(null);
+    ref.read(filterSizeProvider.notifier).setSize(null);
+    ref.read(filterConditionProvider.notifier).setCondition(null);
+    ref.read(filterPriceProvider.notifier).setPrice(null);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final universSelectionne = ref.watch<String>(selectedUniverseProvider);
+    final catalogue = ref.watch(filteredArticlesProvider);
 
     return Scaffold(
-      backgroundColor: theme.scaffoldBackgroundColor,
-      appBar: ClosetAppBar(
-        title: 'Collections',
-        subtitle: 'LE DRESSING',
-        actions: [
-          IconButton(
-            icon: Icon(
-              Icons.tune,
-              size: 22,
-              color: hasActiveFilters
-                  ? theme.colorScheme.secondary
-                  : theme.colorScheme.onSurface,
-            ),
-            onPressed: () => _showFilterBottomSheet(context, ref),
-          ),
-          const SizedBox(width: 4),
-        ],
-      ),
-      body: Column(
-        children: [
-          // Elegant Search Bar
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
-            child: DecoratedBox(
-              decoration: BoxDecoration(
-                boxShadow: [
-                  BoxShadow(
-                    color: onSurfaceColor.withValues(alpha: 0.05),
-                    blurRadius: 10,
-                    offset: const Offset(0, 2),
+      backgroundColor: ClosetColors.beige,
+      appBar: const ClosetAppBar(),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.only(bottom: AppSpacing.p32),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const SizedBox(height: AppSpacing.p12),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 21),
+              child: Row(
+                children: [
+                  const Expanded(child: ClosetTitreEcran('Toutes les pièces')),
+                  _BoutonFiltres(
+                    actif: _filtresActifs,
+                    onTap: () => _ouvrirFiltres(context),
+                  ),
+                  const SizedBox(width: AppSpacing.p8),
+                  _PiluleTri(
+                    label: 'Nouveautés',
+                    onTap: () => _ouvrirFiltres(context),
                   ),
                 ],
               ),
-              child: TextField(
-                onChanged: (val) => ref.read<SearchQueryNotifier>(searchQueryProvider.notifier).setQuery(val),
-                controller: TextEditingController.fromValue(
-                  TextEditingValue(
-                    text: searchQuery,
-                    selection: TextSelection.collapsed(offset: searchQuery.length),
-                  ),
-                ),
-                style: TextStyle(color: onSurfaceColor),
-                decoration: InputDecoration(
-                  hintText: 'Rechercher une marque, une pièce...',
-                  hintStyle: TextStyle(color: onSurfaceColor.withValues(alpha: 0.5)),
-                  prefixIcon: Icon(Icons.search, color: onSurfaceColor.withValues(alpha: 0.7)),
-                  suffixIcon: searchQuery.isNotEmpty
-                      ? IconButton(
-                          icon: Icon(Icons.clear, color: onSurfaceColor),
-                          onPressed: () {
-                            ref.read<SearchQueryNotifier>(searchQueryProvider.notifier).clear();
-                          },
-                        )
-                      : null,
-                  filled: true,
-                  fillColor: theme.colorScheme.surface,
-                  contentPadding: const EdgeInsets.symmetric(vertical: 14),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(30),
-                    borderSide: BorderSide.none,
-                  ),
-                ),
+            ),
+            const SizedBox(height: AppSpacing.p16),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.p20),
+              child: _BarreRecherche(
+                controller: _recherche,
+                onChanged: (v) =>
+                    ref.read(searchQueryProvider.notifier).setQuery(v),
+                onEffacer: () {
+                  _recherche.clear();
+                  ref.read(searchQueryProvider.notifier).clear();
+                },
               ),
             ),
-          ),
-
-          // Universe filter chips
-          SizedBox(
-            height: 48,
-            child: ListView.separated(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-              itemCount: _universes.length,
-              separatorBuilder: (_, _) => const SizedBox(width: 8),
-              itemBuilder: (context, i) {
-                final u = _universes[i];
-                final isSelected = u == selectedUniverse;
-                return GestureDetector(
-                  onTap: () {
-                    ref.read<UniverseNotifier>(selectedUniverseProvider.notifier).setUniverse(u);
-                  },
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 200),
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-                    decoration: BoxDecoration(
-                      color: isSelected ? theme.colorScheme.primary : theme.colorScheme.surface,
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(
-                        color: isSelected ? theme.colorScheme.primary : theme.dividerColor.withValues(alpha: 0.3),
-                      ),
-                    ),
-                    child: Text(
-                      u,
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: isSelected ? theme.colorScheme.onPrimary : onSurfaceColor,
-                      ),
-                    ),
-                  ),
-                );
-              },
+            const SizedBox(height: AppSpacing.p24),
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 19),
+              child: ClosetSurtitre('explorer par univers'),
             ),
-          ),
-
-          // Grid Results
-          Expanded(
-            child: catalogAsync.when(
-              data: (articles) {
-                if (articles.isEmpty) {
-                  return Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.search_off, size: 48, color: onSurfaceColor.withValues(alpha: 0.4)),
-                        const SizedBox(height: 16),
-                        Text(
-                          'Aucune pièce ne correspond à vos critères',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(color: onSurfaceColor.withValues(alpha: 0.6), fontSize: 14),
-                        ),
-                        const SizedBox(height: 8),
-                        TextButton(
-                          onPressed: () {
-                            ref.read<SearchQueryNotifier>(searchQueryProvider.notifier).clear();
-                            ref.read<BrandFilterNotifier>(filterBrandProvider.notifier).setBrand(null);
-                            ref.read<SizeFilterNotifier>(filterSizeProvider.notifier).setSize(null);
-                            ref.read<ConditionFilterNotifier>(filterConditionProvider.notifier).setCondition(null);
-                            ref.read<PriceFilterNotifier>(filterPriceProvider.notifier).setPrice(null);
-                          },
-                          child: Text(
-                            'Réinitialiser les filtres',
-                            style: TextStyle(color: theme.colorScheme.secondary, fontWeight: FontWeight.bold),
-                          ),
-                        ),
-                      ],
-                    ),
+            const SizedBox(height: AppSpacing.p16),
+            SizedBox(
+              height: 30,
+              child: ListView.separated(
+                scrollDirection: Axis.horizontal,
+                padding:
+                    const EdgeInsets.symmetric(horizontal: AppSpacing.p20),
+                itemCount: CollectionsScreen.universes.length,
+                separatorBuilder: (_, _) =>
+                    const SizedBox(width: AppSpacing.p12),
+                itemBuilder: (context, i) {
+                  final univers = CollectionsScreen.universes[i];
+                  return ClosetChip(
+                    label: univers,
+                    isActive: univers == universSelectionne,
+                    onTap: () => ref
+                        .read<UniverseNotifier>(selectedUniverseProvider.notifier)
+                        .setUniverse(univers),
                   );
-                }
-                return GridView.builder(
-                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2,
-                    childAspectRatio: 0.6,
-                    crossAxisSpacing: 12,
-                    mainAxisSpacing: 12,
-                  ),
-                  itemCount: articles.length,
-                  itemBuilder: (context, i) {
-                    final article = articles[i];
-                    return ArticleCard(
-                      article: article,
-                      onTap: () => context.push('/product/${article.id}'),
-                    );
-                  },
-                );
-              },
-              loading: () => const Center(
-                child: CircularProgressIndicator(color: ClosetColors.dore),
-              ),
-              error: (e, _) => const Center(
-                child: Text('Erreur de chargement'),
+                },
               ),
             ),
-          ),
-        ],
+            const SizedBox(height: AppSpacing.p24),
+            if (_filtresActifs)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(21, 0, 21, AppSpacing.p12),
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: ClosetChip(
+                    label: 'Réinitialiser les filtres',
+                    hasCloseIcon: true,
+                    onTap: _reinitialiserFiltres,
+                  ),
+                ),
+              ),
+            catalogue.when(
+              data: (articles) => _Resultats(
+                articles: articles,
+                univers: universSelectionne,
+              ),
+              loading: () => const Padding(
+                padding: EdgeInsets.symmetric(vertical: 64),
+                child: Center(
+                  child: CircularProgressIndicator(color: ClosetColors.dore),
+                ),
+              ),
+              error: (e, _) => const Padding(
+                padding: EdgeInsets.symmetric(vertical: 64),
+                child: Center(child: Text('Erreur de chargement')),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
 
-  void _showFilterBottomSheet(BuildContext context, WidgetRef ref) {
-    final theme = Theme.of(context);
-    final onSurfaceColor = theme.colorScheme.onSurface;
+  void _ouvrirFiltres(BuildContext context) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Panneau de filtres à venir.')),
+    );
+  }
+}
 
-    final selectedBrand = ref.read<String?>(filterBrandProvider);
-    final selectedSize = ref.read<String?>(filterSizeProvider);
-    final selectedCondition = ref.read<String?>(filterConditionProvider);
-    final maxPrice = ref.read<double?>(filterPriceProvider) ?? 500000.0;
+class _Resultats extends StatelessWidget {
+  const _Resultats({required this.articles, required this.univers});
 
-    final List<String> brands = ['Sandro', 'Maje', 'Sézane', 'Jacquemus', 'Gucci', 'Prada', 'Hermès', 'Burberry', 'Zadig & Voltaire'];
-    final List<String> sizes = ['34', '36', '38', '40', '42', 'S', 'M', 'L', 'Unique'];
-    final List<String> conditions = ['Neuf avec étiquette', 'Excellent', 'Très bon'];
+  final List<Article> articles;
+  final String univers;
 
-    showModalBottomSheet<void>(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: theme.scaffoldBackgroundColor,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+  @override
+  Widget build(BuildContext context) {
+    if (articles.isEmpty) {
+      return const Padding(
+        padding: EdgeInsets.symmetric(vertical: 64, horizontal: 32),
+        child: Center(
+          child: Text(
+            'Aucune pièce ne correspond à votre recherche.',
+            textAlign: TextAlign.center,
+          ),
+        ),
+      );
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 21),
+          child: ClosetEnTeteSection(
+            titre: univers,
+            lien: '${articles.length} pièces',
+          ),
+        ),
+        const SizedBox(height: AppSpacing.p16),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 21),
+          child: GridView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: articles.length,
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2,
+              crossAxisSpacing: AppSpacing.p12,
+              mainAxisSpacing: AppSpacing.p12,
+              childAspectRatio: 169 / 249,
+            ),
+            itemBuilder: (context, i) => ArticleCard(
+              article: articles[i],
+              onTap: () => context.push('/product/${articles[i].id}'),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// Barre de recherche : 350 × 45, pilule blanche bordée `#E6E6E6`.
+class _BarreRecherche extends StatelessWidget {
+  const _BarreRecherche({
+    required this.controller,
+    required this.onChanged,
+    required this.onEffacer,
+  });
+
+  final TextEditingController controller;
+  final ValueChanged<String> onChanged;
+  final VoidCallback onEffacer;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 45,
+      child: TextField(
+        controller: controller,
+        onChanged: onChanged,
+        textInputAction: TextInputAction.search,
+        style: ClosetTextStyles.saisie.copyWith(color: ClosetColors.noir),
+        cursorColor: ClosetColors.vert,
+        decoration: InputDecoration(
+          hintText: 'Rechercher une pièce, une maison…',
+          hintStyle: ClosetTextStyles.saisie.copyWith(
+            color: ClosetColors.chipTexteInactif,
+          ),
+          prefixIcon: const Icon(
+            Icons.search,
+            size: 16,
+            color: ClosetColors.chipTexteInactif,
+          ),
+          suffixIcon: controller.text.isEmpty
+              ? null
+              : IconButton(
+                  icon: const Icon(Icons.close, size: 16),
+                  color: ClosetColors.chipTexteInactif,
+                  onPressed: onEffacer,
+                ),
+          filled: true,
+          fillColor: Colors.white,
+          isDense: true,
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.p16,
+            vertical: AppSpacing.p12,
+          ),
+          border: _bordure(ClosetColors.carteBordure),
+          enabledBorder: _bordure(ClosetColors.carteBordure),
+          focusedBorder: _bordure(ClosetColors.fond300),
+        ),
       ),
-      builder: (context) {
-        return StatefulBuilder(
-          builder: (context, setState) {
-            String? tempBrand = selectedBrand;
-            String? tempSize = selectedSize;
-            String? tempCondition = selectedCondition;
-            double tempPrice = maxPrice;
+    );
+  }
 
-            return DraggableScrollableSheet(
-              initialChildSize: 0.8,
-              minChildSize: 0.5,
-              maxChildSize: 0.95,
-              expand: false,
-              builder: (context, scrollController) {
-                return SingleChildScrollView(
-                  controller: scrollController,
-                  padding: const EdgeInsets.all(24),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Header
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            'Filtrer la sélection',
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.w800,
-                              color: onSurfaceColor,
-                            ),
-                          ),
-                          TextButton(
-                            onPressed: () {
-                              ref.read<BrandFilterNotifier>(filterBrandProvider.notifier).setBrand(null);
-                              ref.read<SizeFilterNotifier>(filterSizeProvider.notifier).setSize(null);
-                              ref.read<ConditionFilterNotifier>(filterConditionProvider.notifier).setCondition(null);
-                              ref.read<PriceFilterNotifier>(filterPriceProvider.notifier).setPrice(null);
-                              Navigator.pop(context);
-                            },
-                            child: Text(
-                              'Réinitialiser',
-                              style: TextStyle(
-                                color: theme.colorScheme.secondary,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 24),
+  static OutlineInputBorder _bordure(Color couleur) => OutlineInputBorder(
+        borderRadius: BorderRadius.circular(AppRadius.bouton),
+        borderSide: BorderSide(color: couleur, width: AppStroke.fin),
+      );
+}
 
-                      // Marque Section
-                      Text(
-                        'MARQUE',
-                        style: TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.bold,
-                          color: onSurfaceColor.withValues(alpha: 0.5),
-                          letterSpacing: 1.5,
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      Wrap(
-                        spacing: 8,
-                        runSpacing: 8,
-                        children: brands.map((b) {
-                          final isSel = tempBrand?.toLowerCase() == b.toLowerCase();
-                          return ChoiceChip(
-                            label: Text(b),
-                            selected: isSel,
-                            onSelected: (selected) {
-                              setState(() {
-                                tempBrand = selected ? b : null;
-                              });
-                            },
-                            selectedColor: theme.colorScheme.primary,
-                            backgroundColor: theme.colorScheme.surface,
-                            labelStyle: TextStyle(
-                              color: isSel ? theme.colorScheme.onPrimary : onSurfaceColor,
-                              fontWeight: isSel ? FontWeight.bold : FontWeight.normal,
-                            ),
-                          );
-                        }).toList(),
-                      ),
-                      const SizedBox(height: 24),
+/// Bouton rond d'ouverture des filtres (42 de diamètre).
+class _BoutonFiltres extends StatelessWidget {
+  const _BoutonFiltres({required this.actif, required this.onTap});
 
-                      // Taille Section
-                      Text(
-                        'TAILLE',
-                        style: TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.bold,
-                          color: onSurfaceColor.withValues(alpha: 0.5),
-                          letterSpacing: 1.5,
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      Wrap(
-                        spacing: 8,
-                        runSpacing: 8,
-                        children: sizes.map((s) {
-                          final isSel = tempSize == s;
-                          return ChoiceChip(
-                            label: Text(s),
-                            selected: isSel,
-                            onSelected: (selected) {
-                              setState(() {
-                                tempSize = selected ? s : null;
-                              });
-                            },
-                            selectedColor: theme.colorScheme.primary,
-                            backgroundColor: theme.colorScheme.surface,
-                            labelStyle: TextStyle(
-                              color: isSel ? theme.colorScheme.onPrimary : onSurfaceColor,
-                              fontWeight: isSel ? FontWeight.bold : FontWeight.normal,
-                            ),
-                          );
-                        }).toList(),
-                      ),
-                      const SizedBox(height: 24),
+  final bool actif;
+  final VoidCallback onTap;
 
-                      // État Section
-                      Text(
-                        'ÉTAT DE LA PIÈCE',
-                        style: TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.bold,
-                          color: onSurfaceColor.withValues(alpha: 0.5),
-                          letterSpacing: 1.5,
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      Wrap(
-                        spacing: 8,
-                        runSpacing: 8,
-                        children: conditions.map((c) {
-                          final isSel = tempCondition?.toLowerCase() == c.toLowerCase();
-                          return ChoiceChip(
-                            label: Text(c),
-                            selected: isSel,
-                            onSelected: (selected) {
-                              setState(() {
-                                tempCondition = selected ? c : null;
-                              });
-                            },
-                            selectedColor: theme.colorScheme.primary,
-                            backgroundColor: theme.colorScheme.surface,
-                            labelStyle: TextStyle(
-                              color: isSel ? theme.colorScheme.onPrimary : onSurfaceColor,
-                              fontWeight: isSel ? FontWeight.bold : FontWeight.normal,
-                            ),
-                          );
-                        }).toList(),
-                      ),
-                      const SizedBox(height: 24),
-
-                      // Prix maximum Section
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            'PRIX MAXIMUM',
-                            style: TextStyle(
-                              fontSize: 11,
-                              fontWeight: FontWeight.bold,
-                              color: onSurfaceColor.withValues(alpha: 0.5),
-                              letterSpacing: 1.5,
-                            ),
-                          ),
-                          Text(
-                            '${tempPrice.toInt()} FCFA',
-                            style: TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.bold,
-                              color: theme.colorScheme.secondary,
-                            ),
-                          ),
-                        ],
-                      ),
-                      Slider(
-                        value: tempPrice,
-                        min: 5000,
-                        max: 500000,
-                        divisions: 99,
-                        activeColor: theme.colorScheme.primary,
-                        inactiveColor: theme.colorScheme.surface,
-                        onChanged: (val) {
-                          setState(() {
-                            tempPrice = val;
-                          });
-                        },
-                      ),
-                      const SizedBox(height: 40),
-
-                      // Apply button
-                      SizedBox(
-                        width: double.infinity,
-                        height: 52,
-                        child: ElevatedButton(
-                          onPressed: () {
-                            ref.read<BrandFilterNotifier>(filterBrandProvider.notifier).setBrand(tempBrand);
-                            ref.read<SizeFilterNotifier>(filterSizeProvider.notifier).setSize(tempSize);
-                            ref.read<ConditionFilterNotifier>(filterConditionProvider.notifier).setCondition(tempCondition);
-                            ref.read<PriceFilterNotifier>(filterPriceProvider.notifier).setPrice(tempPrice);
-                            Navigator.pop(context);
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: theme.colorScheme.primary,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(30),
-                            ),
-                          ),
-                          child: Text(
-                            'Appliquer les filtres',
-                            style: TextStyle(
-                              color: theme.colorScheme.onPrimary,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      button: true,
+      label: 'Filtrer',
+      child: GestureDetector(
+        onTap: onTap,
+        child: Stack(
+          clipBehavior: Clip.none,
+          children: [
+            Container(
+              width: 42,
+              height: 42,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: ClosetColors.fond300,
+                  width: AppStroke.fin,
+                ),
+              ),
+              child: const Icon(
+                Icons.tune,
+                size: 18,
+                color: ClosetColors.vert,
+              ),
+            ),
+            if (actif)
+              Positioned(
+                top: 0,
+                right: 0,
+                child: Container(
+                  width: 10,
+                  height: 10,
+                  decoration: const BoxDecoration(
+                    color: ClosetColors.vert,
+                    shape: BoxShape.circle,
                   ),
-                );
-              },
-            );
-          },
-        );
-      },
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Pilule de tri : 129 × 42, rayon 80.
+class _PiluleTri extends StatelessWidget {
+  const _PiluleTri({required this.label, required this.onTap});
+
+  final String label;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      button: true,
+      child: GestureDetector(
+        onTap: onTap,
+        child: Container(
+          height: 42,
+          padding: const EdgeInsets.symmetric(horizontal: 15),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(80),
+            border: Border.all(
+              color: ClosetColors.fond300,
+              width: AppStroke.fin,
+            ),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(
+                Icons.swap_vert_rounded,
+                size: 16,
+                color: ClosetColors.vert,
+              ),
+              const SizedBox(width: 6),
+              Text(
+                label,
+                style: ClosetTextStyles.corps.copyWith(
+                  color: ClosetColors.vert,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

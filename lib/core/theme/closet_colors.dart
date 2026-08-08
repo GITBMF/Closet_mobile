@@ -93,6 +93,39 @@ class ClosetColors {
   /// Bordure des cartes produit (`11:30` — Product Card)
   static const Color carteBordure = Color(0xFFE6E6E6);
 
+  // ── Champs de l'écran de connexion (`5:1304`) ─────────────────────────
+  // Cet écran habille ses champs en bleuté, distinct du composant
+  // `61:12575` (fond blanc, bordure dorée) employé partout ailleurs.
+
+  /// Fond des champs de connexion
+  static const Color champFond = Color(0xFFF3F7FB);
+
+  /// Bordure des champs de connexion
+  static const Color champBordure = Color(0xFFD4D7E3);
+
+  /// Texte indicatif des champs de connexion
+  static const Color champPlaceholder = Color(0xFF8897AD);
+
+  /// Filet de séparation « Ou se connecter »
+  static const Color filetSeparateur = Color(0xFFCFDFE2);
+
+  /// Libellé d'une puce de filtre non sélectionnée (`11:30` — Category Tab)
+  static const Color chipTexteInactif = Color(0xFF656565);
+
+  // ── Tunnel de transaction (`32:704` → `32:865`) ───────────────────────
+
+  /// Case de code PIN non saisie, et filets internes des cartes
+  static const Color caseVide = Color(0xFFF0F0F0);
+
+  /// Chiffre saisi dans une case de code PIN
+  static const Color pinTexte = Color(0xFF707070);
+
+  /// Mention « informations chiffrées » en pied des écrans de transaction
+  static const Color noteChiffrement = Color(0xFFE7E0E0);
+
+  /// Texte indicatif du champ « code privilège » (`16:3448`)
+  static const Color placeholderGris = Color(0xFF7F7F7F);
+
   // ══════════════════════════════════════════════════════════════════════
   // RÔLES SÉMANTIQUES
   // ══════════════════════════════════════════════════════════════════════

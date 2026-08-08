@@ -1,9 +1,14 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/theme/closet_colors.dart';
-import '../../../core/theme/closet_text_styles.dart';
 
+/// Écran d'ouverture — transcription de la maquette Figma `5:1210`.
+///
+/// Photo de dressing en fond plein cadre, carte verte au logo centrée
+/// (232 × 132), et anneau de points en rotation dans le bas de l'écran.
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
 
@@ -12,158 +17,139 @@ class SplashScreen extends StatefulWidget {
 }
 
 class _SplashScreenState extends State<SplashScreen>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _animController;
-  late Animation<double> _fadeAnim;
-  late Animation<double> _scaleAnim;
-  late Animation<double> _glowAnim;
+    with TickerProviderStateMixin {
+  late final AnimationController _apparition;
+  late final AnimationController _rotation;
+  late final Animation<double> _fondu;
+  late final Animation<double> _echelle;
 
   @override
   void initState() {
     super.initState();
 
-    _animController = AnimationController(
+    _apparition = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 2000),
+      duration: const Duration(milliseconds: 900),
+    );
+    _fondu = CurvedAnimation(parent: _apparition, curve: Curves.easeIn);
+    _echelle = Tween<double>(begin: 0.92, end: 1.0).animate(
+      CurvedAnimation(parent: _apparition, curve: Curves.easeOutCubic),
     );
 
-    _fadeAnim = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(
-        parent: _animController,
-        curve: const Interval(0.0, 0.6, curve: Curves.easeIn),
-      ),
-    );
+    _rotation = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1100),
+    )..repeat();
 
-    _scaleAnim = Tween<double>(begin: 0.8, end: 1.0).animate(
-      CurvedAnimation(
-        parent: _animController,
-        curve: const Interval(0.0, 0.8, curve: Curves.easeOutBack),
-      ),
-    );
+    _apparition.forward();
 
-    _glowAnim = Tween<double>(begin: 0.5, end: 1.2).animate(
-      CurvedAnimation(
-        parent: _animController,
-        curve: const Interval(0.2, 1.0, curve: Curves.easeInOutSine),
-      ),
-    );
-
-    _animController.forward();
-
-    _animController.addStatusListener((status) {
-      if (status == AnimationStatus.completed && mounted) {
-        Future.delayed(const Duration(milliseconds: 800), () {
-          if (mounted) context.go('/onboarding');
-        });
-      }
+    Future.delayed(const Duration(milliseconds: 2600), () {
+      if (mounted) context.go('/onboarding');
     });
   }
 
   @override
   void dispose() {
-    _animController.dispose();
+    _apparition.dispose();
+    _rotation.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: DecoratedBox(
-        decoration: const BoxDecoration(
-          gradient: RadialGradient(
-            center: Alignment.center,
-            radius: 1.3,
-            colors: [
-              ClosetColors.vert,
-              Color(0xFF071B10), // Vert noir très profond pour effet haute couture
-            ],
-            stops: [0.3, 1.0],
+      backgroundColor: ClosetColors.vert,
+      body: Stack(
+        fit: StackFit.expand,
+        children: [
+          Image.asset(
+            'assets/splash_background.png',
+            fit: BoxFit.cover,
+            errorBuilder: (_, _, _) =>
+                const ColoredBox(color: ClosetColors.vert),
           ),
-        ),
-        child: Center(
-          child: AnimatedBuilder(
-            animation: _animController,
-            builder: (context, child) {
-              return Opacity(
-                opacity: _fadeAnim.value,
-                child: Transform.scale(
-                  scale: _scaleAnim.value,
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      // Logo officiel avec halo lumineux doré
-                      Stack(
-                        alignment: Alignment.center,
-                        children: [
-                          Transform.scale(
-                            scale: _glowAnim.value,
-                            child: Container(
-                              width: 170,
-                              height: 170,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                gradient: RadialGradient(
-                                  colors: [
-                                    ClosetColors.doreClair.withValues(alpha: 0.22),
-                                    Colors.transparent,
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ),
-                          Image.asset(
-                            'assets/logo_fond_vert.png',
-                            width: 130,
-                            height: 130,
-                            errorBuilder: (_, _, _) => Container(
-                              width: 130,
-                              height: 130,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: ClosetColors.creme.withValues(alpha: 0.08),
-                                border: Border.all(
-                                  color: ClosetColors.doreClair,
-                                  width: 2,
-                                ),
-                              ),
-                              child: Center(
-                                child: Text(
-                                  'C',
-                                  style: ClosetTextStyles.display.copyWith(
-                                    fontSize: 64,
-                                    color: ClosetColors.doreClair,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 32),
-                      // Nom de marque — Boldonse (charte §4 Typographie)
-                      Text(
-                        'ClosET',
-                        style: ClosetTextStyles.display.copyWith(
-                          fontSize: 42,
-                          color: ClosetColors.doreClair,
-                          letterSpacing: 4,
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      // Baseline — Lato capitals espacées (charte §4)
-                      Text(
-                        'L\'ÉLÉGANCE DURABLE',
-                        style: ClosetTextStyles.labelChamp.copyWith(
-                          color: ClosetColors.creme.withValues(alpha: 0.75),
-                          letterSpacing: 5.5,
-                          fontSize: 11,
-                        ),
-                      ),
-                    ],
+          Center(
+            child: FadeTransition(
+              opacity: _fondu,
+              child: ScaleTransition(
+                scale: _echelle,
+                child: Image.asset(
+                  'assets/logo_fond_vert.png',
+                  width: 232,
+                  height: 132,
+                  fit: BoxFit.contain,
+                  errorBuilder: (_, _, _) => const SizedBox(
+                    width: 232,
+                    height: 132,
                   ),
                 ),
-              );
-            },
+              ),
+            ),
+          ),
+          Align(
+            alignment: const Alignment(0, 0.68),
+            child: FadeTransition(
+              opacity: _fondu,
+              child: _AnneauDePoints(animation: _rotation),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Loader de la maquette : douze points blancs en cercle, dont l'opacité
+/// tourne. 28 × 28 comme dans le Figma.
+class _AnneauDePoints extends StatelessWidget {
+  const _AnneauDePoints({required this.animation});
+
+  final Animation<double> animation;
+
+  static const int _nombreDePoints = 12;
+  static const double _taille = 28;
+  static const double _rayonPoint = 2;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: _taille,
+      height: _taille,
+      child: AnimatedBuilder(
+        animation: animation,
+        builder: (context, child) {
+          return Stack(
+            children: [
+              for (var i = 0; i < _nombreDePoints; i++)
+                _point(i, animation.value),
+            ],
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _point(int index, double avancement) {
+    const rayonAnneau = _taille / 2 - _rayonPoint;
+    final angle = 2 * math.pi * index / _nombreDePoints - math.pi / 2;
+    final dx = _taille / 2 + rayonAnneau * math.cos(angle) - _rayonPoint;
+    final dy = _taille / 2 + rayonAnneau * math.sin(angle) - _rayonPoint;
+
+    // Le point « en tête » est opaque, les suivants s'estompent.
+    final decalage = (index / _nombreDePoints - avancement) % 1.0;
+    final opacite = 0.2 + 0.8 * (1 - decalage);
+
+    return Positioned(
+      left: dx,
+      top: dy,
+      child: Opacity(
+        opacity: opacite.clamp(0.0, 1.0),
+        child: Container(
+          width: _rayonPoint * 2,
+          height: _rayonPoint * 2,
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            shape: BoxShape.circle,
           ),
         ),
       ),

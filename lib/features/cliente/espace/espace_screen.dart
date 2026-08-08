@@ -2,328 +2,422 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/closet_colors.dart';
+import '../../../core/theme/closet_text_styles.dart';
 import '../../../core/theme/theme_provider.dart';
+import '../../../core/widgets/closet_sections.dart';
 import '../../../data/models/user.dart';
 import '../../../data/repositories/auth_repository.dart';
-import '../../../data/repositories/cart_repository.dart';
 import '../../../data/repositories/sourceur_repository.dart';
 import '../../../data/repositories/wishlist_repository.dart';
+import '../../../data/services/auth_storage_service.dart';
 
+/// Mon espace — transcription de la maquette `24:39`.
+///
+/// Entête à l'avatar rond de 74, carte verte « Devenir Sourceur », puis liste
+/// d'accès dont chaque entrée porte une tuile verte de 48 (rayon 8).
 class EspaceScreen extends ConsumerWidget {
   const EspaceScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final cartCount = ref.watch<int>(cartCountProvider);
-    final wishlistCount = ref.watch(wishlistListProvider).length;
     final ClosetUser? user = ref.watch<ClosetUser?>(currentUserProvider);
-    final sourceurRepo = ref.watch<SourceurRepository>(sourceurRepositoryProvider);
-    final theme = Theme.of(context);
-    final onSurfaceColor = theme.colorScheme.onSurface;
-    final isDark = ref.watch<ThemeMode>(themeModeProvider) == ThemeMode.dark;
+    final sourceurRepo =
+        ref.watch<SourceurRepository>(sourceurRepositoryProvider);
+    final nbFavoris = ref.watch(wishlistListProvider).length;
 
     return Scaffold(
-      backgroundColor: theme.scaffoldBackgroundColor,
-      body: CustomScrollView(
-        slivers: [
-          // ── Hero Profile Header ────────────────────────────────────
-          SliverToBoxAdapter(
-            child: Container(
-              width: double.infinity,
-              decoration: BoxDecoration(
-                color: theme.colorScheme.primary.withValues(alpha: 0.15),
-                borderRadius: const BorderRadius.only(
-                  bottomLeft: Radius.circular(32),
-                  bottomRight: Radius.circular(32),
+      backgroundColor: ClosetColors.beige,
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.only(bottom: AppSpacing.p32),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SizedBox(height: AppSpacing.p8),
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.p20,
                 ),
-                border: Border.all(color: theme.colorScheme.primary, width: 1.5),
+                child: Row(
+                  children: [
+                    const Expanded(child: ClosetTitreEcran('Mon espace')),
+                    _BoutonReglages(
+                      onTap: () => context.push('/espace/confidentialite'),
+                    ),
+                  ],
+                ),
               ),
-              child: SafeArea(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
-                  child: Column(
-                    children: [
-                      // Top bar
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            'Mon espace',
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w700,
-                              color: onSurfaceColor,
-                            ),
-                          ),
-                          GestureDetector(
-                            onTap: () {
-                              if (user != null) {
-                                // Logout
-                                ref.read(currentUserProvider.notifier).state = null;
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(content: Text('Vous avez été déconnecté.')),
-                                );
-                              } else {
-                                // Login
-                                context.push('/auth');
-                              }
-                            },
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-                              decoration: BoxDecoration(
-                                color: theme.colorScheme.primary,
-                                borderRadius: BorderRadius.circular(20),
-                              ),
-                              child: Text(
-                                user != null ? 'Se déconnecter' : 'Se connecter',
-                                style: TextStyle(
-                                  fontSize: 11,
-                                  color: theme.colorScheme.onPrimary,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 24),
-
-                      // Avatar: Initials if authenticated, logo otherwise
-                      Container(
-                        width: 80,
-                        height: 80,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: user != null ? theme.colorScheme.primary : theme.colorScheme.surface,
-                          border: Border.all(color: theme.colorScheme.secondary, width: 2),
-                        ),
-                        child: user != null
-                            ? Center(
-                                child: Text(
-                                  user.initials,
-                                  style: TextStyle(
-                                    fontSize: 28,
-                                    fontWeight: FontWeight.w800,
-                                    color: theme.colorScheme.onPrimary,
-                                    letterSpacing: 1,
-                                  ),
-                                ),
-                              )
-                            : ClipOval(
-                                child: Image.asset(
-                                  'assets/logo.png',
-                                  width: 80,
-                                  height: 80,
-                                  fit: BoxFit.cover,
-                                  errorBuilder: (_, _, _) => const Center(
-                                    child: Text(
-                                      'C',
-                                      style: TextStyle(
-                                        fontSize: 36,
-                                        fontWeight: FontWeight.w800,
-                                        color: ClosetColors.dore,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                      ),
-                      const SizedBox(height: 12),
-                      Text(
-                        user != null ? '${user.firstName} ${user.lastName}' : 'Invité(e)',
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.w700,
-                          color: onSurfaceColor,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        user != null ? user.email : 'Connectez-vous pour accéder à votre dressing privé',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: onSurfaceColor.withValues(alpha: 0.7),
-                        ),
-                      ),
-                      const SizedBox(height: 24),
-
-                      // Stats row
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceAround,
-                        children: [
-                          _StatChip(label: 'Sélection', value: '$cartCount', color: onSurfaceColor),
-                          Container(height: 30, width: 1, color: onSurfaceColor.withValues(alpha: 0.2)),
-                          _StatChip(label: 'Wishlist', value: '$wishlistCount', color: onSurfaceColor),
-                          Container(height: 30, width: 1, color: onSurfaceColor.withValues(alpha: 0.2)),
-                          _StatChip(label: 'Commandes', value: user != null ? '1' : '0', color: onSurfaceColor),
-                        ],
-                      ),
-                    ],
+              const SizedBox(height: AppSpacing.p24),
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.p20,
+                ),
+                child: _EnTeteProfil(
+                  user: user,
+                  onEditer: () => context.push('/espace/infos'),
+                ),
+              ),
+              const SizedBox(height: AppSpacing.p24),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 19),
+                child: _CarteSourceur(
+                  dejaInscrit: sourceurRepo.estInscrit,
+                  onTap: () => context.push(
+                    sourceurRepo.estInscrit
+                        ? '/sourceur'
+                        : '/sourceur/inscription',
                   ),
                 ),
+              ),
+              const SizedBox(height: AppSpacing.p24),
+              _EntreeEspace(
+                icone: Icons.receipt_long_outlined,
+                label: 'Mes commandes',
+                onTap: () => ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Vos commandes arrivent très bientôt.'),
+                  ),
+                ),
+              ),
+              _EntreeEspace(
+                icone: Icons.favorite_border,
+                label: 'Mes favoris',
+                compteur: nbFavoris,
+                onTap: () => context.go('/wishlist'),
+              ),
+              _EntreeEspace(
+                icone: Icons.location_on_outlined,
+                label: 'Mes adresses',
+                onTap: () => context.push('/espace/adresses'),
+              ),
+              _EntreeEspace(
+                icone: Icons.person_outline,
+                label: 'Mes informations',
+                onTap: () => context.push('/espace/infos'),
+              ),
+              _EntreeEspace(
+                icone: Icons.notifications_none_rounded,
+                label: 'Mes notifications',
+                onTap: () => context.push('/espace/alertes'),
+              ),
+              _EntreeEspace(
+                icone: Icons.logout_rounded,
+                label: 'Logout',
+                onTap: () => _confirmerDeconnexion(context, ref),
+              ),
+              const SizedBox(height: AppSpacing.p24),
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: AppSpacing.p24),
+                child: ClosetSurtitre('aide & préférences'),
+              ),
+              const SizedBox(height: AppSpacing.p12),
+              _EntreeEspace(
+                icone: Icons.credit_card_outlined,
+                label: 'Moyens de paiement',
+                onTap: () => context.push('/espace/paiements'),
+              ),
+              _EntreeEspace(
+                icone: Icons.help_outline_rounded,
+                label: 'Questions fréquentes',
+                onTap: () => context.push('/espace/faq'),
+              ),
+              _EntreeEspace(
+                icone: Icons.mail_outline_rounded,
+                label: 'Nous contacter',
+                onTap: () => context.push('/espace/contact'),
+              ),
+              _EntreeEspace(
+                icone: Icons.shield_outlined,
+                label: 'Confidentialité',
+                onTap: () => context.push('/espace/confidentialite'),
+              ),
+              _EntreeEspace(
+                icone: Icons.star_border_rounded,
+                label: 'Donner mon avis',
+                onTap: () => context.push('/espace/evaluation'),
+              ),
+              const _BasculeTheme(),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// La déconnexion est confirmée puis **remplace** la pile de navigation.
+  ///
+  /// `go` et non `push` : après déconnexion, aucun écran authentifié ne doit
+  /// rester atteignable par le geste de retour.
+  Future<void> _confirmerDeconnexion(
+    BuildContext context,
+    WidgetRef ref,
+  ) async {
+    final confirme = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: ClosetColors.creme,
+        title: Text('Se déconnecter', style: ClosetTextStyles.titreSection),
+        content: Text(
+          'Vous devrez saisir à nouveau vos identifiants pour retrouver '
+          'votre dressing.',
+          style: ClosetTextStyles.citation,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: Text('Annuler', style: ClosetTextStyles.bouton),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: Text(
+              'Se déconnecter',
+              style: ClosetTextStyles.bouton.copyWith(
+                color: ClosetColors.erreurCouture,
               ),
             ),
           ),
+        ],
+      ),
+    );
 
-          // ── Menu Sections ─────────────────────────────────────────
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+    if (confirme != true) return;
+
+    // Purge du stockage AVANT l'état mémoire : les jetons d'accès et de
+    // rafraîchissement ainsi que le profil sont persistés en clair dans les
+    // SharedPreferences. Sans cet appel, « se déconnecter » ne déconnecte
+    // rien — la session reste restaurable au prochain lancement.
+    await AuthStorageService.clearAuthData();
+
+    ref.read(currentUserProvider.notifier).state = null;
+    if (context.mounted) context.go('/auth');
+  }
+}
+
+/// Bouton rond de réglages, en haut à droite.
+class _BoutonReglages extends StatelessWidget {
+  const _BoutonReglages({required this.onTap});
+
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      button: true,
+      label: 'Réglages',
+      child: GestureDetector(
+        onTap: onTap,
+        child: Container(
+          width: 42,
+          height: 42,
+          decoration: BoxDecoration(
+            color: Colors.white,
+            shape: BoxShape.circle,
+            border: Border.all(
+              color: ClosetColors.fond300,
+              width: AppStroke.fin,
+            ),
+          ),
+          child: const Icon(Icons.tune, size: 18, color: ClosetColors.vert),
+        ),
+      ),
+    );
+  }
+}
+
+/// Avatar de 74, nom en Cormorant, ancienneté, et pastille d'édition.
+class _EnTeteProfil extends StatelessWidget {
+  const _EnTeteProfil({required this.user, required this.onEditer});
+
+  final ClosetUser? user;
+  final VoidCallback onEditer;
+
+  static String _initiales(ClosetUser u) {
+    final p = u.firstName.isNotEmpty ? u.firstName[0].toUpperCase() : '';
+    final n = u.lastName.isNotEmpty ? u.lastName[0].toUpperCase() : '';
+    final i = '$p$n';
+    return i.isEmpty ? '?' : i;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final nom = user == null
+        ? 'Invitée'
+        : '${user!.firstName} ${user!.lastName.isEmpty ? '' : '${user!.lastName[0]}.'}'
+            .trim();
+
+    return Row(
+      children: [
+        Container(
+          width: 74,
+          height: 74,
+          alignment: Alignment.center,
+          decoration: const BoxDecoration(
+            color: ClosetColors.emeraude100,
+            shape: BoxShape.circle,
+          ),
+          child: user == null
+              ? const Icon(Icons.person, size: 34, color: ClosetColors.taupe)
+              : Text(
+                  _initiales(user!),
+                  style: ClosetTextStyles.titreSection.copyWith(
+                    color: ClosetColors.vert,
+                  ),
+                ),
+        ),
+        const SizedBox(width: AppSpacing.p16),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
                 children: [
-                  const SizedBox(height: 8),
-                  
-                  // PRÉFÉRENCES (Dark Mode switch)
-                  _MenuSection(
-                    title: 'PRÉFÉRENCES',
-                    items: [
-                      _MenuItem(
-                        icon: Icons.dark_mode_outlined,
-                        label: 'Mode sombre',
-                        onTap: () {
-                          ref.read<ThemeModeNotifier>(themeModeProvider.notifier).toggleTheme();
-                        },
-                        trailing: Switch(
-                          value: isDark,
-                          activeColor: theme.colorScheme.secondary,
-                          onChanged: (value) {
-                            ref.read<ThemeModeNotifier>(themeModeProvider.notifier).toggleTheme();
-                          },
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 20),
-                  
-                  _MenuSection(
-                    title: 'MON COMPTE',
-                    items: [
-                      _MenuItem(
-                        icon: Icons.person_outline,
-                        label: 'Mes informations',
-                        onTap: () {
-                          if (user == null) {
-                            _showLoginRequiredDialog(context);
-                          } else {
-                            context.push('/espace/infos');
-                          }
-                        },
-                      ),
-                      _MenuItem(
-                        icon: Icons.location_on_outlined,
-                        label: 'Mes adresses',
-                        onTap: () {
-                          if (user == null) {
-                            _showLoginRequiredDialog(context);
-                          } else {
-                            context.push('/espace/adresses');
-                          }
-                        },
-                      ),
-                      _MenuItem(
-                        icon: Icons.credit_card_outlined,
-                        label: 'Mes moyens de paiement',
-                        onTap: () {
-                          if (user == null) {
-                            _showLoginRequiredDialog(context);
-                          } else {
-                            context.push('/espace/paiements');
-                          }
-                        },
-                      ),
-                      _MenuItem(
-                        icon: Icons.notifications_none,
-                        label: 'Mes alertes pièces',
-                        badge: '3',
-                        badgeColor: theme.colorScheme.primary,
-                        onTap: () {
-                          if (user == null) {
-                            _showLoginRequiredDialog(context);
-                          } else {
-                            context.push('/espace/alertes');
-                          }
-                        },
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 20),
-
-                  _MenuSection(
-                    title: 'ESPACE SOURCEUR',
-                    items: sourceurRepo.estInscrit
-                        ? [
-                            _MenuItem(
-                              icon: Icons.add_circle_outline,
-                              label: 'Soumettre une pièce',
-                              onTap: () => context.push('/sourceur/nouvelle'),
-                              isHighlighted: true,
-                            ),
-                            _MenuItem(
-                              icon: Icons.inventory_2_outlined,
-                              label: 'Mes pièces soumises',
-                              onTap: () => context.push('/sourceur/pieces'),
-                            ),
-                            _MenuItem(
-                              icon: Icons.storefront_outlined,
-                              label: 'Mon atelier sourceur',
-                              onTap: () => context.push('/sourceur'),
-                            ),
-                          ]
-                        : [
-                            _MenuItem(
-                              icon: Icons.star_border_outlined,
-                              label: 'Devenir sourceur',
-                              onTap: () => context.push('/sourceur/inscription'),
-                              isHighlighted: true,
-                            ),
-                          ],
-                  ),
-                  const SizedBox(height: 20),
-
-                  _MenuSection(
-                    title: 'ASSISTANCE',
-                    items: [
-                      _MenuItem(
-                        icon: Icons.help_outline,
-                        label: 'FAQ & aide',
-                        onTap: () => context.push('/espace/faq'),
-                      ),
-                      _MenuItem(
-                        icon: Icons.chat_bubble_outline,
-                        label: 'Nous contacter',
-                        onTap: () => context.push('/espace/contact'),
-                      ),
-                      _MenuItem(
-                        icon: Icons.privacy_tip_outlined,
-                        label: 'Politique de confidentialité',
-                        onTap: () => context.push('/espace/confidentialite'),
-                      ),
-                      _MenuItem(
-                        icon: Icons.star_outline,
-                        label: 'Nous évaluer',
-                        onTap: () => context.push('/espace/evaluation'),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 32),
-
-                  // Footer
-                  Center(
+                  Flexible(
                     child: Text(
-                      'CLOS ET · YAOUNDÉ — DOUALA · CAMEROUN',
-                      style: TextStyle(
-                        fontSize: 9,
-                        letterSpacing: 2.5,
-                        color: onSurfaceColor.withValues(alpha: 0.5),
-                        fontWeight: FontWeight.w500,
+                      nom,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: ClosetTextStyles.titreSection,
+                    ),
+                  ),
+                  if (user != null) ...[
+                    const SizedBox(width: 6),
+                    const Icon(
+                      Icons.verified,
+                      size: 12,
+                      color: ClosetColors.fond300,
+                    ),
+                  ],
+                ],
+              ),
+              const SizedBox(height: AppSpacing.p4),
+              Text(
+                user == null
+                    ? 'Connectez-vous pour retrouver vos pièces'
+                    : 'Membre du dressing',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: ClosetTextStyles.meta.copyWith(
+                  letterSpacing: -0.20,
+                  color: ClosetColors.neutre900,
+                ),
+              ),
+            ],
+          ),
+        ),
+        Semantics(
+          button: true,
+          label: 'Modifier mon profil',
+          child: GestureDetector(
+            onTap: onEditer,
+            child: Container(
+              width: 36,
+              height: 36,
+              decoration: const BoxDecoration(
+                color: ClosetColors.vert,
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.edit_outlined,
+                size: 15,
+                color: Colors.white,
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// Carte verte 352 × 97 invitant à rejoindre le programme sourceur.
+class _CarteSourceur extends StatelessWidget {
+  const _CarteSourceur({required this.dejaInscrit, required this.onTap});
+
+  final bool dejaInscrit;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 97,
+      padding: const EdgeInsets.all(AppSpacing.p20),
+      decoration: BoxDecoration(
+        color: ClosetColors.vert,
+        borderRadius: BorderRadius.circular(AppRadius.carte),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                if (!dejaInscrit)
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.p12,
+                      vertical: 2,
+                    ),
+                    decoration: BoxDecoration(
+                      color: ClosetColors.emeraude100,
+                      borderRadius:
+                          BorderRadius.circular(AppRadius.vignette),
+                    ),
+                    child: Text(
+                      'nouveau',
+                      style: ClosetTextStyles.attribut.copyWith(
+                        color: ClosetColors.emeraude500,
                       ),
                     ),
                   ),
-                  const SizedBox(height: 8),
-                ],
+                const SizedBox(height: AppSpacing.p4),
+                Text(
+                  dejaInscrit
+                      ? 'Mon espace Sourceur'
+                      : 'Devenir Sourceur Clos ET',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: ClosetTextStyles.prix.copyWith(
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: 0,
+                    color: ClosetColors.neutre300,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  'Confiez vos pièces d’exception et rejoignez notre cercle.',
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: ClosetTextStyles.attribut.copyWith(
+                    fontWeight: FontWeight.w300,
+                    letterSpacing: 0.16,
+                    color: Colors.white,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: AppSpacing.p12),
+          SizedBox(
+            width: 130,
+            height: 44,
+            child: Material(
+              color: ClosetColors.fond300,
+              borderRadius: BorderRadius.circular(AppRadius.cercle),
+              child: InkWell(
+                borderRadius: BorderRadius.circular(AppRadius.cercle),
+                onTap: onTap,
+                child: Center(
+                  child: Text(
+                    dejaInscrit ? 'mon atelier' : 'rejoindre le cercle',
+                    textAlign: TextAlign.center,
+                    style: ClosetTextStyles.actionPetite.copyWith(
+                      color: ClosetColors.neutre1000,
+                    ),
+                  ),
+                ),
               ),
             ),
           ),
@@ -331,237 +425,110 @@ class EspaceScreen extends ConsumerWidget {
       ),
     );
   }
-
-  void _showLoginRequiredDialog(BuildContext context) {
-    showDialog<void>(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          backgroundColor: ClosetColors.ivoire,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-          title: const Row(
-            children: [
-              Icon(Icons.lock_outline, color: ClosetColors.vert),
-              SizedBox(width: 10),
-              Text(
-                'Connexion requise',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w700,
-                  color: ClosetColors.noir,
-                ),
-              ),
-            ],
-          ),
-          content: const Text(
-            'Veuillez vous connecter à votre compte ClosET pour accéder à vos informations personnelles.',
-            style: TextStyle(fontSize: 14, color: ClosetColors.noir, height: 1.4),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text(
-                'Annuler',
-                style: TextStyle(color: ClosetColors.taupe, fontWeight: FontWeight.w600),
-              ),
-            ),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: ClosetColors.vert,
-                foregroundColor: ClosetColors.creme,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-              ),
-              onPressed: () {
-                Navigator.pop(context);
-                context.push('/auth');
-              },
-              child: const Text('Se connecter'),
-            ),
-          ],
-        );
-      },
-    );
-  }
 }
 
-// ── Stat Chip ────────────────────────────────────────────────────────────────
-
-class _StatChip extends StatelessWidget {
-  final String label;
-  final String value;
-  final Color color;
-  
-  const _StatChip({
-    required this.label,
-    required this.value,
-    required this.color,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Text(
-          value,
-          style: TextStyle(
-            fontSize: 22,
-            fontWeight: FontWeight.w800,
-            color: color,
-          ),
-        ),
-        const SizedBox(height: 2),
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 10,
-            color: color.withValues(alpha: 0.7),
-            letterSpacing: 0.5,
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-// ── Menu Section ─────────────────────────────────────────────────────────────
-
-class _MenuSection extends StatelessWidget {
-  final String title;
-  final List<_MenuItem> items;
-  const _MenuSection({required this.title, required this.items});
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final onSurfaceColor = theme.colorScheme.onSurface;
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          title,
-          style: TextStyle(
-            fontSize: 9,
-            fontWeight: FontWeight.w700,
-            color: onSurfaceColor.withValues(alpha: 0.5),
-            letterSpacing: 2,
-          ),
-        ),
-        const SizedBox(height: 10),
-        DecoratedBox(
-          decoration: BoxDecoration(
-            color: theme.colorScheme.surface,
-            borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: theme.dividerColor.withValues(alpha: 0.2)),
-          ),
-          child: Column(
-            children: items.asMap().entries.map((entry) {
-              final isLast = entry.key == items.length - 1;
-              return Column(
-                children: [
-                  entry.value,
-                  if (!isLast)
-                    Divider(
-                      height: 1,
-                      indent: 54,
-                      endIndent: 16,
-                      color: theme.dividerColor.withValues(alpha: 0.2),
-                    ),
-                ],
-              );
-            }).toList(),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-// ── Menu Item ────────────────────────────────────────────────────────────────
-
-class _MenuItem extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final String? badge;
-  final Color? badgeColor;
-  final VoidCallback onTap;
-  final bool isHighlighted;
-  final Widget? trailing;
-
-  const _MenuItem({
-    required this.icon,
+/// Entrée de liste : tuile verte de 48 (rayon 8), libellé, chevron.
+class _EntreeEspace extends StatelessWidget {
+  const _EntreeEspace({
+    required this.icone,
     required this.label,
     required this.onTap,
-    this.badge,
-    this.badgeColor,
-    this.isHighlighted = false,
-    this.trailing,
+    this.compteur,
   });
+
+  final IconData icone;
+  final String label;
+  final VoidCallback onTap;
+  final int? compteur;
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final onSurface = theme.colorScheme.onSurface;
-
-    return GestureDetector(
-      onTap: trailing != null ? null : onTap,
-      behavior: HitTestBehavior.opaque,
+    return InkWell(
+      onTap: onTap,
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.p24,
+          vertical: AppSpacing.p12,
+        ),
         child: Row(
           children: [
             Container(
-              width: 34,
-              height: 34,
+              width: 48,
+              height: 48,
               decoration: BoxDecoration(
-                color: isHighlighted
-                    ? theme.colorScheme.primary.withValues(alpha: 0.15)
-                    : onSurface.withValues(alpha: 0.08),
-                shape: BoxShape.circle,
+                color: ClosetColors.vert,
+                borderRadius: BorderRadius.circular(AppRadius.carte),
               ),
-              child: Icon(
-                icon,
-                size: 17,
-                color: isHighlighted
-                    ? theme.colorScheme.primary
-                    : onSurface,
-              ),
+              child: Icon(icone, size: 18, color: Colors.white),
             ),
-            const SizedBox(width: 14),
+            const SizedBox(width: AppSpacing.p16),
             Expanded(
               child: Text(
                 label,
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: isHighlighted ? FontWeight.w700 : FontWeight.w500,
-                  color: isHighlighted ? theme.colorScheme.primary : onSurface,
-                ),
+                style: ClosetTextStyles.libelle,
               ),
             ),
-            if (badge != null)
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                decoration: BoxDecoration(
-                  color: (badgeColor ?? theme.colorScheme.secondary).withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Text(
-                  badge!,
-                  style: TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w700,
-                    color: badgeColor ?? theme.colorScheme.secondary,
-                  ),
+            if (compteur != null && compteur! > 0) ...[
+              Text(
+                '$compteur',
+                style: ClosetTextStyles.meta.copyWith(
+                  color: ClosetColors.fond400,
                 ),
               ),
-            const SizedBox(width: 8),
-            trailing ?? Icon(
+              const SizedBox(width: AppSpacing.p8),
+            ],
+            const Icon(
               Icons.chevron_right,
               size: 18,
-              color: onSurface.withValues(alpha: 0.4),
+              color: ClosetColors.noir,
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+/// Bascule clair / sombre, conservée de la version précédente.
+class _BasculeTheme extends ConsumerWidget {
+  const _BasculeTheme();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final sombre = ref.watch<ThemeMode>(themeModeProvider) == ThemeMode.dark;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.p24,
+        vertical: AppSpacing.p12,
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 48,
+            height: 48,
+            decoration: BoxDecoration(
+              color: ClosetColors.vert,
+              borderRadius: BorderRadius.circular(AppRadius.carte),
+            ),
+            child: Icon(
+              sombre ? Icons.dark_mode_outlined : Icons.light_mode_outlined,
+              size: 18,
+              color: Colors.white,
+            ),
+          ),
+          const SizedBox(width: AppSpacing.p16),
+          Expanded(
+            child: Text('Thème sombre', style: ClosetTextStyles.libelle),
+          ),
+          Switch(
+            value: sombre,
+            activeColor: ClosetColors.vert,
+            onChanged: (_) => ref
+                .read<ThemeModeNotifier>(themeModeProvider.notifier)
+                .toggleTheme(),
+          ),
+        ],
       ),
     );
   }
