@@ -188,7 +188,7 @@ class EspaceScreen extends ConsumerWidget {
                         },
                         trailing: Switch(
                           value: isDark,
-                          activeThumbColor: theme.colorScheme.secondary,
+                          activeColor: theme.colorScheme.secondary,
                           onChanged: (value) {
                             ref.read<ThemeModeNotifier>(themeModeProvider.notifier).toggleTheme();
                           },
