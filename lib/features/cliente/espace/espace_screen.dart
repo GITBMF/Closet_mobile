@@ -11,7 +11,6 @@ import '../../../data/models/user.dart';
 import '../../../data/repositories/auth_repository.dart';
 import '../../../data/repositories/sourceur_repository.dart';
 import '../../../data/repositories/wishlist_repository.dart';
-import '../../../data/services/auth_storage_service.dart';
 
 /// Mon espace — transcription de la maquette `24:39`.
 ///
@@ -101,7 +100,7 @@ class EspaceScreen extends ConsumerWidget {
               _EntreeEspace(
                 icone: Icons.logout_rounded,
                 label: 'Logout',
-                onTap: () => _confirmerDeconnexion(context, ref),
+                onTap: () => context.push('/espace/deconnexion'),
               ),
               const SizedBox(height: AppSpacing.p24),
               const Padding(
@@ -142,53 +141,6 @@ class EspaceScreen extends ConsumerWidget {
     );
   }
 
-  /// La déconnexion est confirmée puis **remplace** la pile de navigation.
-  ///
-  /// `go` et non `push` : après déconnexion, aucun écran authentifié ne doit
-  /// rester atteignable par le geste de retour.
-  Future<void> _confirmerDeconnexion(
-    BuildContext context,
-    WidgetRef ref,
-  ) async {
-    final confirme = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: ClosetColors.creme,
-        title: Text('Se déconnecter', style: ClosetTextStyles.titreSection),
-        content: Text(
-          'Vous devrez saisir à nouveau vos identifiants pour retrouver '
-          'votre dressing.',
-          style: ClosetTextStyles.citation,
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: Text('Annuler', style: ClosetTextStyles.bouton),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            child: Text(
-              'Se déconnecter',
-              style: ClosetTextStyles.bouton.copyWith(
-                color: ClosetColors.erreurCouture,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-
-    if (confirme != true) return;
-
-    // Purge du stockage AVANT l'état mémoire : les jetons d'accès et de
-    // rafraîchissement ainsi que le profil sont persistés en clair dans les
-    // SharedPreferences. Sans cet appel, « se déconnecter » ne déconnecte
-    // rien — la session reste restaurable au prochain lancement.
-    await AuthStorageService.clearAuthData();
-
-    ref.read(currentUserProvider.notifier).state = null;
-    if (context.mounted) context.go('/auth');
-  }
 }
 
 /// Bouton rond de réglages, en haut à droite.
@@ -337,7 +289,7 @@ class _CarteSourceur extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 97,
+      constraints: const BoxConstraints(minHeight: 97),
       padding: const EdgeInsets.all(AppSpacing.p20),
       decoration: BoxDecoration(
         color: ClosetColors.vert,

@@ -192,7 +192,7 @@ class _LignePiece extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        height: 146,
+        constraints: const BoxConstraints(minHeight: 146),
         padding: const EdgeInsets.all(AppSpacing.p8),
         decoration: BoxDecoration(
           color: Colors.white,
@@ -260,7 +260,7 @@ class _LignePiece extends StatelessWidget {
                       ),
                     ),
                   ),
-                  const Spacer(),
+                  const SizedBox(height: AppSpacing.p12),
                   Text(
                     formatPrixFcfa(article.price),
                     style: ClosetTextStyles.prixGrand.copyWith(

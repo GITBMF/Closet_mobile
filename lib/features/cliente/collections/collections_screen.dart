@@ -8,8 +8,10 @@ import '../../../core/theme/closet_text_styles.dart';
 import '../../../core/widgets/closet_app_bar.dart';
 import '../../../core/widgets/closet_chip.dart';
 import '../../../core/widgets/closet_sections.dart';
+import '../../../core/widgets/piece_card.dart';
 import '../../../data/models/article.dart';
 import '../../../data/repositories/catalog_repository.dart';
+import 'filtres_sheet.dart';
 
 // Notifiers for type-safety under strict-inference
 class UniverseNotifier extends Notifier<String> {
@@ -143,6 +145,41 @@ class _CollectionsScreenState extends ConsumerState<CollectionsScreen> {
       ref.watch<String?>(filterConditionProvider) != null ||
       ref.watch<double?>(filterPriceProvider) != null;
 
+  /// Filtres réellement posés, chacun avec le moyen de le retirer seul.
+  ///
+  /// La maquette `16:1954` affiche « Robes ✕ », « Taille M ✕ », « Neuf ✕ » :
+  /// on doit pouvoir enlever un critère sans perdre les autres.
+  List<({String label, VoidCallback retirer})> get _filtresPosees {
+    final marque = ref.watch<String?>(filterBrandProvider);
+    final taille = ref.watch<String?>(filterSizeProvider);
+    final etat = ref.watch<String?>(filterConditionProvider);
+    final prixMax = ref.watch<double?>(filterPriceProvider);
+
+    return [
+      if (marque != null)
+        (
+          label: marque,
+          retirer: () => ref.read(filterBrandProvider.notifier).setBrand(null),
+        ),
+      if (taille != null)
+        (
+          label: 'Taille $taille',
+          retirer: () => ref.read(filterSizeProvider.notifier).setSize(null),
+        ),
+      if (etat != null)
+        (
+          label: etat,
+          retirer: () =>
+              ref.read(filterConditionProvider.notifier).setCondition(null),
+        ),
+      if (prixMax != null)
+        (
+          label: 'Max ${formatPrixFcfa(prixMax)}',
+          retirer: () => ref.read(filterPriceProvider.notifier).setPrice(null),
+        ),
+    ];
+  }
+
   void _reinitialiserFiltres() {
     ref.read(filterBrandProvider.notifier).setBrand(null);
     ref.read(filterSizeProvider.notifier).setSize(null);
@@ -222,18 +259,15 @@ class _CollectionsScreenState extends ConsumerState<CollectionsScreen> {
               ),
             ),
             const SizedBox(height: AppSpacing.p24),
-            if (_filtresActifs)
+            if (_filtresActifs) ...[
               Padding(
                 padding: const EdgeInsets.fromLTRB(21, 0, 21, AppSpacing.p12),
-                child: Align(
-                  alignment: Alignment.centerLeft,
-                  child: ClosetChip(
-                    label: 'Réinitialiser les filtres',
-                    hasCloseIcon: true,
-                    onTap: _reinitialiserFiltres,
-                  ),
+                child: _BarreFiltresActifs(
+                  filtres: _filtresPosees,
+                  onToutEffacer: _reinitialiserFiltres,
                 ),
               ),
+            ],
             catalogue.when(
               data: (articles) => _Resultats(
                 articles: articles,
@@ -250,17 +284,14 @@ class _CollectionsScreenState extends ConsumerState<CollectionsScreen> {
                 child: Center(child: Text('Erreur de chargement')),
               ),
             ),
+            const ClosetSignature(),
           ],
         ),
       ),
     );
   }
 
-  void _ouvrirFiltres(BuildContext context) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Panneau de filtres à venir.')),
-    );
-  }
+  void _ouvrirFiltres(BuildContext context) => afficherFiltres(context);
 }
 
 class _Resultats extends StatelessWidget {
@@ -288,9 +319,13 @@ class _Resultats extends StatelessWidget {
       children: [
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 21),
-          child: ClosetEnTeteSection(
-            titre: univers,
-            lien: '${articles.length} pièces',
+          child: ClosetEnTeteSection(titre: univers),
+        ),
+        const SizedBox(height: AppSpacing.p4),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 21),
+          child: ClosetSurtitre(
+            '${articles.length} pièces. triées par nouveautés',
           ),
         ),
         const SizedBox(height: AppSpacing.p16),
@@ -304,7 +339,7 @@ class _Resultats extends StatelessWidget {
               crossAxisCount: 2,
               crossAxisSpacing: AppSpacing.p12,
               mainAxisSpacing: AppSpacing.p12,
-              childAspectRatio: 169 / 249,
+              childAspectRatio: PieceCard.ratioCarteGrille,
             ),
             itemBuilder: (context, i) => ArticleCard(
               article: articles[i],
@@ -474,6 +509,42 @@ class _PiluleTri extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+/// Bandeau des filtres actifs — maquette `16:1954`.
+///
+/// Une pastille « Filtres.N » puis une pastille retirable par critère posé.
+class _BarreFiltresActifs extends StatelessWidget {
+  const _BarreFiltresActifs({
+    required this.filtres,
+    required this.onToutEffacer,
+  });
+
+  final List<({String label, VoidCallback retirer})> filtres;
+  final VoidCallback onToutEffacer;
+
+  @override
+  Widget build(BuildContext context) {
+    return Wrap(
+      spacing: AppSpacing.p8,
+      runSpacing: AppSpacing.p8,
+      crossAxisAlignment: WrapCrossAlignment.center,
+      children: [
+        ClosetChip(
+          label: 'Filtres.${filtres.length}',
+          isActive: true,
+          onTap: onToutEffacer,
+        ),
+        for (final f in filtres)
+          ClosetChip(
+            label: f.label,
+            hasCloseIcon: true,
+            onTap: f.retirer,
+            onCloseTap: f.retirer,
+          ),
+      ],
     );
   }
 }

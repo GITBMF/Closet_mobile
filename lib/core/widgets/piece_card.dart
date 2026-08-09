@@ -48,8 +48,19 @@ class PieceCard extends StatelessWidget {
   /// Retrait de l'image dans la carte, d'après la maquette.
   static const double _retrait = 12;
 
-  /// Rapport largeur/hauteur de l'image (145 × 156).
-  static const double _ratioImage = 145 / 156;
+  /// Rapport largeur/hauteur de l'image dans la maquette (145 × 156).
+  ///
+  /// Sert de proportion **souhaitée**, pas imposée : l'image est élastique et
+  /// cède de la hauteur au texte si la cellule est trop courte. Un ratio figé
+  /// faisait déborder le prix dès que le nom passait sur deux lignes.
+  static const double ratioImage = 145 / 156;
+
+  /// Rapport largeur/hauteur d'une cellule de grille.
+  ///
+  /// La maquette dessine 169 × 249, mais ses tailles de police sont serrées :
+  /// on prévoit un peu de hauteur en plus pour absorber un nom sur deux
+  /// lignes ou un réglage d'accessibilité qui agrandit le texte.
+  static const double ratioCarteGrille = 169 / 268;
 
   @override
   Widget build(BuildContext context) {
@@ -68,10 +79,8 @@ class PieceCard extends StatelessWidget {
           padding: const EdgeInsets.all(_retrait),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
             children: [
-              AspectRatio(
-                aspectRatio: _ratioImage,
+              Expanded(
                 child: _Visuel(
                   imageUrl: imageUrl,
                   arche: isImageArche,

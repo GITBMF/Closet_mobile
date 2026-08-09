@@ -154,6 +154,7 @@ class _CorpsAccueil extends ConsumerWidget {
             const SizedBox(height: AppSpacing.p16),
             _RangeeUnivers(univers: univers, onTap: ouvrirUnivers),
           ],
+          const ClosetSignature(),
         ],
       ),
     );
@@ -171,7 +172,7 @@ class _CartePieceDeLaSemaine extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 120,
+      constraints: const BoxConstraints(minHeight: 120),
       width: double.infinity,
       decoration: const BoxDecoration(
         color: ClosetColors.vert,
@@ -360,7 +361,7 @@ class _GrilleArticles extends StatelessWidget {
           crossAxisCount: 2,
           crossAxisSpacing: AppSpacing.p12,
           mainAxisSpacing: AppSpacing.p12,
-          childAspectRatio: 169 / 249,
+          childAspectRatio: PieceCard.ratioCarteGrille,
         ),
         itemBuilder: (context, i) {
           final article = articles[i];

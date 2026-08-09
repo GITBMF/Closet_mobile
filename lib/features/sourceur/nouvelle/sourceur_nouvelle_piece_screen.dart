@@ -235,7 +235,7 @@ class _ZoneDepotPhotos extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 230,
+      constraints: const BoxConstraints(minHeight: 230),
       padding: const EdgeInsets.symmetric(
         horizontal: AppSpacing.p16,
         vertical: AppSpacing.p24,
@@ -262,7 +262,7 @@ class _ZoneDepotPhotos extends StatelessWidget {
               color: Colors.white,
             ),
           ),
-          const Spacer(),
+          const SizedBox(height: AppSpacing.p16),
           Text(
             'Ajoutez une photo pour mettre votre pièce en valeur.',
             textAlign: TextAlign.center,

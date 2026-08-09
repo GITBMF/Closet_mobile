@@ -487,7 +487,7 @@ class _BarreAjout extends ConsumerWidget {
       child: Padding(
         padding: const EdgeInsets.fromLTRB(19, 0, 19, AppSpacing.p12),
         child: Container(
-          height: 97,
+          constraints: const BoxConstraints(minHeight: 97),
           padding: const EdgeInsets.symmetric(horizontal: AppSpacing.p20),
           decoration: BoxDecoration(
             color: ClosetColors.vert,

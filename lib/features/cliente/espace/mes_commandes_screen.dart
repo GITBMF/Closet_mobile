@@ -121,7 +121,7 @@ class _CarteCommande extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        height: 80,
+        constraints: const BoxConstraints(minHeight: 80),
         padding: const EdgeInsets.symmetric(horizontal: AppSpacing.p16),
         decoration: BoxDecoration(
           color: Colors.white,
