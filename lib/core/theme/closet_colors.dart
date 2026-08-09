@@ -126,6 +126,12 @@ class ClosetColors {
   /// Texte indicatif du champ « code privilège » (`16:3448`)
   static const Color placeholderGris = Color(0xFF7F7F7F);
 
+  /// Bordure de la zone de dépôt de photos (`33:1389`)
+  static const Color bordurePointillee = Color(0xFF828282);
+
+  /// Bordure du bouton secondaire « Take Photo » (`33:1389`)
+  static const Color bordureBoutonClair = Color(0xFFB4B4B4);
+
   // ══════════════════════════════════════════════════════════════════════
   // RÔLES SÉMANTIQUES
   // ══════════════════════════════════════════════════════════════════════
