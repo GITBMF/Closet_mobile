@@ -128,7 +128,7 @@ class _LigneTransaction extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 74,
+      constraints: const BoxConstraints(minHeight: 74),
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.p12),
       decoration: BoxDecoration(
         color: Colors.white,

@@ -183,7 +183,7 @@ class _TuileSynthese extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 101,
+      constraints: const BoxConstraints(minHeight: 101),
       padding: const EdgeInsets.all(AppSpacing.p12),
       decoration: BoxDecoration(
         color: ClosetColors.vert,
@@ -201,7 +201,7 @@ class _TuileSynthese extends StatelessWidget {
             ),
             child: Icon(icone, size: 18, color: ClosetColors.vert),
           ),
-          const Spacer(),
+          const SizedBox(height: AppSpacing.p12),
           Text(
             label,
             maxLines: 1,
@@ -244,7 +244,7 @@ class _CarteDepot extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        height: 106,
+        constraints: const BoxConstraints(minHeight: 106),
         padding: const EdgeInsets.all(AppSpacing.p12),
         decoration: BoxDecoration(
           color: Colors.white,

@@ -12,20 +12,27 @@ import '../../../core/theme/closet_text_styles.dart';
 class TransactionScaffold extends StatelessWidget {
   const TransactionScaffold({
     super.key,
-    required this.titre,
+    this.titre,
     required this.child,
     this.hautTitre = 124,
+    this.mention = mentionChiffrement,
   });
 
-  final String titre;
+  /// Titre d'écran. `null` = pas de titre (cas de `36:2064`).
+  final String? titre;
+
   final Widget child;
 
   /// Position verticale du titre. 124 dans la maquette, 73 pour le reçu.
   final double hautTitre;
 
-  /// Mention reprise à l'identique sur les quatre écrans.
+  /// Mention de pied d'écran, remplaçable (cf. `36:2113`).
+  final String mention;
+
+  /// Mention reprise à l'identique sur les écrans de transaction.
   static const String mentionChiffrement =
-      'Toutes vos informations sont chiffrées de bout en bout.';
+      'Toutes vos informations sont chiffrées de bout en bout et stockées '
+      'sur des serveurs sécurisés.';
 
   @override
   Widget build(BuildContext context) {
@@ -35,21 +42,23 @@ class TransactionScaffold extends StatelessWidget {
         child: Column(
           children: [
             SizedBox(height: hautTitre - 47),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.p24),
-              child: Text(
-                titre,
-                textAlign: TextAlign.center,
-                style: ClosetTextStyles.sousTitre.copyWith(
-                  color: Colors.white,
+            if (titre != null)
+              Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: AppSpacing.p24),
+                child: Text(
+                  titre!,
+                  textAlign: TextAlign.center,
+                  style: ClosetTextStyles.sousTitre.copyWith(
+                    color: Colors.white,
+                  ),
                 ),
               ),
-            ),
             Expanded(child: child),
             Padding(
               padding: const EdgeInsets.fromLTRB(40, 0, 40, AppSpacing.p20),
               child: Text(
-                mentionChiffrement,
+                mention,
                 textAlign: TextAlign.center,
                 style: ClosetTextStyles.meta.copyWith(
                   fontSize: 11,

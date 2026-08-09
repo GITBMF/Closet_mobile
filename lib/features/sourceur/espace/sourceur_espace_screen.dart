@@ -9,6 +9,7 @@ import '../../../core/widgets/closet_app_bar.dart';
 import '../../../data/repositories/auth_repository.dart';
 import '../../../data/repositories/sourceur_repository.dart';
 import '../../../data/services/auth_storage_service.dart';
+import '../retrait/methode_retrait_sheet.dart';
 import '../widgets/sourceur_header.dart';
 
 /// Mon espace sourceur — transcription de la maquette `31:109`.
@@ -67,7 +68,7 @@ class SourceurEspaceScreen extends ConsumerWidget {
                     ),
                     const SizedBox(height: AppSpacing.p16),
                     _ActionsRapides(
-                      onRetrait: () => context.push('/sourceur/revenus'),
+                      onRetrait: () => afficherMethodeRetrait(context),
                       onHistorique: () => context.push('/sourceur/revenus'),
                       onMoyens: () => context.push('/espace/paiements'),
                       onPlus: () => context.push('/sourceur/pieces'),
@@ -173,7 +174,7 @@ class _CarteSolde extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 139,
+      constraints: const BoxConstraints(minHeight: 139),
       padding: const EdgeInsets.fromLTRB(23, 22, 23, AppSpacing.p16),
       decoration: BoxDecoration(
         color: ClosetColors.vert,
@@ -221,7 +222,7 @@ class _CarteSolde extends StatelessWidget {
                 color: Colors.white,
               ),
             ),
-            const Spacer(),
+            const SizedBox(height: AppSpacing.p16),
             Text(
               'pièces en vente : ${(nbPieces ?? 0).toString().padLeft(2, '0')} '
               'pièces',
@@ -271,7 +272,7 @@ class _ActionsRapides extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 86,
+      constraints: const BoxConstraints(minHeight: 86),
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.p24),
       decoration: BoxDecoration(
         color: ClosetColors.vert,
