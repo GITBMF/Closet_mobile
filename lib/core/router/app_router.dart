@@ -7,8 +7,10 @@ import '../../features/auth/auth_screen.dart';
 import '../../features/checkout/checkout_screen.dart';
 import '../../features/cliente/collections/collections_screen.dart';
 import '../../features/cliente/dressing/dressing_screen.dart';
+import '../../features/cliente/espace/detail_commande_screen.dart';
 import '../../features/cliente/espace/espace_screen.dart';
 import '../../features/cliente/espace/espace_sub_screens.dart';
+import '../../features/cliente/espace/mes_commandes_screen.dart';
 import '../../features/cliente/espace/modifier_profil_screen.dart';
 import '../../features/cliente/product/product_screen.dart';
 import '../../features/cliente/selection/selection_screen.dart';
@@ -330,6 +332,18 @@ final appRouterProvider = Provider<GoRouter>((ref) {
                     path: 'infos',
                     builder: (context, state) =>
                         const ModifierProfilScreen(),
+                  ),
+                  GoRoute(
+                    path: 'commandes',
+                    builder: (context, state) => const MesCommandesScreen(),
+                    routes: [
+                      GoRoute(
+                        path: ':numero',
+                        builder: (context, state) => DetailCommandeScreen(
+                          numero: state.pathParameters['numero']!,
+                        ),
+                      ),
+                    ],
                   ),
                   GoRoute(
                     path: 'adresses',

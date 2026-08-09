@@ -75,11 +75,7 @@ class EspaceScreen extends ConsumerWidget {
               _EntreeEspace(
                 icone: Icons.receipt_long_outlined,
                 label: 'Mes commandes',
-                onTap: () => ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Vos commandes arrivent très bientôt.'),
-                  ),
-                ),
+                onTap: () => context.push('/espace/commandes'),
               ),
               _EntreeEspace(
                 icone: Icons.favorite_border,
