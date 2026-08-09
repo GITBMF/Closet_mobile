@@ -133,15 +133,29 @@ class _Corps extends StatelessWidget {
               borderRadius: BorderRadius.circular(AppRadius.cercle),
               child: InkWell(
                 borderRadius: BorderRadius.circular(AppRadius.cercle),
-                onTap: () => context.go('/collections'),
+                onTap: () => context.push(
+                  '/espace/commandes/${commande.numero}/suivi',
+                ),
                 child: Center(
                   child: Text(
-                    'Passer d’autres commandes',
+                    'Suivre ma commande',
                     style: ClosetTextStyles.bouton.copyWith(
                       color: Colors.white,
                     ),
                   ),
                 ),
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(height: AppSpacing.p12),
+        Center(
+          child: TextButton(
+            onPressed: () => context.go('/collections'),
+            child: Text(
+              'Passer d’autres commandes',
+              style: ClosetTextStyles.bouton.copyWith(
+                color: ClosetColors.vert,
               ),
             ),
           ),

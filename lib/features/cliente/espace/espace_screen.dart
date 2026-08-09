@@ -65,8 +65,8 @@ class EspaceScreen extends ConsumerWidget {
                   dejaInscrit: sourceurRepo.estInscrit,
                   onTap: () => context.push(
                     sourceurRepo.estInscrit
-                        ? '/sourceur'
-                        : '/sourceur/inscription',
+                        ? '/sourceur/espace'
+                        : '/sourceur/devenir',
                   ),
                 ),
               ),

@@ -93,6 +93,36 @@ class SourceurAdhesionScreen extends ConsumerWidget {
                       ),
                     ),
                     const SizedBox(height: AppSpacing.p32),
+                    if (etapeCourante == EtapeAdhesion.validee ||
+                        etapeCourante == EtapeAdhesion.premierePiece) ...[
+                      Center(
+                        child: SizedBox(
+                          width: 312,
+                          height: 44,
+                          child: Material(
+                            color: ClosetColors.fond300,
+                            borderRadius:
+                                BorderRadius.circular(AppRadius.cercle),
+                            child: InkWell(
+                              borderRadius:
+                                  BorderRadius.circular(AppRadius.cercle),
+                              onTap: () =>
+                                  context.go('/sourceur/adhesion/approuvee'),
+                              child: Center(
+                                child: Text(
+                                  'Voir ma validation',
+                                  style: ClosetTextStyles.bouton.copyWith(
+                                    fontWeight: FontWeight.w600,
+                                    color: ClosetColors.vert,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: AppSpacing.p16),
+                    ],
                     Center(
                       child: SizedBox(
                         width: 312,
