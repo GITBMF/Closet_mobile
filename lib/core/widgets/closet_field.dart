@@ -99,6 +99,91 @@ InputDecoration closetFieldDecoration({
   );
 }
 
+/// Champ à libellé posé **au-dessus** — maquette `25:710` (Modifier mon
+/// profil).
+///
+/// Même zone blanche cerclée d'or de 42 de haut que [ClosetField], mais le
+/// libellé est un texte séparé (Lato 500 / 12, vert profond) au lieu d'une
+/// encoche sur la bordure.
+class ClosetChampLibelle extends StatelessWidget {
+  const ClosetChampLibelle({
+    super.key,
+    required this.label,
+    this.controller,
+    this.hint,
+    this.keyboardType,
+    this.textInputAction,
+    this.enabled = true,
+    this.onChanged,
+    this.validator,
+  });
+
+  final String label;
+  final TextEditingController? controller;
+  final String? hint;
+  final TextInputType? keyboardType;
+  final TextInputAction? textInputAction;
+  final bool enabled;
+  final ValueChanged<String>? onChanged;
+  final FormFieldValidator<String>? validator;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: ClosetTextStyles.labelChamp.copyWith(
+            fontWeight: FontWeight.w500,
+            color: ClosetColors.vert,
+          ),
+        ),
+        const SizedBox(height: AppSpacing.p8),
+        SizedBox(
+          height: 42,
+          child: TextFormField(
+            controller: controller,
+            keyboardType: keyboardType,
+            textInputAction: textInputAction,
+            enabled: enabled,
+            onChanged: onChanged,
+            validator: validator,
+            style: ClosetTextStyles.saisie.copyWith(color: ClosetColors.noir),
+            cursorColor: ClosetColors.vert,
+            cursorWidth: 1.5,
+            decoration: InputDecoration(
+              hintText: hint,
+              hintStyle: ClosetTextStyles.saisie.copyWith(
+                color: ClosetColors.champPlaceholder,
+              ),
+              filled: true,
+              fillColor: Colors.white,
+              isDense: true,
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.p12,
+                vertical: AppSpacing.p12,
+              ),
+              border: _bordureLibelle(ClosetColors.fond300),
+              enabledBorder: _bordureLibelle(ClosetColors.fond300),
+              focusedBorder: _bordureLibelle(ClosetColors.vert),
+              errorBorder: _bordureLibelle(ClosetColors.erreur),
+              focusedErrorBorder: _bordureLibelle(ClosetColors.erreur),
+              disabledBorder: _bordureLibelle(ClosetColors.ligne),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  static OutlineInputBorder _bordureLibelle(Color couleur) =>
+      OutlineInputBorder(
+        borderRadius: BorderRadius.circular(AppRadius.carte),
+        borderSide: BorderSide(color: couleur, width: AppStroke.fin),
+      );
+}
+
 /// Champ déroulant — même habillage que [ClosetField], avec la liste
 /// d'options séparée par des filets gris (`#E3E3E3` dans la maquette).
 class ClosetSelectField<T> extends StatelessWidget {

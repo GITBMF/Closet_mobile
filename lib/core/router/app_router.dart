@@ -9,6 +9,7 @@ import '../../features/cliente/collections/collections_screen.dart';
 import '../../features/cliente/dressing/dressing_screen.dart';
 import '../../features/cliente/espace/espace_screen.dart';
 import '../../features/cliente/espace/espace_sub_screens.dart';
+import '../../features/cliente/espace/modifier_profil_screen.dart';
 import '../../features/cliente/product/product_screen.dart';
 import '../../features/cliente/selection/selection_screen.dart';
 import '../../features/cliente/wishlist/wishlist_screen.dart';
@@ -16,6 +17,7 @@ import '../../features/main_layout.dart';
 import '../../features/onboarding/onboarding_screen.dart';
 import '../../features/sourceur/atelier/sourceur_atelier_screen.dart';
 import '../../features/sourceur/espace/sourceur_espace_screen.dart';
+import '../../features/sourceur/inscription/sourceur_adhesion_screen.dart';
 import '../../features/sourceur/inscription/sourceur_inscription_screen.dart';
 import '../../features/sourceur/nouvelle/sourceur_nouvelle_piece_screen.dart';
 import '../../features/sourceur/pieces/sourceur_pieces_screen.dart';
@@ -249,6 +251,18 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         ],
       ),
 
+      // Statut d'adhesion (hors shell) — affiche l'avancement, ne collecte rien
+      GoRoute(
+        parentNavigatorKey: rootNavigatorKey,
+        path: '/sourceur/adhesion',
+        pageBuilder: (context, state) => CustomTransitionPage(
+          key: state.pageKey,
+          child: const SourceurAdhesionScreen(),
+          transitionsBuilder: (context, animation, _, child) =>
+              FadeTransition(opacity: animation, child: child),
+        ),
+      ),
+
       // Inscription (outside shell)
       GoRoute(
         parentNavigatorKey: rootNavigatorKey,
@@ -314,7 +328,8 @@ final appRouterProvider = Provider<GoRouter>((ref) {
                 routes: [
                   GoRoute(
                     path: 'infos',
-                    builder: (context, state) => const EspaceInfoScreen(),
+                    builder: (context, state) =>
+                        const ModifierProfilScreen(),
                   ),
                   GoRoute(
                     path: 'adresses',
