@@ -1,17 +1,23 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 
+import '../../../core/theme/closet_colors.dart';
 import '../../../data/repositories/cart_repository.dart';
 
 enum DeliveryOption { yaoundeDouala, otherCities }
-enum PaymentOption { card, mtnMoney, orangeMoney }
 
-final deliveryOptionProvider =
-    StateProvider<DeliveryOption>((ref) => DeliveryOption.yaoundeDouala);
-final paymentOptionProvider =
-    StateProvider<PaymentOption>((ref) => PaymentOption.card);
+enum PaymentOption { mtnMoney, orangeMoney, creditCard }
+
+final deliveryOptionProvider = StateProvider<DeliveryOption>(
+  (ref) => DeliveryOption.yaoundeDouala,
+);
+final paymentOptionProvider = StateProvider<PaymentOption>(
+  (ref) => PaymentOption.mtnMoney,
+);
 
 class CheckoutScreen extends ConsumerStatefulWidget {
   const CheckoutScreen({super.key});
@@ -23,11 +29,92 @@ class CheckoutScreen extends ConsumerStatefulWidget {
 class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
   int _step = 0; // 0: delivery, 1: payment, 2: confirmation
   bool _isPlacing = false;
+  bool _validatedInformations = false;
 
-  final _nameController = TextEditingController();
-  final _phoneController = TextEditingController();
-  final _addressController = TextEditingController();
-  final _cityController = TextEditingController(text: 'Cameroun');
+  final _nameController = TextEditingController(text: 'Aïcha N.');
+  final _phoneController = TextEditingController(text: '+237 6 90 12 34 56');
+  final _addressController = TextEditingController(
+    text: 'Bastos, Rue de la Cascade',
+  );
+  final _cityController = TextEditingController(text: 'Yaoundé');
+
+  bool _deliveryExpanded = true;
+  String? _selectedRegion;
+  String? _selectedDepartement;
+  final _quartierController = TextEditingController();
+  final _momoPhoneController = TextEditingController();
+  final _cardNumberController = TextEditingController();
+  final _cardExpiryController = TextEditingController();
+  final _cardCvcController = TextEditingController();
+  String _orderId = '';
+
+  static const Map<String, List<String>> _regionsAndDepartements = {
+    'Adamaoua': ['Vina', 'Mbéré', 'Djérem', 'Faro-et-Déo', 'Mayo-Banyo'],
+    'Centre': [
+      'Mfoundi',
+      'Lekié',
+      'Nyong-et-So\'o',
+      'Nyong-et-Mfoumou',
+      'Nyong-et-Kéllé',
+      'Mbam-et-Kim',
+      'Mbam-et-Inoubou',
+      'Haute-Sanaga',
+      'Mefou-et-Afamba',
+      'Mefou-et-Akono'
+    ],
+    'Est': ['Lom-et-Djérem', 'Boumba-et-Ngoko', 'Kadey', 'Haut-Nyong'],
+    'Extrême-Nord': [
+      'Diamaré',
+      'Logone-et-Chari',
+      'Mayo-Danay',
+      'Mayo-Kani',
+      'Mayo-Sava',
+      'Mayo-Tsanaga'
+    ],
+    'Littoral': ['Wouri', 'Moungo', 'Sanaga-Maritime', 'Nkam'],
+    'Nord': ['Bénoué', 'Faro', 'Mayo-Louti', 'Mayo-Rey'],
+    'Nord Ouest': [
+      'Mezam',
+      'Boyo',
+      'Bui',
+      'Donga-Mantung',
+      'Menchum',
+      'Momo',
+      'Ngo-Ketunjia'
+    ],
+    'Ouest': [
+      'Mifi',
+      'Bamboutos',
+      'Haut-Nkam',
+      'Menoua',
+      'Ndé',
+      'Noun',
+      'Koung-Khi',
+      'Hauts-Plateaux'
+    ],
+    'Sud': ['Mvila', 'Dja-et-Lobo', 'Océan', 'Vallée-du-Ntem'],
+    'Sud-Ouest': [
+      'Fako',
+      'Meme',
+      'Ndian',
+      'Manyu',
+      'Lebialem',
+      'Kupe-Manenguba'
+    ],
+  };
+
+  @override
+  void initState() {
+    super.initState();
+    _momoPhoneController.text = _phoneController.text;
+    _orderId = 'CE-${1000 + (DateTime.now().microsecond % 9000)}';
+    _phoneController.addListener(() {
+      _momoPhoneController.text = _phoneController.text;
+    });
+    _quartierController.addListener(() {
+      _addressController.text = '${_selectedDepartement ?? ''}, ${_quartierController.text}';
+    });
+  }
 
   @override
   void dispose() {
@@ -35,212 +122,1069 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
     _phoneController.dispose();
     _addressController.dispose();
     _cityController.dispose();
+    _quartierController.dispose();
+    _momoPhoneController.dispose();
+    _cardNumberController.dispose();
+    _cardExpiryController.dispose();
+    _cardCvcController.dispose();
     super.dispose();
   }
 
   String _formatPrice(double price) {
     final intPrice = price.toInt();
-    final thousands = intPrice ~/ 1000;
-    final remainder = intPrice % 1000;
-    if (remainder == 0) return '$thousands 000 FCFA';
-    return '$thousands ${remainder.toString().padLeft(3, '0')} FCFA';
+    if (intPrice >= 1000) {
+      final thousands = intPrice ~/ 1000;
+      final remainder = intPrice % 1000;
+      if (remainder == 0) {
+        return '$thousands.000 FCFA';
+      }
+      return '$thousands.${remainder.toString().padLeft(3, '0')} FCFA';
+    }
+    return '$intPrice FCFA';
   }
 
   double _getDeliveryCost(DeliveryOption option) {
     switch (option) {
       case DeliveryOption.yaoundeDouala:
-        return 2500;
+        return 3500; // Match selection screen delivery fee (3.500 FCFA)
       case DeliveryOption.otherCities:
         return 5000;
     }
   }
 
+  void _showDeliveryBottomSheet() {
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (context) {
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          insetPadding: const EdgeInsets.symmetric(horizontal: 24),
+          child: Stack(
+            clipBehavior: Clip.none,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Consumer(
+                  builder: (context, ref, _) {
+                    final option = ref.watch(deliveryOptionProvider);
+                    return Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Choisir la ville de livraison',
+                          style: GoogleFonts.lato(
+                            fontSize: 17,
+                            fontWeight: FontWeight.bold,
+                            color: ClosetColors.noir,
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        _TownRadioTile(
+                          title: 'Yaoundé',
+                          subtitle: 'Livraison à domicile 24h-48h',
+                          isSelected:
+                              option == DeliveryOption.yaoundeDouala &&
+                              _cityController.text == 'Yaoundé',
+                          onTap: () {
+                            ref.read(deliveryOptionProvider.notifier).state =
+                                DeliveryOption.yaoundeDouala;
+                            setState(() {
+                              _cityController.text = 'Yaoundé';
+                            });
+                            Navigator.pop(context);
+                          },
+                        ),
+                        const Divider(color: ClosetColors.ligne, height: 1),
+                        _TownRadioTile(
+                          title: 'Douala',
+                          subtitle: 'Livraison à domicile 24h-48h',
+                          isSelected:
+                              option == DeliveryOption.yaoundeDouala &&
+                              _cityController.text == 'Douala',
+                          onTap: () {
+                            ref.read(deliveryOptionProvider.notifier).state =
+                                DeliveryOption.yaoundeDouala;
+                            setState(() {
+                              _cityController.text = 'Douala';
+                            });
+                            Navigator.pop(context);
+                          },
+                        ),
+                        const Divider(color: ClosetColors.ligne, height: 1),
+                        _TownRadioTile(
+                          title: 'Autre',
+                          subtitle: 'A determiner',
+                          isSelected: option == DeliveryOption.otherCities,
+                          onTap: () {
+                            ref.read(deliveryOptionProvider.notifier).state =
+                                DeliveryOption.otherCities;
+                            setState(() {
+                              _cityController.text = 'Autre';
+                            });
+                            Navigator.pop(context);
+                          },
+                        ),
+                      ],
+                    );
+                  },
+                ),
+              ),
+              Positioned(
+                top: -40,
+                right: 0,
+                child: GestureDetector(
+                  onTap: () => Navigator.pop(context),
+                  child: const Icon(Icons.close, color: Colors.white, size: 28),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  void _showPaymentBottomSheet() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: ClosetColors.creme,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return Consumer(
+          builder: (context, ref, _) {
+            final option = ref.watch(paymentOptionProvider);
+            return Padding(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Moyen de paiement',
+                    style: GoogleFonts.cormorantGaramond(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: ClosetColors.vertFonce,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  RadioListTile<PaymentOption>(
+                    title: const Text('MTN Mobile Money'),
+                    value: PaymentOption.mtnMoney,
+                    groupValue: option,
+                    activeColor: ClosetColors.vert,
+                    onChanged: (v) {
+                      if (v != null) {
+                        ref.read(paymentOptionProvider.notifier).state = v;
+                      }
+                    },
+                  ),
+                  RadioListTile<PaymentOption>(
+                    title: const Text('Orange Money'),
+                    value: PaymentOption.orangeMoney,
+                    groupValue: option,
+                    activeColor: ClosetColors.vert,
+                    onChanged: (v) {
+                      if (v != null) {
+                        ref.read(paymentOptionProvider.notifier).state = v;
+                      }
+                    },
+                  ),
+                  RadioListTile<PaymentOption>(
+                    title: const Text('Carte bancaire'),
+                    value: PaymentOption.creditCard,
+                    groupValue: option,
+                    activeColor: ClosetColors.vert,
+                    onChanged: (v) {
+                      if (v != null) {
+                        ref.read(paymentOptionProvider.notifier).state = v;
+                      }
+                    },
+                  ),
+                  const SizedBox(height: 20),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: ClosetColors.vert,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(30),
+                        ),
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                      ),
+                      onPressed: () => Navigator.pop(context),
+                      child: Text(
+                        'Enregistrer',
+                        style: GoogleFonts.lato(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildBottomSheetField(
+    String label,
+    TextEditingController controller,
+  ) {
+    return TextField(
+      controller: controller,
+      decoration: InputDecoration(
+        labelText: label,
+        labelStyle: GoogleFonts.lato(color: ClosetColors.taupe),
+        enabledBorder: const UnderlineInputBorder(
+          borderSide: BorderSide(color: ClosetColors.ligne),
+        ),
+        focusedBorder: const UnderlineInputBorder(
+          borderSide: BorderSide(color: ClosetColors.vert),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final subtotal = ref.watch(cartTotalProvider);
-    final cartItems = ref.watch(cartListProvider);
     final deliveryOption = ref.watch(deliveryOptionProvider);
     final paymentOption = ref.watch(paymentOptionProvider);
     final deliveryCost = _getDeliveryCost(deliveryOption);
     final total = subtotal + deliveryCost;
-    final theme = Theme.of(context);
-    final onSurfaceColor = theme.colorScheme.onSurface;
 
     return Scaffold(
-      backgroundColor: theme.scaffoldBackgroundColor,
+      backgroundColor: ClosetColors.beige,
       appBar: AppBar(
-        backgroundColor: theme.scaffoldBackgroundColor,
+        backgroundColor: Colors.transparent,
         elevation: 0,
-        leading: GestureDetector(
-          onTap: () {
-            if (_step > 0 && _step < 2) {
-              setState(() => _step--);
-            } else {
-              context.pop();
-            }
-          },
-          child: Icon(Icons.arrow_back_ios_new,
-              size: 18, color: onSurfaceColor),
-        ),
-        title: Text(
-          'Finaliser ma sélection',
-          style: TextStyle(
-            fontSize: 17,
-            fontWeight: FontWeight.w700,
-            color: onSurfaceColor,
+        scrolledUnderElevation: 0,
+        leadingWidth: 68,
+        leading: Padding(
+          padding: const EdgeInsets.only(left: 16),
+          child: Center(
+            child: GestureDetector(
+              onTap: () {
+                if (_step > 0 && _step < 2) {
+                  setState(() => _step--);
+                } else {
+                  context.pop();
+                }
+              },
+              child: Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  shape: BoxShape.circle,
+                  border: Border.all(color: ClosetColors.ligne),
+                ),
+                child: const Icon(
+                  Icons.arrow_back,
+                  size: 20,
+                  color: ClosetColors.vertFonce,
+                ),
+              ),
+            ),
           ),
         ),
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              _step == 0 ? 'Ma sélection' : 'Finaliser ma sélection',
+              style: GoogleFonts.cormorantGaramond(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: ClosetColors.vertFonce,
+              ),
+            ),
+            Text(
+              _step == 0 ? 'ETAPE 1/3' : 'ETAPE 2/3',
+              style: GoogleFonts.lato(
+                fontSize: 9,
+                fontWeight: FontWeight.w700,
+                color: ClosetColors.taupe,
+                letterSpacing: 1.0,
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              shape: BoxShape.circle,
+              border: Border.all(color: ClosetColors.ligne),
+            ),
+            child: const Center(
+              child: Icon(
+                Icons.shopping_basket_outlined,
+                size: 18,
+                color: ClosetColors.vertFonce,
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
+          Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              shape: BoxShape.circle,
+              border: Border.all(color: ClosetColors.ligne),
+            ),
+            child: const Center(
+              child: Icon(
+                Icons.notifications_none,
+                size: 18,
+                color: ClosetColors.vertFonce,
+              ),
+            ),
+          ),
+          const SizedBox(width: 16),
+        ],
       ),
       body: _step == 2
-          ? _ConfirmationView(onGoHome: () {
-              // Clear cart after checkout is confirmed
-              ref.read(cartProvider.notifier).clear();
-              context.go('/home');
-            })
-          : Column(
+          ? _ConfirmationView(
+              onGoHome: () {
+                ref.read(cartProvider.notifier).clear();
+                context.go('/collections');
+              },
+            )
+          : Stack(
               children: [
-                // Progress stepper
-                _StepBar(currentStep: _step),
-                Expanded(
+                Positioned.fill(
                   child: SingleChildScrollView(
-                    padding: const EdgeInsets.all(20),
-                    child: _step == 0
-                        ? _DeliveryStep(
-                            selected: deliveryOption,
-                            onChanged: (v) => ref
-                                .read(deliveryOptionProvider.notifier)
-                                .state = v,
-                            nameController: _nameController,
-                            phoneController: _phoneController,
-                            addressController: _addressController,
-                            cityController: _cityController,
-                          )
-                        : _PaymentStep(
-                            selected: paymentOption,
-                            onChanged: (v) => ref
-                                .read(paymentOptionProvider.notifier)
-                                .state = v,
+                    padding: const EdgeInsets.fromLTRB(
+                      20,
+                      16,
+                      20,
+                      120,
+                    ), // Spacing for bottom button
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Progress Stepper
+                        _StepBar(currentStep: _step),
+                        const SizedBox(height: 16),
+
+                        if (_step == 0) ...[
+                          // Nom complet Field
+                          _buildLabeledField(
+                            label: 'Nom complet',
+                            hintText: 'Aïcha N.',
+                            controller: _nameController,
                           ),
-                  ),
-                ),
-                // Order summary + CTA
-                Container(
-                  padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
-                  decoration: BoxDecoration(
-                    color: theme.colorScheme.surface,
-                    border: Border(top: BorderSide(color: theme.colorScheme.primary.withValues(alpha: 0.1))),
-                    boxShadow: [
-                      BoxShadow(
-                        color: onSurfaceColor.withValues(alpha: 0.06),
-                        blurRadius: 16,
-                        offset: const Offset(0, -4),
-                      ),
-                    ],
-                  ),
-                  child: Column(
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                          const SizedBox(height: 16),
+
+                          // Téléphone (Whatsapp) Field
+                          _buildLabeledField(
+                            label: 'Téléphone (Whatsapp)',
+                            hintText: '+237 6 90 12 34 56',
+                            controller: _phoneController,
+                            keyboardType: TextInputType.phone,
+                          ),
+                          const SizedBox(height: 6),
+                          Text(
+                            'Nous vous écrirons sur WhatsApp pour suivre votre pièce.',
+                            style: GoogleFonts.lato(
+                              fontSize: 10,
+                              fontStyle: FontStyle.italic,
+                              color: ClosetColors.taupe,
+                            ),
+                          ),
+                          const SizedBox(height: 24),
+
+                          // Location Detail Collapsible Card
+                          _buildCollapsibleCard(
+                            title: 'Détails de livraison',
+                            subtitle: _selectedRegion != null && _selectedDepartement != null && _quartierController.text.isNotEmpty
+                                ? '$_selectedRegion, $_selectedDepartement, ${_quartierController.text}'
+                                : 'Veuillez entrez vos informations',
+                            icon: Icons.location_on_outlined,
+                            isExpanded: _deliveryExpanded,
+                            onTap: () {
+                              setState(() {
+                                _deliveryExpanded = !_deliveryExpanded;
+                              });
+                            },
+                          ),
+                          if (_deliveryExpanded) ...[
+                            const SizedBox(height: 16),
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Expanded(
+                                  child: _buildDropdownField(
+                                    label: 'Région',
+                                    value: _selectedRegion,
+                                    items: _regionsAndDepartements.keys.toList(),
+                                    hintText: 'Choisir',
+                                    onChanged: (v) {
+                                      setState(() {
+                                        _selectedRegion = v;
+                                        _selectedDepartement = null; // Reset department
+                                        _cityController.text = v ?? '';
+                                        _addressController.text = _quartierController.text;
+                                      });
+                                    },
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: _buildDropdownField(
+                                    label: 'Département',
+                                    value: _selectedDepartement,
+                                    items: _selectedRegion != null
+                                        ? _regionsAndDepartements[_selectedRegion]!
+                                        : [],
+                                    hintText: 'Choisir',
+                                    onChanged: (v) {
+                                      setState(() {
+                                        _selectedDepartement = v;
+                                        _addressController.text = '${v ?? ''}, ${_quartierController.text}';
+                                      });
+                                    },
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 16),
+                            _buildLabeledField(
+                              label: 'Quartier',
+                              hintText: 'Veuillez écrire le nom de votre quartier',
+                              controller: _quartierController,
+                            ),
+                          ],
+                          const SizedBox(height: 12),
+
+                          // Payment Detail Collapsible Card
+                          _buildCollapsibleCard(
+                            title: 'Méthode de paiement',
+                            subtitle: paymentOption == PaymentOption.mtnMoney
+                                ? 'MTN Mobile Money'
+                                : paymentOption == PaymentOption.orangeMoney
+                                ? 'Orange Money'
+                                : 'Carte bancaire',
+                            icon: Icons.account_balance_wallet_outlined,
+                            onTap: _showPaymentBottomSheet,
+                          ),
+                          const SizedBox(height: 20),
+
+                          // Validation switch row
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Text(
-                                '${cartItems.length} pièce${cartItems.length > 1 ? 's' : ''}',
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: onSurfaceColor.withValues(alpha: 0.6),
+                                'VALIDER LES INFORMATIONS',
+                                style: GoogleFonts.lato(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.bold,
+                                  color: ClosetColors.vertFonce,
+                                  letterSpacing: 1.5,
                                 ),
                               ),
-                              Text(
-                                'Livraison : ${_formatPrice(deliveryCost)}',
+                              CupertinoSwitch(
+                                value: _validatedInformations,
+                                activeColor: ClosetColors.vert,
+                                trackColor: ClosetColors.ligne.withValues(
+                                  alpha: 0.3,
+                                ),
+                                onChanged: (v) {
+                                  setState(() => _validatedInformations = v);
+                                },
+                              ),
+                            ],
+                          ),
+                        ] else ...[
+                          // Étape 2 — Paiement
+                          Text(
+                            'Étape 2 — Paiement',
+                            style: GoogleFonts.cormorantGaramond(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: ClosetColors.vertFonce,
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+
+                          // 1. MTN Mobile Money Option
+                          _buildPaymentMethodTile(
+                            option: PaymentOption.mtnMoney,
+                            title: 'MTN Mobile Money',
+                            subtitle: 'Validation sur votre téléphone',
+                            logoWidget: Container(
+                              width: 40,
+                              height: 40,
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFFFCE00),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              alignment: Alignment.center,
+                              child: const Text(
+                                'MTN',
                                 style: TextStyle(
-                                  fontSize: 11,
-                                  color: onSurfaceColor.withValues(alpha: 0.5),
+                                  fontWeight: FontWeight.w800,
+                                  fontSize: 10,
+                                  color: Color(0xFF1A1A1A),
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+
+                          // 2. Orange Money Option
+                          _buildPaymentMethodTile(
+                            option: PaymentOption.orangeMoney,
+                            title: 'Orange Money',
+                            subtitle: 'Validation sur votre téléphone',
+                            logoWidget: Container(
+                              width: 40,
+                              height: 40,
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFFF6600),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              alignment: Alignment.center,
+                              child: const Text(
+                                'OM',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.w800,
+                                  fontSize: 9,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+
+                          // 3. Carte bancaire Option
+                          _buildPaymentMethodTile(
+                            option: PaymentOption.creditCard,
+                            title: 'Carte bancaire',
+                            subtitle: 'Visa · paiement sécurisé Stripe',
+                            logoWidget: Container(
+                              width: 40,
+                              height: 40,
+                              decoration: BoxDecoration(
+                                color: ClosetColors.vertFonce,
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              alignment: Alignment.center,
+                              child: const Icon(
+                                Icons.credit_card,
+                                color: ClosetColors.doreClair,
+                                size: 20,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 20),
+
+                          // Conditional Inputs based on selected method
+                          if (paymentOption == PaymentOption.mtnMoney || paymentOption == PaymentOption.orangeMoney) ...[
+                            _buildLabeledField(
+                              label: paymentOption == PaymentOption.mtnMoney ? 'Numéro MTN MoMo' : 'Numéro Orange Money',
+                              hintText: '+237 6 90 12 34 56',
+                              controller: _momoPhoneController,
+                              keyboardType: TextInputType.phone,
+                            ),
+                            const SizedBox(height: 6),
+                            Text(
+                              "Un message de confirmation s'affichera sur ce numéro.",
+                              style: GoogleFonts.lato(
+                                fontSize: 11,
+                                fontStyle: FontStyle.italic,
+                                color: ClosetColors.taupe,
+                              ),
+                            ),
+                            const SizedBox(height: 20),
+                          ] else ...[
+                            // Card Details
+                            _buildLabeledField(
+                              label: 'Numéro de carte',
+                              hintText: '4242 4242 4242 4242',
+                              controller: _cardNumberController,
+                              keyboardType: TextInputType.number,
+                            ),
+                            const SizedBox(height: 12),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: _buildLabeledField(
+                                    label: 'Date d\'expiration',
+                                    hintText: 'MM/AA',
+                                    controller: _cardExpiryController,
+                                    keyboardType: TextInputType.datetime,
+                                  ),
+                                ),
+                                const SizedBox(width: 16),
+                                Expanded(
+                                  child: _buildLabeledField(
+                                    label: 'Code CVC',
+                                    hintText: '123',
+                                    controller: _cardCvcController,
+                                    keyboardType: TextInputType.number,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 20),
+                          ],
+
+                          // Summary Total box
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                            decoration: BoxDecoration(
+                              color: ClosetColors.creme,
+                              borderRadius: BorderRadius.circular(14),
+                              border: Border.all(color: ClosetColors.ligne),
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  'Total à régler',
+                                  style: GoogleFonts.lato(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.bold,
+                                    color: ClosetColors.noir,
+                                  ),
+                                ),
+                                Text(
+                                  _formatPrice(total),
+                                  style: GoogleFonts.cormorantGaramond(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                    color: ClosetColors.vertFonce,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+
+                          // Security notice
+                          Row(
+                            children: [
+                              const Icon(
+                                Icons.lock_outline,
+                                color: ClosetColors.vertFonce,
+                                size: 15,
+                              ),
+                              const SizedBox(width: 7),
+                              Expanded(
+                                child: Text(
+                                  'Paiement chiffré. Votre pièce est réservée pendant 15 minutes.',
+                                  style: GoogleFonts.lato(
+                                    fontSize: 11,
+                                    color: ClosetColors.taupe,
+                                  ),
                                 ),
                               ),
                             ],
                           ),
-                          Text(
-                            _formatPrice(total),
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w800,
-                              color: onSurfaceColor,
-                            ),
-                          ),
                         ],
-                      ),
-                      const SizedBox(height: 14),
-                      SizedBox(
-                        width: double.infinity,
-                        child: GestureDetector(
-                          onTap: _isPlacing
-                              ? null
-                              : () async {
-                                  if (_step == 0) {
-                                    if (_nameController.text.isEmpty ||
-                                        _phoneController.text.isEmpty ||
-                                        _addressController.text.isEmpty) {
-                                      ScaffoldMessenger.of(context).showSnackBar(
-                                        const SnackBar(content: Text('Veuillez remplir tous les champs de livraison.')),
-                                      );
-                                      return;
-                                    }
-                                    setState(() => _step = 1);
-                                  } else {
-                                    setState(() => _isPlacing = true);
-                                    await Future<void>.delayed(
-                                        const Duration(milliseconds: 1500));
-                                    if (mounted) {
-                                      setState(() {
-                                        _isPlacing = false;
-                                        _step = 2;
-                                      });
-                                    }
-                                  }
-                                },
-                          child: AnimatedContainer(
-                            duration: const Duration(milliseconds: 200),
-                            padding: const EdgeInsets.symmetric(vertical: 16),
+                      ],
+                    ),
+                  ),
+                ),
+
+                // Sticky Bottom Action Button
+                Positioned(
+                  left: 20,
+                  right: 20,
+                  bottom: 24,
+                  child: GestureDetector(
+                    onTap: _isPlacing
+                        ? null
+                        : () async {
+                            if (_step == 0) {
+                              if (_nameController.text.isEmpty ||
+                                  _phoneController.text.isEmpty ||
+                                  _selectedRegion == null ||
+                                  _selectedDepartement == null ||
+                                  _quartierController.text.isEmpty ||
+                                  !_validatedInformations) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text(
+                                      'Veuillez remplir tous les champs et cocher la validation.',
+                                    ),
+                                    backgroundColor: ClosetColors.erreur,
+                                  ),
+                                );
+                                return;
+                              }
+                              setState(() => _step = 1);
+                            } else {
+                              setState(() => _isPlacing = true);
+                              await Future<void>.delayed(
+                                const Duration(milliseconds: 1500),
+                              );
+                              if (mounted) {
+                                setState(() {
+                                  _isPlacing = false;
+                                  _step = 2;
+                                });
+                              }
+                            }
+                          },
+                    child: _step == 0
+                        ? Container(
+                            height: 52,
                             decoration: BoxDecoration(
-                              color: theme.colorScheme.primary,
+                              color: ClosetColors.creme,
+                              borderRadius: BorderRadius.circular(30),
+                              border: Border.all(
+                                color: ClosetColors.dore,
+                                width: 1.5,
+                              ),
+                            ),
+                            child: Center(
+                              child: Text(
+                                'Poursuivre -Paiement',
+                                style: GoogleFonts.lato(
+                                  color: ClosetColors.doreEncre,
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          )
+                        : Container(
+                            height: 52,
+                            decoration: BoxDecoration(
+                              color: ClosetColors.vert,
                               borderRadius: BorderRadius.circular(30),
                             ),
                             child: Center(
                               child: _isPlacing
-                                  ? SizedBox(
+                                  ? const SizedBox(
                                       width: 20,
                                       height: 20,
                                       child: CircularProgressIndicator(
-                                          strokeWidth: 2,
-                                          color: theme.colorScheme.onPrimary),
+                                        strokeWidth: 2.0,
+                                        color: Colors.white,
+                                      ),
                                     )
                                   : Text(
-                                      _step == 0
-                                          ? 'Continuer vers le paiement'
-                                          : 'Confirmer ma commande',
-                                      style: TextStyle(
-                                        color: theme.colorScheme.onPrimary,
+                                      'Confirmer — ${_formatPrice(total)}',
+                                      style: GoogleFonts.lato(
+                                        color: Colors.white,
                                         fontSize: 14,
-                                        fontWeight: FontWeight.w800,
-                                        letterSpacing: 0.5,
+                                        fontWeight: FontWeight.bold,
                                       ),
                                     ),
                             ),
                           ),
-                        ),
-                      ),
-                    ],
                   ),
                 ),
               ],
             ),
     );
   }
+
+  Widget _buildLabeledField({
+    required String label,
+    required String hintText,
+    required TextEditingController controller,
+    TextInputType? keyboardType,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: GoogleFonts.lato(
+            fontSize: 12.5,
+            fontWeight: FontWeight.bold,
+            color: ClosetColors.noir,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Container(
+          height: 48,
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: ClosetColors.ligne),
+          ),
+          child: TextField(
+            controller: controller,
+            keyboardType: keyboardType,
+            style: GoogleFonts.lato(fontSize: 14, color: ClosetColors.noir),
+            decoration: InputDecoration(
+              hintText: hintText,
+              hintStyle: GoogleFonts.lato(
+                fontSize: 13,
+                color: ClosetColors.ligne,
+              ),
+              border: InputBorder.none,
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 12,
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildDropdownField({
+    required String label,
+    required String? value,
+    required List<String> items,
+    required String hintText,
+    required ValueChanged<String?> onChanged,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: GoogleFonts.lato(
+            fontSize: 12.5,
+            fontWeight: FontWeight.bold,
+            color: ClosetColors.noir,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Container(
+          height: 48,
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: ClosetColors.ligne),
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          child: DropdownButtonHideUnderline(
+            child: DropdownButton<String>(
+              value: value,
+              hint: Text(
+                hintText,
+                style: GoogleFonts.lato(
+                  fontSize: 13,
+                  color: ClosetColors.ligne,
+                ),
+              ),
+              isExpanded: true,
+              icon: const Icon(
+                Icons.keyboard_arrow_down,
+                color: ClosetColors.taupe,
+                size: 20,
+              ),
+              style: GoogleFonts.lato(fontSize: 14, color: ClosetColors.noir),
+              dropdownColor: Colors.white,
+              borderRadius: BorderRadius.circular(8),
+              items: items.map((String item) {
+                return DropdownMenuItem<String>(
+                  value: item,
+                  child: Text(item),
+                );
+              }).toList(),
+              onChanged: onChanged,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildPaymentMethodTile({
+    required PaymentOption option,
+    required String title,
+    required String subtitle,
+    required Widget logoWidget,
+  }) {
+    final paymentOption = ref.watch(paymentOptionProvider);
+    final isSelected = paymentOption == option;
+
+    return GestureDetector(
+      onTap: () {
+        ref.read(paymentOptionProvider.notifier).state = option;
+      },
+      child: Container(
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: ClosetColors.creme,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(
+            color: isSelected ? ClosetColors.vert : ClosetColors.ligne,
+            width: isSelected ? 2 : 1.5,
+          ),
+        ),
+        child: Row(
+          children: [
+            logoWidget,
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: GoogleFonts.lato(
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                      color: ClosetColors.vertFonce,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    subtitle,
+                    style: GoogleFonts.lato(
+                      fontSize: 11,
+                      color: ClosetColors.taupe,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Container(
+              width: 22,
+              height: 22,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: isSelected ? ClosetColors.vert : ClosetColors.ligne,
+                  width: 2,
+                ),
+                color: isSelected ? ClosetColors.vert : Colors.transparent,
+              ),
+              padding: const EdgeInsets.all(3),
+              child: isSelected
+                  ? Container(
+                      decoration: const BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: ClosetColors.creme,
+                      ),
+                    )
+                  : null,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCollapsibleCard({
+    required String title,
+    required String subtitle,
+    required IconData icon,
+    required VoidCallback onTap,
+    bool? isExpanded,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          // color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: ClosetColors.ligne),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 40,
+              height: 40,
+              decoration: const BoxDecoration(
+                color: Color(0xFFF5EEDF), // Light gold/beige
+                shape: BoxShape.circle,
+              ),
+              child: Icon(icon, size: 20, color: ClosetColors.doreEncre),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: GoogleFonts.lato(
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                      color: ClosetColors.noir,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    subtitle,
+                    style: GoogleFonts.lato(
+                      fontSize: 11,
+                      color: ClosetColors.taupe,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Icon(
+              isExpanded == null
+                  ? Icons.chevron_right
+                  : (isExpanded ? Icons.keyboard_arrow_down : Icons.chevron_right),
+              size: 20,
+              color: ClosetColors.taupe,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSummaryTextLine(
+    String label,
+    String value, {
+    bool isBold = false,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            label,
+            style: GoogleFonts.lato(
+              fontSize: 13,
+              fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
+              color: ClosetColors.taupe,
+            ),
+          ),
+          Flexible(
+            child: Text(
+              value,
+              textAlign: TextAlign.right,
+              style: GoogleFonts.lato(
+                fontSize: 13,
+                fontWeight: FontWeight.bold,
+                color: ClosetColors.vertFonce,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
-// ── Step bar ─────────────────────────────────────────────────────────────────
+// ── Stepper ──────────────────────────────────────────────────────────────────
 
 class _StepBar extends StatelessWidget {
   final int currentStep;
@@ -248,494 +1192,42 @@ class _StepBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
+      padding: const EdgeInsets.only(bottom: 14),
       child: Row(
         children: [
-          _StepDot(label: 'Livraison', index: 0, current: currentStep),
           Expanded(
-              child: Container(
-                  height: 1,
-                  color: currentStep >= 1
-                      ? theme.colorScheme.primary
-                      : theme.colorScheme.primary.withValues(alpha: 0.2))),
-          _StepDot(label: 'Paiement', index: 1, current: currentStep),
+            child: Container(
+              height: 3,
+              decoration: BoxDecoration(
+                color: ClosetColors.vert,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+          ),
+          const SizedBox(width: 6),
           Expanded(
-              child: Container(
-                  height: 1,
-                  color: currentStep >= 2
-                      ? theme.colorScheme.primary
-                      : theme.colorScheme.primary.withValues(alpha: 0.2))),
-          _StepDot(label: 'Confirmé', index: 2, current: currentStep),
-        ],
-      ),
-    );
-  }
-}
-
-class _StepDot extends StatelessWidget {
-  final String label;
-  final int index;
-  final int current;
-  const _StepDot({required this.label, required this.index, required this.current});
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final isDone = index < current;
-    final isActive = index == current;
-    return Column(
-      children: [
-        Container(
-          width: 28,
-          height: 28,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: isDone || isActive
-                ? theme.colorScheme.primary
-                : theme.colorScheme.primary.withValues(alpha: 0.1),
-            border: Border.all(
-              color: isDone || isActive
-                  ? theme.colorScheme.primary
-                  : theme.colorScheme.primary.withValues(alpha: 0.2),
-            ),
-          ),
-          child: Center(
-            child: isDone
-                ? Icon(Icons.check, size: 14, color: theme.colorScheme.onPrimary)
-                : Text(
-                    '${index + 1}',
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w700,
-                      color: isActive ? theme.colorScheme.onPrimary : theme.colorScheme.onSurface.withValues(alpha: 0.6),
-                    ),
-                  ),
-          ),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 9,
-            color: isActive ? theme.colorScheme.primary : theme.colorScheme.onSurface.withValues(alpha: 0.6),
-            fontWeight: isActive ? FontWeight.w700 : FontWeight.normal,
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-// ── Delivery Step ─────────────────────────────────────────────────────────────
-
-class _DeliveryStep extends StatelessWidget {
-  final DeliveryOption selected;
-  final void Function(DeliveryOption) onChanged;
-  final TextEditingController nameController;
-  final TextEditingController phoneController;
-  final TextEditingController addressController;
-  final TextEditingController cityController;
-
-  const _DeliveryStep({
-    required this.selected,
-    required this.onChanged,
-    required this.nameController,
-    required this.phoneController,
-    required this.addressController,
-    required this.cityController,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final onSurfaceColor = theme.colorScheme.onSurface;
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'MODE DE LIVRAISON (CAMEROUN)',
-          style: TextStyle(
-            fontSize: 10,
-            fontWeight: FontWeight.w700,
-            color: onSurfaceColor.withValues(alpha: 0.5),
-            letterSpacing: 2,
-          ),
-        ),
-        const SizedBox(height: 14),
-        _DeliveryCard(
-          title: 'Livraison Yaoundé / Douala',
-          subtitle: 'Sous 24h · Écrin ClosET inclus',
-          price: '2 500 FCFA',
-          icon: Icons.electric_moped_outlined,
-          isSelected: selected == DeliveryOption.yaoundeDouala,
-          onTap: () => onChanged(DeliveryOption.yaoundeDouala),
-        ),
-        const SizedBox(height: 12),
-        _DeliveryCard(
-          title: 'Autres villes du Cameroun',
-          subtitle: 'Expédition sous 48h-72h par agence',
-          price: '5 000 FCFA',
-          icon: Icons.local_shipping_outlined,
-          isSelected: selected == DeliveryOption.otherCities,
-          onTap: () => onChanged(DeliveryOption.otherCities),
-        ),
-        const SizedBox(height: 28),
-        Text(
-          'ADRESSE DE LIVRAISON',
-          style: TextStyle(
-            fontSize: 10,
-            fontWeight: FontWeight.w700,
-            color: onSurfaceColor.withValues(alpha: 0.5),
-            letterSpacing: 2,
-          ),
-        ),
-        const SizedBox(height: 14),
-        ...[
-          _AddressField(label: 'Prénom & Nom du destinataire', icon: Icons.person_outline, controller: nameController),
-          const SizedBox(height: 10),
-          _AddressField(label: 'Numéro de téléphone (+237)', icon: Icons.phone_outlined, controller: phoneController, keyboardType: TextInputType.phone),
-          const SizedBox(height: 10),
-          _AddressField(label: 'Quartier / Adresse complète', icon: Icons.location_on_outlined, controller: addressController),
-          const SizedBox(height: 10),
-          _AddressField(label: 'Ville / Pays', icon: Icons.public_outlined, controller: cityController, readOnly: true),
-        ],
-      ],
-    );
-  }
-}
-
-class _DeliveryCard extends StatelessWidget {
-  final String title;
-  final String subtitle;
-  final String price;
-  final IconData icon;
-  final bool isSelected;
-  final VoidCallback onTap;
-
-  const _DeliveryCard({
-    required this.title,
-    required this.subtitle,
-    required this.price,
-    required this.icon,
-    required this.isSelected,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final onSurfaceColor = theme.colorScheme.onSurface;
-
-    return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: isSelected
-              ? theme.colorScheme.primary.withValues(alpha: 0.08)
-              : theme.colorScheme.surface,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: isSelected ? theme.colorScheme.primary : theme.colorScheme.primary.withValues(alpha: 0.15),
-            width: isSelected ? 1.5 : 1,
-          ),
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 44,
-              height: 44,
+            child: Container(
+              height: 3,
               decoration: BoxDecoration(
-                color: isSelected
-                    ? theme.colorScheme.primary.withValues(alpha: 0.15)
-                    : theme.colorScheme.primary.withValues(alpha: 0.05),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(icon,
-                  size: 20,
-                  color: isSelected ? theme.colorScheme.primary : onSurfaceColor.withValues(alpha: 0.6)),
-            ),
-            const SizedBox(width: 14),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w700,
-                      color: isSelected
-                          ? theme.colorScheme.primary
-                          : onSurfaceColor,
-                    ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    subtitle,
-                    style: TextStyle(
-                        fontSize: 11, color: onSurfaceColor.withValues(alpha: 0.6)),
-                  ),
-                ],
+                color: currentStep >= 1
+                    ? (currentStep == 1 ? ClosetColors.dore : ClosetColors.vert)
+                    : ClosetColors.ligne,
+                borderRadius: BorderRadius.circular(2),
               ),
             ),
-            Text(
-              price,
-              style: TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w700,
-                color: isSelected ? theme.colorScheme.primary : onSurfaceColor,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _AddressField extends StatelessWidget {
-  final String label;
-  final IconData icon;
-  final TextEditingController controller;
-  final TextInputType? keyboardType;
-  final bool readOnly;
-
-  const _AddressField({
-    required this.label,
-    required this.icon,
-    required this.controller,
-    this.keyboardType,
-    this.readOnly = false,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final onSurfaceColor = theme.colorScheme.onSurface;
-
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surface,
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: theme.colorScheme.primary.withValues(alpha: 0.15)),
-      ),
-      child: TextField(
-        controller: controller,
-        readOnly: readOnly,
-        keyboardType: keyboardType,
-        style: TextStyle(fontSize: 14, color: onSurfaceColor),
-        decoration: InputDecoration(
-          hintText: label,
-          hintStyle: TextStyle(fontSize: 13, color: onSurfaceColor.withValues(alpha: 0.5)),
-          prefixIcon: Icon(icon, size: 18, color: onSurfaceColor.withValues(alpha: 0.5)),
-          border: InputBorder.none,
-          contentPadding:
-              const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-        ),
-      ),
-    );
-  }
-}
-
-// ── Payment Step ──────────────────────────────────────────────────────────────
-
-class _PaymentStep extends StatelessWidget {
-  final PaymentOption selected;
-  final void Function(PaymentOption) onChanged;
-  const _PaymentStep({required this.selected, required this.onChanged});
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final onSurfaceColor = theme.colorScheme.onSurface;
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'MOYEN DE PAIEMENT',
-          style: TextStyle(
-            fontSize: 10,
-            fontWeight: FontWeight.w700,
-            color: onSurfaceColor.withValues(alpha: 0.5),
-            letterSpacing: 2,
           ),
-        ),
-        const SizedBox(height: 14),
-        _PaymentCard(
-          title: 'Carte bancaire',
-          subtitle: 'Visa · Mastercard · Sigue · UBA',
-          icon: Icons.credit_card_outlined,
-          isSelected: selected == PaymentOption.card,
-          onTap: () => onChanged(PaymentOption.card),
-        ),
-        const SizedBox(height: 12),
-        _PaymentCard(
-          title: 'MTN Mobile Money',
-          subtitle: 'Paiement instantané via MoMo',
-          imageAsset: 'assets/mtn.png',
-          isSelected: selected == PaymentOption.mtnMoney,
-          onTap: () => onChanged(PaymentOption.mtnMoney),
-        ),
-        const SizedBox(height: 12),
-        _PaymentCard(
-          title: 'Orange Money',
-          subtitle: 'Paiement instantané via Orange Money',
-          imageAsset: 'assets/orange.png',
-          isSelected: selected == PaymentOption.orangeMoney,
-          onTap: () => onChanged(PaymentOption.orangeMoney),
-        ),
-        const SizedBox(height: 28),
-        if (selected == PaymentOption.card) ...[
-          Text(
-            'INFORMATIONS CARTE',
-            style: TextStyle(
-              fontSize: 10,
-              fontWeight: FontWeight.w700,
-              color: onSurfaceColor.withValues(alpha: 0.5),
-              letterSpacing: 2,
-            ),
-          ),
-          const SizedBox(height: 14),
-          _AddressField(
-              label: 'Numéro de carte', icon: Icons.credit_card, controller: TextEditingController()),
-          const SizedBox(height: 10),
-          Row(
-            children: [
-              Expanded(
-                  child: _AddressField(
-                      label: 'MM/AA', icon: Icons.calendar_today_outlined, controller: TextEditingController())),
-              const SizedBox(width: 10),
-              Expanded(
-                  child: _AddressField(
-                      label: 'CVV', icon: Icons.lock_outline, controller: TextEditingController())),
-            ],
-          ),
-          const SizedBox(height: 10),
-          _AddressField(label: 'Nom sur la carte', icon: Icons.person_outline, controller: TextEditingController()),
-        ],
-        if (selected == PaymentOption.mtnMoney || selected == PaymentOption.orangeMoney) ...[
-          Text(
-            'TÉLÉPHONE PAIEMENT MOBILE',
-            style: TextStyle(
-              fontSize: 10,
-              fontWeight: FontWeight.w700,
-              color: onSurfaceColor.withValues(alpha: 0.5),
-              letterSpacing: 2,
-            ),
-          ),
-          const SizedBox(height: 14),
-          _AddressField(
-              label: 'Numéro de téléphone Mobile Money', icon: Icons.phone_android_outlined, controller: TextEditingController(), keyboardType: TextInputType.phone),
-        ],
-      ],
-    );
-  }
-}
-
-class _PaymentCard extends StatelessWidget {
-  final String title;
-  final String subtitle;
-  final IconData? icon;
-  final String? imageAsset;
-  final bool isSelected;
-  final VoidCallback onTap;
-
-  const _PaymentCard({
-    required this.title,
-    required this.subtitle,
-    this.icon,
-    this.imageAsset,
-    required this.isSelected,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final onSurfaceColor = theme.colorScheme.onSurface;
-
-    return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: isSelected
-              ? theme.colorScheme.primary.withValues(alpha: 0.08)
-              : theme.colorScheme.surface,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: isSelected ? theme.colorScheme.primary : theme.colorScheme.primary.withValues(alpha: 0.15),
-            width: isSelected ? 1.5 : 1,
-          ),
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 44,
-              height: 44,
+          const SizedBox(width: 6),
+          Expanded(
+            child: Container(
+              height: 3,
               decoration: BoxDecoration(
-                color: isSelected
-                    ? theme.colorScheme.primary.withValues(alpha: 0.15)
-                    : theme.colorScheme.primary.withValues(alpha: 0.05),
-                shape: BoxShape.circle,
-              ),
-              child: imageAsset != null
-                  ? ClipOval(
-                      child: Padding(
-                        padding: const EdgeInsets.all(6.0),
-                        child: Image.asset(
-                          imageAsset!,
-                          fit: BoxFit.contain,
-                          errorBuilder: (_, _, _) => Icon(
-                            Icons.payment_outlined,
-                            size: 20,
-                            color: isSelected ? theme.colorScheme.primary : onSurfaceColor.withValues(alpha: 0.6),
-                          ),
-                        ),
-                      ),
-                    )
-                  : Icon(icon ?? Icons.payment_outlined,
-                      size: 20,
-                      color: isSelected ? theme.colorScheme.primary : onSurfaceColor.withValues(alpha: 0.6)),
-            ),
-            const SizedBox(width: 14),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w700,
-                      color: isSelected
-                          ? theme.colorScheme.primary
-                          : onSurfaceColor,
-                    ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    subtitle,
-                    style: TextStyle(
-                        fontSize: 11, color: onSurfaceColor.withValues(alpha: 0.6)),
-                  ),
-                ],
+                color: currentStep >= 2 ? ClosetColors.vert : ClosetColors.ligne,
+                borderRadius: BorderRadius.circular(2),
               ),
             ),
-            Icon(
-              isSelected ? Icons.radio_button_checked : Icons.radio_button_off,
-              color: isSelected ? theme.colorScheme.primary : theme.colorScheme.primary.withValues(alpha: 0.2),
-              size: 20,
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -749,9 +1241,6 @@ class _ConfirmationView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final onSurfaceColor = theme.colorScheme.onSurface;
-
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(40),
@@ -761,66 +1250,142 @@ class _ConfirmationView extends StatelessWidget {
             Container(
               width: 100,
               height: 100,
-              decoration: BoxDecoration(
-                color: theme.colorScheme.primary.withValues(alpha: 0.15),
+              decoration: const BoxDecoration(
+                color: Color(0xFFD6EBE0), // Light green success bg
                 shape: BoxShape.circle,
               ),
-              child: Icon(
+              child: const Icon(
                 Icons.check_circle_outline,
                 size: 54,
-                color: theme.colorScheme.primary,
+                color: ClosetColors.succes,
               ),
             ),
             const SizedBox(height: 28),
             Text(
               'Commande confirmée !',
               textAlign: TextAlign.center,
-              style: TextStyle(
+              style: GoogleFonts.cormorantGaramond(
                 fontSize: 24,
-                fontWeight: FontWeight.w800,
-                color: onSurfaceColor,
+                fontWeight: FontWeight.bold,
+                color: ClosetColors.vertFonce,
               ),
             ),
             const SizedBox(height: 12),
             Text(
               'Votre sélection a été reçue.\nNos équipes préparent votre commande avec soin.',
               textAlign: TextAlign.center,
-              style: TextStyle(
+              style: GoogleFonts.lato(
                 fontSize: 14,
-                color: onSurfaceColor.withValues(alpha: 0.6),
+                color: ClosetColors.taupe,
                 height: 1.5,
               ),
             ),
             const SizedBox(height: 16),
             Text(
-              'Vous recevrez un SMS de confirmation\navec le suivi de votre livraison.',
+              'Vous recevrez un message de confirmation sur WhatsApp avec le suivi de votre livraison.',
               textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 12,
-                color: onSurfaceColor.withValues(alpha: 0.5),
-                height: 1.5,
-              ),
+              style: GoogleFonts.lato(fontSize: 12, color: ClosetColors.taupe),
             ),
-            const SizedBox(height: 40),
-            GestureDetector(
-              onTap: onGoHome,
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                    horizontal: 36, vertical: 16),
-                decoration: BoxDecoration(
-                  color: theme.colorScheme.primary,
-                  borderRadius: BorderRadius.circular(30),
+            const SizedBox(height: 32),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: ClosetColors.vert,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(30),
+                  ),
+                  padding: const EdgeInsets.symmetric(vertical: 16),
                 ),
+                onPressed: onGoHome,
                 child: Text(
-                  'Retour à mon dressing',
-                  style: TextStyle(
-                    color: theme.colorScheme.onPrimary,
+                  'Retour aux Collections',
+                  style: GoogleFonts.lato(
+                    color: Colors.white,
                     fontSize: 14,
-                    fontWeight: FontWeight.w700,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
               ),
             ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _TownRadioTile extends StatelessWidget {
+  final String title;
+  final String subtitle;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  const _TownRadioTile({
+    required this.title,
+    required this.subtitle,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 12),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: GoogleFonts.lato(
+                    fontSize: 15,
+                    fontWeight: FontWeight.bold,
+                    color: ClosetColors.noir,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  subtitle,
+                  style: GoogleFonts.lato(
+                    fontSize: 12,
+                    color: ClosetColors.taupe,
+                  ),
+                ),
+              ],
+            ),
+            isSelected
+                ? Container(
+                    width: 22,
+                    height: 22,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(color: Colors.black, width: 2),
+                    ),
+                    child: Center(
+                      child: Container(
+                        width: 10,
+                        height: 10,
+                        decoration: const BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Colors.black,
+                        ),
+                      ),
+                    ),
+                  )
+                : Container(
+                    width: 22,
+                    height: 22,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(color: ClosetColors.ligne, width: 2),
+                    ),
+                  ),
           ],
         ),
       ),

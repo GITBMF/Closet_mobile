@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../../../core/services/notification_service.dart';
 import '../../../core/theme/closet_colors.dart';
 import '../../../data/models/article.dart';
 import '../../../data/repositories/catalog_repository.dart';
@@ -40,10 +41,17 @@ class ConditionFilterNotifier extends Notifier<String?> {
   void setCondition(String? val) => state = val;
 }
 
-class PriceFilterNotifier extends Notifier<double?> {
+class PriceFilterNotifier extends Notifier<RangeValues?> {
   @override
-  double? build() => null;
-  void setPrice(double? val) => state = val;
+  RangeValues? build() => null;
+  void setPriceRange(RangeValues? val) => state = val;
+  void setPrice(double? val) {
+    if (val == null) {
+      state = null;
+    } else {
+      state = RangeValues(5000.0, val);
+    }
+  }
 }
 
 // State providers for search and filtering
@@ -52,16 +60,22 @@ final searchQueryProvider = NotifierProvider<SearchQueryNotifier, String>(Search
 final filterBrandProvider = NotifierProvider<BrandFilterNotifier, String?>(BrandFilterNotifier.new);
 final filterSizeProvider = NotifierProvider<SizeFilterNotifier, String?>(SizeFilterNotifier.new);
 final filterConditionProvider = NotifierProvider<ConditionFilterNotifier, String?>(ConditionFilterNotifier.new);
-final filterPriceProvider = NotifierProvider<PriceFilterNotifier, double?>(PriceFilterNotifier.new);
+final filterPriceProvider = NotifierProvider<PriceFilterNotifier, RangeValues?>(PriceFilterNotifier.new);
 
-// Reactive filtering provider
+// Future provider to fetch all articles for local/dynamic filtering counts
+final allArticlesProvider = FutureProvider<List<Article>>((ref) async {
+  final repo = ref.watch(catalogRepositoryProvider);
+  return repo.getCatalog();
+});
+
+// Reactive filtering provider for screen results
 final filteredArticlesProvider = FutureProvider<List<Article>>((ref) async {
   final universe = ref.watch<String>(selectedUniverseProvider);
   final query = ref.watch<String>(searchQueryProvider).toLowerCase();
   final brand = ref.watch<String?>(filterBrandProvider);
   final size = ref.watch<String?>(filterSizeProvider);
   final condition = ref.watch<String?>(filterConditionProvider);
-  final maxPrice = ref.watch<double?>(filterPriceProvider);
+  final priceRange = ref.watch<RangeValues?>(filterPriceProvider);
 
   final repo = ref.watch<CatalogRepository>(catalogRepositoryProvider);
   final allArticles = await repo.getCatalog(universe: universe);
@@ -82,15 +96,36 @@ final filteredArticlesProvider = FutureProvider<List<Article>>((ref) async {
     if (condition != null && a.condition.toLowerCase() != condition.toLowerCase()) {
       return false;
     }
-    if (maxPrice != null && a.price > maxPrice) {
-      return false;
+    if (priceRange != null) {
+      if (a.price < priceRange.start || a.price > priceRange.end) {
+        return false;
+      }
     }
     return true;
   }).toList();
 });
 
-class CollectionsScreen extends ConsumerWidget {
+class CollectionsScreen extends ConsumerStatefulWidget {
   const CollectionsScreen({super.key});
+
+  @override
+  ConsumerState<CollectionsScreen> createState() => _CollectionsScreenState();
+}
+
+class _CollectionsScreenState extends ConsumerState<CollectionsScreen> {
+  late TextEditingController _searchController;
+
+  @override
+  void initState() {
+    super.initState();
+    _searchController = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
 
   String _formatPrice(double price) {
     final intPrice = price.toInt();
@@ -105,16 +140,29 @@ class CollectionsScreen extends ConsumerWidget {
     return '$intPrice FCFA';
   }
 
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final selectedUniverse = ref.watch<String>(selectedUniverseProvider);
-    final searchQuery = ref.watch<String>(searchQueryProvider);
-    final catalogAsync = ref.watch<AsyncValue<List<Article>>>(filteredArticlesProvider);
+  void _showFilterBottomSheet(BuildContext context) {
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: ClosetColors.beige,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+      ),
+      builder: (context) {
+        return const _FilterBottomSheetContent();
+      },
+    );
+  }
 
-    final selectedBrand = ref.watch<String?>(filterBrandProvider);
-    final selectedSize = ref.watch<String?>(filterSizeProvider);
-    final selectedCondition = ref.watch<String?>(filterConditionProvider);
-    final selectedPrice = ref.watch<double?>(filterPriceProvider);
+  @override
+  Widget build(BuildContext context) {
+    final selectedUniverse = ref.watch(selectedUniverseProvider);
+    final catalogAsync = ref.watch(filteredArticlesProvider);
+
+    final selectedBrand = ref.watch(filterBrandProvider);
+    final selectedSize = ref.watch(filterSizeProvider);
+    final selectedCondition = ref.watch(filterConditionProvider);
+    final selectedPriceRange = ref.watch(filterPriceProvider);
 
     // Calculate active filter count
     int activeFiltersCount = 0;
@@ -122,7 +170,7 @@ class CollectionsScreen extends ConsumerWidget {
     if (selectedBrand != null) activeFiltersCount++;
     if (selectedSize != null) activeFiltersCount++;
     if (selectedCondition != null) activeFiltersCount++;
-    if (selectedPrice != null) activeFiltersCount++;
+    if (selectedPriceRange != null) activeFiltersCount++;
 
     return Scaffold(
       backgroundColor: ClosetColors.beige,
@@ -146,7 +194,10 @@ class CollectionsScreen extends ConsumerWidget {
                   'assets/iconheader.png',
                   height: 28,
                   fit: BoxFit.contain,
-                  errorBuilder: (context, error, stackTrace) => const Text('ClosET', style: TextStyle(fontWeight: FontWeight.bold)),
+                  errorBuilder: (context, error, stackTrace) => const Text(
+                    'ClosET',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
                 ),
               ),
               
@@ -183,7 +234,10 @@ class CollectionsScreen extends ConsumerWidget {
                       label: 'Notifications',
                       child: GestureDetector(
                         onTap: () {
-                          // Notification trigger
+                          ref.read(notificationProvider.notifier).show(
+                                'Notifications',
+                                'Aucune nouvelle notification pour le moment.',
+                              );
                         },
                         child: Container(
                           width: 38,
@@ -215,214 +269,319 @@ class CollectionsScreen extends ConsumerWidget {
           ),
         ),
       ),
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // ─── Header title with circular filter button ─────────────
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      body: CustomScrollView(
+        slivers: [
+          // Header content Adapter
+          SliverToBoxAdapter(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  'Collections',
-                  style: GoogleFonts.ebGaramond(
-                    fontSize: 24,
-                    fontWeight: FontWeight.w700,
-                    color: ClosetColors.vertFonce,
+                // Title and Filters Row
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          'Toutes les pièces',
+                          style: GoogleFonts.ebGaramond(
+                            fontSize: 24,
+                            fontWeight: FontWeight.w600,
+                            color: ClosetColors.vertFonce,
+                          ),
+                        ),
+                      ),
+                      // Filter settings button
+                      Semantics(
+                        button: true,
+                        label: 'Afficher les filtres',
+                        child: GestureDetector(
+                          onTap: () => _showFilterBottomSheet(context),
+                          child: Container(
+                            width: 38,
+                            height: 38,
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              shape: BoxShape.circle,
+                              border: Border.all(color: ClosetColors.ligne, width: 1.5),
+                            ),
+                            child: const Icon(
+                              Icons.tune_outlined,
+                              color: ClosetColors.vertFonce,
+                              size: 18,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      // Sort dropdown / button
+                      Semantics(
+                        button: true,
+                        label: 'Trier les pièces',
+                        child: GestureDetector(
+                          onTap: () => _showFilterBottomSheet(context),
+                          child: Container(
+                            height: 38,
+                            padding: const EdgeInsets.symmetric(horizontal: 14),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(color: ClosetColors.ligne, width: 1.5),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(
+                                  Icons.swap_vert_outlined,
+                                  color: ClosetColors.vertFonce,
+                                  size: 16,
+                                ),
+                                const SizedBox(width: 6),
+                                Text(
+                                  'Nouveautés',
+                                  style: GoogleFonts.lato(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w600,
+                                    color: ClosetColors.vertFonce,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-                GestureDetector(
-                  onTap: () => _showFilterBottomSheet(context, ref),
+
+                // Search Bar
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
                   child: Container(
-                    width: 40,
-                    height: 40,
-                    decoration: const BoxDecoration(
-                      color: ClosetColors.vertFonce,
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(
-                      Icons.tune,
+                    height: 44,
+                    decoration: BoxDecoration(
                       color: Colors.white,
-                      size: 20,
+                      borderRadius: BorderRadius.circular(22),
+                      border: Border.all(color: ClosetColors.ligne, width: 1.5),
                     ),
+                    child: TextField(
+                      controller: _searchController,
+                      onChanged: (val) {
+                        ref.read(searchQueryProvider.notifier).setQuery(val);
+                      },
+                      style: GoogleFonts.lato(color: ClosetColors.vertFonce, fontSize: 14),
+                      decoration: InputDecoration(
+                        hintText: 'Search..',
+                        hintStyle: GoogleFonts.lato(color: ClosetColors.vertFonce.withValues(alpha: 0.4), fontSize: 14),
+                        prefixIcon: const Icon(Icons.search, color: ClosetColors.vertFonce, size: 20),
+                        border: InputBorder.none,
+                        contentPadding: const EdgeInsets.symmetric(vertical: 10),
+                      ),
+                    ),
+                  ),
+                ),
+
+                // EXPLORER PAR UNIVERS title
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 14, 16, 8),
+                  child: Text(
+                    'EXPLORER PAR UNIVERS',
+                    style: GoogleFonts.lato(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 2.0,
+                      color: ClosetColors.doreEncre,
+                    ),
+                  ),
+                ),
+
+                // Category Chips row
+                SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Row(
+                    children: [
+                      'Tout l\'univers',
+                      'Robes',
+                      'Vestes',
+                      'Sacs',
+                      'Escarpins',
+                      'Accessoires',
+                    ].map((category) {
+                      final isSelected = category == selectedUniverse;
+                      return Padding(
+                        padding: const EdgeInsets.only(right: 8),
+                        child: GestureDetector(
+                          onTap: () {
+                            ref.read(selectedUniverseProvider.notifier).setUniverse(category);
+                          },
+                          child: Container(
+                            constraints: const BoxConstraints(minHeight: 40),
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                            decoration: BoxDecoration(
+                              color: isSelected ? ClosetColors.vertFonce : Colors.white,
+                              borderRadius: BorderRadius.circular(20),
+                              border: isSelected
+                                  ? null
+                                  : Border.all(color: ClosetColors.ligne, width: 1.5),
+                            ),
+                            child: Center(
+                              child: Text(
+                                category,
+                                style: GoogleFonts.lato(
+                                  fontSize: 12.5,
+                                  fontWeight: FontWeight.w600,
+                                  color: isSelected ? Colors.white : ClosetColors.vertFonce,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                ),
+
+                // Dynamic Active Filter Chips for clearing (compromise to keep previous features accessible)
+                if (activeFiltersCount > 0) ...[
+                  const SizedBox(height: 10),
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Row(
+                      children: [
+                        if (selectedUniverse != 'Tout l\'univers')
+                          Padding(
+                            padding: const EdgeInsets.only(right: 8),
+                            child: _FilterChip(
+                              label: selectedUniverse,
+                              isOn: true,
+                              onTap: () => _showFilterBottomSheet(context),
+                              onClear: () {
+                                ref.read(selectedUniverseProvider.notifier).setUniverse('Tout l\'univers');
+                              },
+                            ),
+                          ),
+                        if (selectedBrand != null)
+                          Padding(
+                            padding: const EdgeInsets.only(right: 8),
+                            child: _FilterChip(
+                              label: selectedBrand,
+                              isOn: true,
+                              onTap: () => _showFilterBottomSheet(context),
+                              onClear: () {
+                                ref.read(filterBrandProvider.notifier).setBrand(null);
+                              },
+                            ),
+                          ),
+                        if (selectedSize != null)
+                          Padding(
+                            padding: const EdgeInsets.only(right: 8),
+                            child: _FilterChip(
+                              label: 'Taille $selectedSize',
+                              isOn: true,
+                              onTap: () => _showFilterBottomSheet(context),
+                              onClear: () {
+                                ref.read(filterSizeProvider.notifier).setSize(null);
+                              },
+                            ),
+                          ),
+                        if (selectedPriceRange != null)
+                          Padding(
+                            padding: const EdgeInsets.only(right: 8),
+                            child: _FilterChip(
+                              label: '${selectedPriceRange.start.toInt() ~/ 1000}k-${selectedPriceRange.end.toInt() ~/ 1000}k F',
+                              isOn: true,
+                              onTap: () => _showFilterBottomSheet(context),
+                              onClear: () {
+                                ref.read(filterPriceProvider.notifier).setPriceRange(null);
+                              },
+                            ),
+                          ),
+                        if (selectedCondition != null)
+                          Padding(
+                            padding: const EdgeInsets.only(right: 8),
+                            child: _FilterChip(
+                              label: selectedCondition,
+                              isOn: true,
+                              onTap: () => _showFilterBottomSheet(context),
+                              onClear: () {
+                                ref.read(filterConditionProvider.notifier).setCondition(null);
+                              },
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                ],
+
+                // Section header row: "Nouveauté du dressing"
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 20, 16, 12),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.baseline,
+                    textBaseline: TextBaseline.alphabetic,
+                    children: [
+                      Text(
+                        'Nouveauté du dressing',
+                        style: GoogleFonts.ebGaramond(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600,
+                          color: ClosetColors.vertFonce,
+                        ),
+                      ),
+                      GestureDetector(
+                        onTap: () {
+                          // Clear all filters
+                          ref.read(searchQueryProvider.notifier).clear();
+                          ref.read(selectedUniverseProvider.notifier).setUniverse('Tout l\'univers');
+                          ref.read(filterBrandProvider.notifier).setBrand(null);
+                          ref.read(filterSizeProvider.notifier).setSize(null);
+                          ref.read(filterConditionProvider.notifier).setCondition(null);
+                          ref.read(filterPriceProvider.notifier).setPriceRange(null);
+                          _searchController.clear();
+                        },
+                        child: Text(
+                          'TOUT DÉCOUVRIR →',
+                          style: GoogleFonts.lato(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: 2.0,
+                            color: ClosetColors.doreEncre,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],
             ),
           ),
 
-          // ─── Elegant Search Bar ─────────────────────────────────────
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-            child: DecoratedBox(
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(30),
-                border: Border.all(color: ClosetColors.ligne, width: 1.5),
-              ),
-              child: TextField(
-                onChanged: (val) => ref.read(searchQueryProvider.notifier).setQuery(val),
-                controller: TextEditingController.fromValue(
-                  TextEditingValue(
-                    text: searchQuery,
-                    selection: TextSelection.collapsed(offset: searchQuery.length),
-                  ),
-                ),
-                style: GoogleFonts.lato(color: ClosetColors.vertFonce, fontSize: 14),
-                decoration: InputDecoration(
-                  hintText: 'Search...',
-                  hintStyle: GoogleFonts.lato(color: ClosetColors.vertFonce.withValues(alpha: 0.5), fontSize: 14),
-                  prefixIcon: const Icon(Icons.search, color: ClosetColors.vertFonce, size: 20),
-                  suffixIcon: searchQuery.isNotEmpty
-                      ? IconButton(
-                          icon: const Icon(Icons.clear, color: ClosetColors.vertFonce, size: 20),
-                          onPressed: () {
-                            ref.read(searchQueryProvider.notifier).clear();
-                          },
-                        )
-                      : null,
-                  border: InputBorder.none,
-                  contentPadding: const EdgeInsets.symmetric(vertical: 12),
-                ),
-              ),
-            ),
-          ),
-
-          // ─── EXPLORER PAR UNIVERS Subtitle ──────────────────────────
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
-            child: Text(
-              'EXPLORER PAR UNIVERS',
-              style: GoogleFonts.lato(
-                fontSize: 10,
-                fontWeight: FontWeight.w700,
-                letterSpacing: 2.0,
-                color: ClosetColors.doreEncre,
-              ),
-            ),
-          ),
-
-          // ─── Active Filter Chips Row ────────────────────────────────
-          SizedBox(
-            height: 48,
-            child: SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-              child: Row(
-                children: [
-                  // Main Filters counter chip
-                  GestureDetector(
-                    onTap: () => _showFilterBottomSheet(context, ref),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                      decoration: BoxDecoration(
-                        color: ClosetColors.vertFonce,
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Text(
-                        'Filtres • $activeFiltersCount',
-                        style: GoogleFonts.lato(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-
-                  // Universe filter tag
-                  if (selectedUniverse != 'Tout l\'univers') ...[
-                    _ActiveFilterTag(
-                      label: selectedUniverse,
-                      onClear: () {
-                        ref.read(selectedUniverseProvider.notifier).setUniverse('Tout l\'univers');
-                      },
-                    ),
-                    const SizedBox(width: 8),
-                  ],
-
-                  // Brand filter tag
-                  if (selectedBrand != null) ...[
-                    _ActiveFilterTag(
-                      label: selectedBrand,
-                      onClear: () {
-                        ref.read(filterBrandProvider.notifier).setBrand(null);
-                      },
-                    ),
-                    const SizedBox(width: 8),
-                  ],
-
-                  // Size filter tag
-                  if (selectedSize != null) ...[
-                    _ActiveFilterTag(
-                      label: 'Taille $selectedSize',
-                      onClear: () {
-                        ref.read(filterSizeProvider.notifier).setSize(null);
-                      },
-                    ),
-                    const SizedBox(width: 8),
-                  ],
-
-                  // Condition filter tag
-                  if (selectedCondition != null) ...[
-                    _ActiveFilterTag(
-                      label: selectedCondition,
-                      onClear: () {
-                        ref.read(filterConditionProvider.notifier).setCondition(null);
-                      },
-                    ),
-                    const SizedBox(width: 8),
-                  ],
-
-                  // Price filter tag
-                  if (selectedPrice != null) ...[
-                    _ActiveFilterTag(
-                      label: '< ${selectedPrice.toInt()} F',
-                      onClear: () {
-                        ref.read(filterPriceProvider.notifier).setPrice(null);
-                      },
-                    ),
-                    const SizedBox(width: 8),
-                  ],
-                ],
-              ),
-            ),
-          ),
-
-          // ─── Dynamic results count label ────────────────────────────
+          // Grid Results or Empty state
           catalogAsync.when(
-            data: (articles) => Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-              child: Text(
-                '${articles.length} pièces, triées par nouveautés →',
-                style: GoogleFonts.ebGaramond(
-                  fontSize: 12,
-                  fontStyle: FontStyle.italic,
-                  color: ClosetColors.noir.withValues(alpha: 0.6),
-                ),
-              ),
-            ),
-            loading: () => const SizedBox(),
-            error: (e, stack) => const SizedBox(),
-          ),
-
-          // ─── Grid Results ───────────────────────────────────────────
-          Expanded(
-            child: catalogAsync.when(
-              data: (articles) {
-                if (articles.isEmpty) {
-                  return Center(
+            data: (articles) {
+              if (articles.isEmpty) {
+                return SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 40),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.search_off, size: 48, color: ClosetColors.vertFonce.withValues(alpha: 0.4)),
+                        Icon(
+                          Icons.search_off,
+                          size: 48,
+                          color: ClosetColors.vertFonce.withValues(alpha: 0.4),
+                        ),
                         const SizedBox(height: 16),
                         Text(
                           'Aucune pièce ne correspond à vos critères',
                           textAlign: TextAlign.center,
-                          style: TextStyle(color: ClosetColors.vertFonce.withValues(alpha: 0.6), fontSize: 14),
+                          style: TextStyle(
+                            color: ClosetColors.vertFonce.withValues(alpha: 0.6),
+                            fontSize: 14,
+                          ),
                         ),
                         const SizedBox(height: 8),
                         TextButton(
@@ -432,338 +591,141 @@ class CollectionsScreen extends ConsumerWidget {
                             ref.read(filterBrandProvider.notifier).setBrand(null);
                             ref.read(filterSizeProvider.notifier).setSize(null);
                             ref.read(filterConditionProvider.notifier).setCondition(null);
-                            ref.read(filterPriceProvider.notifier).setPrice(null);
+                            ref.read(filterPriceProvider.notifier).setPriceRange(null);
+                            _searchController.clear();
                           },
                           child: const Text(
                             'Réinitialiser les filtres',
-                            style: TextStyle(color: ClosetColors.doreEncre, fontWeight: FontWeight.bold),
+                            style: TextStyle(
+                              color: ClosetColors.doreEncre,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                         ),
                       ],
                     ),
-                  );
-                }
-                return GridView.builder(
-                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 80),
+                  ),
+                );
+              }
+              return SliverPadding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                sliver: SliverGrid(
                   gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 2,
-                    childAspectRatio: 0.55,
+                    childAspectRatio: 0.55, // Keep matching aspect ratio with extra metadata row
                     crossAxisSpacing: 10,
                     mainAxisSpacing: 10,
                   ),
-                  itemCount: articles.length,
-                  itemBuilder: (context, i) {
-                    final article = articles[i];
-                    return _PieceCard(
-                      article: article,
-                      formatPrice: _formatPrice,
-                    );
-                  },
-                );
-              },
-              loading: () => const Center(
-                child: CircularProgressIndicator(color: ClosetColors.dore),
+                  delegate: SliverChildBuilderDelegate(
+                    (context, i) {
+                      return _PieceCard(
+                        article: articles[i],
+                        formatPrice: _formatPrice,
+                      );
+                    },
+                    childCount: articles.length,
+                  ),
+                ),
+              );
+            },
+            loading: () => const SliverToBoxAdapter(
+              child: Padding(
+                padding: EdgeInsets.all(40),
+                child: Center(
+                  child: CircularProgressIndicator(color: ClosetColors.dore),
+                ),
               ),
-              error: (e, _) => const Center(
-                child: Text('Erreur de chargement'),
+            ),
+            error: (e, _) => const SliverToBoxAdapter(
+              child: Padding(
+                padding: EdgeInsets.all(40),
+                child: Center(
+                  child: Text('Erreur de chargement'),
+                ),
+              ),
+            ),
+          ),
+
+          // Slogan Footer Section
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.only(top: 40, bottom: 90),
+              child: Center(
+                child: Text(
+                  'CLOS ET. ABIDJAN - PARIS - YAOUNDÉ',
+                  style: GoogleFonts.lato(
+                    fontSize: 10,
+                    letterSpacing: 2.5,
+                    color: ClosetColors.noir.withValues(alpha: 0.6),
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
               ),
             ),
           ),
         ],
       ),
-    );
-  }
-
-  void _showFilterBottomSheet(BuildContext context, WidgetRef ref) {
-    final selectedBrand = ref.read<String?>(filterBrandProvider);
-    final selectedSize = ref.read<String?>(filterSizeProvider);
-    final selectedCondition = ref.read<String?>(filterConditionProvider);
-    final maxPrice = ref.read<double?>(filterPriceProvider) ?? 500000.0;
-
-    final List<String> brands = ['Sandro', 'Maje', 'Sézane', 'Jacquemus', 'Gucci', 'Prada', 'Hermès', 'Burberry', 'Zadig & Voltaire'];
-    final List<String> sizes = ['34', '36', '38', '40', '42', 'S', 'M', 'L', 'Unique'];
-    final List<String> conditions = ['Neuf avec étiquette', 'Excellent', 'Très bon'];
-
-    showModalBottomSheet<void>(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: ClosetColors.beige,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      builder: (context) {
-        return StatefulBuilder(
-          builder: (context, setState) {
-            String? tempBrand = selectedBrand;
-            String? tempSize = selectedSize;
-            String? tempCondition = selectedCondition;
-            double tempPrice = maxPrice;
-
-            return DraggableScrollableSheet(
-              initialChildSize: 0.8,
-              minChildSize: 0.5,
-              maxChildSize: 0.95,
-              expand: false,
-              builder: (context, scrollController) {
-                return SingleChildScrollView(
-                  controller: scrollController,
-                  padding: const EdgeInsets.all(24),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Header
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            'Filtrer la sélection',
-                            style: GoogleFonts.ebGaramond(
-                              fontSize: 20,
-                              fontWeight: FontWeight.w800,
-                              color: ClosetColors.vertFonce,
-                            ),
-                          ),
-                          TextButton(
-                            onPressed: () {
-                              ref.read(filterBrandProvider.notifier).setBrand(null);
-                              ref.read(filterSizeProvider.notifier).setSize(null);
-                              ref.read(filterConditionProvider.notifier).setCondition(null);
-                              ref.read(filterPriceProvider.notifier).setPrice(null);
-                              Navigator.pop(context);
-                            },
-                            child: Text(
-                              'Réinitialiser',
-                              style: GoogleFonts.lato(
-                                color: ClosetColors.doreEncre,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 24),
-
-                      // Marque Section
-                      Text(
-                        'MARQUE',
-                        style: GoogleFonts.lato(
-                          fontSize: 11,
-                          fontWeight: FontWeight.bold,
-                          color: ClosetColors.vertFonce.withValues(alpha: 0.5),
-                          letterSpacing: 1.5,
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      Wrap(
-                        spacing: 8,
-                        runSpacing: 8,
-                        children: brands.map((b) {
-                          final isSel = tempBrand?.toLowerCase() == b.toLowerCase();
-                          return ChoiceChip(
-                            label: Text(b),
-                            selected: isSel,
-                            onSelected: (selected) {
-                              setState(() {
-                                tempBrand = selected ? b : null;
-                              });
-                            },
-                            selectedColor: ClosetColors.vertFonce,
-                            backgroundColor: Colors.white,
-                            labelStyle: GoogleFonts.lato(
-                              color: isSel ? Colors.white : ClosetColors.vertFonce,
-                              fontWeight: isSel ? FontWeight.bold : FontWeight.normal,
-                            ),
-                          );
-                        }).toList(),
-                      ),
-                      const SizedBox(height: 24),
-
-                      // Taille Section
-                      Text(
-                        'TAILLE',
-                        style: GoogleFonts.lato(
-                          fontSize: 11,
-                          fontWeight: FontWeight.bold,
-                          color: ClosetColors.vertFonce.withValues(alpha: 0.5),
-                          letterSpacing: 1.5,
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      Wrap(
-                        spacing: 8,
-                        runSpacing: 8,
-                        children: sizes.map((s) {
-                          final isSel = tempSize == s;
-                          return ChoiceChip(
-                            label: Text(s),
-                            selected: isSel,
-                            onSelected: (selected) {
-                              setState(() {
-                                tempSize = selected ? s : null;
-                              });
-                            },
-                            selectedColor: ClosetColors.vertFonce,
-                            backgroundColor: Colors.white,
-                            labelStyle: GoogleFonts.lato(
-                              color: isSel ? Colors.white : ClosetColors.vertFonce,
-                              fontWeight: isSel ? FontWeight.bold : FontWeight.normal,
-                            ),
-                          );
-                        }).toList(),
-                      ),
-                      const SizedBox(height: 24),
-
-                      // État Section
-                      Text(
-                        'ÉTAT DE LA PIÈCE',
-                        style: GoogleFonts.lato(
-                          fontSize: 11,
-                          fontWeight: FontWeight.bold,
-                          color: ClosetColors.vertFonce.withValues(alpha: 0.5),
-                          letterSpacing: 1.5,
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      Wrap(
-                        spacing: 8,
-                        runSpacing: 8,
-                        children: conditions.map((c) {
-                          final isSel = tempCondition?.toLowerCase() == c.toLowerCase();
-                          return ChoiceChip(
-                            label: Text(c),
-                            selected: isSel,
-                            onSelected: (selected) {
-                              setState(() {
-                                tempCondition = selected ? c : null;
-                              });
-                            },
-                            selectedColor: ClosetColors.vertFonce,
-                            backgroundColor: Colors.white,
-                            labelStyle: GoogleFonts.lato(
-                              color: isSel ? Colors.white : ClosetColors.vertFonce,
-                              fontWeight: isSel ? FontWeight.bold : FontWeight.normal,
-                            ),
-                          );
-                        }).toList(),
-                      ),
-                      const SizedBox(height: 24),
-
-                      // Prix maximum Section
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            'PRIX MAXIMUM',
-                            style: GoogleFonts.lato(
-                              fontSize: 11,
-                              fontWeight: FontWeight.bold,
-                              color: ClosetColors.vertFonce.withValues(alpha: 0.5),
-                              letterSpacing: 1.5,
-                            ),
-                          ),
-                          Text(
-                            '${tempPrice.toInt()} FCFA',
-                            style: GoogleFonts.lato(
-                              fontSize: 13,
-                              fontWeight: FontWeight.bold,
-                              color: ClosetColors.doreEncre,
-                            ),
-                          ),
-                        ],
-                      ),
-                      Slider(
-                        value: tempPrice,
-                        min: 5000,
-                        max: 500000,
-                        divisions: 99,
-                        activeColor: ClosetColors.vertFonce,
-                        inactiveColor: Colors.white,
-                        onChanged: (val) {
-                          setState(() {
-                            tempPrice = val;
-                          });
-                        },
-                      ),
-                      const SizedBox(height: 40),
-
-                      // Apply button
-                      SizedBox(
-                        width: double.infinity,
-                        height: 52,
-                        child: ElevatedButton(
-                          onPressed: () {
-                            ref.read(filterBrandProvider.notifier).setBrand(tempBrand);
-                            ref.read(filterSizeProvider.notifier).setSize(tempSize);
-                            ref.read(filterConditionProvider.notifier).setCondition(tempCondition);
-                            ref.read(filterPriceProvider.notifier).setPrice(tempPrice);
-                            Navigator.pop(context);
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: ClosetColors.vertFonce,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(30),
-                            ),
-                          ),
-                          child: Text(
-                            'Appliquer les filtres',
-                            style: GoogleFonts.lato(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                );
-              },
-            );
-          },
-        );
-      },
     );
   }
 }
 
-class _ActiveFilterTag extends StatelessWidget {
+class _FilterChip extends StatelessWidget {
   final String label;
-  final VoidCallback onClear;
+  final bool isOn;
+  final VoidCallback onTap;
+  final VoidCallback? onClear;
 
-  const _ActiveFilterTag({
+  const _FilterChip({
     required this.label,
-    required this.onClear,
+    required this.isOn,
+    required this.onTap,
+    this.onClear,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-      decoration: BoxDecoration(
-        color: ClosetColors.vertFonce,
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(
-            label,
-            style: GoogleFonts.lato(
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-              color: Colors.white,
+    return Semantics(
+      button: true,
+      selected: isOn,
+      child: GestureDetector(
+        onTap: onTap,
+        child: Container(
+          height: 40,
+          padding: const EdgeInsets.symmetric(horizontal: 14),
+          decoration: BoxDecoration(
+            color: isOn ? ClosetColors.vert : ClosetColors.creme,
+            borderRadius: BorderRadius.circular(999),
+            border: Border.all(
+              color: isOn ? ClosetColors.vert : ClosetColors.ligne,
+              width: 1.5,
             ),
           ),
-          const SizedBox(width: 6),
-          GestureDetector(
-            onTap: onClear,
-            child: const Icon(
-              Icons.close,
-              size: 14,
-              color: Colors.white,
-            ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                label,
+                style: GoogleFonts.lato(
+                  fontSize: 12.5,
+                  fontWeight: FontWeight.w600,
+                  color: isOn ? ClosetColors.creme : ClosetColors.vertFonce,
+                ),
+              ),
+              if (isOn && onClear != null) ...[
+                const SizedBox(width: 6),
+                GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: onClear,
+                  child: const Icon(
+                    Icons.close,
+                    size: 14,
+                    color: ClosetColors.creme,
+                  ),
+                ),
+              ],
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
@@ -778,20 +740,163 @@ class _PieceCard extends ConsumerWidget {
     required this.formatPrice,
   });
 
+  String _formatSizeAndMaterial(Article article) {
+    final parts = <String>[];
+    if (article.size.isNotEmpty) {
+      String sizeStr = article.size;
+      // Prepend T. if not already starting with T. or T
+      if (!sizeStr.toUpperCase().startsWith('T')) {
+        sizeStr = 'T.$sizeStr';
+      } else if (sizeStr.toUpperCase().startsWith('T') && !sizeStr.toUpperCase().startsWith('T.')) {
+        sizeStr = 'T.${sizeStr.substring(1)}';
+      }
+      parts.add(sizeStr);
+    }
+    if (article.material.isNotEmpty) {
+      parts.add(article.material);
+    }
+    return parts.join('. ');
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final wishlist = ref.watch(wishlistListProvider);
     final isWishlisted = wishlist.any((a) => a.id == article.id);
 
+    // Build the photo/image area
+    Widget photoWidget = Stack(
+      children: [
+        // Silhouette placeholder
+        Center(
+          child: FractionallySizedBox(
+            widthFactor: 0.46,
+            heightFactor: 0.74,
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    const Color(0xFF1C3D2F).withValues(alpha: 0.14),
+                    const Color(0xFF12241D).withValues(alpha: 0.4),
+                  ],
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                ),
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(60),
+                  topRight: Radius.circular(60),
+                  bottomLeft: Radius.circular(8),
+                  bottomRight: Radius.circular(8),
+                ),
+              ),
+            ),
+          ),
+        ),
+        
+        // Image on top
+        if (article.imageUrls.isNotEmpty)
+          Image.network(
+            article.imageUrls[0],
+            width: double.infinity,
+            height: double.infinity,
+            fit: BoxFit.cover,
+            errorBuilder: (context, error, stackTrace) => const SizedBox(),
+          ),
+
+        // Tag État (Condition) - Mint Green Background with Dark Green Text
+        Positioned(
+          left: 10,
+          top: 10,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+            decoration: BoxDecoration(
+              color: const Color(0xFFCBEFED),
+              borderRadius: BorderRadius.circular(999),
+            ),
+            child: Text(
+              article.condition.toUpperCase(),
+              style: GoogleFonts.lato(
+                color: ClosetColors.vertFonce,
+                fontSize: 9.5,
+                fontWeight: FontWeight.w700,
+                letterSpacing: 1.2,
+              ),
+            ),
+          ),
+        ),
+
+        // Heart Icon Button (only if not sold out)
+        if (!article.isSoldOut)
+          Positioned(
+            right: 10,
+            top: 10,
+            child: Semantics(
+              button: true,
+              label: isWishlisted ? 'Retirer des favoris' : 'Ajouter aux favoris',
+              child: GestureDetector(
+                onTap: () {
+                  ref.read(wishlistProvider.notifier).toggleWishlist(article);
+                },
+                child: Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    color: ClosetColors.creme.withValues(alpha: 0.94),
+                    shape: BoxShape.circle,
+                    border: Border.all(color: ClosetColors.ligne),
+                  ),
+                  child: Icon(
+                    isWishlisted ? Icons.favorite : Icons.favorite_border,
+                    size: 18,
+                    color: isWishlisted ? ClosetColors.erreur : ClosetColors.vertFonce,
+                  ),
+                ),
+              ),
+            ),
+          ),
+
+        // Sold-out overlay banner at the bottom
+        if (article.isSoldOut)
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: Container(
+              color: ClosetColors.vertFonce.withValues(alpha: 0.85),
+              padding: const EdgeInsets.symmetric(vertical: 6),
+              alignment: Alignment.center,
+              child: Text(
+                'A trouvé son dressing',
+                style: GoogleFonts.lato(
+                  color: ClosetColors.creme,
+                  fontSize: 10.5,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+          ),
+      ],
+    );
+
+    // Apply Grayscale Filter to Photo if Sold Out
+    if (article.isSoldOut) {
+      photoWidget = ColorFiltered(
+        colorFilter: const ColorFilter.mode(
+          Colors.grey,
+          BlendMode.saturation,
+        ),
+        child: photoWidget,
+      );
+    }
+
     return MergeSemantics(
       child: Semantics(
-        label: '${article.brand}, ${article.title}, ${formatPrice(article.price)}, état: ${article.condition}',
+        label: '${article.brand}, ${article.title}, ${article.isSoldOut ? 'Indisponible' : formatPrice(article.price)}, état: ${article.condition}',
         child: GestureDetector(
           onTap: () => context.push('/product/${article.id}'),
           child: Container(
             decoration: BoxDecoration(
-              color: Colors.white,
-              border: Border.all(color: ClosetColors.ligne, width: 1.5),
+              color: ClosetColors.creme,
+              border: Border.all(color: ClosetColors.ligne, width: 1.0),
               borderRadius: BorderRadius.circular(16),
             ),
             clipBehavior: Clip.antiAlias,
@@ -799,125 +904,39 @@ class _PieceCard extends ConsumerWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // Photo area
-                Container(
-                  height: 140,
-                  decoration: const BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [Color(0xFFE7DCC6), Color(0xFFD6C6A6)],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
+                AspectRatio(
+                  aspectRatio: 0.8, // 4:5 Aspect Ratio
+                  child: DecoratedBox(
+                    decoration: const BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [Color(0xFFE7DCC6), Color(0xFFD6C6A6)],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
                     ),
-                  ),
-                  child: Stack(
-                    children: [
-                      // Silhouette placeholder
-                      Center(
-                        child: Container(
-                          width: 55,
-                          height: 90,
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              colors: [
-                                const Color(0xFF1C3D2F).withValues(alpha: 0.14),
-                                const Color(0xFF12241D).withValues(alpha: 0.4),
-                              ],
-                              begin: Alignment.topCenter,
-                              end: Alignment.bottomCenter,
-                            ),
-                            borderRadius: const BorderRadius.only(
-                              topLeft: Radius.circular(30),
-                              topRight: Radius.circular(30),
-                              bottomLeft: Radius.circular(4),
-                              bottomRight: Radius.circular(4),
-                            ),
-                          ),
-                        ),
-                      ),
-                      // Image on top
-                      if (article.imageUrls.isNotEmpty)
-                        Image.network(
-                          article.imageUrls[0],
-                          width: double.infinity,
-                          height: double.infinity,
-                          fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) => const SizedBox(),
-                        ),
-                      // Tag État (Condition)
-                      Positioned(
-                        left: 10,
-                        top: 10,
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFD6EBE0),
-                            borderRadius: BorderRadius.circular(999),
-                          ),
-                          child: Text(
-                            article.condition.split(' ').first.toUpperCase(),
-                            style: GoogleFonts.lato(
-                              color: const Color(0xFF224235),
-                              fontSize: 9.5,
-                              fontWeight: FontWeight.w700,
-                              letterSpacing: 1.0,
-                            ),
-                          ),
-                        ),
-                      ),
-                      // Heart Icon Button
-                      Positioned(
-                        right: 10,
-                        top: 10,
-                        child: Semantics(
-                          button: true,
-                          label: isWishlisted ? 'Retirer des favoris' : 'Ajouter aux favoris',
-                          child: GestureDetector(
-                            onTap: () {
-                              ref.read(wishlistProvider.notifier).toggleWishlist(article);
-                            },
-                            child: Container(
-                              width: 30,
-                              height: 30,
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                shape: BoxShape.circle,
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withValues(alpha: 0.08),
-                                    blurRadius: 4,
-                                  ),
-                                ],
-                              ),
-                              child: Icon(
-                                isWishlisted ? Icons.favorite : Icons.favorite_border,
-                                size: 16,
-                                color: isWishlisted ? ClosetColors.erreur : ClosetColors.vertFonce,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
+                    child: photoWidget,
                   ),
                 ),
+                
                 // Metadata
                 Padding(
-                  padding: const EdgeInsets.all(12),
+                  padding: const EdgeInsets.only(left: 12, right: 12, top: 10, bottom: 12),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
                         'MAISON ${article.brand.toUpperCase()}',
                         style: GoogleFonts.lato(
-                          fontSize: 9,
-                          letterSpacing: 1.5,
-                          color: ClosetColors.doreEncre,
+                          fontSize: 10,
+                          letterSpacing: 1.8,
+                          color: ClosetColors.taupe,
                           fontWeight: FontWeight.w700,
                         ),
                       ),
                       const SizedBox(height: 2),
                       Text(
                         article.title,
-                        style: GoogleFonts.ebGaramond(
+                        style: GoogleFonts.cormorantGaramond(
                           fontWeight: FontWeight.w600,
                           fontSize: 15.5,
                           color: ClosetColors.noir,
@@ -928,20 +947,20 @@ class _PieceCard extends ConsumerWidget {
                       ),
                       const SizedBox(height: 2),
                       Text(
-                        formatPrice(article.price),
-                        style: GoogleFonts.ebGaramond(
+                        article.isSoldOut ? 'Indisponible' : formatPrice(article.price),
+                        style: GoogleFonts.cormorantGaramond(
                           fontWeight: FontWeight.w700,
-                          fontStyle: FontStyle.italic,
-                          fontSize: 14,
-                          color: ClosetColors.vertFonce,
+                          fontSize: 15,
+                          color: article.isSoldOut ? ClosetColors.taupe : ClosetColors.vertFonce,
+                          height: 1.25,
                         ),
                       ),
                       const SizedBox(height: 2),
                       Text(
-                        'T.${article.size}. ${article.material}',
+                        _formatSizeAndMaterial(article),
                         style: GoogleFonts.lato(
                           fontSize: 10,
-                          color: ClosetColors.taupe,
+                          color: ClosetColors.taupe.withValues(alpha: 0.8),
                           fontWeight: FontWeight.w500,
                         ),
                         maxLines: 1,
@@ -955,6 +974,378 @@ class _PieceCard extends ConsumerWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+class _FilterBottomSheetContent extends ConsumerStatefulWidget {
+  const _FilterBottomSheetContent();
+
+  @override
+  ConsumerState<_FilterBottomSheetContent> createState() => _FilterBottomSheetContentState();
+}
+
+class _FilterBottomSheetContentState extends ConsumerState<_FilterBottomSheetContent> {
+  late String _tempUniverse;
+  String? _tempBrand;
+  String? _tempSize;
+  String? _tempCondition;
+  late double _tempMinPrice;
+  late double _tempMaxPrice;
+
+  @override
+  void initState() {
+    super.initState();
+    _tempUniverse = ref.read(selectedUniverseProvider);
+    _tempBrand = ref.read(filterBrandProvider);
+    _tempSize = ref.read(filterSizeProvider);
+    _tempCondition = ref.read(filterConditionProvider);
+    final priceRange = ref.read(filterPriceProvider);
+    _tempMinPrice = priceRange?.start ?? 5000.0;
+    _tempMaxPrice = priceRange?.end ?? 500000.0;
+  }
+
+  int _calculateMatchingCount(List<Article> allArticles) {
+    final query = ref.read(searchQueryProvider).toLowerCase();
+    return allArticles.where((a) {
+      if (query.isNotEmpty &&
+          !a.title.toLowerCase().contains(query) &&
+          !a.brand.toLowerCase().contains(query) &&
+          !a.description.toLowerCase().contains(query)) {
+        return false;
+      }
+      if (_tempUniverse != 'Tout l\'univers' && a.universe.toLowerCase() != _tempUniverse.toLowerCase()) {
+        return false;
+      }
+      if (_tempBrand != null && a.brand.toLowerCase() != _tempBrand!.toLowerCase()) {
+        return false;
+      }
+      if (_tempSize != null && a.size.toLowerCase() != _tempSize!.toLowerCase()) {
+        return false;
+      }
+      if (_tempCondition != null && a.condition.toLowerCase() != _tempCondition!.toLowerCase()) {
+        return false;
+      }
+      if (a.price < _tempMinPrice || a.price > _tempMaxPrice) {
+        return false;
+      }
+      return true;
+    }).length;
+  }
+
+  Widget _buildSectionTitle(String title) {
+    return Text(
+      title,
+      style: GoogleFonts.lato(
+        fontSize: 10,
+        fontWeight: FontWeight.w700,
+        letterSpacing: 2.4,
+        color: ClosetColors.doreEncre,
+      ),
+    );
+  }
+
+  Widget _buildChoiceChip({
+    required String label,
+    required bool isSelected,
+    required VoidCallback onSelected,
+  }) {
+    return Semantics(
+      button: true,
+      selected: isSelected,
+      child: GestureDetector(
+        onTap: onSelected,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+          decoration: BoxDecoration(
+            color: isSelected ? ClosetColors.vert : ClosetColors.creme,
+            borderRadius: BorderRadius.circular(999),
+            border: Border.all(
+              color: isSelected ? ClosetColors.vert : ClosetColors.ligne,
+              width: 1.5,
+            ),
+          ),
+          child: Text(
+            label,
+            style: GoogleFonts.lato(
+              fontSize: 12.5,
+              fontWeight: FontWeight.w600,
+              color: isSelected ? ClosetColors.creme : ClosetColors.vertFonce,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final allArticlesAsync = ref.watch(allArticlesProvider);
+    
+    return DraggableScrollableSheet(
+      initialChildSize: 0.85,
+      minChildSize: 0.5,
+      maxChildSize: 0.95,
+      expand: false,
+      builder: (context, scrollController) {
+        return DecoratedBox(
+          decoration: const BoxDecoration(
+            color: ClosetColors.beige,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+          ),
+          child: Column(
+            children: [
+              // Top drag indicator
+              Center(
+                child: Container(
+                  width: 44,
+                  height: 5,
+                  decoration: BoxDecoration(
+                    color: ClosetColors.ligne,
+                    borderRadius: BorderRadius.circular(3),
+                  ),
+                  margin: const EdgeInsets.only(top: 10, bottom: 10),
+                ),
+              ),
+              
+              // Header
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Affiner ma recherche',
+                      style: GoogleFonts.cormorantGaramond(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w800,
+                        color: ClosetColors.vertFonce,
+                      ),
+                    ),
+                    GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          _tempUniverse = 'Tout l\'univers';
+                          _tempBrand = null;
+                          _tempSize = null;
+                          _tempCondition = null;
+                          _tempMinPrice = 5000.0;
+                          _tempMaxPrice = 500000.0;
+                        });
+                      },
+                      child: Text(
+                        'Tout réinitialiser',
+                        style: GoogleFonts.lato(
+                          fontSize: 12.5,
+                          fontWeight: FontWeight.w700,
+                          color: ClosetColors.doreEncre,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              
+              // Scrollable sections
+              Expanded(
+                child: ListView(
+                  controller: scrollController,
+                  padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+                  children: [
+                    // Univers section
+                    _buildSectionTitle('UNIVERS'),
+                    const SizedBox(height: 8),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: CatalogRepository.categories.map((cat) {
+                        final isSelected = _tempUniverse.toLowerCase() == cat.toLowerCase();
+                        return _buildChoiceChip(
+                          label: cat,
+                          isSelected: isSelected,
+                          onSelected: () {
+                            setState(() {
+                              _tempUniverse = isSelected ? 'Tout l\'univers' : cat;
+                            });
+                          },
+                        );
+                      }).toList(),
+                    ),
+                    const SizedBox(height: 24),
+
+                    // Taille section
+                    _buildSectionTitle('TAILLE'),
+                    const SizedBox(height: 8),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: ['XS', 'S', 'M', 'L', 'XL', 'Unique', '34', '36', '38', '40', '42'].map((s) {
+                        final isSelected = _tempSize == s;
+                        return _buildChoiceChip(
+                          label: s,
+                          isSelected: isSelected,
+                          onSelected: () {
+                            setState(() {
+                              _tempSize = isSelected ? null : s;
+                            });
+                          },
+                        );
+                      }).toList(),
+                    ),
+                    const SizedBox(height: 24),
+
+                    // État section
+                    _buildSectionTitle('ÉTAT DE LA PIÈCE'),
+                    const SizedBox(height: 8),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: ['Neuf avec étiquette', 'Excellent', 'Très bon'].map((c) {
+                        final isSelected = _tempCondition == c;
+                        return _buildChoiceChip(
+                          label: c,
+                          isSelected: isSelected,
+                          onSelected: () {
+                            setState(() {
+                              _tempCondition = isSelected ? null : c;
+                            });
+                          },
+                        );
+                      }).toList(),
+                    ),
+                    const SizedBox(height: 24),
+
+                    // Prix section
+                    _buildSectionTitle('PRIX'),
+                    const SizedBox(height: 8),
+                    SliderTheme(
+                      data: SliderTheme.of(context).copyWith(
+                        activeTrackColor: ClosetColors.vert,
+                        inactiveTrackColor: ClosetColors.ligne,
+                        thumbColor: ClosetColors.creme,
+                        activeTickMarkColor: Colors.transparent,
+                        inactiveTickMarkColor: Colors.transparent,
+                        overlayColor: ClosetColors.vert.withValues(alpha: 0.12),
+                        rangeThumbShape: const RoundRangeSliderThumbShape(
+                          enabledThumbRadius: 11,
+                          elevation: 3,
+                        ),
+                        trackHeight: 4,
+                      ),
+                      child: RangeSlider(
+                        values: RangeValues(_tempMinPrice, _tempMaxPrice),
+                        min: 5000,
+                        max: 500000,
+                        divisions: 99,
+                        onChanged: (values) {
+                          setState(() {
+                            _tempMinPrice = values.start;
+                            _tempMaxPrice = values.end;
+                          });
+                        },
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            '${_tempMinPrice.toInt()} F',
+                            style: GoogleFonts.lato(
+                              fontSize: 12.5,
+                              fontWeight: FontWeight.w700,
+                              color: ClosetColors.vertFonce,
+                            ),
+                          ),
+                          Text(
+                            '${_tempMaxPrice.toInt()} F',
+                            style: GoogleFonts.lato(
+                              fontSize: 12.5,
+                              fontWeight: FontWeight.w700,
+                              color: ClosetColors.vertFonce,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 32),
+                  ],
+                ),
+              ),
+              
+              // Apply CTA button at bottom
+              Padding(
+                padding: const EdgeInsets.fromLTRB(18, 12, 18, 18),
+                child: allArticlesAsync.when(
+                  data: (allArticles) {
+                    final count = _calculateMatchingCount(allArticles);
+                    return SizedBox(
+                      width: double.infinity,
+                      height: 52,
+                      child: ElevatedButton(
+                        onPressed: () {
+                          ref.read(selectedUniverseProvider.notifier).setUniverse(_tempUniverse);
+                          ref.read(filterBrandProvider.notifier).setBrand(_tempBrand);
+                          ref.read(filterSizeProvider.notifier).setSize(_tempSize);
+                          ref.read(filterConditionProvider.notifier).setCondition(_tempCondition);
+                          // Only save range if it was changed from default
+                          if (_tempMinPrice == 5000.0 && _tempMaxPrice == 500000.0) {
+                            ref.read(filterPriceProvider.notifier).setPriceRange(null);
+                          } else {
+                            ref.read(filterPriceProvider.notifier).setPriceRange(RangeValues(_tempMinPrice, _tempMaxPrice));
+                          }
+                          Navigator.pop(context);
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: ClosetColors.vert,
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(999),
+                          ),
+                        ),
+                        child: Text(
+                          'Voir $count ${count > 1 ? "pièces" : "pièce"}',
+                          style: GoogleFonts.lato(
+                            color: ClosetColors.creme,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14.5,
+                            letterSpacing: 0.5,
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                  loading: () => const SizedBox(
+                    height: 52,
+                    child: Center(
+                      child: CircularProgressIndicator(color: ClosetColors.vert),
+                    ),
+                  ),
+                  error: (err, stack) => SizedBox(
+                    width: double.infinity,
+                    height: 52,
+                    child: ElevatedButton(
+                      onPressed: () => Navigator.pop(context),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: ClosetColors.vert,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(999),
+                        ),
+                      ),
+                      child: Text(
+                        'Fermer',
+                        style: GoogleFonts.lato(color: Colors.white, fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 }

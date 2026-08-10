@@ -65,12 +65,6 @@ class _MainLayoutState extends ConsumerState<MainLayout> {
         description: 'Enregistrez vos pépites préférées pour les retrouver à tout moment.',
         borderRadius: 22,
       ),
-      SpotlightStep(
-        targetKey: ClosetTourKeys.espaceKey,
-        title: 'Mon Espace Closet',
-        description: 'Pilotez vos informations client, ou basculez en mode Sourceur pour proposer vos dépôts.',
-        borderRadius: 14,
-      ),
     ];
 
     return SpotlightShowcase(
@@ -128,7 +122,6 @@ class _MainLayoutState extends ConsumerState<MainLayout> {
                     onTap: () => _onTap(3),
                   ),
                   _NavItem(
-                    key: ClosetTourKeys.espaceKey,
                     index: 4,
                     currentIndex: widget.navigationShell.currentIndex,
                     icon: Icons.person_outline,

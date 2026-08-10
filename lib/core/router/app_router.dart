@@ -33,8 +33,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       final isAuthenticated = ref.read(isAuthenticatedProvider);
       final loc = state.matchedLocation;
       if (!isAuthenticated &&
-          (loc == '/checkout' ||
-              loc.startsWith('/sourceur'))) {
+          loc.startsWith('/sourceur')) {
         return '/auth';
       }
       if (isAuthenticated &&

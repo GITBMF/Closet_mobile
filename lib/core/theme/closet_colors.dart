@@ -9,6 +9,7 @@ class ClosetColors {
 
   /// Vert profond #1C3D2F — CTA primaires (boutons, surfaces fortes)
   static const Color vert = Color(0xFF1C3D2F);
+  static const Color vert1 = Color(0xFFA0D0BD);
 
   /// Vert nuit #12241D — TabBar, écrans immersifs (fond dark)
   static const Color vertFonce = Color(0xFF12241D);
