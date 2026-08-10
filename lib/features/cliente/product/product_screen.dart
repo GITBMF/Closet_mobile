@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/theme/closet_colors.dart';
+import '../../../core/theme/closet_text_styles.dart';
 import '../../../data/models/article.dart';
 import '../../../data/repositories/cart_repository.dart';
 import '../../../data/repositories/catalog_repository.dart';
@@ -191,7 +192,7 @@ class _ProductScreenState extends ConsumerState<ProductScreen> {
                     // Title
                     Text(
                       article.title,
-                      style: TextStyle(
+                      style: ClosetTextStyles.h1.copyWith(
                         fontSize: 28,
                         fontWeight: FontWeight.w700,
                         color: theme.colorScheme.onSurface,
@@ -200,14 +201,36 @@ class _ProductScreenState extends ConsumerState<ProductScreen> {
                     ),
                     const SizedBox(height: 12),
 
-                    // Price
-                    Text(
-                      _formatPrice(article.price),
-                      style: TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.w700,
-                        color: theme.colorScheme.onSurface,
-                      ),
+                    // Price + unique pill
+                    Row(
+                      children: [
+                        Text(
+                          _formatPrice(article.price),
+                          style: TextStyle(
+                            fontSize: 22,
+                            fontWeight: FontWeight.w700,
+                            color: Color(0xFFFFFFFF),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        if (article.isFeatured)
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                            decoration: BoxDecoration(
+                              color: ClosetColors.vert.withValues(alpha: 0.08),
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(color: ClosetColors.vert.withValues(alpha: 0.18)),
+                            ),
+                            child: Text(
+                              'PIÈCE UNIQUE',
+                              style: ClosetTextStyles.caption.copyWith(
+                                fontSize: 11,
+                                color: ClosetColors.vert,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ),
+                      ],
                     ),
                     const SizedBox(height: 20),
 
@@ -326,102 +349,223 @@ class _ProductScreenState extends ConsumerState<ProductScreen> {
       ),
 
       // ─── Bottom CTA ─────────────────────────────────────────────────
+// bottomNavigationBar: Container(
+//   padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
+//   decoration: BoxDecoration(
+//     // ✅ FIXED: Changed from Colors.red to proper theme color
+//     color: Colors.red,
+//     border: Border(
+//       top: BorderSide(
+//         color: theme.colorScheme.onSurface.withValues(alpha: 0.08),
+//       ),
+//     ),
+//     boxShadow: [
+//       BoxShadow(
+//         color: Colors.black.withValues(alpha: 0.08),
+//         blurRadius: 20,
+//         offset: const Offset(0, -4),
+//       ),
+//     ],
+//   ),
+//   child: SafeArea(
+//     child: Row(
+//       children: [
+//         Column(
+//           mainAxisSize: MainAxisSize.min,
+//           crossAxisAlignment: CrossAxisAlignment.start,
+//           children: [
+//             Text(
+//               'À ADOPTER',
+//               style: TextStyle(
+//                 fontSize: 9,
+//                 color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+//                 letterSpacing: 1.5,
+//                 fontWeight: FontWeight.w600,
+//               ),
+//             ),
+//             const SizedBox(height: 2),
+//             Text(
+//               _formatPrice(article.price),
+//               style: TextStyle(
+//                 fontSize: 16,
+//                 fontWeight: FontWeight.w700,
+//                 color: theme.colorScheme.onSurface,
+//               ),
+//             ),
+//           ],
+//         ),
+//         const SizedBox(width: 16),
+//         Expanded(
+//           child: GestureDetector(
+//             onTap: () {
+//               if (!isInCart && !article.isSoldOut) {
+//                 ref.read(cartProvider.notifier).addArticle(article);
+//                 ScaffoldMessenger.of(context).showSnackBar(
+//                   SnackBar(
+//                     content: const Text('Pièce ajoutée à votre sélection'),
+//                     backgroundColor: ClosetColors.vert,
+//                     behavior: SnackBarBehavior.floating,
+//                     shape: RoundedRectangleBorder(
+//                       borderRadius: BorderRadius.circular(10),
+//                     ),
+//                     margin: const EdgeInsets.all(16),
+//                   ),
+//                 );
+//               }
+//             },
+//             child: AnimatedContainer(
+//               duration: const Duration(milliseconds: 200),
+//               padding: const EdgeInsets.symmetric(vertical: 16),
+//               decoration: BoxDecoration(
+//                 color: article.isSoldOut
+//                     ? ClosetColors.taupe
+//                     : theme.colorScheme.primary,
+//                 borderRadius: BorderRadius.circular(30),
+//               ),
+//               child: Row(
+//                 mainAxisAlignment: MainAxisAlignment.center,
+//                 children: [
+//                   Icon(
+//                     isInCart
+//                         ? Icons.check_circle_outline
+//                         : Icons.shopping_bag_outlined,
+//                     size: 18,
+//                     color: theme.colorScheme.onPrimary,
+//                   ),
+//                   const SizedBox(width: 8),
+//                   Text(
+//                     article.isSoldOut
+//                         ? 'DÉJÀ ADOPTÉE'
+//                         : isInCart
+//                             ? 'DÉJÀ DANS MA SÉLECTION'
+//                             : 'AJOUTER À MON DRESSING',
+//                     style: TextStyle(
+//                       color: theme.colorScheme.onPrimary,
+//                       fontSize: 12,
+//                       fontWeight: FontWeight.w700,
+//                       letterSpacing: 0.5,
+//                     ),
+//                   ),
+//                 ],
+//               ),
+//             ),
+//           ),
+//         ),
+//       ],
+//     ),
+//   ),
+// ),
+// ─── Bottom CTA (Floating) ──────────────────────────────────────
       bottomNavigationBar: Container(
-        padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
+        height: 100,
+        margin: const EdgeInsets.fromLTRB(20, 0, 20, 50),
+        padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
         decoration: BoxDecoration(
-          color: theme.colorScheme.surface,
-          border: Border(top: BorderSide(color: theme.colorScheme.onSurface.withValues(alpha: 0.08))),
+          // color: theme.colorScheme.surface,
+          color: Color(0xFF1C382D),
+          borderRadius: BorderRadius.circular(24),
+          border: Border.all(
+            color: theme.colorScheme.onSurface.withValues(alpha: 0.08),
+          ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.2),
-              blurRadius: 20,
-              offset: const Offset(0, -4),
+              color: Colors.black.withValues(alpha: 0.15),
+              blurRadius: 24,
+              offset: const Offset(0, 8),
             ),
           ],
         ),
-        child: Row(
+        child: Column(
           children: [
-            Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'À ADOPTER',
-                  style: TextStyle(
-                    fontSize: 9,
-                    color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
-                    letterSpacing: 1.5,
-                    fontWeight: FontWeight.w600,
-                  ),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                'À ADOPTER',
+                style: TextStyle(
+                  fontSize: 9,
+                  color: Color(0xFFE1CDA6),
+                  letterSpacing: 1.5,
+                  fontWeight: FontWeight.w600,
                 ),
-                const SizedBox(height: 2),
-                Text(
-                  _formatPrice(article.price),
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
-                    color: theme.colorScheme.onSurface,
+              ),
+            ),
+            Row(
+              children: [
+                Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+
+                    const SizedBox(height: 2),
+                    Text(
+                      _formatPrice(article.price),
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                        color: theme.colorScheme.onSurface,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () {
+                      if (!isInCart && !article.isSoldOut) {
+                        ref.read(cartProvider.notifier).addArticle(article);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: const Text('Pièce ajoutée à votre sélection'),
+                            backgroundColor: ClosetColors.vert,
+                            behavior: SnackBarBehavior.floating,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            margin: const EdgeInsets.all(16),
+                          ),
+                        );
+                      }
+                    },
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 200),
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      decoration: BoxDecoration(
+                        // color: article.isSoldOut
+                        //     ? ClosetColors.taupe
+                        //     : theme.colorScheme.primary,
+                        color: Color(0xFFCDAB71),
+                        borderRadius: BorderRadius.circular(30),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          // Icon(
+                          //   isInCart
+                          //       ? Icons.check_circle_outline
+                          //       : Icons.shopping_bag_outlined,
+                          //   size: 18,
+                          //   color: theme.colorScheme.onPrimary,
+                          // ),
+                          const SizedBox(width: 8),
+                          Text(
+                            article.isSoldOut
+                                ? 'DÉJÀ ADOPTÉE'
+                                : isInCart
+                                    ? 'DÉJÀ DANS MA SÉLECTION'
+                                    : 'AJOUTER À MON DRESSING',
+                            style: TextStyle(
+                              color: Color(0xFF171512),
+                              fontSize: 12,
+                              fontWeight: FontWeight.w700,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
                 ),
               ],
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: GestureDetector(
-                onTap: () {
-                  if (!isInCart && !article.isSoldOut) {
-                    ref.read(cartProvider.notifier).addArticle(article);
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: const Text('Pièce ajoutée à votre sélection'),
-                        backgroundColor: ClosetColors.vert,
-                        behavior: SnackBarBehavior.floating,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        margin: const EdgeInsets.all(16),
-                      ),
-                    );
-                  }
-                },
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 200),
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  decoration: BoxDecoration(
-                    // CTA : vert/doré si disponible, taupe si soldout
-                    color: article.isSoldOut
-                        ? ClosetColors.taupe
-                        : theme.colorScheme.primary,
-                    borderRadius: BorderRadius.circular(30),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        isInCart
-                            ? Icons.check_circle_outline
-                            : Icons.shopping_bag_outlined,
-                        size: 18,
-                        color: theme.colorScheme.onPrimary,
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        article.isSoldOut
-                            ? 'DÉJÀ ADOPTÉE'
-                            : isInCart
-                                ? 'DÉJÀ DANS MA SÉLECTION'
-                                : 'AJOUTER À MON DRESSING',
-                        style: TextStyle(
-                          color: theme.colorScheme.onPrimary,
-                          fontSize: 12,
-                          fontWeight: FontWeight.w700,
-                          letterSpacing: 0.5,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
             ),
           ],
         ),
