@@ -1,260 +1,124 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 
+import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/closet_colors.dart';
 import '../../../core/theme/closet_text_styles.dart';
-import '../../../core/theme/theme_provider.dart';
+import '../../../core/widgets/closet_app_bar.dart';
+import '../../../data/repositories/auth_repository.dart';
 import '../../../data/repositories/sourceur_repository.dart';
-import '../widgets/sourceur_app_bar.dart';
+import '../../../data/services/auth_storage_service.dart';
+import '../retrait/methode_retrait_sheet.dart';
+import '../widgets/sourceur_header.dart';
 
-class SourceurEspaceScreen extends ConsumerStatefulWidget {
+/// Mon espace sourceur — transcription de la maquette `31:109`.
+///
+/// Carte de solde vert profond (350 × 139), rangée de quatre actions rapides,
+/// liste d'accès, puis bouton « Confier une nouvelle pièce » ancré en bas.
+class SourceurEspaceScreen extends ConsumerWidget {
   const SourceurEspaceScreen({super.key});
 
   @override
-  ConsumerState<SourceurEspaceScreen> createState() => _SourceurEspaceScreenState();
-}
-
-class _SourceurEspaceScreenState extends ConsumerState<SourceurEspaceScreen> {
-  @override
-  Widget build(BuildContext context) {
-    final repo = ref.watch<SourceurRepository>(sourceurRepositoryProvider);
-    final profile = repo.profile;
-    final theme = Theme.of(context);
-    final onSurfaceColor = theme.colorScheme.onSurface;
-    final isDark = ref.watch(themeModeProvider) == ThemeMode.dark;
-
-    final nomAtelier = profile?.nomAtelier ?? 'Mon Atelier';
-    final ville = profile?.ville ?? 'Yaoundé';
-    final depuis = profile?.depuis ?? 'Juillet 2026';
-    final whatsapp = profile?.whatsapp ?? '';
-    final univers = profile?.univers ?? '';
+  Widget build(BuildContext context, WidgetRef ref) {
+    final revenus = ref.watch(revenusSourceurProvider);
+    final pieces = ref.watch(mesPiecesProvider);
 
     return Scaffold(
-      backgroundColor: theme.scaffoldBackgroundColor,
-      appBar: SourceurAppBar(
-        title: 'Mon Espace',
-        subtitle: 'PREFÉRENCES ATELIER',
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.edit_outlined, color: ClosetColors.dore),
-            tooltip: 'Modifier mon profil',
-            onPressed: () {
-              HapticFeedback.lightImpact();
-              if (profile != null) {
-                _showEditModal(context, repo, profile, theme);
-              }
-            },
-          ),
-          IconButton(
-            icon: const Icon(Icons.account_balance_wallet_outlined, size: 22),
-            color: onSurfaceColor,
-            tooltip: 'Mes revenus',
-            onPressed: () => context.go('/sourceur/revenus'),
-          ),
-          IconButton(
-            icon: const Icon(Icons.person_outline, size: 22),
-            color: onSurfaceColor,
-            tooltip: 'Espace client',
-            onPressed: () => context.go('/espace'),
-          ),
-          const SizedBox(width: 4),
-        ],
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
+      backgroundColor: ClosetColors.beige,
+      body: SafeArea(
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ── Profil Card ──────────────────────────────────────────────────
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(vertical: 28, horizontal: 20),
-              decoration: BoxDecoration(
-                color: theme.colorScheme.surface,
-                borderRadius: BorderRadius.circular(24),
-                border: Border.all(color: theme.dividerColor.withValues(alpha: 0.15)),
-                boxShadow: [
-                  BoxShadow(
-                    color: onSurfaceColor.withValues(alpha: 0.04),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-              ),
-              child: Column(
-                children: [
-                  Container(
-                    width: 64,
-                    height: 64,
-                    decoration: BoxDecoration(
-                      color: ClosetColors.vert,
-                      shape: BoxShape.circle,
-                      border: Border.all(color: ClosetColors.dore, width: 1.5),
+            SourceurHeader(
+              titre: 'Mon espace',
+              onRetour: () => context.go('/espace'),
+              actions: [
+                SourceurBoutonRond(
+                  icone: Icons.tune,
+                  label: 'Réglages',
+                  onTap: () => context.push('/espace/confidentialite'),
+                ),
+                const SizedBox(width: AppSpacing.gapListe),
+                SourceurBoutonRond(
+                  icone: Icons.notifications_none_rounded,
+                  label: 'Notifications',
+                  onTap: () => context.push('/espace/alertes'),
+                ),
+              ],
+            ),
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.fromLTRB(
+                  AppSpacing.p20,
+                  AppSpacing.p20,
+                  AppSpacing.p20,
+                  AppSpacing.p24,
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    _CarteSolde(
+                      revenus: revenus,
+                      nbPieces: pieces.maybeWhen(
+                        data: (l) =>
+                            l.where((p) => p.statut == StatutPiece.publiee)
+                                .length,
+                        orElse: () => null,
+                      ),
                     ),
-                    child: const Center(
-                      child: Icon(
-                        Icons.storefront_outlined,
-                        color: ClosetColors.creme,
-                        size: 30,
+                    const SizedBox(height: AppSpacing.p16),
+                    _ActionsRapides(
+                      onRetrait: () => afficherMethodeRetrait(context),
+                      onHistorique: () => context.push('/sourceur/revenus'),
+                      onMoyens: () => context.push('/espace/paiements'),
+                      onPlus: () => context.push('/sourceur/pieces'),
+                    ),
+                    const SizedBox(height: AppSpacing.p24),
+                    SourceurEntree(
+                      premier: true,
+                      icone: Icons.inventory_2_outlined,
+                      label: 'Mes dépôts',
+                      onTap: () => context.go('/sourceur/pieces'),
+                    ),
+                    SourceurEntree(
+                      icone: Icons.person_outline,
+                      label: 'Mes informations',
+                      onTap: () => context.push('/espace/infos'),
+                    ),
+                    SourceurEntree(
+                      icone: Icons.shield_outlined,
+                      label: 'Polices et confidentialités',
+                      onTap: () => context.push('/espace/confidentialite'),
+                    ),
+                    SourceurEntree(
+                      icone: Icons.logout_rounded,
+                      label: 'Logout',
+                      onTap: () => _deconnecter(context, ref),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(39, 0, 39, AppSpacing.p16),
+              child: SizedBox(
+                height: 44,
+                child: Material(
+                  color: ClosetColors.vert,
+                  borderRadius: BorderRadius.circular(AppRadius.cercle),
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(AppRadius.cercle),
+                    onTap: () => context.go('/sourceur/nouvelle'),
+                    child: Center(
+                      child: Text(
+                        '+ Confier une nouvelle pièce',
+                        style: ClosetTextStyles.bouton.copyWith(
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
+                        ),
                       ),
                     ),
                   ),
-                  const SizedBox(height: 16),
-                  Text(
-                    nomAtelier,
-                    style: GoogleFonts.ebGaramond(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w700,
-                      color: onSurfaceColor,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    '${ville.toUpperCase()} · MEMBRE DEPUIS ${depuis.toUpperCase()}',
-                    style: GoogleFonts.lato(
-                      fontSize: 10,
-                      color: isDark ? ClosetColors.doreClair : ClosetColors.doreEncre,
-                      letterSpacing: 1.2,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                  if (whatsapp.isNotEmpty || univers.isNotEmpty) ...[
-                    const SizedBox(height: 16),
-                    Divider(color: theme.dividerColor.withValues(alpha: 0.2)),
-                    const SizedBox(height: 12),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      children: [
-                        if (univers.isNotEmpty)
-                          Column(
-                            children: [
-                              Text(
-                                'UNIVERS',
-                                style: GoogleFonts.lato(
-                                  fontSize: 8,
-                                  fontWeight: FontWeight.bold,
-                                  color: onSurfaceColor.withValues(alpha: 0.5),
-                                  letterSpacing: 1,
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                univers,
-                                style: GoogleFonts.cormorant(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w600,
-                                  color: onSurfaceColor,
-                                ),
-                              ),
-                            ],
-                          ),
-                        if (whatsapp.isNotEmpty)
-                          Column(
-                            children: [
-                              Text(
-                                'WHATSAPP',
-                                style: GoogleFonts.lato(
-                                  fontSize: 8,
-                                  fontWeight: FontWeight.bold,
-                                  color: onSurfaceColor.withValues(alpha: 0.5),
-                                  letterSpacing: 1,
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                whatsapp,
-                                style: GoogleFonts.cormorant(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w600,
-                                  color: onSurfaceColor,
-                                ),
-                              ),
-                            ],
-                          ),
-                      ],
-                    ),
-                  ]
-                ],
-              ),
-            ),
-            const SizedBox(height: 28),
-
-            // ── Section Préférences ──────────────────────────────────────────
-            Text(
-              'PRÉFÉRENCES',
-              style: GoogleFonts.lato(
-                fontSize: 9,
-                fontWeight: FontWeight.w700,
-                color: onSurfaceColor.withValues(alpha: 0.5),
-                letterSpacing: 2,
-              ),
-            ),
-            const SizedBox(height: 10),
-            DecoratedBox(
-              decoration: BoxDecoration(
-                color: theme.colorScheme.surface,
-                borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: theme.dividerColor.withValues(alpha: 0.15)),
-              ),
-              child: SwitchListTile(
-                value: isDark,
-                onChanged: (value) {
-                  ref.read<ThemeModeNotifier>(themeModeProvider.notifier).toggleTheme();
-                },
-                activeThumbColor: isDark ? ClosetColors.doreClair : ClosetColors.dore,
-                secondary: Icon(
-                  Icons.dark_mode_outlined,
-                  color: onSurfaceColor,
-                ),
-                title: Text(
-                  'Mode sombre',
-                  style: GoogleFonts.ebGaramond(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w500,
-                    color: onSurfaceColor,
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(height: 24),
-
-            // ── Section Actions ──────────────────────────────────────────────
-            Text(
-              'NAVIGATION',
-              style: GoogleFonts.lato(
-                fontSize: 9,
-                fontWeight: FontWeight.w700,
-                color: onSurfaceColor.withValues(alpha: 0.5),
-                letterSpacing: 2,
-              ),
-            ),
-            const SizedBox(height: 10),
-            DecoratedBox(
-              decoration: BoxDecoration(
-                color: theme.colorScheme.surface,
-                borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: theme.dividerColor.withValues(alpha: 0.15)),
-              ),
-              child: ListTile(
-                onTap: () => context.go('/espace'),
-                leading: Icon(
-                  Icons.person_pin_outlined,
-                  color: theme.colorScheme.primary,
-                ),
-                title: Text(
-                  "Retourner à l'espace client",
-                  style: GoogleFonts.ebGaramond(
-                    fontSize: 15,
-                    fontWeight: FontWeight.bold,
-                    color: theme.colorScheme.primary,
-                  ),
-                ),
-                trailing: Icon(
-                  Icons.chevron_right,
-                  color: onSurfaceColor.withValues(alpha: 0.4),
                 ),
               ),
             ),
@@ -264,119 +128,212 @@ class _SourceurEspaceScreenState extends ConsumerState<SourceurEspaceScreen> {
     );
   }
 
-  void _showEditModal(BuildContext context, SourceurRepository repo, SourceurProfile profile, ThemeData theme) {
-    final nomAtelierCtrl = TextEditingController(text: profile.nomAtelier);
-    final villeCtrl = TextEditingController(text: profile.ville);
-    final whatsappCtrl = TextEditingController(text: profile.whatsapp);
-    final universCtrl = TextEditingController(text: profile.univers);
-
-    showModalBottomSheet<void>(
+  /// Déconnexion : purge du stockage avant l'état mémoire, puis remplacement
+  /// de la pile — cf. `EspaceScreen`, même contrainte de sécurité.
+  Future<void> _deconnecter(BuildContext context, WidgetRef ref) async {
+    final confirme = await showDialog<bool>(
       context: context,
-      isScrollControlled: true,
-      backgroundColor: theme.scaffoldBackgroundColor,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      builder: (context) => AlertDialog(
+        backgroundColor: ClosetColors.creme,
+        title: Text('Se déconnecter', style: ClosetTextStyles.titreSection),
+        content: Text(
+          'Vous devrez saisir à nouveau vos identifiants.',
+          style: ClosetTextStyles.citation,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: Text('Annuler', style: ClosetTextStyles.bouton),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: Text(
+              'Se déconnecter',
+              style: ClosetTextStyles.bouton.copyWith(
+                color: ClosetColors.erreurCouture,
+              ),
+            ),
+          ),
+        ],
       ),
-      builder: (ctx) {
-        final onSurfaceColor = theme.colorScheme.onSurface;
-        return Padding(
-          padding: EdgeInsets.only(
-            bottom: MediaQuery.of(ctx).viewInsets.bottom,
-            left: 20,
-            right: 20,
-            top: 24,
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Modifier mon profil',
-                style: GoogleFonts.ebGaramond(
-                  fontSize: 24,
-                  fontWeight: FontWeight.w600,
-                  color: theme.colorScheme.primary,
-                ),
-              ),
-              const SizedBox(height: 20),
-              TextField(
-                controller: nomAtelierCtrl,
-                style: ClosetTextStyles.saisie.copyWith(color: onSurfaceColor),
-                decoration: InputDecoration(
-                  labelText: 'Nom de l\'atelier',
-                  labelStyle: ClosetTextStyles.labelChamp.copyWith(
-                    color: onSurfaceColor.withValues(alpha: 0.6),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: villeCtrl,
-                style: ClosetTextStyles.saisie.copyWith(color: onSurfaceColor),
-                decoration: InputDecoration(
-                  labelText: 'Ville',
-                  labelStyle: ClosetTextStyles.labelChamp.copyWith(
-                    color: onSurfaceColor.withValues(alpha: 0.6),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: whatsappCtrl,
-                style: ClosetTextStyles.saisie.copyWith(color: onSurfaceColor),
-                decoration: InputDecoration(
-                  labelText: 'Numéro WhatsApp',
-                  labelStyle: ClosetTextStyles.labelChamp.copyWith(
-                    color: onSurfaceColor.withValues(alpha: 0.6),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: universCtrl,
-                style: ClosetTextStyles.saisie.copyWith(color: onSurfaceColor),
-                decoration: InputDecoration(
-                  labelText: 'Univers (ex: Vintage, Luxe...)',
-                  labelStyle: ClosetTextStyles.labelChamp.copyWith(
-                    color: onSurfaceColor.withValues(alpha: 0.6),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 24),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: ClosetColors.vert,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  onPressed: () {
-                    HapticFeedback.lightImpact();
-                    final updated = profile.copyWith(
-                      nomAtelier: nomAtelierCtrl.text.trim(),
-                      ville: villeCtrl.text.trim(),
-                      whatsapp: whatsappCtrl.text.trim(),
-                      univers: universCtrl.text.trim(),
-                    );
-                    repo.updateProfile(updated);
-                    Navigator.pop(ctx);
-                  },
+    );
+    if (confirme != true) return;
+    await AuthStorageService.clearAuthData();
+    ref.read(currentUserProvider.notifier).state = null;
+    if (context.mounted) context.go('/auth');
+  }
+}
+
+/// Carte de solde : 350 × 139, vert profond, rayon 8.
+class _CarteSolde extends StatelessWidget {
+  const _CarteSolde({required this.revenus, required this.nbPieces});
+
+  final AsyncValue<RevenusSourceur> revenus;
+  final int? nbPieces;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      constraints: const BoxConstraints(minHeight: 139),
+      padding: const EdgeInsets.fromLTRB(23, 22, 23, AppSpacing.p16),
+      decoration: BoxDecoration(
+        color: ClosetColors.vert,
+        borderRadius: BorderRadius.circular(AppRadius.carte),
+      ),
+      child: revenus.when(
+        data: (r) => Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Expanded(
                   child: Text(
-                    'ENREGISTRER',
-                    style: ClosetTextStyles.bouton.copyWith(
-                      color: ClosetColors.creme,
+                    'solde du compte',
+                    style: ClosetTextStyles.actionPetite.copyWith(
+                      letterSpacing: -0.20,
+                      color: ClosetColors.fond300,
                     ),
                   ),
                 ),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.p12,
+                    vertical: AppSpacing.p4,
+                  ),
+                  decoration: BoxDecoration(
+                    color: ClosetColors.emeraude100,
+                    borderRadius: BorderRadius.circular(AppRadius.vignette),
+                  ),
+                  child: Text(
+                    'vérifié',
+                    style: ClosetTextStyles.attribut.copyWith(
+                      color: ClosetColors.emeraude500,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 2),
+            Text(
+              formatPrixFcfa(r.solde.toDouble()),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: ClosetTextStyles.montantHero.copyWith(
+                color: Colors.white,
               ),
-              const SizedBox(height: 24),
-            ],
+            ),
+            const SizedBox(height: AppSpacing.p16),
+            Text(
+              'pièces en vente : ${(nbPieces ?? 0).toString().padLeft(2, '0')} '
+              'pièces',
+              style: ClosetTextStyles.actionPetite.copyWith(
+                letterSpacing: -0.20,
+                color: ClosetColors.fond300,
+              ),
+            ),
+            const SizedBox(height: 5),
+            Text(
+              'à reverser : ${formatPrixFcfa(r.enAttente.toDouble())}',
+              style: ClosetTextStyles.actionPetite.copyWith(
+                letterSpacing: -0.20,
+                color: ClosetColors.fond300,
+              ),
+            ),
+          ],
+        ),
+        loading: () => const Center(
+          child: CircularProgressIndicator(color: ClosetColors.fond300),
+        ),
+        error: (e, _) => Center(
+          child: Text(
+            'Solde indisponible',
+            style: ClosetTextStyles.corps.copyWith(color: Colors.white),
           ),
-        );
-      },
+        ),
+      ),
+    );
+  }
+}
+
+/// Rangée de quatre actions : 350 × 86, vert profond.
+class _ActionsRapides extends StatelessWidget {
+  const _ActionsRapides({
+    required this.onRetrait,
+    required this.onHistorique,
+    required this.onMoyens,
+    required this.onPlus,
+  });
+
+  final VoidCallback onRetrait;
+  final VoidCallback onHistorique;
+  final VoidCallback onMoyens;
+  final VoidCallback onPlus;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      constraints: const BoxConstraints(minHeight: 86),
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.p24),
+      decoration: BoxDecoration(
+        color: ClosetColors.vert,
+        borderRadius: BorderRadius.circular(AppRadius.carte),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          _Action(
+            icone: Icons.account_balance_wallet_outlined,
+            label: 'Retrait',
+            onTap: onRetrait,
+          ),
+          _Action(
+            icone: Icons.history_rounded,
+            label: 'Historique',
+            onTap: onHistorique,
+          ),
+          _Action(
+            icone: Icons.credit_card_outlined,
+            label: 'Moyens',
+            onTap: onMoyens,
+          ),
+          _Action(
+            icone: Icons.grid_view_rounded,
+            label: 'Plus',
+            onTap: onPlus,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _Action extends StatelessWidget {
+  const _Action({
+    required this.icone,
+    required this.label,
+    required this.onTap,
+  });
+
+  final IconData icone;
+  final String label;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        SourceurBoutonRond(icone: icone, label: label, onTap: onTap),
+        const SizedBox(height: 3),
+        Text(
+          label,
+          style: ClosetTextStyles.citation.copyWith(
+            fontSize: 13,
+            fontWeight: FontWeight.w400,
+            color: Colors.white,
+          ),
+        ),
+      ],
     );
   }
 }

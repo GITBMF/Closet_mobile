@@ -95,11 +95,13 @@ class _SourceurInscriptionScreenState
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Bienvenue dans le Cercle des Sourceurs !'),
+            content: Text('Fiche d’adhésion transmise !'),
             backgroundColor: ClosetColors.vert,
           ),
         );
-        context.go('/sourceur');
+        // La maquette place l'ecran de statut entre la soumission et le
+        // tableau de bord : l'adhesion doit d'abord etre etudiee.
+        context.go('/sourceur/adhesion');
       }
     } catch (e) {
       if (mounted) {
