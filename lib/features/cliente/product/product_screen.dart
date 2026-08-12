@@ -471,7 +471,7 @@ class _ProductScreenState extends ConsumerState<ProductScreen> {
     );
   }
 
-  Widget _buildDetailRow(String label, String value) {
+  Widget _buildDetailRow(String label, String value)  {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 14),
       child: Row(
