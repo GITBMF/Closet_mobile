@@ -144,16 +144,24 @@ class EspaceScreen extends ConsumerWidget {
 }
 
 /// Bouton rond de réglages, en haut à droite.
-class _BoutonReglages extends StatelessWidget {
-  const _BoutonReglages({required this.onTap});
+/// Bouton circulaire des en-têtes de l'espace cliente.
+class EspaceBoutonRond extends StatelessWidget {
+  const EspaceBoutonRond({
+    super.key,
+    required this.icone,
+    required this.label,
+    required this.onTap,
+  });
 
+  final IconData icone;
+  final String label;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
     return Semantics(
       button: true,
-      label: 'Réglages',
+      label: label,
       child: GestureDetector(
         onTap: onTap,
         child: Container(
@@ -167,9 +175,24 @@ class _BoutonReglages extends StatelessWidget {
               width: AppStroke.fin,
             ),
           ),
-          child: const Icon(Icons.tune, size: 18, color: ClosetColors.vert),
+          child: Icon(icone, size: 18, color: ClosetColors.vert),
         ),
       ),
+    );
+  }
+}
+
+class _BoutonReglages extends StatelessWidget {
+  const _BoutonReglages({required this.onTap});
+
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return EspaceBoutonRond(
+      icone: Icons.tune,
+      label: 'Réglages',
+      onTap: onTap,
     );
   }
 }

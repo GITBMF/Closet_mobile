@@ -1,61 +1,81 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 import '../../../core/theme/closet_colors.dart';
+import '../../../core/theme/closet_text_styles.dart';
 import '../../../data/models/user.dart';
 import '../../../data/repositories/auth_repository.dart';
+import 'espace_screen.dart';
 
 // ── Common Back Button AppBar ──────────────────────────────────────────────
 class EspaceSubAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String title;
-  const EspaceSubAppBar({super.key, required this.title});
+  final bool italicTitle;
+  final VoidCallback? onSettingsTap;
+
+  const EspaceSubAppBar({
+    super.key,
+    required this.title,
+    this.italicTitle = false,
+    this.onSettingsTap,
+  });
 
   @override
   Widget build(BuildContext context) {
     return AppBar(
-      backgroundColor: ClosetColors.ivoire,
+      backgroundColor: ClosetColors.beige,
       elevation: 0,
       scrolledUnderElevation: 0,
+      toolbarHeight: 56,
       leading: Padding(
-        padding: const EdgeInsets.only(left: 16.0),
+        padding: const EdgeInsets.only(left: 16),
         child: Center(
-          child: GestureDetector(
+          child: EspaceBoutonRond(
+            icone: Icons.arrow_back,
+            label: 'Retour',
             onTap: () => context.pop(),
-            child: Container(
-              width: 36,
-              height: 36,
-              decoration: const BoxDecoration(
-                color: ClosetColors.creme,
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(Icons.arrow_back_ios_new,
-                  size: 14, color: ClosetColors.noir),
-            ),
           ),
         ),
       ),
+      leadingWidth: 72,
       title: Text(
         title,
-        style: const TextStyle(
-          color: ClosetColors.noir,
-          fontSize: 18,
-          fontWeight: FontWeight.w700,
-        ),
+        style: italicTitle
+            ? GoogleFonts.ebGaramond(
+                fontSize: 24,
+                fontWeight: FontWeight.w600,
+                fontStyle: FontStyle.italic,
+                color: ClosetColors.noir,
+              )
+            : ClosetTextStyles.titreEcran.copyWith(fontSize: 20),
       ),
       centerTitle: true,
+      actions: [
+        Padding(
+          padding: const EdgeInsets.only(right: 16),
+          child: Center(
+            child: EspaceBoutonRond(
+              icone: Icons.tune,
+              label: 'Réglages',
+              onTap: onSettingsTap ?? () {},
+            ),
+          ),
+        ),
+      ],
       bottom: PreferredSize(
         preferredSize: const Size.fromHeight(1),
         child: Container(
-          color: ClosetColors.ligne,
           height: 1,
+          color: ClosetColors.ligne.withValues(alpha: 0.7),
         ),
       ),
     );
   }
 
   @override
-  Size get preferredSize => const Size.fromHeight(kToolbarHeight + 1);
+  Size get preferredSize => const Size.fromHeight(57);
 }
 
 // ── 1. Mes Informations Screen ─────────────────────────────────────────────
@@ -209,155 +229,147 @@ class _EspaceAdressesScreenState extends State<EspaceAdressesScreen> {
   final List<Map<String, dynamic>> _adresses = [
     {
       'id': '1',
-      'label': 'Maison (Yaoundé)',
-      'ville': 'Yaoundé',
-      'quartier': 'Bastos',
-      'description': 'Rue de l\'Ambassade des USA, villa 12B',
+      'label': 'Maison',
+      'address': '61480 Sunbrook Park, PC 5679',
       'isDefault': true,
     },
     {
       'id': '2',
-      'label': 'Bureau (Douala)',
-      'ville': 'Douala',
-      'quartier': 'Akwa',
-      'description': 'Immeuble CCA, 3ème étage, Porte 304',
+      'label': 'Bureau',
+      'address': '69993 Meadow Valley Terra, PC 3637',
       'isDefault': false,
-    }
+    },
+    {
+      'id': '3',
+      'label': 'Appartement',
+      'address': '21833 Clyde Gallagher, PC 4662',
+      'isDefault': false,
+    },
+    {
+      'id': '4',
+      'label': 'Maison Familiale',
+      'address': '5259 Blue Bill Park, PC 4627',
+      'isDefault': false,
+    },
   ];
-
-  void _addAdresse() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Simulation: Ajout d\'une nouvelle adresse.'),
-        backgroundColor: ClosetColors.vert,
-      ),
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: ClosetColors.ivoire,
-      appBar: const EspaceSubAppBar(title: 'Mes adresses'),
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(24.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(
-                child: ListView.separated(
-                  itemCount: _adresses.length,
-                  separatorBuilder: (_, _) => const SizedBox(height: 16),
-                  itemBuilder: (context, index) {
-                    final addr = _adresses[index];
-                    return Container(
-                      padding: const EdgeInsets.all(20),
-                      decoration: BoxDecoration(
-                        color: ClosetColors.creme,
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(
-                          color: (addr['isDefault'] as bool) ? ClosetColors.vert : ClosetColors.bordure,
-                          width: (addr['isDefault'] as bool) ? 1.5 : 1.0,
+      backgroundColor: ClosetColors.beige,
+      appBar: const EspaceSubAppBar(
+        title: 'Mes adresses',
+        italicTitle: true,
+      ),
+      body: ListView.separated(
+        padding: const EdgeInsets.fromLTRB(24, 12, 24, 24),
+        itemCount: _adresses.length,
+        separatorBuilder: (_, _) => Divider(
+          height: 1,
+          thickness: 1,
+          color: ClosetColors.ligne.withValues(alpha: 0.7),
+        ),
+        itemBuilder: (context, index) {
+          final addr = _adresses[index];
+          return _AddressListTile(
+            label: addr['label'] as String,
+            address: addr['address'] as String,
+            isDefault: addr['isDefault'] as bool,
+            onEdit: () {},
+          );
+        },
+      ),
+    );
+  }
+}
+
+class _AddressListTile extends StatelessWidget {
+  const _AddressListTile({
+    required this.label,
+    required this.address,
+    required this.isDefault,
+    required this.onEdit,
+  });
+
+  final String label;
+  final String address;
+  final bool isDefault;
+  final VoidCallback onEdit;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 18),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 46,
+            height: 46,
+            decoration: BoxDecoration(
+              color: ClosetColors.vert,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: const Icon(Icons.location_on_outlined, size: 22, color: ClosetColors.creme),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Text(
+                      label,
+                      style: GoogleFonts.lato(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w700,
+                        color: ClosetColors.noir,
+                      ),
+                    ),
+                    if (isDefault) ...[
+                      const SizedBox(width: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF98C1B0).withValues(alpha: 0.45),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: Text(
+                          'PAR DÉFAUT',
+                          style: GoogleFonts.lato(
+                            fontSize: 8,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: 0.6,
+                            color: ClosetColors.vert,
+                          ),
                         ),
                       ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                (addr['label'] as String).toUpperCase(),
-                                style: const TextStyle(
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w800,
-                                  color: ClosetColors.noir,
-                                  letterSpacing: 1,
-                                ),
-                              ),
-                              if (addr['isDefault'] as bool)
-                                Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                  decoration: BoxDecoration(
-                                    color: ClosetColors.vert.withValues(alpha: 0.15),
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  child: const Text(
-                                    'Par défaut',
-                                    style: TextStyle(
-                                      fontSize: 9,
-                                      fontWeight: FontWeight.w700,
-                                      color: ClosetColors.vert,
-                                    ),
-                                  ),
-                                ),
-                            ],
-                          ),
-                          const SizedBox(height: 12),
-                          Text(
-                            '${addr['quartier']}, ${addr['ville']}',
-                            style: const TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
-                              color: ClosetColors.noir,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            addr['description'] as String,
-                            style: const TextStyle(
-                              fontSize: 12,
-                              color: ClosetColors.taupe,
-                            ),
-                          ),
-                          const SizedBox(height: 16),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.end,
-                            children: [
-                              TextButton(
-                                onPressed: () {},
-                                child: const Text('Modifier', style: TextStyle(color: ClosetColors.vert, fontSize: 13, fontWeight: FontWeight.bold)),
-                              ),
-                              const SizedBox(width: 8),
-                              TextButton(
-                                onPressed: () {
-                                  setState(() {
-                                    _adresses.removeAt(index);
-                                  });
-                                },
-                                child: const Text('Supprimer', style: TextStyle(color: ClosetColors.erreur, fontSize: 13)),
-                              ),
-                            ],
-                          )
-                        ],
-                      ),
-                    );
-                  },
+                    ],
+                  ],
                 ),
-              ),
-              const SizedBox(height: 16),
-              SizedBox(
-                width: double.infinity,
-                child: OutlinedButton(
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: ClosetColors.vert,
-                    side: const BorderSide(color: ClosetColors.vert, width: 1.5),
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                  ),
-                  onPressed: _addAdresse,
-                  child: const Text(
-                    '+ Ajouter une adresse',
-                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                const SizedBox(height: 5),
+                Text(
+                  address,
+                  style: GoogleFonts.lato(
+                    fontSize: 12.5,
+                    fontWeight: FontWeight.w400,
+                    color: ClosetColors.taupe,
+                    height: 1.35,
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
-        ),
+          GestureDetector(
+            onTap: onEdit,
+            behavior: HitTestBehavior.opaque,
+            child: const Padding(
+              padding: EdgeInsets.only(left: 10, top: 2),
+              child: Icon(Icons.edit_outlined, size: 20, color: Color(0xFFC49A6C)),
+            ),
+          ),
+        ],
       ),
     );
   }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 import '../../core/theme/closet_colors.dart';
 import '../../core/widgets/spotlight_showcase.dart';
@@ -78,7 +79,7 @@ class _MainLayoutState extends ConsumerState<MainLayout> {
         body: widget.navigationShell,
         bottomNavigationBar: DecoratedBox(
           decoration: const BoxDecoration(
-            color: ClosetColors.noir,
+            color: ClosetColors.vertFonce,
             boxShadow: [
               BoxShadow(
                 color: Colors.black26,
@@ -89,7 +90,7 @@ class _MainLayoutState extends ConsumerState<MainLayout> {
           ),
           child: SafeArea(
             child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
@@ -98,7 +99,7 @@ class _MainLayoutState extends ConsumerState<MainLayout> {
                     currentIndex: widget.navigationShell.currentIndex,
                     icon: Icons.home_outlined,
                     activeIcon: Icons.home,
-                    label: 'DRESSING',
+                    label: 'Dressing',
                     onTap: () => _onTap(0),
                   ),
                   _NavItem(
@@ -106,7 +107,7 @@ class _MainLayoutState extends ConsumerState<MainLayout> {
                     currentIndex: widget.navigationShell.currentIndex,
                     icon: Icons.grid_view_outlined,
                     activeIcon: Icons.grid_view,
-                    label: 'COLLECTIONS',
+                    label: 'Collections',
                     onTap: () => _onTap(1),
                   ),
                   _NavItem(
@@ -114,15 +115,15 @@ class _MainLayoutState extends ConsumerState<MainLayout> {
                     currentIndex: widget.navigationShell.currentIndex,
                     icon: Icons.favorite_border,
                     activeIcon: Icons.favorite,
-                    label: 'WISHLIST',
+                    label: 'Cœurs',
                     onTap: () => _onTap(2),
                   ),
-                  _NavItemWithBadge(
+                  _NavItem(
                     index: 3,
                     currentIndex: widget.navigationShell.currentIndex,
-                    icon: Icons.shopping_bag_outlined,
-                    activeIcon: Icons.shopping_bag,
-                    label: 'SÉLECTION',
+                    icon: Icons.shopping_basket_outlined,
+                    activeIcon: Icons.shopping_basket,
+                    label: 'Sélection',
                     badge: cartCount,
                     onTap: () => _onTap(3),
                   ),
@@ -132,7 +133,7 @@ class _MainLayoutState extends ConsumerState<MainLayout> {
                     currentIndex: widget.navigationShell.currentIndex,
                     icon: Icons.person_outline,
                     activeIcon: Icons.person,
-                    label: 'ESPACE',
+                    label: 'Espace',
                     onTap: () => _onTap(4),
                   ),
                 ],
@@ -158,6 +159,7 @@ class _NavItem extends StatelessWidget {
   final IconData icon;
   final IconData activeIcon;
   final String label;
+  final int badge;
   final VoidCallback onTap;
 
   const _NavItem({
@@ -167,6 +169,7 @@ class _NavItem extends StatelessWidget {
     required this.icon,
     required this.activeIcon,
     required this.label,
+    this.badge = 0,
     required this.onTap,
   });
 
@@ -176,62 +179,19 @@ class _NavItem extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       behavior: HitTestBehavior.opaque,
-      child: SizedBox(
-        width: 64,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              isSelected ? activeIcon : icon,
-              color: isSelected ? ClosetColors.dore : ClosetColors.navigationInactif,
-              size: 22,
-            ),
-            const SizedBox(height: 4),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 8,
-                fontWeight: FontWeight.w600,
-                letterSpacing: 0.5,
-                color:
-                    isSelected ? ClosetColors.dore : ClosetColors.navigationInactif,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _NavItemWithBadge extends StatelessWidget {
-  final int index;
-  final int currentIndex;
-  final IconData icon;
-  final IconData activeIcon;
-  final String label;
-  final int badge;
-  final VoidCallback onTap;
-
-  const _NavItemWithBadge({
-    required this.index,
-    required this.currentIndex,
-    required this.icon,
-    required this.activeIcon,
-    required this.label,
-    required this.badge,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final isSelected = index == currentIndex;
-    return GestureDetector(
-      onTap: onTap,
-      behavior: HitTestBehavior.opaque,
-      child: SizedBox(
-        width: 64,
-        child: Column(
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        curve: Curves.easeInOut,
+        padding: isSelected
+            ? const EdgeInsets.symmetric(horizontal: 14, vertical: 8)
+            : const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+        decoration: isSelected
+            ? BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(24),
+              )
+            : null,
+        child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             Stack(
@@ -239,29 +199,27 @@ class _NavItemWithBadge extends StatelessWidget {
               children: [
                 Icon(
                   isSelected ? activeIcon : icon,
-                  color: isSelected
-                      ? ClosetColors.dore
-                      : ClosetColors.navigationInactif,
-                  size: 22,
+                  color: isSelected ? ClosetColors.dore : Colors.white.withValues(alpha: 0.65),
+                  size: 20,
                 ),
                 if (badge > 0)
                   Positioned(
-                    top: -6,
-                    right: -8,
+                    top: -4,
+                    right: -6,
                     child: Container(
-                      width: 16,
-                      height: 16,
+                      width: 14,
+                      height: 14,
                       decoration: const BoxDecoration(
-                        color: ClosetColors.vert,
+                        color: ClosetColors.dore,
                         shape: BoxShape.circle,
                       ),
                       child: Center(
                         child: Text(
                           '$badge',
                           style: const TextStyle(
-                            color: ClosetColors.creme,
-                            fontSize: 9,
-                            fontWeight: FontWeight.bold,
+                            color: ClosetColors.vertFonce,
+                            fontSize: 8.5,
+                            fontWeight: FontWeight.w800,
                           ),
                         ),
                       ),
@@ -269,20 +227,21 @@ class _NavItemWithBadge extends StatelessWidget {
                   ),
               ],
             ),
-            const SizedBox(height: 4),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 8,
-                fontWeight: FontWeight.w600,
-                letterSpacing: 0.5,
-                color:
-                    isSelected ? ClosetColors.dore : ClosetColors.navigationInactif,
+            if (isSelected) ...[
+              const SizedBox(width: 6),
+              Text(
+                label,
+                style: GoogleFonts.lato(
+                  color: ClosetColors.doreEncre,
+                  fontSize: 12.5,
+                  fontWeight: FontWeight.w700,
+                ),
               ),
-            ),
+            ],
           ],
         ),
       ),
     );
   }
 }
+
