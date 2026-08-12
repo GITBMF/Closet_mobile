@@ -800,7 +800,7 @@ class _PieceCard extends ConsumerWidget {
               children: [
                 // Photo area
                 Container(
-                  height: 140,
+                  height: 180,
                   decoration: const BoxDecoration(
                     gradient: LinearGradient(
                       colors: [Color(0xFFE7DCC6), Color(0xFFD6C6A6)],

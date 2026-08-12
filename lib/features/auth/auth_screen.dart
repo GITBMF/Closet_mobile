@@ -142,324 +142,288 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
     final isLogin = mode == AuthMode.login;
 
     return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      backgroundColor: const Color(0xFF143B33),
       body: FadeTransition(
         opacity: _fadeAnim,
         child: SafeArea(
-          child: SingleChildScrollView(
-            child: Column(
-              children: [
-                // ── Hero Header ──────────────────────────────────────
-                Container(
-                  width: double.infinity,
-                  height: 260,
-                  decoration: const BoxDecoration(
-                    color: AppTheme.forestGreen,
-                    borderRadius: BorderRadius.only(
-                      bottomLeft: Radius.circular(40),
-                      bottomRight: Radius.circular(40),
-                    ),
-                  ),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Image.asset(
-                        'assets/logo.png',
-                        width: 80,
-                        height: 80,
-                        errorBuilder: (_, _, _) => Container(
-                          width: 80,
-                          height: 80,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: Colors.white.withValues(alpha: 0.1),
-                            border: Border.all(color: AppTheme.goldCloset, width: 2),
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 420),
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 18),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Container(
+                      width: double.infinity,
+                      height: 240,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(13),
+                        border: Border.all(color: const Color(0xFF5EA38E), width: 2),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.15),
+                            blurRadius: 10,
+                            offset: const Offset(0, 6),
                           ),
-                          child: const Center(
-                            child: Text(
-                              'C',
-                              style: TextStyle(
-                                fontSize: 40,
-                                fontWeight: FontWeight.w800,
-                                color: Colors.white,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      const Text(
-                        'Clos ET',
-                        style: TextStyle(
-                          fontSize: 28,
-                          fontWeight: FontWeight.w800,
-                          color: Colors.white,
-                          letterSpacing: 1,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        'L\'ÉLÉGANCE DURABLE',
-                        style: TextStyle(
-                          fontSize: 10,
-                          color: Colors.white.withValues(alpha: 0.7),
-                          letterSpacing: 3,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-
-                // ── Mode Toggle ──────────────────────────────────────
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(24, 28, 24, 0),
-                  child: Container(
-                    padding: const EdgeInsets.all(4),
-                    decoration: BoxDecoration(
-                      color: AppTheme.sandBeige,
-                      borderRadius: BorderRadius.circular(30),
-                    ),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: GestureDetector(
-                            onTap: () {
-                              ref.read(authModeProvider.notifier).state =
-                                  AuthMode.login;
-                              _animController
-                                ..reset()
-                                ..forward();
-                            },
-                            child: AnimatedContainer(
-                              duration: const Duration(milliseconds: 200),
-                              padding: const EdgeInsets.symmetric(vertical: 12),
-                              decoration: BoxDecoration(
-                                color: isLogin
-                                    ? AppTheme.blackCloset
-                                    : Colors.transparent,
-                                borderRadius: BorderRadius.circular(26),
-                              ),
-                              child: Center(
-                                child: Text(
-                                  'Se connecter',
-                                  style: TextStyle(
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.w700,
-                                    color: isLogin
-                                        ? Colors.white
-                                        : AppTheme.greyText,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                        Expanded(
-                          child: GestureDetector(
-                            onTap: () {
-                              ref.read(authModeProvider.notifier).state =
-                                  AuthMode.register;
-                              _animController
-                                ..reset()
-                                ..forward();
-                            },
-                            child: AnimatedContainer(
-                              duration: const Duration(milliseconds: 200),
-                              padding: const EdgeInsets.symmetric(vertical: 12),
-                              decoration: BoxDecoration(
-                                color: !isLogin
-                                    ? AppTheme.blackCloset
-                                    : Colors.transparent,
-                                borderRadius: BorderRadius.circular(26),
-                              ),
-                              child: Center(
-                                child: Text(
-                                  'Créer un compte',
-                                  style: TextStyle(
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.w700,
-                                    color: !isLogin
-                                        ? Colors.white
-                                        : AppTheme.greyText,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-
-                // ── Form ─────────────────────────────────────────────
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(24, 28, 24, 0),
-                  child: Column(
-                    children: [
-                      if (!isLogin) ...[
-                        _AuthField(
-                          controller: _nameController,
-                          label: 'Votre prénom',
-                          icon: Icons.person_outline,
-                        ),
-                        const SizedBox(height: 14),
-                        _AuthField(
-                          controller: _lastNameController,
-                          label: 'Votre nom',
-                          icon: Icons.person_outline,
-                        ),
-                        const SizedBox(height: 14),
-                        _AuthField(
-                          controller: _phoneController,
-                          label: 'Numéro de téléphone',
-                          icon: Icons.phone_outlined,
-                          keyboardType: TextInputType.phone,
-                        ),
-                        const SizedBox(height: 14),
-                      ],
-                      _AuthField(
-                        controller: _emailController,
-                        label: 'Adresse e-mail',
-                        icon: Icons.mail_outline,
-                        keyboardType: TextInputType.emailAddress,
-                      ),
-                      const SizedBox(height: 14),
-                      _AuthField(
-                        controller: _passwordController,
-                        label: 'Mot de passe',
-                        icon: Icons.lock_outline,
-                        obscureText: _obscurePassword,
-                        suffix: GestureDetector(
-                          onTap: () => setState(
-                              () => _obscurePassword = !_obscurePassword),
-                          child: Icon(
-                            _obscurePassword
-                                ? Icons.visibility_off_outlined
-                                : Icons.visibility_outlined,
-                            size: 18,
-                            color: AppTheme.greyText,
-                          ),
-                        ),
-                      ),
-
-                      if (isLogin) ...[
-                        const SizedBox(height: 12),
-                        const Align(
-                          alignment: Alignment.centerRight,
-                          child: Text(
-                            'Mot de passe oublié ?',
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: AppTheme.forestGreen,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
-                      ],
-                      const SizedBox(height: 28),
-
-                      // Submit
-                      SizedBox(
-                        width: double.infinity,
-                        child: GestureDetector(
-                          onTap: _isLoading ? null : _submit,
-                          child: AnimatedContainer(
-                            duration: const Duration(milliseconds: 200),
-                            padding: const EdgeInsets.symmetric(vertical: 16),
-                            decoration: BoxDecoration(
-                              color: AppTheme.forestGreen,
-                              borderRadius: BorderRadius.circular(30),
-                              boxShadow: [
-                                BoxShadow(
-                                  color:
-                                      AppTheme.forestGreen.withValues(alpha: 0.3),
-                                  blurRadius: 12,
-                                  offset: const Offset(0, 4),
-                                ),
-                              ],
-                            ),
-                            child: Center(
-                              child: _isLoading
-                                  ? const SizedBox(
-                                      width: 20,
-                                      height: 20,
-                                      child: CircularProgressIndicator(
-                                        strokeWidth: 2,
-                                        color: Colors.white,
-                                      ),
-                                    )
-                                  : Text(
-                                      isLogin
-                                          ? 'Accéder à mon dressing'
-                                          : 'Créer mon dressing privé',
-                                      style: const TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.w800,
-                                        letterSpacing: 0.5,
-                                      ),
-                                    ),
-                            ),
-                          ),
-                        ),
-                      ),
-
-                      const SizedBox(height: 24),
-
-                      // Divider
-                      const Row(
-                        children: [
-                          Expanded(
-                              child: Divider(color: AppTheme.sandBeige)),
-                          Padding(
-                            padding:
-                                EdgeInsets.symmetric(horizontal: 12),
-                            child: Text(
-                              'ou continuer sans compte',
-                              style: TextStyle(
-                                fontSize: 11,
-                                color: AppTheme.greyText,
-                              ),
-                            ),
-                          ),
-                          Expanded(
-                              child: Divider(color: AppTheme.sandBeige)),
                         ],
                       ),
-
-                      const SizedBox(height: 20),
-
-                      // Guest CTA
-                      SizedBox(
-                        width: double.infinity,
-                        child: GestureDetector(
-                          onTap: () => context.go('/home'),
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(vertical: 14),
-                            decoration: BoxDecoration(
-                              color: Colors.transparent,
-                              borderRadius: BorderRadius.circular(30),
-                              border: Border.all(color: AppTheme.sandBeige),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(11),
+                        child: Stack(
+                          fit: StackFit.expand,
+                          children: [
+                            Image.asset(
+                              'assets/landing_image.png',
+                              fit: BoxFit.cover,
+                              errorBuilder: (_, __, ___) => Container(
+                                color: AppTheme.forestGreen,
+                              ),
                             ),
-                            child: const Center(
-                              child: Text(
-                                'Poursuivre ma visite',
-                                style: TextStyle(
-                                  color: AppTheme.greyText,
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w600,
+                            Center(
+                              child: Positioned(
+                              bottom: 0,
+                              left: 0,
+                              right: 0,
+                              child: Center(
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 18,
+                                    vertical: 10,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFF103A2D).withValues(alpha: 0.72),
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: const Text(
+                                    'CLOS ET',
+                                    style: TextStyle(
+                                      fontFamily: 'Boldonse',
+                                      fontSize: 36,
+                                      fontWeight: FontWeight.w700,
+                                      color: Color(0xFFF4E9DB),
+                                      letterSpacing: 0.5,
+                                    ),
+                                  ),
                                 ),
                               ),
                             ),
+                            )
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 18),
+                    const Text(
+                      'Bienvenue dans votre dressing !',
+                      textAlign: TextAlign.left,
+                      style: TextStyle(
+                        fontFamily: 'EB Garamond',
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700,
+                        color: Color(0xFFEFE6D7),
+                        height: 1.2,
+                        fontStyle: FontStyle.italic,
+                      ),
+                    ),
+                    const SizedBox(height: 18),
+                    const Text(
+                      'Email',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFFEDE4D5),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    _AuthField(
+                      controller: _emailController,
+                      hintText: 'Example@email.com',
+                      keyboardType: TextInputType.emailAddress,
+                    ),
+                    const SizedBox(height: 18),
+                    const Text(
+                      'Password',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFFEDE4D5),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    _AuthField(
+                      controller: _passwordController,
+                      hintText: 'At least 8 characters',
+                      obscureText: _obscurePassword,
+                      suffix: GestureDetector(
+                        onTap: () => setState(
+                            () => _obscurePassword = !_obscurePassword),
+                        child: Icon(
+                          _obscurePassword
+                              ? Icons.visibility_off_outlined
+                              : Icons.visibility_outlined,
+                          size: 18,
+                          color: const Color(0xFFE8E1D5),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    const Text(
+                      '8 caractères minimum, dont un chiffre.',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Color(0xFFDFD3C5),
+                      ),
+                    ),
+                    const SizedBox(height: 18),
+                    SizedBox(
+                      width: double.infinity,
+                      child: GestureDetector(
+                        onTap: _isLoading ? null : _submit,
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 200),
+                          height: 54,
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFCDAB71),
+                            borderRadius: BorderRadius.circular(100),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.12),
+                                blurRadius: 8,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
+                          ),
+                          child: Center(
+                            child: _isLoading
+                                ? const SizedBox(
+                                    width: 20,
+                                    height: 20,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      color: Color(0xFF143B33),
+                                    ),
+                                  )
+                                : const Text(
+                                    'ENTER',
+                                    style: TextStyle(
+                                      fontFamily: 'Lato',
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w900,
+                                      color: Color(0xFF123C32),
+                                      letterSpacing: 1,
+                                    
+                                    ),
+                                  ),
                           ),
                         ),
                       ),
-                      const SizedBox(height: 32),
-                    ],
-                  ),
+                    ),
+                    const SizedBox(height: 18),
+                    Align(
+                      alignment: Alignment.center,
+                      child: GestureDetector(
+                        onTap: () {},
+                        child: const Text(
+                          'Mot de passe oublié',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: Color(0xFFEDE4D5),
+                            decoration: TextDecoration.underline,
+                            decorationColor: Color(0xFFEDE4D5),
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    const Row(
+                      children: [
+                        Expanded(child: Divider(color: Color(0xFF7FB0A0))),
+                        Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 12),
+                          child: Text(
+                            'Ou se connecter',
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: Color(0xFFCDAB71),
+                            ),
+                          ),
+                        ),
+                        Expanded(child: Divider(color: Color(0xFF7FB0A0))),
+                      ],
+                    ),
+                    const SizedBox(height: 18),
+                    Container(
+                      height: 52,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFDFC29D),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Center(
+                              child: Text(
+                                'G -',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w900,
+                                  color: Color(0xFF353025),
+                                ),
+                              ),
+                          ),
+                          // const SizedBox(width: 10),
+                          const Text(
+                            'CONTINUER AVEC GOOGLE',
+                            style: TextStyle(
+                              fontFamily: 'Lato',
+                              fontSize: 16,
+                              fontWeight: FontWeight.w500,
+                              color: Color(0xFF123C32),
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 18),
+                    const Center(
+                      child: Text.rich(
+                        TextSpan(
+                          text: 'Pas encore membre ? ',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Color(0xFFEDE4D5),
+                          ),
+                          children: [
+                            TextSpan(
+                              text: 'Rejoindre le cercle',
+                              style: TextStyle(
+                                fontWeight: FontWeight.w700,
+                                decoration: TextDecoration.underline,
+                                decorationColor: Color(0xFFEDE4D5),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 14),
+                    const Center(
+                      child: Text(
+                        'Continuer en invité →',
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFFB58A40),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 14),
+                  ],
                 ),
-              ],
+              ),
             ),
           ),
         ),
@@ -472,16 +436,14 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
 
 class _AuthField extends StatelessWidget {
   final TextEditingController controller;
-  final String label;
-  final IconData icon;
+  final String hintText;
   final bool obscureText;
   final TextInputType? keyboardType;
   final Widget? suffix;
 
   const _AuthField({
     required this.controller,
-    required this.label,
-    required this.icon,
+    required this.hintText,
     this.obscureText = false,
     this.keyboardType,
     this.suffix,
@@ -491,9 +453,9 @@ class _AuthField extends StatelessWidget {
   Widget build(BuildContext context) {
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: AppTheme.warmCream,
+        color: const Color(0xFFF1EBE1),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppTheme.sandBeige),
+        border: Border.all(color: const Color(0xFFB8B0A0), width: 1.2),
       ),
       child: TextField(
         controller: controller,
@@ -504,21 +466,21 @@ class _AuthField extends StatelessWidget {
           color: AppTheme.blackCloset,
         ),
         decoration: InputDecoration(
-          hintText: label,
-          hintStyle: TextStyle(
+          hintText: hintText,
+          hintStyle: const TextStyle(
             fontSize: 14,
-            color: AppTheme.greyText.withValues(alpha: 0.8),
+            color: Color(0xFF7A6C5A),
           ),
-          prefixIcon: Icon(icon, size: 18, color: AppTheme.greyText),
           suffixIcon: suffix != null
               ? Padding(
-                  padding: const EdgeInsets.all(12),
+                  padding: const EdgeInsets.only(right: 12),
                   child: suffix,
                 )
               : null,
           border: InputBorder.none,
-          contentPadding:
-              const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+          enabledBorder: InputBorder.none,
+          focusedBorder: InputBorder.none,
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
         ),
       ),
     );
