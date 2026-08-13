@@ -7,21 +7,35 @@ import '../../features/auth/auth_screen.dart';
 import '../../features/checkout/checkout_screen.dart';
 import '../../features/cliente/collections/collections_screen.dart';
 import '../../features/cliente/dressing/dressing_screen.dart';
+import '../../features/cliente/espace/deconnexion_screen.dart';
+import '../../features/cliente/espace/detail_commande_screen.dart';
 import '../../features/cliente/espace/espace_screen.dart';
 import '../../features/cliente/espace/espace_sub_screens.dart';
+import '../../features/cliente/espace/mes_adresses_screen.dart';
+import '../../features/cliente/espace/mes_commandes_screen.dart';
+import '../../features/cliente/espace/modifier_profil_screen.dart';
+import '../../features/cliente/espace/suivi_commande_screen.dart';
 import '../../features/cliente/product/product_screen.dart';
 import '../../features/cliente/selection/selection_screen.dart';
 import '../../features/cliente/wishlist/wishlist_screen.dart';
 import '../../features/main_layout.dart';
 import '../../features/onboarding/onboarding_screen.dart';
 import '../../features/sourceur/atelier/sourceur_atelier_screen.dart';
+import '../../features/sourceur/devenir/devenir_sourceur_screen.dart';
 import '../../features/sourceur/espace/sourceur_espace_screen.dart';
+import '../../features/sourceur/identification/identification_sourceur_screen.dart';
+import '../../features/sourceur/inscription/adhesion_approuvee_screen.dart';
+import '../../features/sourceur/inscription/sourceur_adhesion_screen.dart';
 import '../../features/sourceur/inscription/sourceur_inscription_screen.dart';
 import '../../features/sourceur/nouvelle/sourceur_nouvelle_piece_screen.dart';
 import '../../features/sourceur/pieces/sourceur_pieces_screen.dart';
 import '../../features/sourceur/revenus/sourceur_revenus_screen.dart';
 import '../../features/sourceur/sourceur_layout.dart';
+import '../../features/sourceur/suivi/inspection_piece_screen.dart';
+import '../../features/sourceur/suivi/suivi_piece_screen.dart';
 import '../../features/splash/splash_screen.dart';
+import '../../features/transaction/transaction_flow_screen.dart';
+import '../../features/transaction/transaction_models.dart';
 
 final appRouterProvider = Provider<GoRouter>((ref) {
   final rootNavigatorKey = GlobalKey<NavigatorState>();
@@ -32,14 +46,36 @@ final appRouterProvider = Provider<GoRouter>((ref) {
     redirect: (context, state) {
       final isAuthenticated = ref.read(isAuthenticatedProvider);
       final loc = state.matchedLocation;
+
+      // Entrées publiques du programme sourceur : une visiteuse doit pouvoir
+      // découvrir le programme et se connecter sans être déjà authentifiée.
+      // Sans cette exception, la landing et l'écran de connexion sourceur
+      // renverraient vers /auth — donc seraient inatteignables.
+      const sourceurPublic = {
+        '/sourceur/devenir',
+        '/sourceur/identification',
+      };
+
+      // Routes engageant de l'argent ou l'identité : authentification requise.
+      // `/transaction` en fait partie — il débite ou reverse des fonds.
+      const routesProtegees = {'/checkout', '/transaction'};
       if (!isAuthenticated &&
-          (loc == '/checkout' ||
-              loc.startsWith('/sourceur'))) {
+          !sourceurPublic.contains(loc) &&
+          (routesProtegees.contains(loc) || loc.startsWith('/sourceur'))) {
         return '/auth';
       }
+
+      // Un compte non encore partenaire est ramené sur la fiche d'adhésion,
+      // sauf sur les écrans qui composent justement ce parcours d'entrée.
+      const parcoursAdhesion = {
+        '/sourceur/inscription',
+        '/sourceur/adhesion',
+        '/sourceur/adhesion/approuvee',
+      };
       if (isAuthenticated &&
           loc.startsWith('/sourceur') &&
-          loc != '/sourceur/inscription') {
+          !parcoursAdhesion.contains(loc) &&
+          !sourceurPublic.contains(loc)) {
         final sourceurRepo = ref.read(sourceurRepositoryProvider);
         if (!sourceurRepo.estInscrit) {
           return '/sourceur/inscription';
@@ -144,6 +180,51 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         ),
       ),
 
+      // ── Tunnel de transaction (hors shell, sans retour arrière) ─────
+      // Les 4 étapes (PIN → traitement → succès → reçu) vivent dans une
+      // seule route : voir TransactionFlowScreen.
+      GoRoute(
+        parentNavigatorKey: rootNavigatorKey,
+        path: '/transaction',
+        pageBuilder: (context, state) {
+          final demande = state.extra as DemandeTransaction?;
+          if (demande == null) {
+            return CustomTransitionPage(
+              key: state.pageKey,
+              child: const Scaffold(
+                body: Center(child: Text('Transaction introuvable')),
+              ),
+              transitionsBuilder: (context, animation, _, child) =>
+                  FadeTransition(opacity: animation, child: child),
+            );
+          }
+          return CustomTransitionPage(
+            key: state.pageKey,
+            child: TransactionFlowScreen(
+              demande: demande,
+              // TODO(backend): brancher l'endpoint de transaction. Le tunnel
+              // exige un exécuteur : il ne peut pas afficher un succès sans
+              // opération réelle, et le reçu doit être émis par le serveur.
+              executer: (demande, pin) => throw const TransactionRefusee(
+                'Le service de transaction n’est pas encore disponible.',
+              ),
+            ),
+            transitionsBuilder: (context, animation, _, child) {
+              return SlideTransition(
+                position: Tween<Offset>(
+                  begin: const Offset(0, 1),
+                  end: Offset.zero,
+                ).animate(CurvedAnimation(
+                  parent: animation,
+                  curve: Curves.easeOutCubic,
+                )),
+                child: child,
+              );
+            },
+          );
+        },
+      ),
+
       // ── Sourceur Shell with bottom nav ───────────────────────────────
       StatefulShellRoute.indexedStack(
         parentNavigatorKey: rootNavigatorKey,
@@ -197,6 +278,52 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             ],
           ),
         ],
+      ),
+
+      // Suivi d'une piece confiee (hors shell)
+      GoRoute(
+        parentNavigatorKey: rootNavigatorKey,
+        path: '/sourceur/piece/:id',
+        builder: (context, state) => InspectionPieceScreen(
+          pieceId: state.pathParameters['id'],
+        ),
+        routes: [
+          GoRoute(
+            path: 'suivi',
+            builder: (context, state) => SuiviPieceScreen(
+              pieceId: state.pathParameters['id']!,
+            ),
+          ),
+        ],
+      ),
+
+      // Parcours d'entree sourceur (hors shell)
+      GoRoute(
+        parentNavigatorKey: rootNavigatorKey,
+        path: '/sourceur/devenir',
+        builder: (context, state) => const DevenirSourceurScreen(),
+      ),
+      GoRoute(
+        parentNavigatorKey: rootNavigatorKey,
+        path: '/sourceur/identification',
+        builder: (context, state) => const IdentificationSourceurScreen(),
+      ),
+      GoRoute(
+        parentNavigatorKey: rootNavigatorKey,
+        path: '/sourceur/adhesion/approuvee',
+        builder: (context, state) => const AdhesionApprouveeScreen(),
+      ),
+
+      // Statut d'adhesion (hors shell) — affiche l'avancement, ne collecte rien
+      GoRoute(
+        parentNavigatorKey: rootNavigatorKey,
+        path: '/sourceur/adhesion',
+        pageBuilder: (context, state) => CustomTransitionPage(
+          key: state.pageKey,
+          child: const SourceurAdhesionScreen(),
+          transitionsBuilder: (context, animation, _, child) =>
+              FadeTransition(opacity: animation, child: child),
+        ),
       ),
 
       // Inscription (outside shell)
@@ -264,11 +391,36 @@ final appRouterProvider = Provider<GoRouter>((ref) {
                 routes: [
                   GoRoute(
                     path: 'infos',
-                    builder: (context, state) => const EspaceInfoScreen(),
+                    builder: (context, state) =>
+                        const ModifierProfilScreen(),
+                  ),
+                  GoRoute(
+                    path: 'commandes',
+                    builder: (context, state) => const MesCommandesScreen(),
+                    routes: [
+                      GoRoute(
+                        path: ':numero',
+                        builder: (context, state) => DetailCommandeScreen(
+                          numero: state.pathParameters['numero']!,
+                        ),
+                        routes: [
+                          GoRoute(
+                            path: 'suivi',
+                            builder: (context, state) => SuiviCommandeScreen(
+                              numero: state.pathParameters['numero']!,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                  GoRoute(
+                    path: 'deconnexion',
+                    builder: (context, state) => const DeconnexionScreen(),
                   ),
                   GoRoute(
                     path: 'adresses',
-                    builder: (context, state) => const EspaceAdressesScreen(),
+                    builder: (context, state) => const MesAdressesScreen(),
                   ),
                   GoRoute(
                     path: 'paiements',

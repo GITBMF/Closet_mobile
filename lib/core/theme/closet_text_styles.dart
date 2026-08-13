@@ -1,358 +1,308 @@
-// import 'package:flutter/material.dart';
-// import 'package:google_fonts/google_fonts.dart';
-
-// import 'closet_colors.dart';
-
-// /// Typographies CLOSET (charte graphique avril 2026) :
-// /// - Boldonse pour les très grands titres décoratifs (marque)
-// /// - Garamond (EB Garamond) pour les grands titres / sous-titres
-// /// - Cormorant pour les textes courants, descriptions et champs de saisie
-// /// - Lato pour l'interface (UI/UX), navigation, boutons, labels
-// class ClosetTextStyles {
-//   ClosetTextStyles._();
-
-//   static const TextStyle display = TextStyle(
-//     fontFamily: 'Boldonse',
-//     fontSize: 22,
-//     color: ClosetColors.noir,
-//   );
-
-//   static TextStyle titreEcran = GoogleFonts.ebGaramond(
-//     fontSize: 22,
-//     fontWeight: FontWeight.w600,
-//     color: ClosetColors.vertFonce,
-//   );
-
-//   static TextStyle titreHero = GoogleFonts.ebGaramond(
-//     fontSize: 24,
-//     fontWeight: FontWeight.w600,
-//     fontStyle: FontStyle.italic,
-//     color: ClosetColors.texteSurVert,
-//   );
-
-//   static TextStyle corpsSurVert = GoogleFonts.cormorant(
-//     fontSize: 15,
-//     height: 1.45,
-//     color: ClosetColors.texteSurVert,
-//   );
-
-//   static TextStyle corps = GoogleFonts.cormorant(
-//     fontSize: 15,
-//     height: 1.45,
-//     color: ClosetColors.noir,
-//   );
-
-//   static TextStyle saisie = GoogleFonts.cormorant(
-//     fontSize: 16,
-//     color: ClosetColors.noir,
-//   );
-
-//   static TextStyle saisieHint = GoogleFonts.cormorant(
-//     fontSize: 16,
-//     color: ClosetColors.texteSecondaire.withValues(alpha: 0.7),
-//   );
-
-//   static TextStyle labelChamp = GoogleFonts.lato(
-//     fontSize: 11,
-//     fontWeight: FontWeight.w700,
-//     letterSpacing: 1.6,
-//     color: ClosetColors.dore,
-//   );
-
-//   static TextStyle labelEtape = GoogleFonts.lato(
-//     fontSize: 10.5,
-//     fontWeight: FontWeight.w700,
-//     letterSpacing: 1.4,
-//     color: ClosetColors.noir,
-//   );
-
-//   static TextStyle badgePill = GoogleFonts.lato(
-//     fontSize: 10,
-//     fontWeight: FontWeight.w800,
-//     letterSpacing: 1.8,
-//     color: ClosetColors.noir,
-//   );
-
-//   static TextStyle bouton = GoogleFonts.lato(
-//     fontSize: 13,
-//     fontWeight: FontWeight.w700,
-//     letterSpacing: 1.6,
-//   );
-
-//   static TextStyle navigation = GoogleFonts.lato(
-//     fontSize: 10,
-//     fontWeight: FontWeight.w700,
-//     letterSpacing: 1.2,
-//   );
-
-//   static TextStyle numeroEtape = GoogleFonts.ebGaramond(
-//     fontSize: 15,
-//     fontWeight: FontWeight.w600,
-//   );
-// }
-
-
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import 'closet_colors.dart';
 
-/// Typographies CLOSET (charte graphique avril 2026) :
-/// - Boldonse pour les très grands titres décoratifs (marque)
-/// - Garamond (EB Garamond) pour les grands titres / sous-titres
-/// - Cormorant pour les textes courants, descriptions et champs de saisie
-/// - Lato pour l'interface (UI/UX), navigation, boutons, labels
+/// Typographies CLOSET — transcription fidèle de la maquette Figma
+/// (`VmP4xqjT7R9FVcPT3tQsWg`, version du 2026-08-06), 3 297 calques analysés.
+///
+/// Familles de la charte, conservées telles quelles :
+/// - **Boldonse** — très grands titres décoratifs (marque)
+/// - **EB Garamond** — titres d'écran, montants, chiffres
+/// - **Cormorant / Cormorant Garamond** — titres produits, citations, corps serif
+/// - **Lato** — interface : navigation, boutons, labels, corps courant
+///
+/// La maquette contient aussi Roboto, Inter, Manrope, Plus Jakarta Sans et
+/// SF Pro Display (325 occurrences, 10 %). Ce sont les polices par défaut de
+/// Figma et d'iOS, présentes sur les calques non stylés — pas un choix de
+/// design. Elles sont mappées sur Lato.
 class ClosetTextStyles {
   ClosetTextStyles._();
 
-  // ── Display / Hero ─────────────────────────────────────────────────────
+  /// Facteur d'échelle typographique global.
+  ///
+  /// À `1.0`, les tailles sont celles de la maquette au point près.
+  /// La maquette compte 842 calques entre 6 et 10 pt, ce qui est sous le
+  /// minimum lisible usuel (~11 pt). Si le rendu sur appareil confirme le
+  /// problème, monter cette valeur à ~1.4 remonte toute l'échelle d'un coup
+  /// en préservant la hiérarchie relative.
+  static const double scale = 1.0;
 
+  static double _s(double v) => v * scale;
+
+  // ══════════════════════════════════════════════════════════════════════
+  // ÉCHELLE SERIF — titres, montants
+  // ══════════════════════════════════════════════════════════════════════
+
+  /// Titre d'écran — EB Garamond 600 / 22 pt
+  static TextStyle titreEcran = GoogleFonts.ebGaramond(
+    fontSize: _s(22),
+    fontWeight: FontWeight.w600,
+    letterSpacing: 0.44,
+    height: 28.7 / 22,
+    color: ClosetColors.vertFonce,
+  );
+
+  /// Titre de section — Cormorant 600 / 22 pt
+  static TextStyle titreSection = GoogleFonts.cormorant(
+    fontSize: _s(22),
+    fontWeight: FontWeight.w600,
+    letterSpacing: 0.44,
+    height: 26.6 / 22,
+    color: ClosetColors.noir,
+  );
+
+  /// Titre hero sur fond vert — EB Garamond 600 / 24 pt italique
+  static TextStyle titreHero = GoogleFonts.ebGaramond(
+    fontSize: _s(24),
+    fontWeight: FontWeight.w600,
+    fontStyle: FontStyle.italic,
+    color: ClosetColors.texteSurVert,
+  );
+
+  /// Sous-titre — EB Garamond 700 / 19 pt
+  static TextStyle sousTitre = GoogleFonts.ebGaramond(
+    fontSize: _s(19),
+    fontWeight: FontWeight.w700,
+    color: ClosetColors.noir,
+  );
+
+  /// Accroche produit — Cormorant 600 / 18 pt
+  static TextStyle accroche = GoogleFonts.cormorant(
+    fontSize: _s(18),
+    fontWeight: FontWeight.w600,
+    letterSpacing: 0.36,
+    height: 21.8 / 18,
+    color: ClosetColors.noir,
+  );
+
+  /// Titre de bloc — Cormorant 600 / 15 pt
+  static TextStyle titreBloc = GoogleFonts.cormorant(
+    fontSize: _s(15),
+    fontWeight: FontWeight.w600,
+    letterSpacing: -0.3,
+    height: 18.2 / 15,
+    color: ClosetColors.noir,
+  );
+
+  /// Nom de produit — Cormorant Garamond 700 / 12 pt
+  static TextStyle nomProduit = GoogleFonts.cormorantGaramond(
+    fontSize: _s(12),
+    fontWeight: FontWeight.w700,
+    letterSpacing: -0.24,
+    height: 14.5 / 12,
+    color: ClosetColors.noir,
+  );
+
+  /// Citation / description serif — Cormorant 500 / 16 pt
+  static TextStyle citation = GoogleFonts.cormorant(
+    fontSize: _s(16),
+    fontWeight: FontWeight.w500,
+    height: 19.2 / 16,
+    color: ClosetColors.noir,
+  );
+
+  // ── Montants ──────────────────────────────────────────────────────────
+
+  /// Montant principal — EB Garamond 600 / 32 pt
+  static TextStyle montantHero = GoogleFonts.ebGaramond(
+    fontSize: _s(32),
+    fontWeight: FontWeight.w600,
+    letterSpacing: 0.64,
+    height: 41.8 / 32,
+    color: ClosetColors.noir,
+  );
+
+  /// Prix mis en avant — EB Garamond 600 / 22 pt
+  static TextStyle prixGrand = GoogleFonts.ebGaramond(
+    fontSize: _s(22),
+    fontWeight: FontWeight.w600,
+    letterSpacing: 0.44,
+    height: 28.7 / 22,
+    color: ClosetColors.noir,
+  );
+
+  /// Prix courant — EB Garamond 500 / 14 pt
+  static TextStyle prix = GoogleFonts.ebGaramond(
+    fontSize: _s(14),
+    fontWeight: FontWeight.w500,
+    letterSpacing: -0.28,
+    height: 18.3 / 14,
+    color: ClosetColors.noir,
+  );
+
+  /// Numéro d'étape — EB Garamond 600 / 15 pt
+  static TextStyle numeroEtape = GoogleFonts.ebGaramond(
+    fontSize: _s(15),
+    fontWeight: FontWeight.w600,
+  );
+
+  // ══════════════════════════════════════════════════════════════════════
+  // ÉCHELLE SANS (Lato) — interface
+  // ══════════════════════════════════════════════════════════════════════
+
+  /// Corps courant — Lato 400 / 12 pt (style le plus fréquent, 352×)
+  static TextStyle corps = GoogleFonts.lato(
+    fontSize: _s(12),
+    letterSpacing: -0.24,
+    height: 14.4 / 12,
+    color: ClosetColors.noir,
+  );
+
+  /// Corps sur fond vert
+  static TextStyle corpsSurVert = GoogleFonts.lato(
+    fontSize: _s(12),
+    letterSpacing: -0.24,
+    height: 14.4 / 12,
+    color: ClosetColors.texteSurVert,
+  );
+
+  /// Corps accentué — Lato 500 / 12 pt
+  static TextStyle corpsMedium = GoogleFonts.lato(
+    fontSize: _s(12),
+    fontWeight: FontWeight.w500,
+    height: 17.4 / 12,
+    color: ClosetColors.noir,
+  );
+
+  /// Libellé de liste / entrée de menu — Lato 500 / 14 pt
+  static TextStyle libelle = GoogleFonts.lato(
+    fontSize: _s(14),
+    fontWeight: FontWeight.w500,
+    height: 16.8 / 14,
+    color: ClosetColors.noir,
+  );
+
+  /// Libellé accentué — Lato 600 / 14 pt
+  static TextStyle libelleFort = GoogleFonts.lato(
+    fontSize: _s(14),
+    fontWeight: FontWeight.w600,
+    color: ClosetColors.noir,
+  );
+
+  /// Métadonnée — Lato 400 / 10 pt
+  static TextStyle meta = GoogleFonts.lato(
+    fontSize: _s(10),
+    letterSpacing: 0.2,
+    height: 12 / 10,
+    color: ClosetColors.texteSecondaire,
+  );
+
+  /// Action secondaire — Lato 500 / 10 pt
+  static TextStyle actionPetite = GoogleFonts.lato(
+    fontSize: _s(10),
+    fontWeight: FontWeight.w500,
+    height: 14.5 / 10,
+    color: ClosetColors.noir,
+  );
+
+  /// Détail produit — Lato 400 / 9 pt
+  static TextStyle detail = GoogleFonts.lato(
+    fontSize: _s(9),
+    letterSpacing: 0.18,
+    height: 10.8 / 9,
+    color: ClosetColors.texteSecondaire,
+  );
+
+  /// Mention légère — Lato 300 / 9 pt
+  static TextStyle mention = GoogleFonts.lato(
+    fontSize: _s(9),
+    fontWeight: FontWeight.w300,
+    letterSpacing: 0.16,
+    color: ClosetColors.texteSecondaire,
+  );
+
+  /// Attribut produit (taille, matière) — Lato 400 / 8 pt
+  static TextStyle attribut = GoogleFonts.lato(
+    fontSize: _s(8),
+    letterSpacing: -0.16,
+    height: 9.6 / 8,
+    color: ClosetColors.texteSecondaire,
+  );
+
+  /// Micro-légende — Lato 400 / 7 pt
+  static TextStyle microLegende = GoogleFonts.lato(
+    fontSize: _s(7),
+    letterSpacing: 0.28,
+    height: 8.4 / 7,
+    color: ClosetColors.texteSecondaire,
+  );
+
+  /// Plus petit texte de la maquette — Lato 400 / 6 pt
+  static TextStyle micro = GoogleFonts.lato(
+    fontSize: _s(6),
+    letterSpacing: 0.24,
+    height: 7.2 / 6,
+    color: ClosetColors.texteSecondaire,
+  );
+
+  // ── Éléments d'interface ──────────────────────────────────────────────
+
+  /// Grand titre décoratif de marque — Boldonse
   static const TextStyle display = TextStyle(
     fontFamily: 'Boldonse',
     fontSize: 22,
     color: ClosetColors.noir,
   );
 
-  static TextStyle titreEcran = GoogleFonts.ebGaramond(
-    fontSize: 22,
-    fontWeight: FontWeight.w600,
-    color: ClosetColors.vertFonce,
+  /// Libellé de bouton — Lato 500 / 12 pt (CTA « Découvrir » de `11:30`).
+  /// La maquette n'écrit pas les boutons en capitales.
+  static TextStyle bouton = GoogleFonts.lato(
+    fontSize: _s(12),
+    fontWeight: FontWeight.w500,
+    height: 17.4 / 12,
   );
 
-  static TextStyle titreHero = GoogleFonts.ebGaramond(
-    fontSize: 24,
-    fontWeight: FontWeight.w600,
-    fontStyle: FontStyle.italic,
-    color: ClosetColors.texteSurVert,
+  /// Navigation — Lato 500 / 12 pt (onglet actif ; les inactifs sont sans libellé)
+  static TextStyle navigation = GoogleFonts.lato(
+    fontSize: _s(12),
+    fontWeight: FontWeight.w500,
+    letterSpacing: -0.24,
+    height: 14.4 / 12,
   );
 
-  // ── Body / Corps ──────────────────────────────────────────────────────
-
-  static TextStyle corpsSurVert = GoogleFonts.cormorant(
-    fontSize: 15,
-    height: 1.45,
-    color: ClosetColors.texteSurVert,
-  );
-
-  static TextStyle corps = GoogleFonts.cormorant(
-    fontSize: 15,
-    height: 1.45,
+  /// Saisie de champ — Lato 400 / 14 pt
+  static TextStyle saisie = GoogleFonts.lato(
+    fontSize: _s(14),
+    letterSpacing: 0.14,
     color: ClosetColors.noir,
   );
 
-  /// Corps de texte standard (alias pour corps)
-  static TextStyle get body => corps;
-
-  /// Corps de texte secondaire (plus petit)
-  static TextStyle get bodySmall => GoogleFonts.cormorant(
-        fontSize: 13,
-        height: 1.4,
-        color: ClosetColors.taupe,
-      );
-
-  // ── Form Inputs ───────────────────────────────────────────────────────
-
-  static TextStyle saisie = GoogleFonts.cormorant(
-    fontSize: 16,
-    color: ClosetColors.noir,
-  );
-
-  static TextStyle saisieHint = GoogleFonts.cormorant(
-    fontSize: 16,
+  /// Placeholder de champ
+  static TextStyle saisieHint = GoogleFonts.lato(
+    fontSize: _s(14),
+    letterSpacing: 0.14,
     color: ClosetColors.texteSecondaire.withValues(alpha: 0.7),
   );
 
-  // ── Labels ────────────────────────────────────────────────────────────
-
+  /// Label au-dessus d'un champ — Lato 400 / 12 pt
   static TextStyle labelChamp = GoogleFonts.lato(
-    fontSize: 11,
-    fontWeight: FontWeight.w700,
-    letterSpacing: 1.6,
-    color: ClosetColors.dore,
+    fontSize: _s(12),
+    letterSpacing: 0.12,
+    color: ClosetColors.texteSecondaire,
   );
 
+  /// Label d'étape — Lato 500 / 10 pt
   static TextStyle labelEtape = GoogleFonts.lato(
-    fontSize: 10.5,
-    fontWeight: FontWeight.w700,
-    letterSpacing: 1.4,
+    fontSize: _s(10),
+    fontWeight: FontWeight.w500,
+    letterSpacing: -0.2,
     color: ClosetColors.noir,
   );
 
-  /// Libellé (pour les badges, tags, petites étiquettes)
-  /// ✅ AJOUTÉ - manquant dans l'original
-  static TextStyle get libelle => GoogleFonts.lato(
-        fontSize: 12,
-        fontWeight: FontWeight.w600,
-        height: 1.3,
-        color: ClosetColors.taupe,
-        letterSpacing: 0.5,
-      );
-
-  /// Petit label
-  static TextStyle get labelSmall => GoogleFonts.lato(
-        fontSize: 10,
-        fontWeight: FontWeight.w600,
-        height: 1.2,
-        color: ClosetColors.taupe,
-        letterSpacing: 0.5,
-      );
-
-  // ── Product Text ──────────────────────────────────────────────────────
-
-  /// Nom du produit
-  /// ✅ AJOUTÉ - manquant dans l'original
-  static TextStyle get nomProduit => GoogleFonts.cormorant(
-        fontSize: 16,
-        fontWeight: FontWeight.w600,
-        height: 1.4,
-        color: ClosetColors.noir,
-      );
-
-  /// Prix du produit
-  static TextStyle get prix => GoogleFonts.cormorant(
-        fontSize: 16,
-        fontWeight: FontWeight.w700,
-        height: 1.4,
-        color: ClosetColors.vert,
-      );
-
-  /// Prix petit
-  static TextStyle get prixSmall => GoogleFonts.lato(
-        fontSize: 14,
-        fontWeight: FontWeight.w600,
-        height: 1.3,
-        color: ClosetColors.vert,
-      );
-
-  /// Prix grand
-  static TextStyle get prixLarge => GoogleFonts.ebGaramond(
-        fontSize: 24,
-        fontWeight: FontWeight.w700,
-        height: 1.3,
-        color: ClosetColors.vert,
-      );
-
-  // ── Badges / Pills ────────────────────────────────────────────────────
-
+  /// Badge / pastille — Lato 400 / 9 pt, très espacé (cf. « Toutes », 2.07)
   static TextStyle badgePill = GoogleFonts.lato(
-    fontSize: 10,
-    fontWeight: FontWeight.w800,
-    letterSpacing: 1.8,
+    fontSize: _s(9),
+    letterSpacing: 2.07,
+    height: 10.8 / 9,
     color: ClosetColors.noir,
   );
 
-  // ── Buttons ───────────────────────────────────────────────────────────
-
-  static TextStyle bouton = GoogleFonts.lato(
-    fontSize: 13,
-    fontWeight: FontWeight.w700,
-    letterSpacing: 1.6,
+  /// Suréclat de section — Lato 400 / 8 pt, très espacé
+  static TextStyle surtitre = GoogleFonts.lato(
+    fontSize: _s(8),
+    letterSpacing: 1.84,
+    height: 9.6 / 8,
+    color: ClosetColors.texteSecondaire,
   );
-
-  static TextStyle get button => bouton;
-
-  static TextStyle get buttonSmall => GoogleFonts.lato(
-        fontSize: 11,
-        fontWeight: FontWeight.w700,
-        letterSpacing: 1.4,
-      );
-
-  // ── Navigation ────────────────────────────────────────────────────────
-
-  static TextStyle navigation = GoogleFonts.lato(
-    fontSize: 10,
-    fontWeight: FontWeight.w700,
-    letterSpacing: 1.2,
-  );
-
-  // ── Meta / Helper Text ───────────────────────────────────────────────
-
-  /// Texte méta (informations secondaires)
-  static TextStyle get meta => GoogleFonts.lato(
-        fontSize: 11,
-        height: 1.4,
-        color: ClosetColors.taupe,
-        letterSpacing: 0.3,
-      );
-
-  /// Caption
-  static TextStyle get caption => GoogleFonts.lato(
-        fontSize: 10,
-        height: 1.3,
-        color: ClosetColors.taupe,
-      );
-
-  /// Placeholder
-  static TextStyle get placeholder => GoogleFonts.cormorant(
-        fontSize: 16,
-        height: 1.5,
-        color: ClosetColors.taupe,
-      );
-
-  // ── Titles ────────────────────────────────────────────────────────────
-
-  static TextStyle get title => GoogleFonts.ebGaramond(
-        fontSize: 22,
-        fontWeight: FontWeight.w700,
-        height: 1.3,
-        color: ClosetColors.noir,
-      );
-
-  static TextStyle get subtitle => GoogleFonts.ebGaramond(
-        fontSize: 18,
-        fontWeight: FontWeight.w600,
-        height: 1.4,
-        color: ClosetColors.noir,
-      );
-
-  static TextStyle get sectionTitle => GoogleFonts.ebGaramond(
-        fontSize: 20,
-        fontWeight: FontWeight.w700,
-        height: 1.3,
-        color: ClosetColors.noir,
-      );
-
-  // ── Headings ──────────────────────────────────────────────────────────
-
-  static TextStyle get h1 => GoogleFonts.ebGaramond(
-        fontSize: 28,
-        fontWeight: FontWeight.w800,
-        height: 1.2,
-        color: ClosetColors.noir,
-      );
-
-  static TextStyle get h2 => GoogleFonts.ebGaramond(
-        fontSize: 24,
-        fontWeight: FontWeight.w700,
-        height: 1.2,
-        color: ClosetColors.noir,
-      );
-
-  static TextStyle get h3 => GoogleFonts.ebGaramond(
-        fontSize: 20,
-        fontWeight: FontWeight.w600,
-        height: 1.3,
-        color: ClosetColors.noir,
-      );
-
-  // ── Special ───────────────────────────────────────────────────────────
-
-  static TextStyle numeroEtape = GoogleFonts.ebGaramond(
-    fontSize: 15,
-    fontWeight: FontWeight.w600,
-  );
-
-  /// Texte d'erreur
-  static TextStyle get error => GoogleFonts.lato(
-        fontSize: 13,
-        height: 1.4,
-        color: ClosetColors.erreur,
-      );
-
-  /// Texte de succès
-  static TextStyle get success => GoogleFonts.lato(
-        fontSize: 13,
-        height: 1.4,
-        color: ClosetColors.succes,
-      );
 }

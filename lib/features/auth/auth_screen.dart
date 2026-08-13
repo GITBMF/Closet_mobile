@@ -3,14 +3,17 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../core/theme/app_theme.dart';
+import '../../../core/theme/app_spacing.dart';
+import '../../../core/theme/closet_colors.dart';
+import '../../../core/theme/closet_text_styles.dart';
 import '../../../data/models/user.dart';
 import '../../../data/repositories/auth_repository.dart';
 
 // ─── Auth State ──────────────────────────────────────────────────────────────
 
 /// true = l'utilisateur est connecté
-final isAuthenticatedProvider = StateProvider<bool>((ref) => ref.watch(currentUserProvider) != null);
+final isAuthenticatedProvider =
+    StateProvider<bool>((ref) => ref.watch(currentUserProvider) != null);
 
 // ─── Auth Screen (Login / Register) ─────────────────────────────────────────
 
@@ -18,6 +21,15 @@ enum AuthMode { login, register }
 
 final authModeProvider = StateProvider<AuthMode>((ref) => AuthMode.login);
 
+/// Connexion / Inscription — transcription de la maquette Figma `5:1304`.
+///
+/// Fond vert profond, carte photo de 352 × 210 (rayon 19) coiffée du logo,
+/// titre EB Garamond, champs bleutés à bordure `#D4D7E3`, CTA doré de 44,
+/// séparateur « Ou se connecter » puis connexion Google.
+///
+/// Note : la maquette porte deux textes en bleu nuit (`#0C1421`, `#122B31`)
+/// posés sur le fond vert — donc invisibles. Ce sont des restes de gabarit ;
+/// ils sont rendus ici en crème pour rester lisibles.
 class AuthScreen extends ConsumerStatefulWidget {
   const AuthScreen({super.key});
 
@@ -29,8 +41,8 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
     with SingleTickerProviderStateMixin {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-  final _nameController = TextEditingController(); // used as First Name (Prénom)
-  final _lastNameController = TextEditingController(); // used as Last Name (Nom)
+  final _nameController = TextEditingController(); // Prénom
+  final _lastNameController = TextEditingController(); // Nom
   final _phoneController = TextEditingController();
   bool _obscurePassword = true;
   bool _isLoading = false;
@@ -77,13 +89,17 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
       final phone = _phoneController.text.trim();
       if (firstName.isEmpty || lastName.isEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Veuillez renseigner votre nom et prénom.')),
+          const SnackBar(
+            content: Text('Veuillez renseigner votre nom et prénom.'),
+          ),
         );
         return;
       }
       if (phone.isEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Veuillez renseigner votre numéro de téléphone.')),
+          const SnackBar(
+            content: Text('Veuillez renseigner votre numéro de téléphone.'),
+          ),
         );
         return;
       }
@@ -142,288 +158,198 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
     final isLogin = mode == AuthMode.login;
 
     return Scaffold(
-      backgroundColor: const Color(0xFF143B33),
-      body: FadeTransition(
-        opacity: _fadeAnim,
-        child: SafeArea(
-          child: Center(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 420),
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 18),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Container(
-                      width: double.infinity,
-                      height: 240,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(13),
-                        border: Border.all(color: const Color(0xFF5EA38E), width: 2),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.15),
-                            blurRadius: 10,
-                            offset: const Offset(0, 6),
-                          ),
-                        ],
+      backgroundColor: ClosetColors.vert,
+      body: SafeArea(
+        child: FadeTransition(
+          opacity: _fadeAnim,
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.only(bottom: AppSpacing.p24),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                const _HeroLogo(),
+                const SizedBox(height: 39),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  child: Text(
+                    isLogin
+                        ? 'Bienvenue dans votre dressing !'
+                        : 'Rejoignez le cercle',
+                    style: ClosetTextStyles.titreEcran.copyWith(
+                      letterSpacing: 0.44,
+                      color: ClosetColors.neutre200,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.p24),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      if (!isLogin) ...[
+                        _ChampAuth(
+                          label: 'Prénom',
+                          hint: 'Aïcha',
+                          controller: _nameController,
+                          textInputAction: TextInputAction.next,
+                        ),
+                        const SizedBox(height: AppSpacing.p16),
+                        _ChampAuth(
+                          label: 'Nom',
+                          hint: 'N.',
+                          controller: _lastNameController,
+                          textInputAction: TextInputAction.next,
+                        ),
+                        const SizedBox(height: AppSpacing.p16),
+                        _ChampAuth(
+                          label: 'Téléphone',
+                          hint: '+237 6 00 00 00 00',
+                          controller: _phoneController,
+                          keyboardType: TextInputType.phone,
+                          textInputAction: TextInputAction.next,
+                        ),
+                        const SizedBox(height: AppSpacing.p16),
+                      ],
+                      _ChampAuth(
+                        label: 'Email',
+                        hint: 'Example@email.com',
+                        controller: _emailController,
+                        keyboardType: TextInputType.emailAddress,
+                        textInputAction: TextInputAction.next,
                       ),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(11),
-                        child: Stack(
-                          fit: StackFit.expand,
-                          children: [
-                            Image.asset(
-                              'assets/landing_image.png',
-                              fit: BoxFit.cover,
-                              errorBuilder: (_, __, ___) => Container(
-                                color: AppTheme.forestGreen,
-                              ),
-                            ),
-                            Center(
-                              child: Positioned(
-                              bottom: 0,
-                              left: 0,
-                              right: 0,
-                              child: Center(
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 18,
-                                    vertical: 10,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFF103A2D).withValues(alpha: 0.72),
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  child: const Text(
-                                    'CLOS ET',
-                                    style: TextStyle(
-                                      fontFamily: 'Boldonse',
-                                      fontSize: 36,
-                                      fontWeight: FontWeight.w700,
-                                      color: Color(0xFFF4E9DB),
-                                      letterSpacing: 0.5,
-                                    ),
+                      const SizedBox(height: AppSpacing.p16),
+                      _ChampAuth(
+                        label: 'Mot de passe',
+                        hint: 'Au moins 8 caractères',
+                        controller: _passwordController,
+                        obscure: _obscurePassword,
+                        textInputAction: TextInputAction.done,
+                        onSubmitted: (_) => _submit(),
+                        suffix: IconButton(
+                          icon: Icon(
+                            _obscurePassword
+                                ? Icons.visibility_outlined
+                                : Icons.visibility_off_outlined,
+                            size: 18,
+                            color: ClosetColors.champPlaceholder,
+                          ),
+                          onPressed: () => setState(
+                            () => _obscurePassword = !_obscurePassword,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: AppSpacing.p8),
+                      Text(
+                        '8 caractères minimum, dont un chiffre.',
+                        style: ClosetTextStyles.meta.copyWith(
+                          fontWeight: FontWeight.w300,
+                          color: ClosetColors.beige,
+                        ),
+                      ),
+                      const SizedBox(height: AppSpacing.p24),
+                      _BoutonDore(
+                        label: isLogin ? 'ENTRER' : 'CRÉER MON COMPTE',
+                        enCours: _isLoading,
+                        onPressed: _isLoading ? null : _submit,
+                      ),
+                      const SizedBox(height: AppSpacing.p20),
+                      if (isLogin)
+                        Center(
+                          child: TextButton(
+                            onPressed: () {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text(
+                                    'Un lien de réinitialisation vous sera envoyé.',
                                   ),
                                 ),
+                              );
+                            },
+                            child: Text(
+                              'Mot de passe oublié',
+                              style: ClosetTextStyles.corps.copyWith(
+                                color: ClosetColors.beige,
                               ),
                             ),
-                            )
-                          ],
+                          ),
+                        ),
+                      const SizedBox(height: AppSpacing.p8),
+                      const _SeparateurOu(),
+                      const SizedBox(height: AppSpacing.p20),
+                      Center(
+                        child: SizedBox(
+                          width: 312,
+                          child: _BoutonDore(
+                            label: 'CONTINUER avec Google',
+                            icone: Icons.g_mobiledata_rounded,
+                            onPressed: () {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text(
+                                    'Connexion Google bientôt disponible.',
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
                         ),
                       ),
-                    ),
-                    const SizedBox(height: 18),
-                    const Text(
-                      'Bienvenue dans votre dressing !',
-                      textAlign: TextAlign.left,
-                      style: TextStyle(
-                        fontFamily: 'EB Garamond',
-                        fontSize: 18,
-                        fontWeight: FontWeight.w700,
-                        color: Color(0xFFEFE6D7),
-                        height: 1.2,
-                        fontStyle: FontStyle.italic,
-                      ),
-                    ),
-                    const SizedBox(height: 18),
-                    const Text(
-                      'Email',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        color: Color(0xFFEDE4D5),
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    _AuthField(
-                      controller: _emailController,
-                      hintText: 'Example@email.com',
-                      keyboardType: TextInputType.emailAddress,
-                    ),
-                    const SizedBox(height: 18),
-                    const Text(
-                      'Password',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        color: Color(0xFFEDE4D5),
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    _AuthField(
-                      controller: _passwordController,
-                      hintText: 'At least 8 characters',
-                      obscureText: _obscurePassword,
-                      suffix: GestureDetector(
-                        onTap: () => setState(
-                            () => _obscurePassword = !_obscurePassword),
-                        child: Icon(
-                          _obscurePassword
-                              ? Icons.visibility_off_outlined
-                              : Icons.visibility_outlined,
-                          size: 18,
-                          color: const Color(0xFFE8E1D5),
+                      const SizedBox(height: AppSpacing.p24),
+                      Center(
+                        child: TextButton(
+                          onPressed: () =>
+                              ref.read(authModeProvider.notifier).state =
+                                  isLogin ? AuthMode.register : AuthMode.login,
+                          child: Text.rich(
+                            TextSpan(
+                              text: isLogin
+                                  ? 'Pas encore membre ? '
+                                  : 'Déjà membre ? ',
+                              style: ClosetTextStyles.corps.copyWith(
+                                color: ClosetColors.beige,
+                              ),
+                              children: [
+                                TextSpan(
+                                  text: isLogin
+                                      ? 'Rejoindre le cercle'
+                                      : 'Se connecter',
+                                  style: ClosetTextStyles.corps.copyWith(
+                                    color: ClosetColors.fond300,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
                         ),
                       ),
-                    ),
-                    const SizedBox(height: 10),
-                    const Text(
-                      '8 caractères minimum, dont un chiffre.',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Color(0xFFDFD3C5),
-                      ),
-                    ),
-                    const SizedBox(height: 18),
-                    SizedBox(
-                      width: double.infinity,
-                      child: GestureDetector(
-                        onTap: _isLoading ? null : _submit,
-                        child: AnimatedContainer(
-                          duration: const Duration(milliseconds: 200),
-                          height: 54,
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFCDAB71),
-                            borderRadius: BorderRadius.circular(100),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withValues(alpha: 0.12),
-                                blurRadius: 8,
-                                offset: const Offset(0, 4),
+                      Center(
+                        child: TextButton(
+                          onPressed: () => context.go('/home'),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                'Continuer en invitée',
+                                style: ClosetTextStyles.detail.copyWith(
+                                  color: ClosetColors.fond400,
+                                ),
+                              ),
+                              const SizedBox(width: 5),
+                              const Icon(
+                                Icons.arrow_forward,
+                                size: 12,
+                                color: ClosetColors.fond400,
                               ),
                             ],
                           ),
-                          child: Center(
-                            child: _isLoading
-                                ? const SizedBox(
-                                    width: 20,
-                                    height: 20,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                      color: Color(0xFF143B33),
-                                    ),
-                                  )
-                                : const Text(
-                                    'ENTER',
-                                    style: TextStyle(
-                                      fontFamily: 'Lato',
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w900,
-                                      color: Color(0xFF123C32),
-                                      letterSpacing: 1,
-                                    
-                                    ),
-                                  ),
-                          ),
                         ),
                       ),
-                    ),
-                    const SizedBox(height: 18),
-                    Align(
-                      alignment: Alignment.center,
-                      child: GestureDetector(
-                        onTap: () {},
-                        child: const Text(
-                          'Mot de passe oublié',
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                            color: Color(0xFFEDE4D5),
-                            decoration: TextDecoration.underline,
-                            decorationColor: Color(0xFFEDE4D5),
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    const Row(
-                      children: [
-                        Expanded(child: Divider(color: Color(0xFF7FB0A0))),
-                        Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 12),
-                          child: Text(
-                            'Ou se connecter',
-                            style: TextStyle(
-                              fontSize: 16,
-                              color: Color(0xFFCDAB71),
-                            ),
-                          ),
-                        ),
-                        Expanded(child: Divider(color: Color(0xFF7FB0A0))),
-                      ],
-                    ),
-                    const SizedBox(height: 18),
-                    Container(
-                      height: 52,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFDFC29D),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const Center(
-                              child: Text(
-                                'G -',
-                                style: TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w900,
-                                  color: Color(0xFF353025),
-                                ),
-                              ),
-                          ),
-                          // const SizedBox(width: 10),
-                          const Text(
-                            'CONTINUER AVEC GOOGLE',
-                            style: TextStyle(
-                              fontFamily: 'Lato',
-                              fontSize: 16,
-                              fontWeight: FontWeight.w500,
-                              color: Color(0xFF123C32),
-                              letterSpacing: 0.5,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 18),
-                    const Center(
-                      child: Text.rich(
-                        TextSpan(
-                          text: 'Pas encore membre ? ',
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Color(0xFFEDE4D5),
-                          ),
-                          children: [
-                            TextSpan(
-                              text: 'Rejoindre le cercle',
-                              style: TextStyle(
-                                fontWeight: FontWeight.w700,
-                                decoration: TextDecoration.underline,
-                                decorationColor: Color(0xFFEDE4D5),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 14),
-                    const Center(
-                      child: Text(
-                        'Continuer en invité →',
-                        style: TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600,
-                          color: Color(0xFFB58A40),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 14),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
+              ],
             ),
           ),
         ),
@@ -432,57 +358,208 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
   }
 }
 
-// ── Auth Field ───────────────────────────────────────────────────────────────
-
-class _AuthField extends StatelessWidget {
-  final TextEditingController controller;
-  final String hintText;
-  final bool obscureText;
-  final TextInputType? keyboardType;
-  final Widget? suffix;
-
-  const _AuthField({
-    required this.controller,
-    required this.hintText,
-    this.obscureText = false,
-    this.keyboardType,
-    this.suffix,
-  });
+/// Carte photo de 352 × 210 (rayon 19) surmontée de la plaque au logo.
+class _HeroLogo extends StatelessWidget {
+  const _HeroLogo();
 
   @override
   Widget build(BuildContext context) {
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: const Color(0xFFF1EBE1),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFB8B0A0), width: 1.2),
-      ),
-      child: TextField(
-        controller: controller,
-        obscureText: obscureText,
-        keyboardType: keyboardType,
-        style: const TextStyle(
-          fontSize: 14,
-          color: AppTheme.blackCloset,
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.p20),
+      child: SizedBox(
+        height: 210,
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(19),
+              child: SizedBox.expand(
+                child: Image.asset(
+                  'assets/onboarding_1.jpg',
+                  fit: BoxFit.cover,
+                  errorBuilder: (_, _, _) =>
+                      const ColoredBox(color: ClosetColors.emeraude400),
+                ),
+              ),
+            ),
+            Image.asset(
+              'assets/logo_fond_vert.png',
+              width: 148,
+              height: 84,
+              fit: BoxFit.contain,
+              errorBuilder: (_, _, _) => const SizedBox(width: 148, height: 84),
+            ),
+          ],
         ),
-        decoration: InputDecoration(
-          hintText: hintText,
-          hintStyle: const TextStyle(
-            fontSize: 14,
-            color: Color(0xFF7A6C5A),
+      ),
+    );
+  }
+}
+
+/// Champ de l'écran de connexion : libellé doré au-dessus, zone bleutée
+/// bordée `#D4D7E3` de 42 de haut, rayon 8.
+class _ChampAuth extends StatelessWidget {
+  const _ChampAuth({
+    required this.label,
+    required this.hint,
+    required this.controller,
+    this.obscure = false,
+    this.keyboardType,
+    this.textInputAction,
+    this.onSubmitted,
+    this.suffix,
+  });
+
+  final String label;
+  final String hint;
+  final TextEditingController controller;
+  final bool obscure;
+  final TextInputType? keyboardType;
+  final TextInputAction? textInputAction;
+  final ValueChanged<String>? onSubmitted;
+  final Widget? suffix;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: ClosetTextStyles.labelChamp.copyWith(
+            color: ClosetColors.fond300,
           ),
-          suffixIcon: suffix != null
-              ? Padding(
-                  padding: const EdgeInsets.only(right: 12),
-                  child: suffix,
-                )
-              : null,
-          border: InputBorder.none,
-          enabledBorder: InputBorder.none,
-          focusedBorder: InputBorder.none,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        ),
+        const SizedBox(height: AppSpacing.p8),
+        SizedBox(
+          height: 42,
+          child: TextField(
+            controller: controller,
+            obscureText: obscure,
+            keyboardType: keyboardType,
+            textInputAction: textInputAction,
+            onSubmitted: onSubmitted,
+            style: ClosetTextStyles.saisie.copyWith(color: ClosetColors.noir),
+            cursorColor: ClosetColors.vert,
+            cursorWidth: 1.5,
+            decoration: InputDecoration(
+              hintText: hint,
+              hintStyle: ClosetTextStyles.saisie.copyWith(
+                color: ClosetColors.champPlaceholder,
+              ),
+              filled: true,
+              fillColor: ClosetColors.champFond,
+              isDense: true,
+              suffixIcon: suffix,
+              suffixIconConstraints: const BoxConstraints(
+                minWidth: 40,
+                minHeight: 40,
+              ),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.p12,
+                vertical: AppSpacing.p12,
+              ),
+              border: _bordure(ClosetColors.champBordure),
+              enabledBorder: _bordure(ClosetColors.champBordure),
+              focusedBorder: _bordure(ClosetColors.fond300),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  static OutlineInputBorder _bordure(Color couleur) => OutlineInputBorder(
+        borderRadius: BorderRadius.circular(AppRadius.carte),
+        borderSide: BorderSide(color: couleur, width: AppStroke.fin),
+      );
+}
+
+/// CTA doré de la maquette : 44 de haut, rayon 100, fond `#CDAB71`.
+class _BoutonDore extends StatelessWidget {
+  const _BoutonDore({
+    required this.label,
+    this.onPressed,
+    this.enCours = false,
+    this.icone,
+  });
+
+  final String label;
+  final VoidCallback? onPressed;
+  final bool enCours;
+  final IconData? icone;
+
+  @override
+  Widget build(BuildContext context) {
+    final rayon = BorderRadius.circular(AppRadius.cercle);
+    return SizedBox(
+      height: 44,
+      child: Material(
+        color: onPressed == null
+            ? ClosetColors.doreDesactive
+            : ClosetColors.fond300,
+        borderRadius: rayon,
+        child: InkWell(
+          borderRadius: rayon,
+          onTap: onPressed,
+          child: Center(
+            child: enCours
+                ? const SizedBox(
+                    width: 18,
+                    height: 18,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: ClosetColors.neutre900,
+                    ),
+                  )
+                : Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (icone != null) ...[
+                        Icon(icone, size: 20, color: ClosetColors.neutre900),
+                        const SizedBox(width: 10),
+                      ],
+                      Text(
+                        label,
+                        style: ClosetTextStyles.bouton.copyWith(
+                          color: ClosetColors.neutre900,
+                        ),
+                      ),
+                    ],
+                  ),
+          ),
         ),
       ),
+    );
+  }
+}
+
+/// Filet — texte — filet, comme dans la maquette.
+class _SeparateurOu extends StatelessWidget {
+  const _SeparateurOu();
+
+  @override
+  Widget build(BuildContext context) {
+    const filet = Expanded(
+      child: Divider(
+        color: ClosetColors.filetSeparateur,
+        thickness: AppStroke.fin,
+      ),
+    );
+    return Row(
+      children: [
+        filet,
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.p16),
+          child: Text(
+            'Ou se connecter',
+            style: ClosetTextStyles.corps.copyWith(
+              color: ClosetColors.fond300,
+            ),
+          ),
+        ),
+        filet,
+      ],
     );
   }
 }

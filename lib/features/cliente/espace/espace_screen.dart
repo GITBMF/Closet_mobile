@@ -1,135 +1,139 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 
+import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/closet_colors.dart';
 import '../../../core/theme/closet_text_styles.dart';
 import '../../../core/theme/theme_provider.dart';
+import '../../../core/widgets/closet_sections.dart';
 import '../../../data/models/user.dart';
 import '../../../data/repositories/auth_repository.dart';
 import '../../../data/repositories/sourceur_repository.dart';
+import '../../../data/repositories/wishlist_repository.dart';
 
-const _kProfileImage = 'assets/onboarding_1.jpg';
-
+/// Mon espace — transcription de la maquette `24:39`.
+///
+/// Entête à l'avatar rond de 74, carte verte « Devenir Sourceur », puis liste
+/// d'accès dont chaque entrée porte une tuile verte de 48 (rayon 8).
 class EspaceScreen extends ConsumerWidget {
   const EspaceScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final ClosetUser? user = ref.watch<ClosetUser?>(currentUserProvider);
-    final sourceurRepo = ref.watch<SourceurRepository>(sourceurRepositoryProvider);
-    final isDark = ref.watch<ThemeMode>(themeModeProvider) == ThemeMode.dark;
+    final sourceurRepo =
+        ref.watch<SourceurRepository>(sourceurRepositoryProvider);
+    final nbFavoris = ref.watch(wishlistListProvider).length;
 
     return Scaffold(
       backgroundColor: ClosetColors.beige,
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(24, 12, 24, 24),
+          padding: const EdgeInsets.only(bottom: AppSpacing.p32),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // ── Header ──────────────────────────────────────────────
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'Mon espace',
-                    style: GoogleFonts.ebGaramond(
-                      fontSize: 28,
-                      fontWeight: FontWeight.w600,
-                      color: ClosetColors.noir,
-                      height: 1.1,
-                    ),
-                  ),
-                  EspaceCircleButton(
-                    icon: Icons.tune,
-                    onTap: () => _showSettingsSheet(context, ref, isDark),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 24),
-
-              // ── Profile ─────────────────────────────────────────────
-              _ProfileSection(user: user),
-              const SizedBox(height: 20),
-
-              // ── Sourceur Banner ───────────────────────────────────
-              if (!sourceurRepo.estInscrit) ...[
-                _SourceurBanner(
-                  onTap: () => context.push('/sourceur/inscription'),
+              const SizedBox(height: AppSpacing.p8),
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.p20,
                 ),
-                const SizedBox(height: 20),
-              ],
-
-              // ── Menu ──────────────────────────────────────────────
-              _EspaceMenuItem(
-                icon: Icons.inventory_2_outlined,
-                label: 'Mes commandes',
-                onTap: () {
-                  if (user == null) {
-                    _showLoginRequiredDialog(context);
-                  } else {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Vos commandes seront bientôt disponibles.')),
-                    );
-                  }
-                },
+                child: Row(
+                  children: [
+                    const Expanded(child: ClosetTitreEcran('Mon espace')),
+                    _BoutonReglages(
+                      onTap: () => context.push('/espace/confidentialite'),
+                    ),
+                  ],
+                ),
               ),
-              _EspaceMenuItem(
-                icon: Icons.favorite_border,
+              const SizedBox(height: AppSpacing.p24),
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.p20,
+                ),
+                child: _EnTeteProfil(
+                  user: user,
+                  onEditer: () => context.push('/espace/infos'),
+                ),
+              ),
+              const SizedBox(height: AppSpacing.p24),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 19),
+                child: _CarteSourceur(
+                  dejaInscrit: sourceurRepo.estInscrit,
+                  onTap: () => context.push(
+                    sourceurRepo.estInscrit
+                        ? '/sourceur/espace'
+                        : '/sourceur/devenir',
+                  ),
+                ),
+              ),
+              const SizedBox(height: AppSpacing.p24),
+              _EntreeEspace(
+                icone: Icons.receipt_long_outlined,
+                label: 'Mes commandes',
+                onTap: () => context.push('/espace/commandes'),
+              ),
+              _EntreeEspace(
+                icone: Icons.favorite_border,
                 label: 'Mes favoris',
+                compteur: nbFavoris,
                 onTap: () => context.go('/wishlist'),
               ),
-              _EspaceMenuItem(
-                icon: Icons.location_on_outlined,
+              _EntreeEspace(
+                icone: Icons.location_on_outlined,
                 label: 'Mes adresses',
-                onTap: () {
-                  if (user == null) {
-                    context.push('/espace/adresses');
-                    // _showLoginRequiredDialog(context);
-                  } else {
-                    context.push('/espace/adresses');
-                  }
-                },
+                onTap: () => context.push('/espace/adresses'),
               ),
-              _EspaceMenuItem(
-                icon: Icons.person_outline,
+              _EntreeEspace(
+                icone: Icons.person_outline,
                 label: 'Mes informations',
-                onTap: () {
-                  if (user == null) {
-                    _showLoginRequiredDialog(context);
-                  } else {
-                    context.push('/espace/infos');
-                  }
-                },
+                onTap: () => context.push('/espace/infos'),
               ),
-              _EspaceMenuItem(
-                icon: Icons.notifications_none,
+              _EntreeEspace(
+                icone: Icons.notifications_none_rounded,
                 label: 'Mes notifications',
-                onTap: () {
-                  if (user == null) {
-                    _showLoginRequiredDialog(context);
-                  } else {
-                    context.push('/espace/alertes');
-                  }
-                },
+                onTap: () => context.push('/espace/alertes'),
               ),
-              _EspaceMenuItem(
-                icon: Icons.logout,
+              _EntreeEspace(
+                icone: Icons.logout_rounded,
                 label: 'Logout',
-                onTap: () {
-                  if (user != null) {
-                    ref.read(currentUserProvider.notifier).state = null;
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Vous avez été déconnecté.')),
-                    );
-                  } else {
-                    context.push('/auth');
-                  }
-                },
-                showDivider: false,
+                onTap: () => context.push('/espace/deconnexion'),
               ),
+              const SizedBox(height: AppSpacing.p24),
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: AppSpacing.p24),
+                child: ClosetSurtitre('aide & préférences'),
+              ),
+              const SizedBox(height: AppSpacing.p12),
+              _EntreeEspace(
+                icone: Icons.credit_card_outlined,
+                label: 'Moyens de paiement',
+                onTap: () => context.push('/espace/paiements'),
+              ),
+              _EntreeEspace(
+                icone: Icons.help_outline_rounded,
+                label: 'Questions fréquentes',
+                onTap: () => context.push('/espace/faq'),
+              ),
+              _EntreeEspace(
+                icone: Icons.mail_outline_rounded,
+                label: 'Nous contacter',
+                onTap: () => context.push('/espace/contact'),
+              ),
+              _EntreeEspace(
+                icone: Icons.shield_outlined,
+                label: 'Confidentialité',
+                onTap: () => context.push('/espace/confidentialite'),
+              ),
+              _EntreeEspace(
+                icone: Icons.star_border_rounded,
+                label: 'Donner mon avis',
+                onTap: () => context.push('/espace/evaluation'),
+              ),
+              const _BasculeTheme(),
             ],
           ),
         ),
@@ -137,223 +141,160 @@ class EspaceScreen extends ConsumerWidget {
     );
   }
 
-  void _showSettingsSheet(BuildContext context, WidgetRef ref, bool isDark) {
-    showModalBottomSheet<void>(
-      context: context,
-      backgroundColor: ClosetColors.creme,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      builder: (context) {
-        return Padding(
-          padding: const EdgeInsets.fromLTRB(24, 20, 24, 32),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('Préférences', style: ClosetTextStyles.sectionTitle),
-              const SizedBox(height: 20),
-              ListTile(
-                contentPadding: EdgeInsets.zero,
-                leading: const Icon(Icons.dark_mode_outlined, color: ClosetColors.vert),
-                title: Text('Mode sombre', style: ClosetTextStyles.corps),
-                trailing: Switch(
-                  value: isDark,
-                  activeThumbColor: ClosetColors.dore,
-                  onChanged: (_) {
-                    ref.read<ThemeModeNotifier>(themeModeProvider.notifier).toggleTheme();
-                    Navigator.pop(context);
-                  },
-                ),
-              ),
-              const Divider(color: ClosetColors.ligne),
-              ListTile(
-                contentPadding: EdgeInsets.zero,
-                leading: const Icon(Icons.help_outline, color: ClosetColors.vert),
-                title: Text('FAQ & aide', style: ClosetTextStyles.corps),
-                onTap: () {
-                  Navigator.pop(context);
-                  context.push('/espace/faq');
-                },
-              ),
-              ListTile(
-                contentPadding: EdgeInsets.zero,
-                leading: const Icon(Icons.privacy_tip_outlined, color: ClosetColors.vert),
-                title: Text('Confidentialité', style: ClosetTextStyles.corps),
-                onTap: () {
-                  Navigator.pop(context);
-                  context.push('/espace/confidentialite');
-                },
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  void _showLoginRequiredDialog(BuildContext context) {
-    showDialog<void>(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          backgroundColor: ClosetColors.creme,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-          title: const Row(
-            children: [
-              Icon(Icons.lock_outline, color: ClosetColors.vert),
-              SizedBox(width: 10),
-              Text(
-                'Connexion requise',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w700,
-                  color: ClosetColors.noir,
-                ),
-              ),
-            ],
-          ),
-          content: const Text(
-            'Veuillez vous connecter à votre compte ClosET pour accéder à vos informations personnelles.',
-            style: TextStyle(fontSize: 14, color: ClosetColors.noir, height: 1.4),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text(
-                'Annuler',
-                style: TextStyle(color: ClosetColors.taupe, fontWeight: FontWeight.w600),
-              ),
-            ),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: ClosetColors.vert,
-                foregroundColor: ClosetColors.creme,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-              ),
-              onPressed: () {
-                Navigator.pop(context);
-                context.push('/auth');
-              },
-              child: const Text('Se connecter'),
-            ),
-          ],
-        );
-      },
-    );
-  }
 }
 
-// ── Shared circle button (also used by sub-screens) ─────────────────────────
-
-class EspaceCircleButton extends StatelessWidget {
-  const EspaceCircleButton({
+/// Bouton rond de réglages, en haut à droite.
+/// Bouton circulaire des en-têtes de l'espace cliente.
+class EspaceBoutonRond extends StatelessWidget {
+  const EspaceBoutonRond({
     super.key,
-    required this.icon,
+    required this.icone,
+    required this.label,
     required this.onTap,
   });
 
-  final IconData icon;
+  final IconData icone;
+  final String label;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: 44,
-        height: 44,
-        decoration: BoxDecoration(
-          color: ClosetColors.creme,
-          shape: BoxShape.circle,
-          border: Border.all(color: ClosetColors.ligne, width: 1),
+    return Semantics(
+      button: true,
+      label: label,
+      child: GestureDetector(
+        onTap: onTap,
+        child: Container(
+          width: 42,
+          height: 42,
+          decoration: BoxDecoration(
+            color: Colors.white,
+            shape: BoxShape.circle,
+            border: Border.all(
+              color: ClosetColors.fond300,
+              width: AppStroke.fin,
+            ),
+          ),
+          child: Icon(icone, size: 18, color: ClosetColors.vert),
         ),
-        child: Icon(icon, size: 20, color: ClosetColors.noir),
       ),
     );
   }
 }
 
-// ── Profile Section ──────────────────────────────────────────────────────────
+class _BoutonReglages extends StatelessWidget {
+  const _BoutonReglages({required this.onTap});
 
-class _ProfileSection extends StatelessWidget {
-  const _ProfileSection({required this.user});
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return EspaceBoutonRond(
+      icone: Icons.tune,
+      label: 'Réglages',
+      onTap: onTap,
+    );
+  }
+}
+
+/// Avatar de 74, nom en Cormorant, ancienneté, et pastille d'édition.
+class _EnTeteProfil extends StatelessWidget {
+  const _EnTeteProfil({required this.user, required this.onEditer});
 
   final ClosetUser? user;
+  final VoidCallback onEditer;
 
-  String get _displayName {
-    if (user == null) return 'Aïcha N.';
-    final lastInitial = user!.lastName.isNotEmpty ? '${user!.lastName[0]}.' : '';
-    return '${user!.firstName} $lastInitial'.trim();
+  static String _initiales(ClosetUser u) {
+    final p = u.firstName.isNotEmpty ? u.firstName[0].toUpperCase() : '';
+    final n = u.lastName.isNotEmpty ? u.lastName[0].toUpperCase() : '';
+    final i = '$p$n';
+    return i.isEmpty ? '?' : i;
   }
 
   @override
   Widget build(BuildContext context) {
+    final nom = user == null
+        ? 'Invitée'
+        : '${user!.firstName} ${user!.lastName.isEmpty ? '' : '${user!.lastName[0]}.'}'
+            .trim();
+
     return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        ClipOval(
-          child: Image.asset(
-            _kProfileImage,
-            width: 60,
-            height: 60,
-            fit: BoxFit.cover,
-            errorBuilder: (_, _, _) => Container(
-              width: 60,
-              height: 60,
-              color: ClosetColors.fond300,
-              child: const Icon(Icons.person, color: ClosetColors.taupe, size: 32),
-            ),
+        Container(
+          width: 74,
+          height: 74,
+          alignment: Alignment.center,
+          decoration: const BoxDecoration(
+            color: ClosetColors.emeraude100,
+            shape: BoxShape.circle,
           ),
+          child: user == null
+              ? const Icon(Icons.person, size: 34, color: ClosetColors.taupe)
+              : Text(
+                  _initiales(user!),
+                  style: ClosetTextStyles.titreSection.copyWith(
+                    color: ClosetColors.vert,
+                  ),
+                ),
         ),
-        const SizedBox(width: 14),
+        const SizedBox(width: AppSpacing.p16),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
                 children: [
-                  Text(
-                    _displayName,
-                    style: GoogleFonts.lato(
-                      fontSize: 17,
-                      fontWeight: FontWeight.w700,
-                      color: ClosetColors.noir,
+                  Flexible(
+                    child: Text(
+                      nom,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: ClosetTextStyles.titreSection,
                     ),
                   ),
-                  const SizedBox(width: 5),
-                  const Icon(Icons.verified, size: 17, color: ClosetColors.dore),
-                  const SizedBox(width: 10),
-                  Expanded(child: Container()),
-                  GestureDetector(
-                    onTap: () {
-                      // if (user != null) {
-                        context.push('/espace/infos');
-                      // }
-                    },
-                    child: Container(
-                      width: 34,
-                      height: 34,
-                      decoration: const BoxDecoration(
-                        color: ClosetColors.vert,
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Icon(Icons.edit_outlined, size: 15, color: ClosetColors.creme),
+                  if (user != null) ...[
+                    const SizedBox(width: 6),
+                    const Icon(
+                      Icons.verified,
+                      size: 12,
+                      color: ClosetColors.fond300,
                     ),
-                  ),
+                  ],
                 ],
               ),
-              const SizedBox(height: 3),
+              const SizedBox(height: AppSpacing.p4),
               Text(
-                'Membre du dressing depuis mars 2026',
-                style: GoogleFonts.lato(
-                  fontSize: 11.5,
-                  fontWeight: FontWeight.w400,
-                  color: ClosetColors.taupe,
-                  height: 1.3,
+                user == null
+                    ? 'Connectez-vous pour retrouver vos pièces'
+                    : 'Membre du dressing',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: ClosetTextStyles.meta.copyWith(
+                  letterSpacing: -0.20,
+                  color: ClosetColors.neutre900,
                 ),
               ),
             ],
+          ),
+        ),
+        Semantics(
+          button: true,
+          label: 'Modifier mon profil',
+          child: GestureDetector(
+            onTap: onEditer,
+            child: Container(
+              width: 36,
+              height: 36,
+              decoration: const BoxDecoration(
+                color: ClosetColors.vert,
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.edit_outlined,
+                size: 15,
+                color: Colors.white,
+              ),
+            ),
           ),
         ),
       ],
@@ -361,171 +302,205 @@ class _ProfileSection extends StatelessWidget {
   }
 }
 
-// ── Sourceur Banner ──────────────────────────────────────────────────────────
+/// Carte verte 352 × 97 invitant à rejoindre le programme sourceur.
+class _CarteSourceur extends StatelessWidget {
+  const _CarteSourceur({required this.dejaInscrit, required this.onTap});
 
-class _SourceurBanner extends StatelessWidget {
-  const _SourceurBanner({required this.onTap});
-
+  final bool dejaInscrit;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.fromLTRB(18, 16, 18, 18),
+      constraints: const BoxConstraints(minHeight: 97),
+      padding: const EdgeInsets.all(AppSpacing.p20),
       decoration: BoxDecoration(
         color: ClosetColors.vert,
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(AppRadius.carte),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Row(
         children: [
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-            decoration: BoxDecoration(
-              color: const Color(0xFF98C1B0),
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Text(
-              'NOUVEAU',
-              style: GoogleFonts.lato(
-                fontSize: 9,
-                fontWeight: FontWeight.w800,
-                letterSpacing: 1,
-                color: ClosetColors.vertFonce,
-              ),
-            ),
-          ),
-          const SizedBox(height: 14),
-          Container(
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // Left side - takes 50% of the width
-                Expanded(
-                  flex: 1,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Devenir Sourceur Clos ET',
-                        style: GoogleFonts.ebGaramond(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                          fontStyle: FontStyle.italic,
-                          color: Color(0xFFE1CDA6),
-                          height: 1.2,
-                        ),
-                      ),
-                      const SizedBox(height: 6),
-                      Text(
-                        "Confiez vos pièces d'exceptionnet rejoignez notre cercle privénde curatrices",
-                        style: GoogleFonts.lato(
-                          fontSize: 11.5,
-                          fontWeight: FontWeight.w400,
-                          color: ClosetColors.creme.withValues(alpha: 0.85),
-                          height: 1.4,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(width: 10),
-                // Right side - takes 50% of the width
-                Expanded(
-                  flex: 1,
-                  child: GestureDetector(
-                    onTap: onTap,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 17),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFC49A6C),
-                        borderRadius: BorderRadius.circular(22),
-                      ),
-                      child: Text(
-                        "REJOINDRE LE CERCLE",
-                        textAlign: TextAlign.center,
-                        style: GoogleFonts.lato(
-                          fontSize: 10,
-                          fontWeight: FontWeight.w800,
-                          letterSpacing: 0.6,
-                          color: ClosetColors.noir,
-                          height: 1.3,
-                        ),
+                if (!dejaInscrit)
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.p12,
+                      vertical: 2,
+                    ),
+                    decoration: BoxDecoration(
+                      color: ClosetColors.emeraude100,
+                      borderRadius:
+                          BorderRadius.circular(AppRadius.vignette),
+                    ),
+                    child: Text(
+                      'nouveau',
+                      style: ClosetTextStyles.attribut.copyWith(
+                        color: ClosetColors.emeraude500,
                       ),
                     ),
+                  ),
+                const SizedBox(height: AppSpacing.p4),
+                Text(
+                  dejaInscrit
+                      ? 'Mon espace Sourceur'
+                      : 'Devenir Sourceur Clos ET',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: ClosetTextStyles.prix.copyWith(
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: 0,
+                    color: ClosetColors.neutre300,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  'Confiez vos pièces d’exception et rejoignez notre cercle.',
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: ClosetTextStyles.attribut.copyWith(
+                    fontWeight: FontWeight.w300,
+                    letterSpacing: 0.16,
+                    color: Colors.white,
                   ),
                 ),
               ],
             ),
-          )
+          ),
+          const SizedBox(width: AppSpacing.p12),
+          SizedBox(
+            width: 130,
+            height: 44,
+            child: Material(
+              color: ClosetColors.fond300,
+              borderRadius: BorderRadius.circular(AppRadius.cercle),
+              child: InkWell(
+                borderRadius: BorderRadius.circular(AppRadius.cercle),
+                onTap: onTap,
+                child: Center(
+                  child: Text(
+                    dejaInscrit ? 'mon atelier' : 'rejoindre le cercle',
+                    textAlign: TextAlign.center,
+                    style: ClosetTextStyles.actionPetite.copyWith(
+                      color: ClosetColors.neutre1000,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
         ],
       ),
     );
   }
 }
 
-// ── Menu Item ────────────────────────────────────────────────────────────────
-
-class _EspaceMenuItem extends StatelessWidget {
-  const _EspaceMenuItem({
-    required this.icon,
+/// Entrée de liste : tuile verte de 48 (rayon 8), libellé, chevron.
+class _EntreeEspace extends StatelessWidget {
+  const _EntreeEspace({
+    required this.icone,
     required this.label,
     required this.onTap,
-    this.showDivider = true,
+    this.compteur,
   });
 
-  final IconData icon;
+  final IconData icone;
   final String label;
   final VoidCallback onTap;
-  final bool showDivider;
+  final int? compteur;
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        InkWell(
-          onTap: onTap,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 14),
-            child: Row(
-              children: [
-                Container(
-                  width: 40,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    color: ClosetColors.fond300,
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Icon(icon, size: 20, color: ClosetColors.noir.withValues(alpha: 0.75)),
+    return InkWell(
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.p24,
+          vertical: AppSpacing.p12,
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 48,
+              height: 48,
+              decoration: BoxDecoration(
+                color: ClosetColors.vert,
+                borderRadius: BorderRadius.circular(AppRadius.carte),
+              ),
+              child: Icon(icone, size: 18, color: Colors.white),
+            ),
+            const SizedBox(width: AppSpacing.p16),
+            Expanded(
+              child: Text(
+                label,
+                style: ClosetTextStyles.libelle,
+              ),
+            ),
+            if (compteur != null && compteur! > 0) ...[
+              Text(
+                '$compteur',
+                style: ClosetTextStyles.meta.copyWith(
+                  color: ClosetColors.fond400,
                 ),
-                const SizedBox(width: 14),
-                Expanded(
-                  child: Text(
-                    label,
-                    style: GoogleFonts.lato(
-                      fontSize: 14.5,
-                      fontWeight: FontWeight.w500,
-                      color: ClosetColors.noir,
-                    ),
-                  ),
-                ),
-                Icon(
-                  Icons.chevron_right,
-                  size: 18,
-                  color: ClosetColors.noir.withValues(alpha: 0.3),
-                ),
-              ],
+              ),
+              const SizedBox(width: AppSpacing.p8),
+            ],
+            const Icon(
+              Icons.chevron_right,
+              size: 18,
+              color: ClosetColors.noir,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Bascule clair / sombre, conservée de la version précédente.
+class _BasculeTheme extends ConsumerWidget {
+  const _BasculeTheme();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final sombre = ref.watch<ThemeMode>(themeModeProvider) == ThemeMode.dark;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.p24,
+        vertical: AppSpacing.p12,
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 48,
+            height: 48,
+            decoration: BoxDecoration(
+              color: ClosetColors.vert,
+              borderRadius: BorderRadius.circular(AppRadius.carte),
+            ),
+            child: Icon(
+              sombre ? Icons.dark_mode_outlined : Icons.light_mode_outlined,
+              size: 18,
+              color: Colors.white,
             ),
           ),
-        ),
-        if (showDivider)
-          Divider(
-            height: 1,
-            thickness: 1,
-            color: ClosetColors.ligne.withValues(alpha: 0.7),
+          const SizedBox(width: AppSpacing.p16),
+          Expanded(
+            child: Text('Thème sombre', style: ClosetTextStyles.libelle),
           ),
-      ],
+          Switch(
+            value: sombre,
+            activeColor: ClosetColors.vert,
+            onChanged: (_) => ref
+                .read<ThemeModeNotifier>(themeModeProvider.notifier)
+                .toggleTheme(),
+          ),
+        ],
+      ),
     );
   }
 }

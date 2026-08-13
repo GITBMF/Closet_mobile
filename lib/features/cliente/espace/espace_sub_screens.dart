@@ -32,8 +32,9 @@ class EspaceSubAppBar extends StatelessWidget implements PreferredSizeWidget {
       leading: Padding(
         padding: const EdgeInsets.only(left: 16),
         child: Center(
-          child: EspaceCircleButton(
-            icon: Icons.arrow_back,
+          child: EspaceBoutonRond(
+            icone: Icons.arrow_back,
+            label: 'Retour',
             onTap: () => context.pop(),
           ),
         ),
@@ -48,15 +49,16 @@ class EspaceSubAppBar extends StatelessWidget implements PreferredSizeWidget {
                 fontStyle: FontStyle.italic,
                 color: ClosetColors.noir,
               )
-            : ClosetTextStyles.title.copyWith(fontSize: 20),
+            : ClosetTextStyles.titreEcran.copyWith(fontSize: 20),
       ),
       centerTitle: true,
       actions: [
         Padding(
           padding: const EdgeInsets.only(right: 16),
           child: Center(
-            child: EspaceCircleButton(
-              icon: Icons.tune,
+            child: EspaceBoutonRond(
+              icone: Icons.tune,
+              label: 'Réglages',
               onTap: onSettingsTap ?? () {},
             ),
           ),
@@ -616,7 +618,7 @@ class _EspaceAlertesScreenState extends State<EspaceAlertesScreen> {
                           ),
                           Switch(
                             value: alert['active'] as bool,
-                            activeThumbColor: ClosetColors.dore,
+                            activeColor: ClosetColors.dore,
                             activeTrackColor: ClosetColors.vert,
                             onChanged: (val) {
                               setState(() {
