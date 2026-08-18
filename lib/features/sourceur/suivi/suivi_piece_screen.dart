@@ -67,7 +67,9 @@ class _Corps extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final refusee = piece.statut == StatutPiece.refusee;
+    // Une pièce retournée est passée par le refus : même branche de frise.
+    final refusee = piece.statut == StatutPiece.refusee ||
+        piece.statut == StatutPiece.retournee;
 
     return ListView(
       padding: const EdgeInsets.fromLTRB(
@@ -155,6 +157,7 @@ class _Corps extends StatelessWidget {
     final analysee = piece.statut != StatutPiece.enRevue;
     final publiee = piece.statut == StatutPiece.publiee ||
         piece.statut == StatutPiece.vendue;
+    final retournee = piece.statut == StatutPiece.retournee;
 
     return [
       const EtapeFrise(
@@ -180,9 +183,12 @@ class _Corps extends StatelessWidget {
           detail: 'La pièce ne correspond pas aux normes actuelles de ClosET.',
           echec: true,
         ),
-        const EtapeFrise(
+        EtapeFrise(
           titre: 'Retour de l’article',
-          detail: 'Vous recevrez votre pièce d’ici peu',
+          detail: retournee
+              ? 'Votre pièce vous a été retournée.'
+              : 'Vous recevrez votre pièce d’ici peu',
+          atteinte: retournee,
         ),
       ] else ...[
         EtapeFrise(

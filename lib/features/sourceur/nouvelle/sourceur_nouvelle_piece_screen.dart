@@ -51,6 +51,9 @@ class _SourceurNouvellePieceScreenState
   String _etat = etatsPiece.first;
   XFile? _photo;
   bool _envoiEnCours = false;
+  // Jamais pré-cochée — consentement explicite exigé avant tout partage
+  // de la pièce sur les réseaux sociaux de la marque.
+  bool _consentementReseaux = false;
 
   @override
   void dispose() {
@@ -94,6 +97,7 @@ class _SourceurNouvellePieceScreenState
       // TODO(backend): téléverser la photo et stocker l'URL renvoyée.
       imageUrl: _photo?.path,
       statut: StatutPiece.enRevue,
+      consentementReseaux: _consentementReseaux,
     );
 
     try {
@@ -243,6 +247,12 @@ class _SourceurNouvellePieceScreenState
                         onPrendre: () => _choisirPhoto(ImageSource.camera),
                         onImporter: () => _choisirPhoto(ImageSource.gallery),
                         onRetirer: () => setState(() => _photo = null),
+                      ),
+                      const SizedBox(height: AppSpacing.p20),
+                      _ConsentementReseaux(
+                        valeur: _consentementReseaux,
+                        onChanged: (v) =>
+                            setState(() => _consentementReseaux = v),
                       ),
                       const SizedBox(height: AppSpacing.p24),
                       Center(
@@ -497,6 +507,68 @@ class _ZoneDepotPhotos extends StatelessWidget {
             ],
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// Consentement de diffusion sur les réseaux sociaux ClosET — jamais
+/// pré-coché (critère de recette explicite : la case doit être décochée
+/// par défaut à chaque ouverture du formulaire).
+class _ConsentementReseaux extends StatelessWidget {
+  const _ConsentementReseaux({required this.valeur, required this.onChanged});
+
+  final bool valeur;
+  final ValueChanged<bool> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      button: true,
+      checked: valeur,
+      label: 'Autoriser ClosET à partager cette pièce sur ses réseaux '
+          'sociaux',
+      child: InkWell(
+        borderRadius: BorderRadius.circular(AppRadius.carte),
+        onTap: () => onChanged(!valeur),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(minHeight: 44),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 150),
+                width: 20,
+                height: 20,
+                margin: const EdgeInsets.only(top: AppSpacing.p4),
+                decoration: BoxDecoration(
+                  color: valeur ? ClosetColors.vert : Colors.white,
+                  borderRadius: BorderRadius.circular(4),
+                  border: Border.all(
+                    color: valeur
+                        ? ClosetColors.vert
+                        : ClosetColors.bordureBoutonClair,
+                    width: AppStroke.fin,
+                  ),
+                ),
+                child: valeur
+                    ? const Icon(Icons.check, size: 14, color: Colors.white)
+                    : null,
+              ),
+              const SizedBox(width: AppSpacing.p12),
+              Expanded(
+                child: Text(
+                  'J’autorise ClosET à diffuser cette pièce sur ses '
+                  'réseaux sociaux (optionnel).',
+                  style: ClosetTextStyles.labelChamp.copyWith(
+                    fontWeight: FontWeight.w500,
+                    color: ClosetColors.neutre700,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

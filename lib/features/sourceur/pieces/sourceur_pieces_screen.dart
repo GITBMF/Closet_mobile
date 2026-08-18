@@ -237,6 +237,7 @@ class _CarteDepot extends StatelessWidget {
         StatutPiece.enRevue => StatusBadge.enAnalyse(),
         StatutPiece.vendue => StatusBadge.livree('Vendue'),
         StatutPiece.refusee => StatusBadge.refusee(),
+        StatutPiece.retournee => StatusBadge.retournee(),
       };
 
   @override

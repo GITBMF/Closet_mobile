@@ -27,7 +27,8 @@ class InspectionPieceScreen extends StatelessWidget {
           const SizedBox(height: 42),
           const TexteTransaction(
             'Notre équipe va examiner votre pièce avec le plus grand soin. '
-            'Vous serez notifiée à chaque étape de l’analyse.',
+            'Nous vérifions vos informations et nous vous reviendrons très '
+            'rapidement avec une réponse.',
           ),
           const Spacer(),
           BoutonTransaction(
