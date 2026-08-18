@@ -10,6 +10,9 @@ class PieceDeposee {
   final double prix;
   final String? imageUrl;
   final StatutPiece statut;
+  // Consentement de diffusion sur les réseaux sociaux de la marque, donné
+  // au dépôt — jamais vrai par défaut (case décochée à la source).
+  final bool consentementReseaux;
 
   const PieceDeposee({
     required this.id,
@@ -18,6 +21,7 @@ class PieceDeposee {
     required this.prix,
     this.imageUrl,
     required this.statut,
+    this.consentementReseaux = false,
   });
 
   factory PieceDeposee.fromJson(Map<String, dynamic> json) {
@@ -31,6 +35,7 @@ class PieceDeposee {
         (s) => s.name == json['statut'],
         orElse: () => StatutPiece.enRevue,
       ),
+      consentementReseaux: json['consentementReseaux'] as bool? ?? false,
     );
   }
 
@@ -41,11 +46,19 @@ class PieceDeposee {
         'prix': prix,
         'imageUrl': imageUrl,
         'statut': statut.name,
+        'consentementReseaux': consentementReseaux,
       };
 }
 
 /// Statuts possibles d'une pièce déposée.
-enum StatutPiece { enRevue, publiee, vendue, refusee }
+///
+/// Cinq états, alignés sur les cinq badges de la maquette `36:2063`
+/// (`StatusBadge` § statuts de pièce sourceur) : [enRevue] et [publiee]
+/// couvrent « dépôt reçu » / « en cours d'analyse » et « mis en vente »,
+/// [vendue] emprunte le badge « Livrée » du set commande, [refusee] et
+/// [retournee] distinguent le refus de son dénouement (la pièce a
+/// effectivement été rendue à la sourceuse).
+enum StatutPiece { enRevue, publiee, vendue, refusee, retournee }
 
 /// Revenus résumés du sourceur.
 class RevenusSourceur {
