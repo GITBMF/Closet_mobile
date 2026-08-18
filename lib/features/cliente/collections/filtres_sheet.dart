@@ -46,7 +46,8 @@ class _FiltresSheet extends ConsumerWidget {
     final univers = ref.watch<String>(selectedUniverseProvider);
     final taille = ref.watch<String?>(filterSizeProvider);
     final etat = ref.watch<String?>(filterConditionProvider);
-    final prixMax = ref.watch<double?>(filterPriceProvider) ?? prixMaximum;
+    final fourchette = ref.watch<RangeValues?>(filterPriceRangeProvider) ??
+        const RangeValues(prixMinimum, prixMaximum);
 
     return DraggableScrollableSheet(
       initialChildSize: 0.78,
@@ -80,7 +81,7 @@ class _FiltresSheet extends ConsumerWidget {
                 ref.read(filterBrandProvider.notifier).setBrand(null);
                 ref.read(filterSizeProvider.notifier).setSize(null);
                 ref.read(filterConditionProvider.notifier).setCondition(null);
-                ref.read(filterPriceProvider.notifier).setPrice(null);
+                ref.read(filterPriceRangeProvider.notifier).setRange(null);
                 ref
                     .read<UniverseNotifier>(selectedUniverseProvider.notifier)
                     .setUniverse(CollectionsScreen.universes.first);
@@ -148,29 +149,35 @@ class _FiltresSheet extends ConsumerWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  formatPrixFcfa(prixMinimum),
+                  formatPrixFcfa(fourchette.start),
                   style: ClosetTextStyles.prix.copyWith(
                     color: ClosetColors.vert,
                   ),
                 ),
                 Text(
-                  formatPrixFcfa(prixMax),
+                  formatPrixFcfa(fourchette.end),
                   style: ClosetTextStyles.prix.copyWith(
                     color: ClosetColors.vert,
                   ),
                 ),
               ],
             ),
-            Slider(
-              value: prixMax.clamp(prixMinimum, prixMaximum),
+            RangeSlider(
+              values: RangeValues(
+                fourchette.start.clamp(prixMinimum, prixMaximum),
+                fourchette.end.clamp(prixMinimum, prixMaximum),
+              ),
               min: prixMinimum,
               max: prixMaximum,
               divisions: 35,
               activeColor: ClosetColors.vert,
               inactiveColor: ClosetColors.ligne,
-              label: formatPrixFcfa(prixMax),
+              labels: RangeLabels(
+                formatPrixFcfa(fourchette.start),
+                formatPrixFcfa(fourchette.end),
+              ),
               onChanged: (v) =>
-                  ref.read(filterPriceProvider.notifier).setPrice(v),
+                  ref.read(filterPriceRangeProvider.notifier).setRange(v),
             ),
             const SizedBox(height: AppSpacing.p20),
             SizedBox(

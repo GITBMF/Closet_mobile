@@ -487,7 +487,7 @@ class _BarreAjout extends ConsumerWidget {
       child: Padding(
         padding: const EdgeInsets.fromLTRB(19, 0, 19, AppSpacing.p12),
         child: Container(
-          constraints: const BoxConstraints(minHeight: 97),
+          height: 97,
           padding: const EdgeInsets.symmetric(horizontal: AppSpacing.p20),
           decoration: BoxDecoration(
             color: ClosetColors.vert,
@@ -497,11 +497,11 @@ class _BarreAjout extends ConsumerWidget {
             children: [
               Expanded(
                 child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'à  Ajouter',
+                      'à Ajouter',
                       style: ClosetTextStyles.corpsMedium.copyWith(
                         fontWeight: FontWeight.w600,
                         color: ClosetColors.neutre300,
@@ -517,6 +517,7 @@ class _BarreAjout extends ConsumerWidget {
                   ],
                 ),
               ),
+              const SizedBox(width: AppSpacing.p12),
               SizedBox(
                 width: 170,
                 height: 44,
@@ -530,26 +531,30 @@ class _BarreAjout extends ConsumerWidget {
                     onTap: indisponible
                         ? null
                         : () {
-                            ref
-                                .read(cartProvider.notifier)
-                                .addArticle(article);
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content:
-                                    Text('Ajoutée à votre sélection.'),
-                              ),
-                            );
+                            if (!dejaDansPanier) {
+                              ref
+                                  .read(cartProvider.notifier)
+                                  .addArticle(article);
+                            }
+                            context.go('/selection');
                           },
                     child: Center(
-                      child: Text(
-                        indisponible
-                            ? 'Indisponible'
-                            : dejaDansPanier
-                                ? 'Déjà dans ma sélection'
-                                : 'Ajouter à mon dressing',
-                        textAlign: TextAlign.center,
-                        style: ClosetTextStyles.actionPetite.copyWith(
-                          color: ClosetColors.neutre1000,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: AppSpacing.p8,
+                        ),
+                        child: Text(
+                          indisponible
+                              ? 'Indisponible'
+                              : dejaDansPanier
+                                  ? 'Déjà dans ma sélection'
+                                  : 'Ajouter à mon dressing',
+                          textAlign: TextAlign.center,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: ClosetTextStyles.actionPetite.copyWith(
+                            color: ClosetColors.neutre1000,
+                          ),
                         ),
                       ),
                     ),

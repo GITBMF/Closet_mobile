@@ -130,7 +130,7 @@ class _ArcheSucces extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const SizedBox(height: 40),
+          const SizedBox(height: 70),
           Container(
             width: 86,
             height: 86,

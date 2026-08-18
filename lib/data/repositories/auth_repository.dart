@@ -10,9 +10,12 @@ class AuthRepository {
   final Ref _ref;
   final BffClient _client;
 
+  /// Remettre à `true` quand `/auth/login` et `/auth/register` seront stables.
+  static const bool useBackendAuth = false;
+
   // Local embedded native database of users for the MVP
   static final List<ClosetUser> _localDb = [
-    ClosetUser(firstName: 'Closet', lastName: 'Premium', email: 'user@closet.com'),
+    ClosetUser(firstName: 'Aïcha', lastName: 'N', email: 'user@closet.com'),
   ];
   static final Map<String, String> _localPasswords = {
     'user@closet.com': 'closet123',
@@ -42,6 +45,16 @@ class AuthRepository {
     }
     if (phone.trim().isEmpty) {
       throw Exception('Le numéro de téléphone est requis.');
+    }
+
+    if (!useBackendAuth) {
+      final user = ClosetUser(
+        firstName: firstName.trim(),
+        lastName: lastName.trim(),
+        email: lowerEmail,
+      );
+      _saveToLocal(user, password);
+      return user;
     }
 
     try {
@@ -76,6 +89,22 @@ class AuthRepository {
     required String password,
   }) async {
     final lowerEmail = email.toLowerCase().trim();
+
+    if (!useBackendAuth) {
+      ClosetUser? local;
+      for (final u in _localDb) {
+        if (u.email.toLowerCase() == lowerEmail) local = u;
+      }
+      final user = local ??
+          ClosetUser(
+            firstName: 'Aïcha',
+            lastName: 'N',
+            email: lowerEmail.isEmpty ? 'user@closet.com' : lowerEmail,
+          );
+      _saveToLocal(user, password);
+      return user;
+    }
+
     try {
       final response = await _client.dio.post(
         '/auth/login',

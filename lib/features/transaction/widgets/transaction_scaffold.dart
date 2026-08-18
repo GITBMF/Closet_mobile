@@ -50,6 +50,7 @@ class TransactionScaffold extends StatelessWidget {
                   titre!,
                   textAlign: TextAlign.center,
                   style: ClosetTextStyles.sousTitre.copyWith(
+                    fontStyle: FontStyle.italic,
                     color: Colors.white,
                   ),
                 ),
@@ -125,16 +126,15 @@ class BoutonTransaction extends StatelessWidget {
         height: 44,
         child: Material(
           color: dore ? ClosetColors.fond300 : ClosetColors.vert,
-          borderRadius: rayon,
-          shape: dore
-              ? null
-              : RoundedRectangleBorder(
-                  borderRadius: rayon,
-                  side: const BorderSide(
+          shape: RoundedRectangleBorder(
+            borderRadius: rayon,
+            side: dore
+                ? BorderSide.none
+                : const BorderSide(
                     color: Colors.white,
                     width: AppStroke.fin,
                   ),
-                ),
+          ),
           child: InkWell(
             borderRadius: rayon,
             onTap: onPressed,

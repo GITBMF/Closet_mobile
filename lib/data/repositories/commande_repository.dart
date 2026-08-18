@@ -50,7 +50,18 @@ final List<Commande> _commandesSimulees = [
         maison: 'Maison Coco Chanel',
         nom: 'Robe Elégante Durable',
         prix: 38500,
-        etat: 'excellent',
+        etat: 'Excellent',
+        imageUrl:
+            'https://images.unsplash.com/photo-1539008835657-9e8e9680c956?w=600&q=80',
+      ),
+      LigneCommande(
+        articleId: '2',
+        maison: 'Maison Coco Chanel',
+        nom: 'Sac Cuir Chanel',
+        prix: 31000,
+        etat: 'Excellent',
+        imageUrl:
+            'https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=600&q=80',
       ),
     ],
   ),
@@ -67,7 +78,9 @@ final List<Commande> _commandesSimulees = [
         maison: 'Maison Coco Chanel',
         nom: 'Sac Cuir Chanel',
         prix: 31000,
-        etat: 'excellent',
+        etat: 'Excellent',
+        imageUrl:
+            'https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=600&q=80',
       ),
     ],
   ),
@@ -83,7 +96,9 @@ final List<Commande> _commandesSimulees = [
         maison: 'Maison Zara',
         nom: 'Veste Tweed Crème',
         prix: 25000,
-        etat: 'excellent',
+        etat: 'Excellent',
+        imageUrl:
+            'https://images.unsplash.com/photo-1591047139829-d91aecb6caea?w=600&q=80',
       ),
     ],
   ),

@@ -8,12 +8,10 @@ import '../../../core/theme/closet_text_styles.dart';
 import '../../../core/widgets/status_badge.dart';
 import '../../../data/models/commande.dart';
 import '../../../data/repositories/commande_repository.dart';
-import '../../sourceur/widgets/sourceur_header.dart';
+import 'detail_commande_screen.dart';
+import 'espace_sub_screens.dart';
 
-/// Mes commandes — transcription de la maquette `25:1089`.
-///
-/// Liste de cartes blanches 350 × 80 cerclées d'or : numéro de commande,
-/// badge de statut, et date de dépôt ou estimation de livraison.
+/// Mes commandes — liste des cartes de suivi.
 class MesCommandesScreen extends ConsumerWidget {
   const MesCommandesScreen({super.key});
 
@@ -23,49 +21,34 @@ class MesCommandesScreen extends ConsumerWidget {
 
     return Scaffold(
       backgroundColor: ClosetColors.beige,
-      body: SafeArea(
-        child: Column(
-          children: [
-            _EnTeteCentre(
-              titre: 'Mes commandes',
-              onRetour: () => context.pop(),
-              action: SourceurBoutonRond(
-                icone: Icons.notifications_none_rounded,
-                label: 'Notifications',
-                onTap: () => context.push('/espace/alertes'),
-              ),
-            ),
-            Expanded(
-              child: commandes.when(
-                data: (liste) => liste.isEmpty
-                    ? const _AucuneCommande()
-                    : ListView.separated(
-                        padding: const EdgeInsets.fromLTRB(
-                          AppSpacing.p20,
-                          35,
-                          AppSpacing.p20,
-                          AppSpacing.p32,
-                        ),
-                        itemCount: liste.length,
-                        separatorBuilder: (_, _) =>
-                            const SizedBox(height: 13),
-                        itemBuilder: (context, i) => _CarteCommande(
-                          commande: liste[i],
-                          onTap: () => context.push(
-                            '/espace/commandes/${liste[i].numero}',
-                          ),
-                        ),
-                      ),
-                loading: () => const Center(
-                  child: CircularProgressIndicator(color: ClosetColors.dore),
+      appBar: EspaceSubAppBar(
+        title: 'Mes commandes',
+        italicTitle: true,
+        highlightTitle: true,
+        onSettingsTap: () => context.push('/espace/confidentialite'),
+      ),
+      body: commandes.when(
+        data: (liste) => liste.isEmpty
+            ? const _AucuneCommande()
+            : ListView.separated(
+                padding: const EdgeInsets.fromLTRB(
+                  AppSpacing.p20,
+                  AppSpacing.p24,
+                  AppSpacing.p20,
+                  AppSpacing.p32,
                 ),
-                error: (e, _) => const Center(
-                  child: Text('Erreur de chargement'),
+                itemCount: liste.length,
+                separatorBuilder: (_, _) =>
+                    const SizedBox(height: AppSpacing.p12),
+                itemBuilder: (context, i) => _CarteCommande(
+                  commande: liste[i],
+                  onTap: () => afficherDetailCommande(context, liste[i].numero),
                 ),
               ),
-            ),
-          ],
+        loading: () => const Center(
+          child: CircularProgressIndicator(color: ClosetColors.dore),
         ),
+        error: (e, _) => const Center(child: Text('Erreur de chargement')),
       ),
     );
   }
@@ -109,7 +92,6 @@ class _AucuneCommande extends StatelessWidget {
   }
 }
 
-/// Carte de commande : 350 × 80, blanche cerclée d'or.
 class _CarteCommande extends StatelessWidget {
   const _CarteCommande({required this.commande, required this.onTap});
 
@@ -122,11 +104,17 @@ class _CarteCommande extends StatelessWidget {
       onTap: onTap,
       child: Container(
         constraints: const BoxConstraints(minHeight: 80),
-        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.p16),
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.p16,
+          vertical: AppSpacing.p16,
+        ),
         decoration: BoxDecoration(
           color: Colors.white,
-          border: Border.all(color: ClosetColors.fond300, width: AppStroke.fin),
-          borderRadius: BorderRadius.circular(AppRadius.carte),
+          border: Border.all(
+            color: ClosetColors.carteBordure,
+            width: AppStroke.fin,
+          ),
+          borderRadius: BorderRadius.circular(AppRadius.bloc),
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -141,7 +129,7 @@ class _CarteCommande extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                     style: ClosetTextStyles.libelleFort.copyWith(
                       letterSpacing: -0.28,
-                      color: ClosetColors.vert,
+                      color: ClosetColors.noir,
                     ),
                   ),
                 ),
@@ -154,7 +142,7 @@ class _CarteCommande extends StatelessWidget {
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: ClosetTextStyles.corps.copyWith(
-                color: ClosetColors.neutre900,
+                color: ClosetColors.taupe,
               ),
             ),
           ],
@@ -164,21 +152,21 @@ class _CarteCommande extends StatelessWidget {
   }
 }
 
-/// Badge correspondant au statut, d'après la maquette `26:1255`.
+/// Badge correspondant au statut, libellé en capitales comme la maquette.
 StatusBadge badgeStatutCommande(StatutCommande statut) => switch (statut) {
-      StatutCommande.livree => StatusBadge.livree(),
-      StatutCommande.enRoute => StatusBadge.enRoute(),
-      StatutCommande.preparation => StatusBadge.preparation(),
+      StatutCommande.livree => StatusBadge.livree('LIVRÉE'),
+      StatutCommande.enRoute => StatusBadge.enRoute('EN ROUTE'),
+      StatutCommande.preparation => StatusBadge.preparation('PRÉPARATION'),
     };
 
 /// « Déposé le… » pour une commande livrée, estimation sinon.
 String ligneDateCommande(Commande c) {
   if (c.statut == StatutCommande.livree) {
-    return 'Déposé le : ${formatDateCommande(c.dateDepot)}';
+    return 'Déposé le: ${formatDateCommande(c.dateDepot)}';
   }
   return c.estimation == null
-      ? 'Temps d’estimation : En cours'
-      : 'Temps d’estimation : ${formatDateCommande(c.estimation!)}';
+      ? 'Temps d’estimation: En cours'
+      : 'Temps d’estimation: ${formatDateCommande(c.estimation!)}';
 }
 
 /// Format de la maquette : « Mer 8 Juil, 15:30 ».
@@ -191,61 +179,4 @@ String formatDateCommande(DateTime d) {
   final hh = d.hour.toString().padLeft(2, '0');
   final mm = d.minute.toString().padLeft(2, '0');
   return '${jours[d.weekday - 1]} ${d.day} ${mois[d.month - 1]}, $hh:$mm';
-}
-
-/// Bandeau à titre centré, bouton de retour à gauche et action à droite.
-class _EnTeteCentre extends StatelessWidget {
-  const _EnTeteCentre({
-    required this.titre,
-    required this.onRetour,
-    this.action,
-  });
-
-  final String titre;
-  final VoidCallback onRetour;
-  final Widget? action;
-
-  @override
-  Widget build(BuildContext context) {
-    return DecoratedBox(
-      decoration: const BoxDecoration(
-        border: Border(
-          bottom: BorderSide(
-            color: ClosetColors.fond400,
-            width: AppStroke.fin,
-          ),
-        ),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(
-          AppSpacing.p20,
-          AppSpacing.p8,
-          AppSpacing.p20,
-          AppSpacing.p12,
-        ),
-        child: Row(
-          children: [
-            SourceurBoutonRond(
-              icone: Icons.arrow_back_ios_new,
-              label: 'Retour',
-              onTap: onRetour,
-            ),
-            Expanded(
-              child: Text(
-                titre,
-                textAlign: TextAlign.center,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: ClosetTextStyles.accroche.copyWith(
-                  fontWeight: FontWeight.w600,
-                  color: ClosetColors.noir,
-                ),
-              ),
-            ),
-            SizedBox(width: 42, child: action),
-          ],
-        ),
-      ),
-    );
-  }
 }

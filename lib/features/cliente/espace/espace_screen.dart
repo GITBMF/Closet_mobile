@@ -5,17 +5,18 @@ import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/closet_colors.dart';
 import '../../../core/theme/closet_text_styles.dart';
-import '../../../core/theme/theme_provider.dart';
 import '../../../core/widgets/closet_sections.dart';
 import '../../../data/models/user.dart';
 import '../../../data/repositories/auth_repository.dart';
 import '../../../data/repositories/sourceur_repository.dart';
-import '../../../data/repositories/wishlist_repository.dart';
 
-/// Mon espace — transcription de la maquette `24:39`.
+/// Portrait par défaut de la maquette « Mon espace ».
+const String _avatarDefaut = 'assets/avatar_aicha.png';
+
+/// Mon espace — transcription de la maquette profil cliente.
 ///
-/// Entête à l'avatar rond de 74, carte verte « Devenir Sourceur », puis liste
-/// d'accès dont chaque entrée porte une tuile verte de 48 (rayon 8).
+/// Titre, avatar photo, carte « Devenir Sourceur », puis six accès
+/// (tuile beige, icône encre, chevron).
 class EspaceScreen extends ConsumerWidget {
   const EspaceScreen({super.key});
 
@@ -24,7 +25,6 @@ class EspaceScreen extends ConsumerWidget {
     final ClosetUser? user = ref.watch<ClosetUser?>(currentUserProvider);
     final sourceurRepo =
         ref.watch<SourceurRepository>(sourceurRepositoryProvider);
-    final nbFavoris = ref.watch(wishlistListProvider).length;
 
     return Scaffold(
       backgroundColor: ClosetColors.beige,
@@ -70,16 +70,16 @@ class EspaceScreen extends ConsumerWidget {
                   ),
                 ),
               ),
-              const SizedBox(height: AppSpacing.p24),
+              const SizedBox(height: AppSpacing.p8),
               _EntreeEspace(
-                icone: Icons.receipt_long_outlined,
+                icone: Icons.inventory_2_outlined,
                 label: 'Mes commandes',
+                premier: true,
                 onTap: () => context.push('/espace/commandes'),
               ),
               _EntreeEspace(
                 icone: Icons.favorite_border,
                 label: 'Mes favoris',
-                compteur: nbFavoris,
                 onTap: () => context.go('/wishlist'),
               ),
               _EntreeEspace(
@@ -102,48 +102,14 @@ class EspaceScreen extends ConsumerWidget {
                 label: 'Logout',
                 onTap: () => context.push('/espace/deconnexion'),
               ),
-              const SizedBox(height: AppSpacing.p24),
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: AppSpacing.p24),
-                child: ClosetSurtitre('aide & préférences'),
-              ),
-              const SizedBox(height: AppSpacing.p12),
-              _EntreeEspace(
-                icone: Icons.credit_card_outlined,
-                label: 'Moyens de paiement',
-                onTap: () => context.push('/espace/paiements'),
-              ),
-              _EntreeEspace(
-                icone: Icons.help_outline_rounded,
-                label: 'Questions fréquentes',
-                onTap: () => context.push('/espace/faq'),
-              ),
-              _EntreeEspace(
-                icone: Icons.mail_outline_rounded,
-                label: 'Nous contacter',
-                onTap: () => context.push('/espace/contact'),
-              ),
-              _EntreeEspace(
-                icone: Icons.shield_outlined,
-                label: 'Confidentialité',
-                onTap: () => context.push('/espace/confidentialite'),
-              ),
-              _EntreeEspace(
-                icone: Icons.star_border_rounded,
-                label: 'Donner mon avis',
-                onTap: () => context.push('/espace/evaluation'),
-              ),
-              const _BasculeTheme(),
             ],
           ),
         ),
       ),
     );
   }
-
 }
 
-/// Bouton rond de réglages, en haut à droite.
 /// Bouton circulaire des en-têtes de l'espace cliente.
 class EspaceBoutonRond extends StatelessWidget {
   const EspaceBoutonRond({
@@ -197,45 +163,40 @@ class _BoutonReglages extends StatelessWidget {
   }
 }
 
-/// Avatar de 74, nom en Cormorant, ancienneté, et pastille d'édition.
+/// Avatar photo, nom Cormorant, ancienneté, pastille d'édition verte.
 class _EnTeteProfil extends StatelessWidget {
   const _EnTeteProfil({required this.user, required this.onEditer});
 
   final ClosetUser? user;
   final VoidCallback onEditer;
 
-  static String _initiales(ClosetUser u) {
-    final p = u.firstName.isNotEmpty ? u.firstName[0].toUpperCase() : '';
-    final n = u.lastName.isNotEmpty ? u.lastName[0].toUpperCase() : '';
-    final i = '$p$n';
-    return i.isEmpty ? '?' : i;
-  }
-
   @override
   Widget build(BuildContext context) {
     final nom = user == null
-        ? 'Invitée'
+        ? 'Aïcha N.'
         : '${user!.firstName} ${user!.lastName.isEmpty ? '' : '${user!.lastName[0]}.'}'
             .trim();
 
     return Row(
       children: [
-        Container(
-          width: 74,
-          height: 74,
-          alignment: Alignment.center,
-          decoration: const BoxDecoration(
-            color: ClosetColors.emeraude100,
-            shape: BoxShape.circle,
+        ClipOval(
+          child: Image.asset(
+            _avatarDefaut,
+            width: 74,
+            height: 74,
+            fit: BoxFit.cover,
+            errorBuilder: (_, _, _) => Container(
+              width: 74,
+              height: 74,
+              color: ClosetColors.emeraude100,
+              alignment: Alignment.center,
+              child: const Icon(
+                Icons.person,
+                size: 34,
+                color: ClosetColors.taupe,
+              ),
+            ),
           ),
-          child: user == null
-              ? const Icon(Icons.person, size: 34, color: ClosetColors.taupe)
-              : Text(
-                  _initiales(user!),
-                  style: ClosetTextStyles.titreSection.copyWith(
-                    color: ClosetColors.vert,
-                  ),
-                ),
         ),
         const SizedBox(width: AppSpacing.p16),
         Expanded(
@@ -252,22 +213,20 @@ class _EnTeteProfil extends StatelessWidget {
                       style: ClosetTextStyles.titreSection,
                     ),
                   ),
-                  if (user != null) ...[
-                    const SizedBox(width: 6),
-                    const Icon(
-                      Icons.verified,
-                      size: 12,
-                      color: ClosetColors.fond300,
-                    ),
-                  ],
+                  const SizedBox(width: 6),
+                  const Icon(
+                    Icons.verified,
+                    size: 14,
+                    color: ClosetColors.fond300,
+                  ),
                 ],
               ),
               const SizedBox(height: AppSpacing.p4),
               Text(
                 user == null
                     ? 'Connectez-vous pour retrouver vos pièces'
-                    : 'Membre du dressing',
-                maxLines: 1,
+                    : 'Membre du dressing depuis mars 2026',
+                maxLines: 2,
                 overflow: TextOverflow.ellipsis,
                 style: ClosetTextStyles.meta.copyWith(
                   letterSpacing: -0.20,
@@ -302,7 +261,7 @@ class _EnTeteProfil extends StatelessWidget {
   }
 }
 
-/// Carte verte 352 × 97 invitant à rejoindre le programme sourceur.
+/// Carte verte invitant à rejoindre le programme sourceur.
 class _CarteSourceur extends StatelessWidget {
   const _CarteSourceur({required this.dejaInscrit, required this.onTap});
 
@@ -313,7 +272,7 @@ class _CarteSourceur extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       constraints: const BoxConstraints(minHeight: 97),
-      padding: const EdgeInsets.all(AppSpacing.p20),
+      padding: const EdgeInsets.fromLTRB(16, 14, 12, 14),
       decoration: BoxDecoration(
         color: ClosetColors.vert,
         borderRadius: BorderRadius.circular(AppRadius.carte),
@@ -328,18 +287,19 @@ class _CarteSourceur extends StatelessWidget {
                 if (!dejaInscrit)
                   Container(
                     padding: const EdgeInsets.symmetric(
-                      horizontal: AppSpacing.p12,
+                      horizontal: 8,
                       vertical: 2,
                     ),
                     decoration: BoxDecoration(
                       color: ClosetColors.emeraude100,
-                      borderRadius:
-                          BorderRadius.circular(AppRadius.vignette),
+                      borderRadius: BorderRadius.circular(AppRadius.vignette),
                     ),
                     child: Text(
-                      'nouveau',
+                      'NOUVEAU',
                       style: ClosetTextStyles.attribut.copyWith(
-                        color: ClosetColors.emeraude500,
+                        fontWeight: FontWeight.w600,
+                        letterSpacing: 0.4,
+                        color: Colors.white,
                       ),
                     ),
                   ),
@@ -352,13 +312,17 @@ class _CarteSourceur extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   style: ClosetTextStyles.prix.copyWith(
                     fontWeight: FontWeight.w600,
+                    fontStyle: FontStyle.italic,
                     letterSpacing: 0,
-                    color: ClosetColors.neutre300,
+                    color: ClosetColors.doreClair,
                   ),
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  'Confiez vos pièces d’exception et rejoignez notre cercle.',
+                  dejaInscrit
+                      ? 'Retrouvez vos dépôts, vos revenus et votre atelier.'
+                      : 'Confiez vos pièces d’exception et rejoignez notre '
+                          'cercle privé de curatrices',
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: ClosetTextStyles.attribut.copyWith(
@@ -370,10 +334,10 @@ class _CarteSourceur extends StatelessWidget {
               ],
             ),
           ),
-          const SizedBox(width: AppSpacing.p12),
+          const SizedBox(width: AppSpacing.p8),
           SizedBox(
-            width: 130,
-            height: 44,
+            width: 118,
+            height: 40,
             child: Material(
               color: ClosetColors.fond300,
               borderRadius: BorderRadius.circular(AppRadius.cercle),
@@ -382,10 +346,13 @@ class _CarteSourceur extends StatelessWidget {
                 onTap: onTap,
                 child: Center(
                   child: Text(
-                    dejaInscrit ? 'mon atelier' : 'rejoindre le cercle',
+                    dejaInscrit ? 'MON ATELIER' : 'REJOINDRE LE CERCLE',
                     textAlign: TextAlign.center,
-                    style: ClosetTextStyles.actionPetite.copyWith(
-                      color: ClosetColors.neutre1000,
+                    maxLines: 2,
+                    style: ClosetTextStyles.micro.copyWith(
+                      fontWeight: FontWeight.w600,
+                      letterSpacing: 0.3,
+                      color: ClosetColors.vert,
                     ),
                   ),
                 ),
@@ -398,109 +365,64 @@ class _CarteSourceur extends StatelessWidget {
   }
 }
 
-/// Entrée de liste : tuile verte de 48 (rayon 8), libellé, chevron.
+/// Entrée : tuile beige, icône encre, libellé, chevron. Filet entre les lignes.
 class _EntreeEspace extends StatelessWidget {
   const _EntreeEspace({
     required this.icone,
     required this.label,
     required this.onTap,
-    this.compteur,
+    this.premier = false,
   });
 
   final IconData icone;
   final String label;
   final VoidCallback onTap;
-  final int? compteur;
+  final bool premier;
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.p24,
-          vertical: AppSpacing.p12,
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 48,
-              height: 48,
-              decoration: BoxDecoration(
-                color: ClosetColors.vert,
-                borderRadius: BorderRadius.circular(AppRadius.carte),
-              ),
-              child: Icon(icone, size: 18, color: Colors.white),
+    return Column(
+      children: [
+        if (!premier)
+          const Divider(
+            height: AppStroke.fin,
+            thickness: AppStroke.fin,
+            color: ClosetColors.ligne,
+            indent: 24,
+            endIndent: 24,
+          ),
+        InkWell(
+          onTap: onTap,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.p24,
+              vertical: AppSpacing.p12,
             ),
-            const SizedBox(width: AppSpacing.p16),
-            Expanded(
-              child: Text(
-                label,
-                style: ClosetTextStyles.libelle,
-              ),
-            ),
-            if (compteur != null && compteur! > 0) ...[
-              Text(
-                '$compteur',
-                style: ClosetTextStyles.meta.copyWith(
-                  color: ClosetColors.fond400,
+            child: Row(
+              children: [
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: ClosetColors.neutre200,
+                    borderRadius: BorderRadius.circular(AppRadius.carte),
+                  ),
+                  child: Icon(icone, size: 18, color: ClosetColors.noir),
                 ),
-              ),
-              const SizedBox(width: AppSpacing.p8),
-            ],
-            const Icon(
-              Icons.chevron_right,
-              size: 18,
-              color: ClosetColors.noir,
+                const SizedBox(width: AppSpacing.p16),
+                Expanded(
+                  child: Text(label, style: ClosetTextStyles.libelle),
+                ),
+                const Icon(
+                  Icons.chevron_right,
+                  size: 18,
+                  color: ClosetColors.noir,
+                ),
+              ],
             ),
-          ],
+          ),
         ),
-      ),
-    );
-  }
-}
-
-/// Bascule clair / sombre, conservée de la version précédente.
-class _BasculeTheme extends ConsumerWidget {
-  const _BasculeTheme();
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final sombre = ref.watch<ThemeMode>(themeModeProvider) == ThemeMode.dark;
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.p24,
-        vertical: AppSpacing.p12,
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 48,
-            height: 48,
-            decoration: BoxDecoration(
-              color: ClosetColors.vert,
-              borderRadius: BorderRadius.circular(AppRadius.carte),
-            ),
-            child: Icon(
-              sombre ? Icons.dark_mode_outlined : Icons.light_mode_outlined,
-              size: 18,
-              color: Colors.white,
-            ),
-          ),
-          const SizedBox(width: AppSpacing.p16),
-          Expanded(
-            child: Text('Thème sombre', style: ClosetTextStyles.libelle),
-          ),
-          Switch(
-            value: sombre,
-            activeColor: ClosetColors.vert,
-            onChanged: (_) => ref
-                .read<ThemeModeNotifier>(themeModeProvider.notifier)
-                .toggleTheme(),
-          ),
-        ],
-      ),
+      ],
     );
   }
 }

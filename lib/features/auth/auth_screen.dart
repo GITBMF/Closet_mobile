@@ -130,6 +130,8 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
           );
           context.go('/home');
         } else {
+                    context.go('/home');
+
           ref.read(authModeProvider.notifier).state = AuthMode.login;
           _passwordController.clear();
           ScaffoldMessenger.of(context).showSnackBar(

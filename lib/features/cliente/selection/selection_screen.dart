@@ -7,7 +7,6 @@ import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/closet_colors.dart';
 import '../../../core/theme/closet_text_styles.dart';
 import '../../../core/widgets/closet_app_bar.dart';
-import '../../../core/widgets/closet_sections.dart';
 import '../../../data/models/article.dart';
 import '../../../data/repositories/cart_repository.dart';
 import '../../auth/auth_screen.dart';
@@ -45,7 +44,7 @@ class _SelectionScreenState extends ConsumerState<SelectionScreen> {
 
     return Scaffold(
       backgroundColor: ClosetColors.beige,
-      appBar: const ClosetAppBar(),
+      appBar: const ClosetAppBar(showBackButton: true),
       body: pieces.isEmpty
           ? const _SelectionVide()
           : SingleChildScrollView(
@@ -53,11 +52,6 @@ class _SelectionScreenState extends ConsumerState<SelectionScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const SizedBox(height: AppSpacing.p12),
-                  const Padding(
-                    padding: EdgeInsets.symmetric(horizontal: AppSpacing.p20),
-                    child: ClosetTitreEcran('Ma sélection'),
-                  ),
                   const SizedBox(height: AppSpacing.p20),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: AppSpacing.p24),
@@ -67,10 +61,10 @@ class _SelectionScreenState extends ConsumerState<SelectionScreen> {
                           : '${pieces.length} pièces uniques mises de côté '
                               'pour vous.',
                       style: ClosetTextStyles.citation.copyWith(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w400,
-                        letterSpacing: -0.28,
-                        color: ClosetColors.neutre700,
+                        fontStyle: FontStyle.italic,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                        color: ClosetColors.noir,
                       ),
                     ),
                   ),
@@ -95,7 +89,10 @@ class _SelectionScreenState extends ConsumerState<SelectionScreen> {
                     padding: const EdgeInsets.symmetric(
                       horizontal: AppSpacing.p20,
                     ),
-                    child: _CodePrivilege(controller: _codePrivilege),
+                    child: _CodePrivilege(
+                      controller: _codePrivilege,
+                      onModifie: () => setState(() {}),
+                    ),
                   ),
                   const SizedBox(height: AppSpacing.p24),
                   Padding(
@@ -264,6 +261,7 @@ class _LignePiece extends StatelessWidget {
                   Text(
                     formatPrixFcfa(article.price),
                     style: ClosetTextStyles.prixGrand.copyWith(
+                      fontStyle: FontStyle.italic,
                       color: ClosetColors.vert,
                     ),
                   ),
@@ -289,90 +287,143 @@ class _LignePiece extends StatelessWidget {
   }
 }
 
-/// Carte « Code privilège » : champ 189 × 38 et bouton vert 114 × 38.
+/// Rangée « Code privilège » — maquette : ticket, libellé, invitation, chevron.
 class _CodePrivilege extends StatelessWidget {
-  const _CodePrivilege({required this.controller});
+  const _CodePrivilege({required this.controller, required this.onModifie});
 
   final TextEditingController controller;
+  final VoidCallback onModifie;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(AppSpacing.p16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        border: Border.all(color: ClosetColors.fond300, width: AppStroke.fin),
+    final saisi = controller.text.trim().isNotEmpty;
+
+    return Material(
+      color: Colors.white,
+      shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(AppRadius.carte),
+        side: const BorderSide(
+          color: ClosetColors.fond300,
+          width: AppStroke.fin,
+        ),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
+      child: InkWell(
+        borderRadius: BorderRadius.circular(AppRadius.carte),
+        onTap: () => _ouvrirSaisie(context),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.p16,
+            vertical: AppSpacing.p16,
+          ),
+          child: Row(
             children: [
               const Icon(
-                Icons.local_offer_outlined,
-                size: 13,
-                color: ClosetColors.fond500,
+                Icons.confirmation_number_outlined,
+                size: 22,
+                color: ClosetColors.vert,
               ),
-              const SizedBox(width: AppSpacing.gapChip),
-              Text(
-                'Code privilège'.toUpperCase(),
-                style: ClosetTextStyles.meta.copyWith(
-                  letterSpacing: 1.30,
-                  color: ClosetColors.fond500,
+              const SizedBox(width: AppSpacing.p12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'CODE PRIVILÈGE',
+                      style: ClosetTextStyles.meta.copyWith(
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 1.30,
+                        color: ClosetColors.noir,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      saisi ? controller.text.trim() : 'Veuillez rentrer votre code',
+                      style: ClosetTextStyles.corps.copyWith(
+                        color: ClosetColors.taupe,
+                      ),
+                    ),
+                  ],
                 ),
+              ),
+              const Icon(
+                Icons.chevron_right,
+                size: 22,
+                color: ClosetColors.noir,
               ),
             ],
           ),
-          const SizedBox(height: AppSpacing.p12),
-          Row(
+        ),
+      ),
+    );
+  }
+
+  Future<void> _ouvrirSaisie(BuildContext context) async {
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: ClosetColors.beige,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.surface)),
+      ),
+      builder: (ctx) {
+        return Padding(
+          padding: EdgeInsets.fromLTRB(
+            AppSpacing.p24,
+            AppSpacing.p24,
+            AppSpacing.p24,
+            MediaQuery.viewInsetsOf(ctx).bottom + AppSpacing.p24,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Expanded(
-                child: SizedBox(
-                  height: 38,
-                  child: TextField(
-                    controller: controller,
-                    textCapitalization: TextCapitalization.characters,
-                    style: ClosetTextStyles.nomProduit.copyWith(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w300,
-                    ),
-                    decoration: InputDecoration(
-                      hintText: 'cercle-privilège',
-                      hintStyle: ClosetTextStyles.nomProduit.copyWith(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w300,
-                        color: ClosetColors.placeholderGris,
-                      ),
-                      isDense: true,
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: AppSpacing.p12,
-                      ),
-                      border: _bordure(),
-                      enabledBorder: _bordure(),
-                      focusedBorder: _bordure(),
-                    ),
+              Text(
+                'Code privilège',
+                style: ClosetTextStyles.titreBloc,
+              ),
+              const SizedBox(height: AppSpacing.p16),
+              TextField(
+                controller: controller,
+                textCapitalization: TextCapitalization.characters,
+                autofocus: true,
+                style: ClosetTextStyles.saisie,
+                cursorColor: ClosetColors.vert,
+                decoration: InputDecoration(
+                  hintText: 'Veuillez rentrer votre code',
+                  hintStyle: ClosetTextStyles.saisieHint,
+                  filled: true,
+                  fillColor: Colors.white,
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.p16,
+                    vertical: AppSpacing.p12,
                   ),
+                  border: _bordure(),
+                  enabledBorder: _bordure(),
+                  focusedBorder: _bordure(),
                 ),
               ),
-              const SizedBox(width: AppSpacing.p16),
+              const SizedBox(height: AppSpacing.p16),
               SizedBox(
-                width: 114,
-                height: 38,
+                width: double.infinity,
+                height: 44,
                 child: Material(
                   color: ClosetColors.vert,
                   borderRadius: BorderRadius.circular(AppRadius.cercle),
                   child: InkWell(
                     borderRadius: BorderRadius.circular(AppRadius.cercle),
-                    onTap: () => ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Codes privilège bientôt disponibles.'),
-                      ),
-                    ),
+                    onTap: () {
+                      Navigator.pop(ctx);
+                      onModifie();
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Codes privilège bientôt disponibles.'),
+                        ),
+                      );
+                    },
                     child: Center(
                       child: Text(
                         'Appliquer',
-                        style: ClosetTextStyles.actionPetite.copyWith(
+                        style: ClosetTextStyles.bouton.copyWith(
                           color: Colors.white,
                         ),
                       ),
@@ -382,13 +433,13 @@ class _CodePrivilege extends StatelessWidget {
               ),
             ],
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 
   static OutlineInputBorder _bordure() => OutlineInputBorder(
-        borderRadius: BorderRadius.circular(5),
+        borderRadius: BorderRadius.circular(AppRadius.carte),
         borderSide: const BorderSide(
           color: ClosetColors.fond300,
           width: AppStroke.fin,
@@ -410,12 +461,6 @@ class _Recapitulatif extends StatelessWidget {
         _LigneMontant(
           label: 'Sous-total',
           montant: sousTotal,
-          couleurLabel: ClosetColors.fond500,
-        ),
-        const SizedBox(height: AppSpacing.p20),
-        _LigneMontant(
-          label: 'Livraison délicate',
-          montant: livraison,
           couleurLabel: ClosetColors.fond500,
         ),
         const SizedBox(height: AppSpacing.p16),
@@ -462,10 +507,14 @@ class _LigneMontant extends StatelessWidget {
         Text(
           formatPrixFcfa(montant),
           style: grand
-              ? ClosetTextStyles.prixGrand.copyWith(color: ClosetColors.vert)
+              ? ClosetTextStyles.prixGrand.copyWith(
+                  fontStyle: FontStyle.italic,
+                  color: ClosetColors.vert,
+                )
               : ClosetTextStyles.prix.copyWith(
                   fontSize: 15,
                   fontWeight: FontWeight.w600,
+                  fontStyle: FontStyle.italic,
                   letterSpacing: 0.30,
                   color: ClosetColors.vert,
                 ),
@@ -486,9 +535,10 @@ class _BoutonFinaliser extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final connectee = ref.watch<bool>(isAuthenticatedProvider);
 
-    return Center(
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.p20),
       child: SizedBox(
-        width: 312,
+        width: double.infinity,
         height: 44,
         child: Material(
           color: ClosetColors.vert,

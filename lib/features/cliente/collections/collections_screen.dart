@@ -45,10 +45,10 @@ class ConditionFilterNotifier extends Notifier<String?> {
   void setCondition(String? val) => state = val;
 }
 
-class PriceFilterNotifier extends Notifier<double?> {
+class PriceRangeFilterNotifier extends Notifier<RangeValues?> {
   @override
-  double? build() => null;
-  void setPrice(double? val) => state = val;
+  RangeValues? build() => null;
+  void setRange(RangeValues? val) => state = val;
 }
 
 // State providers for search and filtering
@@ -62,8 +62,9 @@ final filterSizeProvider =
     NotifierProvider<SizeFilterNotifier, String?>(SizeFilterNotifier.new);
 final filterConditionProvider = NotifierProvider<ConditionFilterNotifier,
     String?>(ConditionFilterNotifier.new);
-final filterPriceProvider =
-    NotifierProvider<PriceFilterNotifier, double?>(PriceFilterNotifier.new);
+final filterPriceRangeProvider =
+    NotifierProvider<PriceRangeFilterNotifier, RangeValues?>(
+        PriceRangeFilterNotifier.new);
 
 // Reactive filtering provider
 final filteredArticlesProvider = FutureProvider<List<Article>>((ref) async {
@@ -72,7 +73,7 @@ final filteredArticlesProvider = FutureProvider<List<Article>>((ref) async {
   final brand = ref.watch<String?>(filterBrandProvider);
   final size = ref.watch<String?>(filterSizeProvider);
   final condition = ref.watch<String?>(filterConditionProvider);
-  final maxPrice = ref.watch<double?>(filterPriceProvider);
+  final priceRange = ref.watch<RangeValues?>(filterPriceRangeProvider);
 
   final repo = ref.watch<CatalogRepository>(catalogRepositoryProvider);
   final allArticles = await repo.getCatalog(universe: universe);
@@ -94,7 +95,7 @@ final filteredArticlesProvider = FutureProvider<List<Article>>((ref) async {
         a.condition.toLowerCase() != condition.toLowerCase()) {
       return false;
     }
-    if (maxPrice != null && a.price > maxPrice) {
+    if (priceRange != null && (a.price < priceRange.start || a.price > priceRange.end)) {
       return false;
     }
     return true;
@@ -143,7 +144,7 @@ class _CollectionsScreenState extends ConsumerState<CollectionsScreen> {
       ref.watch<String?>(filterBrandProvider) != null ||
       ref.watch<String?>(filterSizeProvider) != null ||
       ref.watch<String?>(filterConditionProvider) != null ||
-      ref.watch<double?>(filterPriceProvider) != null;
+      ref.watch<RangeValues?>(filterPriceRangeProvider) != null;
 
   /// Filtres réellement posés, chacun avec le moyen de le retirer seul.
   ///
@@ -153,7 +154,7 @@ class _CollectionsScreenState extends ConsumerState<CollectionsScreen> {
     final marque = ref.watch<String?>(filterBrandProvider);
     final taille = ref.watch<String?>(filterSizeProvider);
     final etat = ref.watch<String?>(filterConditionProvider);
-    final prixMax = ref.watch<double?>(filterPriceProvider);
+    final fourchette = ref.watch<RangeValues?>(filterPriceRangeProvider);
 
     return [
       if (marque != null)
@@ -172,10 +173,12 @@ class _CollectionsScreenState extends ConsumerState<CollectionsScreen> {
           retirer: () =>
               ref.read(filterConditionProvider.notifier).setCondition(null),
         ),
-      if (prixMax != null)
+      if (fourchette != null)
         (
-          label: 'Max ${formatPrixFcfa(prixMax)}',
-          retirer: () => ref.read(filterPriceProvider.notifier).setPrice(null),
+          label:
+              '${formatPrixFcfa(fourchette.start)} – ${formatPrixFcfa(fourchette.end)}',
+          retirer: () =>
+              ref.read(filterPriceRangeProvider.notifier).setRange(null),
         ),
     ];
   }
@@ -184,7 +187,7 @@ class _CollectionsScreenState extends ConsumerState<CollectionsScreen> {
     ref.read(filterBrandProvider.notifier).setBrand(null);
     ref.read(filterSizeProvider.notifier).setSize(null);
     ref.read(filterConditionProvider.notifier).setCondition(null);
-    ref.read(filterPriceProvider.notifier).setPrice(null);
+    ref.read(filterPriceRangeProvider.notifier).setRange(null);
   }
 
   @override

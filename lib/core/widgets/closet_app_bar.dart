@@ -24,12 +24,14 @@ class ClosetAppBar extends ConsumerWidget implements PreferredSizeWidget {
     this.title,
     this.subtitle,
     this.showBackButton = false,
+    this.onBack,
     this.actions,
   });
 
   final String? title;
   final String? subtitle;
   final bool showBackButton;
+  final VoidCallback? onBack;
   final List<Widget>? actions;
 
   @override
@@ -50,67 +52,83 @@ class ClosetAppBar extends ConsumerWidget implements PreferredSizeWidget {
           ),
         ),
       ),
-      child: SizedBox(
-        height: preferredSize.height,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.p20),
-          child: Row(
-            children: [
-              if (showBackButton) ...[
-                Semantics(
-                  button: true,
-                  label: 'Retour',
-                  child: GestureDetector(
-                    onTap: () => context.pop(),
-                    child: const SizedBox(
-                      width: AppSpacing.minTouchTarget,
-                      height: AppSpacing.minTouchTarget,
-                      child: Icon(
-                        Icons.arrow_back_ios_new,
-                        size: 18,
-                        color: ClosetColors.noir,
+      child: SafeArea(
+        bottom: false,
+        child: SizedBox(
+          height: 62,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.p20),
+            child: Row(
+              children: [
+                if (showBackButton) ...[
+                  Semantics(
+                    button: true,
+                    label: 'Retour',
+                    child: GestureDetector(
+                      onTap: onBack ??
+                          () {
+                            if (context.canPop()) {
+                              context.pop();
+                            } else {
+                              context.go('/home');
+                            }
+                          },
+                      child: const SizedBox(
+                        width: AppSpacing.minTouchTarget,
+                        height: AppSpacing.minTouchTarget,
+                        child: Icon(
+                          Icons.arrow_back_ios_new,
+                          size: 18,
+                          color: ClosetColors.noir,
+                        ),
                       ),
                     ),
                   ),
-                ),
-                const SizedBox(width: AppSpacing.p8),
-              ],
-              Expanded(child: _Salutation(title: title, subtitle: subtitle, user: user)),
-              Image.asset(
-                'assets/iconheader.png',
-                width: 73,
-                height: 29,
-                fit: BoxFit.contain,
-                errorBuilder: (_, _, _) => Text(
-                  'CLOS|ET',
-                  style: ClosetTextStyles.titreBloc.copyWith(
-                    color: ClosetColors.noir,
+                  const SizedBox(width: AppSpacing.p8),
+                ],
+                Expanded(
+                  child: _Salutation(
+                    title: title,
+                    subtitle: subtitle,
+                    user: user,
                   ),
                 ),
-              ),
-              Expanded(
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: actions ??
-                      [
-                        _BoutonRond(
-                          icone: Icons.shopping_basket_outlined,
-                          label: cartCount > 0
-                              ? 'Panier, $cartCount articles'
-                              : 'Panier',
-                          pastille: cartCount > 0 ? cartCount : null,
-                          onTap: () => context.go('/selection'),
-                        ),
-                        const SizedBox(width: AppSpacing.gapListe),
-                        _BoutonRond(
-                          icone: Icons.notifications_none_rounded,
-                          label: 'Notifications',
-                          onTap: () => context.go('/espace/alertes'),
-                        ),
-                      ],
+                Image.asset(
+                  'assets/iconheader.png',
+                  width: 73,
+                  height: 29,
+                  fit: BoxFit.contain,
+                  errorBuilder: (_, _, _) => Text(
+                    'CLOS|ET',
+                    style: ClosetTextStyles.titreBloc.copyWith(
+                      color: ClosetColors.noir,
+                    ),
+                  ),
                 ),
-              ),
-            ],
+                Expanded(
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: actions ??
+                        [
+                          _BoutonRond(
+                            icone: Icons.shopping_basket_outlined,
+                            label: cartCount > 0
+                                ? 'Panier, $cartCount articles'
+                                : 'Panier',
+                            pastille: cartCount > 0 ? cartCount : null,
+                            onTap: () => context.go('/selection'),
+                          ),
+                          const SizedBox(width: AppSpacing.gapListe),
+                          _BoutonRond(
+                            icone: Icons.notifications_none_rounded,
+                            label: 'Notifications',
+                            onTap: () => context.go('/espace/alertes'),
+                          ),
+                        ],
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),

@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../data/repositories/sourceur_repository.dart';
 import '../../features/auth/auth_screen.dart';
 import '../../features/checkout/checkout_screen.dart';
+import '../../features/checkout/paiement_flow_screen.dart';
 import '../../features/cliente/collections/collections_screen.dart';
 import '../../features/cliente/dressing/dressing_screen.dart';
 import '../../features/cliente/espace/deconnexion_screen.dart';
@@ -61,7 +62,9 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       const routesProtegees = {'/checkout', '/transaction'};
       if (!isAuthenticated &&
           !sourceurPublic.contains(loc) &&
-          (routesProtegees.contains(loc) || loc.startsWith('/sourceur'))) {
+          (routesProtegees.contains(loc) ||
+              loc.startsWith('/checkout/') ||
+              loc.startsWith('/sourceur'))) {
         return '/auth';
       }
 
@@ -177,6 +180,21 @@ final appRouterProvider = Provider<GoRouter>((ref) {
               child: child,
             );
           },
+        ),
+      ),
+
+      GoRoute(
+        parentNavigatorKey: rootNavigatorKey,
+        path: '/checkout/paiement',
+        pageBuilder: (context, state) => CustomTransitionPage(
+          key: state.pageKey,
+          child: PaiementFlowScreen(
+            args: state.extra is PaiementFlowArgs
+                ? state.extra as PaiementFlowArgs
+                : null,
+          ),
+          transitionsBuilder: (context, animation, _, child) =>
+              FadeTransition(opacity: animation, child: child),
         ),
       ),
 
@@ -408,6 +426,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
                             path: 'suivi',
                             builder: (context, state) => SuiviCommandeScreen(
                               numero: state.pathParameters['numero']!,
+                              depuisPaiement: state.extra == true,
                             ),
                           ),
                         ],

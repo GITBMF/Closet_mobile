@@ -7,12 +7,9 @@ import '../../../core/theme/closet_colors.dart';
 import '../../../core/theme/closet_text_styles.dart';
 import '../../../data/models/adresse.dart';
 import '../../../data/repositories/adresse_repository.dart';
-import '../../sourceur/widgets/sourceur_header.dart';
+import 'espace_sub_screens.dart';
 
-/// Mes adresses — transcription de la maquette `26:1588`.
-///
-/// Liste d'entrées à tuile verte de 48 : libellé, badge « par Défaut » sur
-/// l'adresse retenue, puis l'adresse complète en gris.
+/// Mes adresses — liste des adresses enregistrées.
 class MesAdressesScreen extends ConsumerWidget {
   const MesAdressesScreen({super.key});
 
@@ -22,82 +19,32 @@ class MesAdressesScreen extends ConsumerWidget {
 
     return Scaffold(
       backgroundColor: ClosetColors.beige,
-      body: SafeArea(
-        child: Column(
-          children: [
-            DecoratedBox(
-              decoration: const BoxDecoration(
-                border: Border(
-                  bottom: BorderSide(
-                    color: ClosetColors.fond400,
-                    width: AppStroke.fin,
-                  ),
-                ),
-              ),
-              child: Padding(
+      appBar: EspaceSubAppBar(
+        title: 'Mes adresses',
+        italicTitle: true,
+        onSettingsTap: () => context.push('/espace/confidentialite'),
+      ),
+      body: adresses.when(
+        data: (liste) => liste.isEmpty
+            ? const _AucuneAdresse()
+            : ListView.separated(
                 padding: const EdgeInsets.fromLTRB(
                   AppSpacing.p20,
-                  AppSpacing.p8,
+                  AppSpacing.p24,
                   AppSpacing.p20,
-                  AppSpacing.p12,
+                  AppSpacing.p32,
                 ),
-                child: Row(
-                  children: [
-                    SourceurBoutonRond(
-                      icone: Icons.arrow_back_ios_new,
-                      label: 'Retour',
-                      onTap: () => context.pop(),
-                    ),
-                    Expanded(
-                      child: Text(
-                        'Mes adresses',
-                        textAlign: TextAlign.center,
-                        style: ClosetTextStyles.accroche.copyWith(
-                          fontFamily: ClosetTextStyles.prix.fontFamily,
-                          fontWeight: FontWeight.w600,
-                          letterSpacing: 0.36,
-                          color: ClosetColors.noir,
-                        ),
-                      ),
-                    ),
-                    SourceurBoutonRond(
-                      icone: Icons.add,
-                      label: 'Ajouter une adresse',
-                      onTap: () => _aVenir(context),
-                    ),
-                  ],
+                itemCount: liste.length,
+                separatorBuilder: (_, _) => const SizedBox(height: AppSpacing.p24),
+                itemBuilder: (context, i) => _LigneAdresse(
+                  adresse: liste[i],
+                  onEditer: () => _aVenir(context),
                 ),
               ),
-            ),
-            Expanded(
-              child: adresses.when(
-                data: (liste) => liste.isEmpty
-                    ? const _AucuneAdresse()
-                    : ListView.separated(
-                        padding: const EdgeInsets.fromLTRB(
-                          23,
-                          58,
-                          23,
-                          AppSpacing.p32,
-                        ),
-                        itemCount: liste.length,
-                        separatorBuilder: (_, _) =>
-                            const SizedBox(height: 49),
-                        itemBuilder: (context, i) => _LigneAdresse(
-                          adresse: liste[i],
-                          onTap: () => _aVenir(context),
-                        ),
-                      ),
-                loading: () => const Center(
-                  child: CircularProgressIndicator(color: ClosetColors.dore),
-                ),
-                error: (e, _) => const Center(
-                  child: Text('Erreur de chargement'),
-                ),
-              ),
-            ),
-          ],
+        loading: () => const Center(
+          child: CircularProgressIndicator(color: ClosetColors.dore),
         ),
+        error: (e, _) => const Center(child: Text('Erreur de chargement')),
       ),
     );
   }
@@ -146,86 +93,97 @@ class _AucuneAdresse extends StatelessWidget {
   }
 }
 
-/// Entrée d'adresse : tuile verte de 48, libellé, badge par défaut, adresse.
+/// Tuile pin verte, libellé, badge par défaut, adresse, crayon doré.
 class _LigneAdresse extends StatelessWidget {
-  const _LigneAdresse({required this.adresse, required this.onTap});
+  const _LigneAdresse({required this.adresse, required this.onEditer});
 
   final Adresse adresse;
-  final VoidCallback onTap;
-
-  IconData get _icone => switch (adresse.type) {
-        TypeAdresse.maison => Icons.home_outlined,
-        TypeAdresse.bureau => Icons.business_center_outlined,
-        TypeAdresse.appartement => Icons.apartment_rounded,
-        TypeAdresse.autre => Icons.place_outlined,
-      };
+  final VoidCallback onEditer;
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            width: 48,
-            height: 48,
-            decoration: BoxDecoration(
-              color: ClosetColors.vert,
-              borderRadius: BorderRadius.circular(AppRadius.carte),
-            ),
-            child: Icon(_icone, size: 20, color: Colors.white),
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Container(
+          width: 48,
+          height: 48,
+          decoration: BoxDecoration(
+            color: ClosetColors.vert,
+            borderRadius: BorderRadius.circular(AppRadius.carte),
           ),
-          const SizedBox(width: AppSpacing.p16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Flexible(
+          child: const Icon(
+            Icons.location_on,
+            size: 22,
+            color: Colors.white,
+          ),
+        ),
+        const SizedBox(width: AppSpacing.p16),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Flexible(
+                    child: Text(
+                      adresse.libelle,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: ClosetTextStyles.libelleFort.copyWith(
+                        fontSize: 16,
+                      ),
+                    ),
+                  ),
+                  if (adresse.parDefaut) ...[
+                    const SizedBox(width: AppSpacing.p8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 3,
+                      ),
+                      decoration: BoxDecoration(
+                        color: ClosetColors.emeraude100,
+                        borderRadius: BorderRadius.circular(2),
+                      ),
                       child: Text(
-                        adresse.libelle,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: ClosetTextStyles.libelle.copyWith(
-                          fontSize: 16,
+                        'PAR DÉFAUT',
+                        style: ClosetTextStyles.micro.copyWith(
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: 0.4,
+                          color: Colors.white,
                         ),
                       ),
                     ),
-                    if (adresse.parDefaut) ...[
-                      const SizedBox(width: AppSpacing.p12),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: AppSpacing.p12,
-                          vertical: AppSpacing.p4,
-                        ),
-                        decoration: BoxDecoration(
-                          color: ClosetColors.emeraude100,
-                          borderRadius: BorderRadius.circular(2),
-                        ),
-                        child: Text(
-                          'par Défaut',
-                          style: ClosetTextStyles.attribut.copyWith(
-                            color: ClosetColors.emeraude500,
-                          ),
-                        ),
-                      ),
-                    ],
                   ],
+                ],
+              ),
+              const SizedBox(height: 4),
+              Text(
+                adresse.ligne,
+                style: ClosetTextStyles.corps.copyWith(
+                  color: ClosetColors.taupe,
                 ),
-                const SizedBox(height: AppSpacing.p8),
-                Text(
-                  adresse.ligne,
-                  style: ClosetTextStyles.libelle.copyWith(
-                    color: ClosetColors.pinTexte,
-                  ),
-                ),
-              ],
+              ),
+            ],
+          ),
+        ),
+        Semantics(
+          button: true,
+          label: 'Modifier ${adresse.libelle}',
+          child: GestureDetector(
+            onTap: onEditer,
+            child: const Padding(
+              padding: EdgeInsets.all(AppSpacing.p8),
+              child: Icon(
+                Icons.edit_outlined,
+                size: 18,
+                color: ClosetColors.fond300,
+              ),
             ),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }
