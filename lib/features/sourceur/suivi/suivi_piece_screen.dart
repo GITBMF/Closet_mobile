@@ -6,6 +6,7 @@ import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/closet_colors.dart';
 import '../../../core/theme/closet_text_styles.dart';
 import '../../../core/widgets/closet_frise.dart';
+import '../../../core/widgets/etat_ecran.dart';
 import '../../../data/repositories/sourceur_repository.dart';
 import '../widgets/sourceur_header.dart';
 
@@ -25,7 +26,7 @@ class SuiviPieceScreen extends ConsumerWidget {
     final pieces = ref.watch(mesPiecesProvider);
 
     return Scaffold(
-      backgroundColor: ClosetColors.beige,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
         child: Column(
           children: [
@@ -41,15 +42,19 @@ class SuiviPieceScreen extends ConsumerWidget {
                     if (p.id == pieceId) piece = p;
                   }
                   if (piece == null) {
-                    return const Center(child: Text('Pièce introuvable'));
+                    return EtatEcran.vide(
+                      titre: 'Pièce introuvable',
+                      message: 'Ce dépôt n’apparaît plus dans votre atelier.',
+                      action: () => context.pop(),
+                      libelleAction: 'Retour',
+                    );
                   }
                   return _Corps(piece: piece);
                 },
-                loading: () => const Center(
-                  child: CircularProgressIndicator(color: ClosetColors.dore),
-                ),
-                error: (e, _) => const Center(
-                  child: Text('Erreur de chargement'),
+                loading: () => const EtatEcran.chargement(),
+                error: (e, _) => EtatEcran.erreur(
+                  erreur: e,
+                  onRetry: () => ref.invalidate(mesPiecesProvider),
                 ),
               ),
             ),
@@ -124,7 +129,7 @@ class _Corps extends StatelessWidget {
                   child: Text(
                     'Retour dans Mon Espace',
                     style: ClosetTextStyles.bouton.copyWith(
-                      color: Colors.white,
+                      color: ClosetColors.blanc,
                     ),
                   ),
                 ),

@@ -40,7 +40,6 @@ class ClosetTextStyles {
     fontWeight: FontWeight.w600,
     letterSpacing: 0.44,
     height: 28.7 / 22,
-    color: ClosetColors.vertFonce,
   );
 
   /// Titre de section — Cormorant 600 / 22 pt
@@ -49,7 +48,6 @@ class ClosetTextStyles {
     fontWeight: FontWeight.w600,
     letterSpacing: 0.44,
     height: 26.6 / 22,
-    color: ClosetColors.noir,
   );
 
   /// Titre hero sur fond vert — EB Garamond 600 / 24 pt italique
@@ -64,7 +62,6 @@ class ClosetTextStyles {
   static TextStyle sousTitre = GoogleFonts.ebGaramond(
     fontSize: _s(19),
     fontWeight: FontWeight.w700,
-    color: ClosetColors.noir,
   );
 
   /// Accroche produit — Cormorant 600 / 18 pt
@@ -73,7 +70,6 @@ class ClosetTextStyles {
     fontWeight: FontWeight.w600,
     letterSpacing: 0.36,
     height: 21.8 / 18,
-    color: ClosetColors.noir,
   );
 
   /// Titre de bloc — Cormorant 600 / 15 pt
@@ -82,7 +78,6 @@ class ClosetTextStyles {
     fontWeight: FontWeight.w600,
     letterSpacing: -0.3,
     height: 18.2 / 15,
-    color: ClosetColors.noir,
   );
 
   /// Nom de produit — Cormorant Garamond 700 / 12 pt
@@ -91,7 +86,6 @@ class ClosetTextStyles {
     fontWeight: FontWeight.w700,
     letterSpacing: -0.24,
     height: 14.5 / 12,
-    color: ClosetColors.noir,
   );
 
   /// Citation / description serif — Cormorant 500 / 16 pt
@@ -99,7 +93,6 @@ class ClosetTextStyles {
     fontSize: _s(16),
     fontWeight: FontWeight.w500,
     height: 19.2 / 16,
-    color: ClosetColors.noir,
   );
 
   // ── Montants ──────────────────────────────────────────────────────────
@@ -110,7 +103,6 @@ class ClosetTextStyles {
     fontWeight: FontWeight.w600,
     letterSpacing: 0.64,
     height: 41.8 / 32,
-    color: ClosetColors.noir,
   );
 
   /// Prix mis en avant — EB Garamond 600 / 22 pt
@@ -119,7 +111,6 @@ class ClosetTextStyles {
     fontWeight: FontWeight.w600,
     letterSpacing: 0.44,
     height: 28.7 / 22,
-    color: ClosetColors.noir,
   );
 
   /// Prix courant — EB Garamond 500 / 14 pt
@@ -128,7 +119,6 @@ class ClosetTextStyles {
     fontWeight: FontWeight.w500,
     letterSpacing: -0.28,
     height: 18.3 / 14,
-    color: ClosetColors.noir,
   );
 
   /// Numéro d'étape — EB Garamond 600 / 15 pt
@@ -146,7 +136,6 @@ class ClosetTextStyles {
     fontSize: _s(12),
     letterSpacing: -0.24,
     height: 14.4 / 12,
-    color: ClosetColors.noir,
   );
 
   /// Corps sur fond vert
@@ -162,7 +151,6 @@ class ClosetTextStyles {
     fontSize: _s(12),
     fontWeight: FontWeight.w500,
     height: 17.4 / 12,
-    color: ClosetColors.noir,
   );
 
   /// Libellé de liste / entrée de menu — Lato 500 / 14 pt
@@ -170,14 +158,12 @@ class ClosetTextStyles {
     fontSize: _s(14),
     fontWeight: FontWeight.w500,
     height: 16.8 / 14,
-    color: ClosetColors.noir,
   );
 
   /// Libellé accentué — Lato 600 / 14 pt
   static TextStyle libelleFort = GoogleFonts.lato(
     fontSize: _s(14),
     fontWeight: FontWeight.w600,
-    color: ClosetColors.noir,
   );
 
   /// Métadonnée — Lato 400 / 10 pt
@@ -193,7 +179,6 @@ class ClosetTextStyles {
     fontSize: _s(10),
     fontWeight: FontWeight.w500,
     height: 14.5 / 10,
-    color: ClosetColors.noir,
   );
 
   /// Détail produit — Lato 400 / 9 pt
@@ -242,7 +227,6 @@ class ClosetTextStyles {
   static const TextStyle display = TextStyle(
     fontFamily: 'Boldonse',
     fontSize: 22,
-    color: ClosetColors.noir,
   );
 
   /// Libellé de bouton — Lato 500 / 12 pt (CTA « Découvrir » de `11:30`).
@@ -265,7 +249,6 @@ class ClosetTextStyles {
   static TextStyle saisie = GoogleFonts.lato(
     fontSize: _s(14),
     letterSpacing: 0.14,
-    color: ClosetColors.noir,
   );
 
   /// Placeholder de champ
@@ -287,7 +270,6 @@ class ClosetTextStyles {
     fontSize: _s(10),
     fontWeight: FontWeight.w500,
     letterSpacing: -0.2,
-    color: ClosetColors.noir,
   );
 
   /// Badge / pastille — Lato 400 / 9 pt, très espacé (cf. « Toutes », 2.07)
@@ -295,7 +277,6 @@ class ClosetTextStyles {
     fontSize: _s(9),
     letterSpacing: 2.07,
     height: 10.8 / 9,
-    color: ClosetColors.noir,
   );
 
   /// Suréclat de section — Lato 400 / 8 pt, très espacé

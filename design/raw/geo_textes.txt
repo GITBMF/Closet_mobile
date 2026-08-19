@@ -1,0 +1,27 @@
+
+### 61:12575 — Input [161x407] 11 textes
+   Région | Adamaoua | Centre | Extrême-Nord | Est | Littoral | Nord Ouest | Ouest | Sud | Sud-Ouest | Nord
+
+### 61:12788 — Input [161x407] 11 textes
+   Région | Haute Sanaga | Lekié | Mbam-et-Inoubou | Mbam-et-Kim | Méfou-et-Afamba | Méfou-et-Akono | Mfoundi | Nyong-et-Kéllé | Nyong-et-Mfoumou | Mbalmayo
+
+### 162:3709 — Ma sélection E1 [390x1042] 35 textes
+   Ma sélection | Etape 1/3 | Paiement | confirmation | livraison | 1 | 2 | 3 | Nom complet | Aîcha N. | Téléphone (Whatsapp) | +237 6 90 12 34 56 | Nous vous écrirons sur WhatsApp pour suivre votre pièce. | Détails de livraison | Veullez entrez vos informations | Departement | Région | Région | Adamaoua | Centre | Quartier | Extrême-Nord | 456625***********52064 | Veullez écrire le nom de votre quartier | Est | Littoral | Méthode de paiement | Veuillez choisir la methode paiement | Nord Ouest | Ouest | Valider les informations | Sud | Sud-Ouest | Nord | Poursuivre -Paiement
+
+### 162:3844 — Ma sélection E1 [390x1042] 46 textes
+   Ma sélection | Etape 1/3 | Paiement | confirmation | livraison | 1 | 2 | 3 | Nom complet | Aîcha N. | Téléphone (Whatsapp) | +237 6 90 12 34 56 | Nous vous écrirons sur WhatsApp pour suivre votre pièce. | Détails de livraison | Veullez entrez vos informations | Departement | Région | Région | Centre | Adamaoua | Haute Sanaga | Centre | Lekié | Quartier | Extrême-Nord | Mbam-et-Inoubou | 456625***********52064 | Veullez écrire le nom de votre quartier | Est | Mbam-et-Kim | Littoral | Méfou-et-Afamba | Méthode de paiement | Veuillez choisir la methode paiement | Méfou-et-Akono | Nord Ouest | Mfoundi | Ouest | Valider les informations | Nyong-et-Kéllé | Sud | Nyong-et-Mfoumou | Sud-Ouest | Mbalmayo | Nord | Poursuivre -Paiement
+
+### 162:5536 — Ma sélection E1 [390x844] 25 textes
+   Ma sélection | Etape 1/3 | Paiement | confirmation | livraison | 1 | 2 | 3 | Nom complet | Choisir la ville de livraison | Aîcha N. | Yaoundé | Téléphone (Whatsapp) | Livraison à domicile 24h-48h | +237 6 90 12 34 56 | Nous vous écrirons sur WhatsApp pour suivre votre pièce. | Douala | Livraison à domicile 24h-48h | Détails de livraison | Autre | 8000 S Kirkland Ave, Chicago, IL 6065 | A determiner | Méthode de paiement | xxxx xxxx xxxx 4865 | Poursuivre -Paiement
+
+### 162:4255 — Ma sélection E1 [390x845] 51 textes
+   Ma sélection | Etape 1/3 | Paiement | confirmation | livraison | 1 | 2 | 3 | Nom complet | Methode de retrait de fonds | Aîcha N. | Orange Money | Téléphone (Whatsapp) | +237 6 90 12 34 56 | MTN Moblie Money | Nous vous écrirons sur WhatsApp pour suivre votre pièce. | **** 4864 | Détails de livraison | Veullez entrez vos informations | Departement | Région | Région | Centre | Mbalmayo | Adamaoua | Haute Sanaga | Centre | Lekié | Quartier | Newton- Collège Saint Coeur de Marie | Extrême-Nord | Mbam-et-Inoubou | 456625***********52064 | Veullez écrire le nom de votre quartier | Est | Mbam-et-Kim | Littoral | Méfou-et-Afamba | Méthode de paiement | MTN Mobile Money | Méfou-et-Akono | Nord Ouest | Mfoundi | Ouest | Nyong-et-Kéllé | Sud | Nyong-et-Mfoumou | Sud-Ouest | Mbalmayo | Nord | Poursuivre - Paiement
+
+### 162:5427 — Ma sélection E1 [390x1063] 26 textes
+   Ma sélection | Etape 1/3 | Paiement | confirmation | livraison | 1 | 2 | 3 | Nom complet | Aîcha N. | Téléphone (Whatsapp) | +237 6 90 12 34 56 | Nous vous écrirons sur WhatsApp pour suivre votre pièce. | Détails de livraison | Mbalmayo-Centre, Newtown Collège... | Méthode de paiement | Visa Card | Cardholder Name | Aîcha N. | Card Number | 456625***********52064 | CVV | Expiration | MM/YY | Valider les informations | Poursuivre -Paiement
+
+### 162:5119 — Ma sélection E1 [390x845] 24 textes
+   Ma sélection | Etape 1/3 | Paiement | confirmation | livraison | 1 | 2 | 3 | Nom complet | Aîcha N. | Téléphone (Whatsapp) | +237 6 90 12 34 56 | Nous vous écrirons sur WhatsApp pour suivre votre pièce. | Détails de livraison | Mbalmayo-Centre, Newtown Collège... | Méthode de paiement | Visa Card | Valider les informations | sous-total + livraison | 42.000 FCFA | Ajouter à mon dressing | Total à régler | Paiement chiffré. Votre pièce est réservée pendant 15 minutes | Poursuivre - Paiement
+
+### 16:3448 — Page Ma sélection [390x844] 17 textes
+   Ma sélection | 1 pièce unique mise de côté pour vous. | Maison coco chanel | Robe Durable Vert Emeraude | excellent | 38.500 FCFA | Code privilège | Appliquer | cercle-privilège | 38.500 FCFA | Sous-total | 3.500 FCFA | Livraison délicate | 42.000 FCFA | total à régler | Finaliser Ma sélection | Selection

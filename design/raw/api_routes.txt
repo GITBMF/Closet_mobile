@@ -1,0 +1,120 @@
+POST  /api/v1/auth/register | Créer un compte cliente
+POST  /api/v1/auth/login | Se connecter (e-mail + mot de passe)
+POST  /api/v1/auth/login/mfa | Valider le code de double authentification
+POST  /api/v1/auth/refresh | Renouveler la session
+POST  /api/v1/auth/logout | Se déconnecter
+POST  /api/v1/auth/forgot-password | Demander une réinitialisation du mot de passe
+POST  /api/v1/auth/reset-password | Définir un nouveau mot de passe
+GET   /api/v1/me | Mon espace
+PATCH /api/v1/me | Mettre à jour mon profil
+POST  /api/v1/me/password | Changer mon mot de passe
+POST  /api/v1/me/devices | Enregistrer un appareil pour les notifications push
+DELETE/api/v1/me/devices/{token} | Retirer un appareil
+POST  /api/v1/me/mfa/setup | Démarrer la configuration de la double authentification
+POST  /api/v1/me/mfa/verify | Confirmer la double authentification
+POST  /api/v1/me/mfa/disable | Désactiver la double authentification
+GET   /api/v1/admin/users | Lister les utilisateurs
+POST  /api/v1/admin/users | Créer un utilisateur (back office)
+GET   /api/v1/admin/users/{user_id} | Consulter un utilisateur
+PATCH /api/v1/admin/users/{user_id} | Modifier un utilisateur
+DELETE/api/v1/admin/users/{user_id} | Supprimer (soft delete) un utilisateur
+PUT   /api/v1/admin/users/{user_id}/role | Changer le rôle d'un utilisateur
+GET   /api/v1/admin/users/{user_id}/audit | Journal d'audit d'un utilisateur
+GET   /api/v1/geo/regions | List Regions
+GET   /api/v1/geo/regions/{region_id}/divisions | List Divisions
+GET   /api/v1/geo/divisions/{division_id}/subdivisions | List Subdivisions
+GET   /api/v1/geo/cities | List Cities
+GET   /api/v1/geo/cities/{city_id}/neighbourhoods | List Neighbourhoods
+POST  /api/v1/admin/geo/cities | Create City
+PATCH /api/v1/admin/geo/cities/{city_id} | Update City
+POST  /api/v1/admin/geo/neighbourhoods | Create Neighbourhood
+PATCH /api/v1/admin/geo/neighbourhoods/{neighbourhood_id} | Update Neighbourhood
+GET   /api/v1/delivery/quote | Get Quote
+GET   /api/v1/admin/delivery/rates | List Rates
+POST  /api/v1/admin/delivery/rates | Create Rate
+PATCH /api/v1/admin/delivery/rates/{rate_id} | Update Rate
+GET   /api/v1/pieces | Browse Pieces
+GET   /api/v1/pieces/search | Search Pieces
+GET   /api/v1/pieces/{piece_id} | Get Piece
+GET   /api/v1/houses | List Houses
+GET   /api/v1/universes | List Universes
+GET   /api/v1/wishlist | My Wishlist
+POST  /api/v1/wishlist/{piece_id} | Add To Wishlist
+DELETE/api/v1/wishlist/{piece_id} | Remove From Wishlist
+POST  /api/v1/admin/houses | Create House
+POST  /api/v1/admin/universes | Create Universe
+POST  /api/v1/admin/pieces | Create Piece
+PATCH /api/v1/admin/pieces/{piece_id} | Update Piece
+DELETE/api/v1/admin/pieces/{piece_id} | Delete Piece
+POST  /api/v1/admin/pieces/{piece_id}/publish | Publish Piece
+POST  /api/v1/admin/pieces/{piece_id}/media | Add Media
+DELETE/api/v1/admin/pieces/{piece_id}/media/{media_id} | Remove Media
+GET   /api/v1/admin/publication-batches | List Batches
+POST  /api/v1/admin/publication-batches | Create Batch
+GET   /api/v1/showcasing/home | Home
+GET   /api/v1/showcasing/sponsors | Public Sponsors
+GET   /api/v1/showcasing/featured | Public Featured
+GET   /api/v1/admin/showcasing/sponsors | List Sponsors
+POST  /api/v1/admin/showcasing/sponsors | Create Sponsor
+PATCH /api/v1/admin/showcasing/sponsors/{sponsor_id} | Update Sponsor
+DELETE/api/v1/admin/showcasing/sponsors/{sponsor_id} | Delete Sponsor
+GET   /api/v1/admin/showcasing/featured | List Featured
+POST  /api/v1/admin/showcasing/featured | Create Featured
+PATCH /api/v1/admin/showcasing/featured/{slot_id} | Update Featured
+DELETE/api/v1/admin/showcasing/featured/{slot_id} | Delete Featured
+POST  /api/v1/sourcing/apply | Apply
+GET   /api/v1/sourcing/me | My Profile
+POST  /api/v1/sourcing/submissions | Create Submission
+GET   /api/v1/sourcing/submissions | My Submissions
+GET   /api/v1/sourcing/submissions/{submission_id} | My Submission
+POST  /api/v1/sourcing/submissions/{submission_id}/media | Add Media
+GET   /api/v1/sourcing/payouts | My Payouts
+GET   /api/v1/admin/sourcing/applications | List Applications
+POST  /api/v1/admin/sourcing/applications/{profile_id}/approve | Approve Application
+POST  /api/v1/admin/sourcing/applications/{profile_id}/reject | Reject Application
+GET   /api/v1/admin/sourcing/submissions | Review Queue
+GET   /api/v1/admin/sourcing/submissions/{submission_id} | Review Detail
+POST  /api/v1/admin/sourcing/submissions/{submission_id}/decision | Decide
+POST  /api/v1/admin/sourcing/submissions/{submission_id}/catalogue | Catalogue Submission
+POST  /api/v1/orders | Checkout
+GET   /api/v1/orders | My Orders
+GET   /api/v1/orders/{order_number} | Track Order
+GET   /api/v1/admin/orders | List Orders
+GET   /api/v1/admin/orders/{order_id} | Get Order
+GET   /api/v1/admin/orders/{order_id}/history | Get Order History
+PATCH /api/v1/admin/orders/{order_id}/status | Update Status
+POST  /api/v1/admin/orders/{order_id}/quote | Set Manual Quote
+POST  /api/v1/payments/initiate | Initiate Payment
+GET   /api/v1/payments/{payment_id} | Get Payment
+POST  /api/v1/payments/webhook/cinetpay | Cinetpay Webhook
+GET   /api/v1/admin/payments | List Payments
+POST  /api/v1/admin/payments/{payment_id}/reconcile | Reconcile Payment
+POST  /api/v1/admin/payments/{payment_id}/refund | Refund Payment
+POST  /api/v1/returns | Request Return
+GET   /api/v1/returns | My Returns
+GET   /api/v1/returns/{ticket_id} | My Return
+GET   /api/v1/admin/returns | List Returns
+GET   /api/v1/admin/returns/{ticket_id} | Get Return
+POST  /api/v1/admin/returns/{ticket_id}/approve | Approve Return
+POST  /api/v1/admin/returns/{ticket_id}/reject | Reject Return
+POST  /api/v1/admin/returns/{ticket_id}/resolve | Resolve Return
+POST  /api/v1/admin/deliveries/couriers | Create Courier
+GET   /api/v1/admin/deliveries/couriers | List Couriers
+GET   /api/v1/admin/deliveries | List Deliveries
+POST  /api/v1/admin/deliveries | Create Delivery
+GET   /api/v1/admin/deliveries/{delivery_id} | Get Delivery
+PATCH /api/v1/admin/deliveries/{delivery_id}/assign | Assign Courier
+PATCH /api/v1/admin/deliveries/{delivery_id}/status | Admin Update Status
+GET   /api/v1/admin/deliveries/{delivery_id}/events | Delivery Events
+POST  /api/v1/admin/deliveries/{delivery_id}/link | Create Courier Link
+GET   /api/v1/courier/{token} | Courier See Delivery
+POST  /api/v1/courier/{token}/status | Courier Update Status
+POST  /api/v1/admin/notifications/templates | Create Template
+GET   /api/v1/admin/notifications/templates | List Templates
+PATCH /api/v1/admin/notifications/templates/{template_id} | Update Template
+GET   /api/v1/admin/notifications | List Dispatch Log
+GET   /api/v1/admin/dashboard/overview | Overview
+GET   /api/v1/admin/dashboard/sales | Sales
+GET   /api/v1/admin/dashboard/sourcers | Sourcers
+GET   /api/v1/admin/dashboard/alerts | Alerts
+GET   /health | Health

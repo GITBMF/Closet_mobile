@@ -6,11 +6,9 @@ import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/closet_colors.dart';
 import '../../../core/theme/closet_text_styles.dart';
 import '../../../core/widgets/closet_buttons.dart';
+import '../../../core/widgets/status_badge.dart';
 import '../../../data/repositories/sourceur_repository.dart';
 import '../widgets/sourceur_header.dart';
-
-/// Étapes du parcours d'adhésion, dans l'ordre de la maquette `27:1970`.
-enum EtapeAdhesion { soumise, enEtude, validee, premierePiece }
 
 /// Mon adhésion — transcription de la maquette `27:1970`.
 ///
@@ -18,30 +16,38 @@ enum EtapeAdhesion { soumise, enEtude, validee, premierePiece }
 /// encadré de garantie, et CTA « Compléter mon profil en attendant ».
 ///
 /// Écran distinct de `SourceurInscriptionScreen` : celui-ci **affiche l'état**
-/// d'une adhésion déjà soumise, il ne collecte rien.
+/// d'une adhésion déjà soumise, il ne collecte rien. Cet état vient du dépôt
+/// sourceur : il était auparavant figé sur `enEtude`, ce qui rendait la frise
+/// décorative.
 class SourceurAdhesionScreen extends ConsumerWidget {
-  const SourceurAdhesionScreen({
-    super.key,
-    this.etapeCourante = EtapeAdhesion.enEtude,
-    this.dateSoumission,
-  });
-
-  final EtapeAdhesion etapeCourante;
-  final DateTime? dateSoumission;
+  const SourceurAdhesionScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final soumiseLe = dateSoumission ?? DateTime.now();
+    final adhesion =
+        ref.watch<SourceurRepository>(sourceurRepositoryProvider).adhesion;
+
+    // Aucune adhésion enregistrée : l'écran n'a rien à afficher, le parcours
+    // d'entrée n'a pas été suivi.
+    if (adhesion == null) return const _AucuneAdhesion();
+
+    final etapeCourante = adhesion.etape;
+    final dateSoumission = adhesion.dateSoumission;
 
     return Scaffold(
-      backgroundColor: ClosetColors.beige,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
         child: Column(
           children: [
             SourceurHeader(
               titre: 'Mon adhésion',
-              surtitre: 'ESPACE SOURCEUR',
-              afficherRetour: false,
+              onRetour: () {
+                if (context.canPop()) {
+                  context.pop();
+                } else {
+                  context.go('/espace');
+                }
+              },
               actions: [
                 SourceurBoutonRond(
                   icone: Icons.person_outline,
@@ -79,8 +85,123 @@ class SourceurAdhesionScreen extends ConsumerWidget {
                       dateSoumission: soumiseLe,
                     ),
                     const SizedBox(height: AppSpacing.p24),
-                    const _EncadreGarantie(),
+                    Text(
+                      'Le dépôt s’ouvrira après validation',
+                      style: ClosetTextStyles.titreBloc.copyWith(
+                        fontFamily: ClosetTextStyles.prix.fontFamily,
+                        letterSpacing: -0.30,
+                        color: ClosetColors.vert,
+                      ),
+                    ),
+                    const SizedBox(height: AppSpacing.p8),
+                    Text(
+                      'C’est notre garantie de qualité : chaque partenaire est '
+                      'validé avant de confier ses pièces.',
+                      style: ClosetTextStyles.meta.copyWith(
+                        letterSpacing: 0.10,
+                        color: ClosetColors.taupe,
+                      ),
+                    ),
+                    const SizedBox(height: AppSpacing.p32),
+                    if (etapeCourante == EtapeAdhesion.validee ||
+                        etapeCourante == EtapeAdhesion.premierePiece) ...[
+                      Center(
+                        child: SizedBox(
+                          width: 312,
+                          height: 44,
+                          child: Material(
+                            color: ClosetColors.fond300,
+                            borderRadius:
+                                BorderRadius.circular(AppRadius.cercle),
+                            child: InkWell(
+                              borderRadius:
+                                  BorderRadius.circular(AppRadius.cercle),
+                              onTap: () =>
+                                  context.go('/sourceur/adhesion/approuvee'),
+                              child: Center(
+                                child: Text(
+                                  'Voir ma validation',
+                                  style: ClosetTextStyles.bouton.copyWith(
+                                    fontWeight: FontWeight.w600,
+                                    color: ClosetColors.vert,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: AppSpacing.p16),
+                    ],
                   ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Aucune adhésion soumise : l'écran est atteignable par lien direct alors que
+/// le parcours d'entrée n'a pas été suivi.
+class _AucuneAdhesion extends StatelessWidget {
+  const _AucuneAdhesion();
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      body: SafeArea(
+        child: Column(
+          children: [
+            SourceurHeader(
+              titre: 'Mon adhésion',
+              onRetour: () {
+                if (context.canPop()) {
+                  context.pop();
+                } else {
+                  context.go('/espace');
+                }
+              },
+            ),
+            Expanded(
+              child: Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(AppSpacing.p32),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(
+                        Icons.badge_outlined,
+                        size: 48,
+                        color: ClosetColors.taupe,
+                      ),
+                      const SizedBox(height: AppSpacing.p16),
+                      Text(
+                        'Aucune adhésion en cours',
+                        style: ClosetTextStyles.titreBloc
+                            .copyWith(color: ClosetColors.vert),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: AppSpacing.p8),
+                      Text(
+                        'Déposez votre candidature pour rejoindre le cercle '
+                        'des sourceuses.',
+                        style: ClosetTextStyles.meta
+                            .copyWith(color: ClosetColors.taupe),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: AppSpacing.p24),
+                      ClosetPrimaryButton(
+                        label: 'Devenir sourceur',
+                        dore: true,
+                        hauteur: AppSpacing.minTouchTarget,
+                        onPressed: () => context.go('/sourceur/inscription'),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -110,6 +231,7 @@ class _CarteStatut extends StatelessWidget {
   const _CarteStatut({required this.etape, required this.dateSoumission});
 
   final EtapeAdhesion etape;
+  final DateTime dateSoumission;
   final DateTime dateSoumission;
 
   @override
@@ -151,19 +273,18 @@ class _CarteStatut extends StatelessWidget {
           const SizedBox(height: AppSpacing.p16),
           Text(
             titre,
-            style: ClosetTextStyles.titreEcran.copyWith(
-              fontStyle: FontStyle.italic,
-              letterSpacing: 0.2,
-              height: 1.25,
-              color: ClosetColors.beige,
+            style: ClosetTextStyles.titreBloc.copyWith(
+              fontFamily: ClosetTextStyles.prix.fontFamily,
+              letterSpacing: -0.30,
+              color: ClosetColors.blanc,
             ),
           ),
           const SizedBox(height: AppSpacing.p8),
           Text(
             'Soumise le ${_jourMois(dateSoumission)}. $corps',
-            style: ClosetTextStyles.corps.copyWith(
-              height: 1.5,
-              color: ClosetColors.neutre300,
+            style: ClosetTextStyles.meta.copyWith(
+              letterSpacing: 0.10,
+              color: ClosetColors.blanc,
             ),
           ),
         ],
@@ -288,6 +409,7 @@ class _FriseAdhesion extends StatelessWidget {
 
   final EtapeAdhesion etapeCourante;
   final DateTime dateSoumission;
+  final DateTime dateSoumission;
 
   @override
   Widget build(BuildContext context) {
@@ -295,6 +417,7 @@ class _FriseAdhesion extends StatelessWidget {
       (
         EtapeAdhesion.soumise,
         'Fiche soumise',
+        _horodatage(dateSoumission),
         _horodatage(dateSoumission),
       ),
       (
@@ -305,12 +428,16 @@ class _FriseAdhesion extends StatelessWidget {
       (
         EtapeAdhesion.validee,
         'Adhésion validée',
-        'Votre espace de dépôt s’ouvrira',
+        etapeCourante.index >= EtapeAdhesion.validee.index
+            ? 'Votre espace de dépôt est ouvert'
+            : 'Votre espace de dépôt s’ouvrira',
       ),
       (
         EtapeAdhesion.premierePiece,
         'Première pièce confiée',
-        'Vous pourrez déposer votre première pièce',
+        etapeCourante == EtapeAdhesion.premierePiece
+            ? 'Votre première pièce nous est confiée'
+            : 'Vous pourrez déposer votre première pièce',
       ),
     ];
 
@@ -379,13 +506,16 @@ class _EtapeFrise extends StatelessWidget {
                 width: 14,
                 height: 14,
                 decoration: BoxDecoration(
-                  color: faite || courante ? pastille : Colors.white,
+                  color: atteinte ? ClosetColors.vert : ClosetColors.blanc,
                   shape: BoxShape.circle,
                   border: Border.all(
                     color: pastille,
                     width: courante ? 3 : AppStroke.epais,
                   ),
                 ),
+                child: atteinte
+                    ? const Icon(Icons.check, size: 11, color: ClosetColors.blanc)
+                    : null,
               ),
               if (!derniere)
                 Expanded(

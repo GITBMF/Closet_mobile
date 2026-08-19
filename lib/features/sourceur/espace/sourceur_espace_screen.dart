@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -6,17 +6,15 @@ import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/closet_colors.dart';
 import '../../../core/theme/closet_text_styles.dart';
 import '../../../core/widgets/closet_app_bar.dart';
-import '../../../data/repositories/auth_repository.dart';
 import '../../../data/repositories/sourceur_repository.dart';
-import '../../../data/services/auth_storage_service.dart';
 import '../retrait/methode_retrait_sheet.dart';
 import '../widgets/sourceur_header.dart';
 
-/// Mon espace sourceur — transcription de la maquette `31:109`.
+/// Mon espace sourceur � transcription de la maquette `31:109`.
 ///
-/// Carte de solde vert profond, rangée de quatre actions rapides,
-/// liste d'accès en tuiles claires, puis bouton « Confier une nouvelle pièce ».
-class SourceurEspaceScreen extends ConsumerStatefulWidget {
+/// Carte de solde vert profond (350 � 139), rang�e de quatre actions rapides,
+/// liste d'acc�s, puis bouton � Confier une nouvelle pi�ce � ancr� en bas.
+class SourceurEspaceScreen extends ConsumerWidget {
   const SourceurEspaceScreen({super.key});
 
   @override
@@ -31,9 +29,11 @@ class _SourceurEspaceScreenState extends ConsumerState<SourceurEspaceScreen> {
   Widget build(BuildContext context) {
     final revenus = ref.watch(revenusSourceurProvider);
     final pieces = ref.watch(mesPiecesProvider);
+    final verifie = ref.watch(sourceurRepositoryProvider).adhesion?.estValidee ==
+        true;
 
     return Scaffold(
-      backgroundColor: ClosetColors.beige,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
         child: Column(
           children: [
@@ -44,7 +44,7 @@ class _SourceurEspaceScreenState extends ConsumerState<SourceurEspaceScreen> {
               actions: [
                 SourceurBoutonRond(
                   icone: Icons.person_outline,
-                  label: 'Mon profil',
+                  label: 'Profil',
                   onTap: () => context.push('/espace/infos'),
                 ),
                 const SizedBox(width: AppSpacing.gapListe),
@@ -68,6 +68,7 @@ class _SourceurEspaceScreenState extends ConsumerState<SourceurEspaceScreen> {
                   children: [
                     _CarteSolde(
                       revenus: revenus,
+                      verifie: verifie,
                       nbPieces: pieces.maybeWhen(
                         data: (l) => l
                             .where((p) => p.statut == StatutPiece.publiee)
@@ -83,7 +84,7 @@ class _SourceurEspaceScreenState extends ConsumerState<SourceurEspaceScreen> {
                       onRetrait: () => afficherMethodeRetrait(context),
                       onHistorique: () => context.push('/sourceur/revenus'),
                       onMoyens: () => context.push('/espace/paiements'),
-                      onPlus: () => context.push('/sourceur/pieces'),
+                      onPlus: () => context.go('/sourceur/nouvelle'),
                     ),
                     const SizedBox(height: AppSpacing.p20),
                     _LigneMenu(
@@ -104,7 +105,7 @@ class _SourceurEspaceScreenState extends ConsumerState<SourceurEspaceScreen> {
                     _LigneMenu(
                       icone: Icons.logout_rounded,
                       label: 'Logout',
-                      onTap: () => _deconnecter(context, ref),
+                      onTap: () => context.push('/espace/deconnexion'),
                     ),
                   ],
                 ),
@@ -126,7 +127,7 @@ class _SourceurEspaceScreenState extends ConsumerState<SourceurEspaceScreen> {
                         '+ Confier une nouvelle pièce',
                         style: ClosetTextStyles.bouton.copyWith(
                           fontWeight: FontWeight.w600,
-                          color: Colors.white,
+                          color: ClosetColors.blanc,
                         ),
                       ),
                     ),
@@ -139,56 +140,26 @@ class _SourceurEspaceScreenState extends ConsumerState<SourceurEspaceScreen> {
       ),
     );
   }
-
-  /// Déconnexion : purge du stockage avant l'état mémoire, puis remplacement
-  /// de la pile — cf. `EspaceScreen`, même contrainte de sécurité.
-  Future<void> _deconnecter(BuildContext context, WidgetRef ref) async {
-    final confirme = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: ClosetColors.creme,
-        title: Text('Se déconnecter', style: ClosetTextStyles.titreSection),
-        content: Text(
-          'Vous devrez saisir à nouveau vos identifiants.',
-          style: ClosetTextStyles.citation,
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: Text('Annuler', style: ClosetTextStyles.bouton),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            child: Text(
-              'Se déconnecter',
-              style: ClosetTextStyles.bouton.copyWith(
-                color: ClosetColors.erreurCouture,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-    if (confirme != true) return;
-    await AuthStorageService.clearAuthData();
-    ref.read(currentUserProvider.notifier).state = null;
-    if (context.mounted) context.go('/auth');
-  }
 }
 
-/// Carte de solde : vert profond, badge vérifié, œil pour masquer le montant.
-class _CarteSolde extends StatelessWidget {
+/// Carte de solde : 350 � 139, vert profond, rayon 8.
+class _CarteSolde extends StatefulWidget {
   const _CarteSolde({
     required this.revenus,
     required this.nbPieces,
-    required this.masque,
-    required this.onMasquer,
+    required this.verifie,
   });
 
   final AsyncValue<RevenusSourceur> revenus;
   final int? nbPieces;
-  final bool masque;
-  final VoidCallback onMasquer;
+  final bool verifie;
+
+  @override
+  State<_CarteSolde> createState() => _CarteSoldeState();
+}
+
+class _CarteSoldeState extends State<_CarteSolde> {
+  bool _masque = false;
 
   @override
   Widget build(BuildContext context) {
@@ -199,118 +170,98 @@ class _CarteSolde extends StatelessWidget {
         color: ClosetColors.vert,
         borderRadius: BorderRadius.circular(16),
       ),
-      child: revenus.when(
-        data: (r) {
-          // Maquette `31:109` : chiffres de démonstration tant que le
-          // backend n'a pas encore de ventes.
-          final solde = r.solde > 0 ? r.solde : 52000;
-          final aReverser = r.enAttente > 0 ? r.enAttente : 27300;
-          final pieces = (nbPieces ?? 0) > 0 ? nbPieces! : 3;
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      'SOLDE DU COMPTE',
-                      style: ClosetTextStyles.surtitre.copyWith(
-                        letterSpacing: 1.2,
-                        color: ClosetColors.fond300,
-                      ),
-                    ),
-                  ),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 4,
-                    ),
-                    decoration: BoxDecoration(
-                      color: ClosetColors.emeraude100,
-                      borderRadius: BorderRadius.circular(AppRadius.cercle),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Container(
-                          width: 6,
-                          height: 6,
-                          decoration: const BoxDecoration(
-                            color: ClosetColors.emeraude500,
-                            shape: BoxShape.circle,
-                          ),
-                        ),
-                        const SizedBox(width: 6),
-                        Text(
-                          'VÉRIFIÉ',
-                          style: ClosetTextStyles.attribut.copyWith(
-                            fontWeight: FontWeight.w700,
-                            letterSpacing: 0.4,
-                            color: ClosetColors.emeraude500,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
-              Text(
-                masque ? '•••••• FCFA' : formatPrixFcfa(solde.toDouble()),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: ClosetTextStyles.montantHero.copyWith(
-                  color: Colors.white,
-                ),
-              ),
-              const SizedBox(height: AppSpacing.p16),
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'PIÈCES EN VENTE : ${pieces.toString().padLeft(2, '0')} PIÈCES',
-                          style: ClosetTextStyles.actionPetite.copyWith(
-                            letterSpacing: 0.2,
-                            color: ClosetColors.fond300,
-                          ),
-                        ),
-                        const SizedBox(height: 5),
-                        Text(
-                          'À REVERSER : ${formatPrixFcfa(aReverser.toDouble())}',
-                          style: ClosetTextStyles.actionPetite.copyWith(
-                            letterSpacing: 0.2,
-                            color: ClosetColors.fond300,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  GestureDetector(
-                    onTap: onMasquer,
-                    child: Icon(
-                      masque
-                          ? Icons.visibility_off_outlined
-                          : Icons.visibility_outlined,
-                      size: 20,
+      child: widget.revenus.when(
+        data: (r) => Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    'Solde du compte',
+                    style: ClosetTextStyles.actionPetite.copyWith(
+                      letterSpacing: -0.20,
                       color: ClosetColors.fond300,
                     ),
                   ),
-                ],
+                ),
+                if (widget.verifie)
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.p12,
+                      vertical: AppSpacing.p4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: ClosetColors.emeraude100,
+                      borderRadius: BorderRadius.circular(AppRadius.vignette),
+                    ),
+                    child: Text(
+                      'Vérifié',
+                      style: ClosetTextStyles.attribut.copyWith(
+                        color: ClosetColors.emeraude500,
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+            const SizedBox(height: 2),
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    _masque ? '••••••' : formatPrixFcfa(r.solde.toDouble()),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: ClosetTextStyles.montantHero.copyWith(
+                      color: ClosetColors.blanc,
+                    ),
+                  ),
+                ),
+                GestureDetector(
+                  onTap: () => setState(() => _masque = !_masque),
+                  child: Icon(
+                    _masque
+                        ? Icons.visibility_off_outlined
+                        : Icons.visibility_outlined,
+                    size: 16,
+                    color: ClosetColors.fond300,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: AppSpacing.p16),
+            Text(
+              'Pièces en vente : ${(widget.nbPieces ?? 0).toString().padLeft(2, '0')} '
+              'pièces',
+              style: ClosetTextStyles.actionPetite.copyWith(
+                letterSpacing: -0.20,
+                color: ClosetColors.fond300,
               ),
-            ],
-          );
-        },
+            ),
+            const SizedBox(height: 5),
+            Text(
+              'À reverser : ${_masque ? '••••••' : formatPrixFcfa(r.enAttente.toDouble())}',
+              style: ClosetTextStyles.actionPetite.copyWith(
+                letterSpacing: -0.20,
+                color: ClosetColors.fond300,
+              ),
+            ),
+          ],
+        ),
         loading: () => const Center(
-          child: CircularProgressIndicator(color: ClosetColors.fond300),
+          child: SizedBox(
+            width: 28,
+            height: 28,
+            child: CircularProgressIndicator(
+              color: ClosetColors.fond300,
+              strokeWidth: 2,
+            ),
+          ),
         ),
         error: (e, _) => Center(
           child: Text(
             'Solde indisponible',
-            style: ClosetTextStyles.corps.copyWith(color: Colors.white),
+            style: ClosetTextStyles.corps.copyWith(color: ClosetColors.blanc),
           ),
         ),
       ),
@@ -318,7 +269,7 @@ class _CarteSolde extends StatelessWidget {
   }
 }
 
-/// Rangée de quatre actions : vert profond, pastilles blanches, libellés dorés.
+/// Rang�e de quatre actions : 350 � 86, vert profond.
 class _ActionsRapides extends StatelessWidget {
   const _ActionsRapides({
     required this.onRetrait,
@@ -364,6 +315,7 @@ class _ActionsRapides extends StatelessWidget {
           ),
           _Action(
             icone: Icons.add,
+            icone: Icons.add,
             label: 'Plus',
             onTap: onPlus,
           ),
@@ -393,10 +345,10 @@ class _Action extends StatelessWidget {
         const SizedBox(height: 6),
         Text(
           label,
-          style: ClosetTextStyles.meta.copyWith(
-            fontSize: 11,
-            fontWeight: FontWeight.w500,
-            color: ClosetColors.fond300,
+          style: ClosetTextStyles.citation.copyWith(
+            fontSize: 13,
+            fontWeight: FontWeight.w400,
+            color: ClosetColors.blanc,
           ),
         ),
       ],

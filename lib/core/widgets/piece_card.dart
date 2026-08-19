@@ -1,4 +1,4 @@
-import 'package:cached_network_image/cached_network_image.dart';
+﻿import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
 import '../theme/app_spacing.dart';
@@ -68,9 +68,13 @@ class PieceCard extends StatelessWidget {
       onTap: onTap,
       child: DecoratedBox(
         decoration: BoxDecoration(
-          color: ClosetColors.carteFond,
+          color: context.closetSombre
+              ? ClosetColors.emeraude400
+              : ClosetColors.carteFond,
           border: Border.all(
-            color: ClosetColors.carteBordure,
+            color: context.closetSombre
+                ? ClosetColors.emeraude300
+                : ClosetColors.carteBordure,
             width: AppStroke.fin,
           ),
           borderRadius: BorderRadius.circular(AppRadius.carte),
@@ -161,16 +165,16 @@ class _Visuel extends StatelessWidget {
         ClipRRect(
           borderRadius: rayon,
           child: imageUrl == null
-              ? const ColoredBox(color: Color(0xFFE5E5E5))
+              ? const ColoredBox(color: ClosetColors.gabaritImageClair)
               : CachedNetworkImage(
                   imageUrl: imageUrl!,
                   fit: BoxFit.cover,
                   color: isSold ? Colors.black.withValues(alpha: 0.5) : null,
                   colorBlendMode: isSold ? BlendMode.darken : null,
                   placeholder: (context, url) =>
-                      const ColoredBox(color: Color(0xFFE5E5E5)),
+                      const ColoredBox(color: ClosetColors.gabaritImageClair),
                   errorWidget: (context, url, error) => const ColoredBox(
-                    color: Color(0xFFE5E5E5),
+                    color: ClosetColors.gabaritImageClair,
                     child: Icon(
                       Icons.image_not_supported,
                       color: ClosetColors.taupe,

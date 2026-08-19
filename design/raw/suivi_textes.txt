@@ -1,0 +1,16 @@
+y= 3481 x=24108  Suivre ma pièce                                                         EB Garamond 600/18.0pt       34:1734
+y= 3550 x=24006  Maison massamo dutti                                                    Lato 500/10.0pt              34:1739
+y= 3565 x=24006  Veste en lin Ecru                                                       Manrope 600/14.0pt           34:1738
+y= 3587 x=24006  Informations reçu le 5 Juil 2026 , 14:30                                Manrope 400/12.0pt           34:1741
+y= 3640 x=23990  Evoution & analyse de votre pièce                                       Lato 400/12.0pt              34:1769
+y= 3680 x=24034  Reception de la pièce                                                   Lato 600/14.0pt              34:1755
+y= 3701 x=24034  Lun 6 Juil, 09:30                                                       Lato 400/12.0pt              34:1756
+y= 3751 x=24034  En cours d’analyse                                                      Lato 600/14.0pt              34:1758
+y= 3772 x=24034  Nous vérifions l’état de votre pièce conformément / aux normes de Clos  Lato 400/12.0pt              34:1759
+y= 3822 x=24034  Décision de ClosET                                                      Lato 600/14.0pt              34:1761
+y= 3843 x=24034  Acceptation ou refus de la pièce conformément aux / normes de ClosET    Lato 400/12.0pt              34:1762
+y= 3893 x=24034  Article Accepté                                                         Lato 600/14.0pt              34:1764
+y= 3914 x=24034  La pièce  correspond parfaitement aux normes  / actuels de ClosET.      Lato 400/12.0pt              34:1765
+y= 3964 x=24034  Article Mise en Vente                                                   Lato 600/14.0pt              34:1767
+y= 3985 x=24034  Votre article a été mise en vente avec succès le / Mer 8 Juil, 10:00    Lato 400/12.0pt              34:1768
+y= 4182 x=24100  Retour dans Mon Espace                                                  Lato 500/12.0pt              34:1795

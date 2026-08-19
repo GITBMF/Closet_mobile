@@ -7,6 +7,7 @@ import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/closet_colors.dart';
 import '../../../core/theme/closet_text_styles.dart';
 import '../../../core/widgets/closet_app_bar.dart';
+import '../../../core/widgets/etat_ecran.dart';
 import '../../../data/models/commande.dart';
 import '../../../data/repositories/commande_repository.dart';
 import 'mes_commandes_screen.dart';
@@ -38,9 +39,30 @@ class DetailCommandeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: ClosetColors.beige,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
-        child: _FeuilleDetail(numero: numero),
+        child: Column(
+          children: [
+            _EnTete(onRetour: () => context.pop()),
+            Expanded(
+              child: commande.when(
+                data: (c) => c == null
+                    ? EtatEcran.vide(
+                        titre: 'Commande introuvable',
+                        message: 'Cette commande n’apparaît plus dans votre historique.',
+                        action: () => context.pop(),
+                        libelleAction: 'Retour',
+                      )
+                    : _Corps(commande: c),
+                loading: () => const EtatEcran.chargement(),
+                error: (e, _) => EtatEcran.erreur(
+                  erreur: e,
+                  onRetry: () => ref.invalidate(commandeProvider(numero)),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -87,101 +109,57 @@ class _Corps extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.p20,
+        AppSpacing.p24,
+        AppSpacing.p20,
+        AppSpacing.p32,
+      ),
       children: [
-        Padding(
-          padding: const EdgeInsets.fromLTRB(
-            AppSpacing.p20,
-            AppSpacing.p16,
-            AppSpacing.p16,
-            0,
-          ),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(
-                child: Text(
-                  'COMMANDE #${commande.numero}',
-                  style: ClosetTextStyles.titreSection.copyWith(
-                    fontWeight: FontWeight.w700,
-                    color: ClosetColors.noir,
+        _CarteSuivi(commande: commande),
+        const SizedBox(height: AppSpacing.p24),
+        for (final ligne in commande.lignes) ...[
+          _LignePiece(ligne: ligne),
+          const SizedBox(height: AppSpacing.p12),
+        ],
+        const SizedBox(height: AppSpacing.p12),
+        _CarteRecapitulatif(commande: commande),
+        const SizedBox(height: AppSpacing.p24),
+        Center(
+          child: SizedBox(
+            width: 312,
+            height: 44,
+            child: Material(
+              color: ClosetColors.vert,
+              borderRadius: BorderRadius.circular(AppRadius.cercle),
+              child: InkWell(
+                borderRadius: BorderRadius.circular(AppRadius.cercle),
+                onTap: () => context.push(
+                  '/espace/commandes/${commande.numero}/suivi',
+                ),
+                child: Center(
+                  child: Text(
+                    'Suivre ma commande',
+                    style: ClosetTextStyles.bouton.copyWith(
+                      color: ClosetColors.blanc,
+                    ),
                   ),
                 ),
               ),
-              EspaceBoutonFermer(onTap: () => Navigator.of(context).pop()),
-            ],
+            ),
           ),
         ),
-        Expanded(
-          child: ListView(
-            controller: scrollController,
-            padding: const EdgeInsets.fromLTRB(
-              AppSpacing.p20,
-              AppSpacing.p12,
-              AppSpacing.p20,
-              AppSpacing.p24,
+        const SizedBox(height: AppSpacing.p12),
+        Center(
+          child: TextButton(
+            onPressed: () => context.go('/collections'),
+            child: Text(
+              'Passer d’autres commandes',
+              style: ClosetTextStyles.bouton.copyWith(
+                color: ClosetColors.vert,
+              ),
             ),
-            children: [
-              Row(
-                children: [
-                  Text(
-                    'Statut',
-                    style: ClosetTextStyles.saisie.copyWith(
-                      color: ClosetColors.taupe,
-                    ),
-                  ),
-                  const SizedBox(width: AppSpacing.p12),
-                  badgeStatutCommande(commande.statut),
-                ],
-              ),
-              const SizedBox(height: AppSpacing.p8),
-              Text(
-                'Déposé le: ${formatDateCommande(commande.dateDepot)}',
-                style: ClosetTextStyles.corps.copyWith(
-                  color: ClosetColors.fond400,
-                ),
-              ),
-              if (commande.adresseLivraison != null) ...[
-                const SizedBox(height: 2),
-                Text(
-                  commande.adresseLivraison!,
-                  style: ClosetTextStyles.corps.copyWith(
-                    color: ClosetColors.fond400,
-                  ),
-                ),
-              ],
-              const SizedBox(height: AppSpacing.p20),
-              for (final ligne in commande.lignes) ...[
-                _LignePiece(ligne: ligne),
-                const SizedBox(height: AppSpacing.p12),
-              ],
-              const SizedBox(height: AppSpacing.p8),
-              _CarteRecapitulatif(commande: commande),
-              const SizedBox(height: AppSpacing.p20),
-              SizedBox(
-                height: 48,
-                width: double.infinity,
-                child: Material(
-                  color: ClosetColors.vert,
-                  borderRadius: BorderRadius.circular(AppRadius.cercle),
-                  child: InkWell(
-                    borderRadius: BorderRadius.circular(AppRadius.cercle),
-                    onTap: () {
-                      Navigator.of(context).pop();
-                      context.go('/collections');
-                    },
-                    child: Center(
-                      child: Text(
-                        'Passer d’autres commandes',
-                        style: ClosetTextStyles.bouton.copyWith(
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ],
           ),
         ),
       ],
@@ -196,24 +174,62 @@ class EspaceBoutonFermer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Semantics(
-      button: true,
-      label: 'Fermer',
-      child: GestureDetector(
-        onTap: onTap,
-        child: Container(
-          width: 36,
-          height: 36,
-          decoration: BoxDecoration(
-            color: Colors.white,
-            shape: BoxShape.circle,
-            border: Border.all(
-              color: ClosetColors.fond300,
-              width: AppStroke.fin,
+    return Container(
+      padding: const EdgeInsets.all(AppSpacing.p16),
+      decoration: BoxDecoration(
+        color: ClosetColors.blanc,
+        border: Border.all(color: ClosetColors.fond300, width: AppStroke.fin),
+        borderRadius: BorderRadius.circular(AppRadius.carte),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'COMMANDE #${commande.numero}',
+            style: ClosetTextStyles.accroche.copyWith(
+              fontFamily: ClosetTextStyles.libelle.fontFamily,
+              fontSize: 17,
+              fontWeight: FontWeight.w600,
+              letterSpacing: -0.34,
+              color: ClosetColors.vert,
             ),
           ),
-          child: const Icon(Icons.close, size: 16, color: ClosetColors.noir),
-        ),
+          const SizedBox(height: AppSpacing.p16),
+          Row(
+            children: [
+              SizedBox(
+                width: 104,
+                child: Text(
+                  'Statut',
+                  style: ClosetTextStyles.saisie.copyWith(
+                    color: ClosetColors.neutre700,
+                  ),
+                ),
+              ),
+              badgeStatutCommande(commande.statut),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.p12),
+          _LigneInfo(
+            label: 'Déposé le',
+            valeur: formatDateCommande(commande.dateDepot),
+          ),
+          if (commande.estimation != null) ...[
+            const SizedBox(height: AppSpacing.p8),
+            _LigneInfo(
+              label: 'Estimation',
+              valeur: formatDateCommande(commande.estimation!),
+            ),
+          ],
+          if (commande.adresseLivraison != null) ...[
+            const SizedBox(height: AppSpacing.p8),
+            _LigneInfo(
+              label: 'Livraison',
+              valeur: commande.adresseLivraison!,
+              couleurValeur: ClosetColors.neutre500,
+            ),
+          ],
+        ],
       ),
     );
   }
@@ -229,12 +245,9 @@ class _LignePiece extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.p12),
       decoration: BoxDecoration(
-        color: Colors.white,
-        border: Border.all(
-          color: ClosetColors.carteBordure,
-          width: AppStroke.fin,
-        ),
-        borderRadius: BorderRadius.circular(AppRadius.bloc),
+        color: ClosetColors.blanc,
+        border: Border.all(color: ClosetColors.fond300, width: AppStroke.fin),
+        borderRadius: BorderRadius.circular(AppRadius.carte),
       ),
       child: Row(
         children: [
@@ -244,14 +257,14 @@ class _LignePiece extends StatelessWidget {
               width: 78,
               height: 92,
               child: ligne.imageUrl == null
-                  ? const ColoredBox(color: Color(0xFFD9D9D9))
+                  ? const ColoredBox(color: ClosetColors.gabaritImage)
                   : CachedNetworkImage(
                       imageUrl: ligne.imageUrl!,
                       fit: BoxFit.cover,
                       placeholder: (_, _) =>
-                          const ColoredBox(color: Color(0xFFD9D9D9)),
+                          const ColoredBox(color: ClosetColors.gabaritImage),
                       errorWidget: (_, _, _) =>
-                          const ColoredBox(color: Color(0xFFD9D9D9)),
+                          const ColoredBox(color: ClosetColors.gabaritImage),
                     ),
             ),
           ),
@@ -364,12 +377,23 @@ class _CarteRecapitulatif extends StatelessWidget {
                     color: ClosetColors.neutre300,
                   ),
                 ),
-              ],
-            ),
+              ),
+              Text(
+                formatPrixFcfa(commande.totalCalcule),
+                style: ClosetTextStyles.prixGrand.copyWith(
+                  color: ClosetColors.blanc,
+                ),
+              ),
+            ],
           ),
+          const SizedBox(height: AppSpacing.p16),
           Text(
-            formatPrixFcfa(commande.total),
-            style: ClosetTextStyles.prixGrand.copyWith(color: Colors.white),
+            'Paiement chiffré. Votre pièce est réservée pendant 15 minutes.',
+            style: ClosetTextStyles.microLegende.copyWith(
+              fontWeight: FontWeight.w300,
+              letterSpacing: 0.14,
+              color: ClosetColors.blanc,
+            ),
           ),
         ],
       ),

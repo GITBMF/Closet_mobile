@@ -6,6 +6,8 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/closet_colors.dart';
 import '../../../core/theme/closet_text_styles.dart';
+import '../../../core/widgets/closet_frise.dart';
+import '../../../core/widgets/etat_ecran.dart';
 import '../../../data/models/commande.dart';
 import '../../../data/repositories/commande_repository.dart';
 import '../../sourceur/widgets/sourceur_header.dart';
@@ -27,7 +29,7 @@ class SuiviCommandeScreen extends ConsumerWidget {
     final commande = ref.watch(commandeProvider(numero));
 
     return Scaffold(
-      backgroundColor: ClosetColors.beige,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
         child: Column(
           children: [
@@ -70,16 +72,17 @@ class SuiviCommandeScreen extends ConsumerWidget {
             Expanded(
               child: commande.when(
                 data: (c) => c == null
-                    ? const Center(child: Text('Commande introuvable'))
-                    : _Corps(
-                        commande: c,
-                        depuisPaiement: depuisPaiement,
-                      ),
-                loading: () => const Center(
-                  child: CircularProgressIndicator(color: ClosetColors.dore),
-                ),
-                error: (e, _) => const Center(
-                  child: Text('Erreur de chargement'),
+                    ? EtatEcran.vide(
+                        titre: 'Commande introuvable',
+                        message: 'Le suivi n’est plus disponible pour cette commande.',
+                        action: () => context.pop(),
+                        libelleAction: 'Retour',
+                      )
+                    : _Corps(commande: c),
+                loading: () => const EtatEcran.chargement(),
+                error: (e, _) => EtatEcran.erreur(
+                  erreur: e,
+                  onRetry: () => ref.invalidate(commandeProvider(numero)),
                 ),
               ),
             ),
@@ -215,26 +218,27 @@ class _Corps extends StatelessWidget {
         detail: '$date, $moyen',
         faite: true,
       ),
-      _EtapeVoyage(
+      EtapeFrise(
         titre: 'Préparée avec soin',
-        detail: 'Votre pièce reçoit son packaging ClosEt',
-        faite: statut != StatutCommande.preparation,
-        courante: statut == StatutCommande.preparation,
+        detail: enRoute
+            ? 'Votre pièce a reçu son packaging Clos ET'
+            : 'Votre pièce reçoit son packaging Clos ET',
+        atteinte: enRoute,
+        enCours: !enRoute,
       ),
       _EtapeVoyage(
         titre: 'En route pour livraison',
         detail: c.estimation == null
-            ? 'Livraison estimée: ${formatDateCommande(c.dateDepot.add(const Duration(days: 2)))}'
-            : 'Livraison estimée: ${formatDateCommande(c.estimation!)}',
-        faite: statut == StatutCommande.livree,
-        courante: statut == StatutCommande.enRoute,
+            ? 'Livraison en cours de planification'
+            : 'Livraison estimée : ${formatDateCommande(c.estimation!)}',
+        atteinte: livree,
+        enCours: enRoute && !livree,
       ),
       _EtapeVoyage(
         titre: 'Dans votre dressing',
-        detail: statut == StatutCommande.livree
-            ? 'Votre pièce vous a été remise'
-            : 'Pas encore',
-        faite: statut == StatutCommande.livree,
+        detail:
+            livree ? 'Votre pièce vous a été remise' : 'Dès la livraison faite',
+        atteinte: livree,
       ),
     ];
   }

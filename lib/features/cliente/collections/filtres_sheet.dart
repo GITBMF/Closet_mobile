@@ -7,30 +7,11 @@ import '../../../core/theme/closet_text_styles.dart';
 import '../../../core/widgets/closet_app_bar.dart';
 import '../../../core/widgets/closet_buttons.dart';
 import '../../../core/widgets/closet_sections.dart';
+import '../../../data/repositories/catalog_repository.dart';
 import 'collections_screen.dart';
 
-/// Univers proposés par la maquette « Affiner ma recherche ».
-const List<String> universFiltres = [
-  'Robes',
-  'Accessoires',
-  'Vestes',
-  'Sacs',
-  'Chaussures',
-  'Nouveautés',
-];
-
-/// Tailles proposées par la maquette.
-const List<String> taillesDisponibles = ['XS', 'S', 'M', 'L', 'XL'];
-
-/// États proposés par la maquette.
-const List<String> etatsDisponibles = [
-  'Neuf',
-  'Très bon état',
-  'Bon état',
-  'Excellent',
-];
-
-/// Bornes de la fourchette de prix, en FCFA.
+/// Bornes de la fourchette de prix, en FCFA — transmises au backend via
+/// `min_price` / `max_price` de `GET /pieces`.
 const double prixMinimum = 10000;
 const double prixMaximum = 45000;
 
@@ -51,130 +32,140 @@ class _FiltresSheet extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final univers = ref.watch<String>(selectedUniverseProvider);
-    final taille = ref.watch<String?>(filterSizeProvider);
-    final etat = ref.watch<String?>(filterConditionProvider);
-    final fourchette = ref.watch<RangeValues?>(filterPriceRangeProvider) ??
-        const RangeValues(prixMinimum, prixMaximum);
-    final catalogue = ref.watch(filteredArticlesProvider);
-    final count = catalogue.asData?.value.length;
-    final bas = MediaQuery.paddingOf(context).bottom;
-    // Laisse visibles le panier, la cloche et la barre de recherche
-    // de Collections, comme sur la maquette.
-    const enteteCollections = 8.0 + 42 + 16 + 45 + 8;
+    final maison = ref.watch<String?>(filterBrandProvider);
+    final maisons = ref.watch(maisonsProvider);
+    final prixMax = ref.watch<double?>(filterPriceProvider) ?? prixMaximum;
+    final nombrePieces = ref.watch(filteredArticlesProvider).value?.length;
 
-    return Padding(
-      padding: const EdgeInsets.only(top: enteteCollections),
-      child: DecoratedBox(
-        decoration: const BoxDecoration(
-          color: ClosetColors.beige,
-          borderRadius: BorderRadius.vertical(
-            top: Radius.circular(AppRadius.surface),
-          ),
+    return DraggableScrollableSheet(
+      initialChildSize: 0.78,
+      minChildSize: 0.5,
+      maxChildSize: 0.95,
+      expand: false,
+      builder: (context, scrollController) => DecoratedBox(
+        decoration: BoxDecoration(
+          color: Theme.of(context).scaffoldBackgroundColor,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(56)),
         ),
-        child: Padding(
-          padding: EdgeInsets.fromLTRB(20, 28, 20, 16 + bas),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _EnTete(
-                onReinitialiser: () {
-                  ref.read(filterBrandProvider.notifier).setBrand(null);
-                  ref.read(filterSizeProvider.notifier).setSize(null);
-                  ref.read(filterConditionProvider.notifier).setCondition(null);
-                  ref.read(filterPriceRangeProvider.notifier).setRange(null);
-                  ref
-                      .read<UniverseNotifier>(selectedUniverseProvider.notifier)
-                      .setUniverse(CollectionsScreen.universes.first);
-                },
+        child: ListView(
+          controller: scrollController,
+          padding: const EdgeInsets.fromLTRB(23, AppSpacing.p20, 23, 0),
+          children: [
+            Center(
+              child: Container(
+                width: 48,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: ClosetColors.fond300,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+            ),
+            const SizedBox(height: AppSpacing.p20),
+            ClosetEnTeteSection(
+              titre: 'Affiner ma recherche',
+              lien: 'Tout réinitialiser',
+              onLien: () {
+                ref.read(filterBrandProvider.notifier).setBrand(null);
+                ref.read(filterPriceProvider.notifier).setPrice(null);
+                ref
+                    .read<UniverseNotifier>(selectedUniverseProvider.notifier)
+                    .setUniverse('');
+              },
+            ),
+            const SizedBox(height: AppSpacing.p24),
+            if (universCatalogue(ref).isNotEmpty) ...[
+              const ClosetSurtitre('Explorer par univers'),
+              const SizedBox(height: AppSpacing.p16),
+              Wrap(
+                spacing: AppSpacing.p12,
+                runSpacing: AppSpacing.p12,
+                children: [
+                  for (final u in universCatalogue(ref))
+                    ClosetChip(
+                      label: u,
+                      isActive: u == univers,
+                      onTap: () => ref
+                          .read<UniverseNotifier>(
+                              selectedUniverseProvider.notifier)
+                          .setUniverse(u == univers ? '' : u),
+                    ),
+                ],
               ),
               const SizedBox(height: AppSpacing.p24),
-              Expanded(
-                child: SingleChildScrollView(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const ClosetSurtitre('explorer par univers'),
-                      const SizedBox(height: AppSpacing.p16),
-                      _Puces(
-                        valeurs: universFiltres,
-                        actif: univers,
-                        onTap: (u) => ref
-                            .read<UniverseNotifier>(
-                                selectedUniverseProvider.notifier)
-                            .setUniverse(u == univers
-                                ? CollectionsScreen.universes.first
-                                : u),
+            ],
+            if (maisons.value?.isNotEmpty ?? false) ...[
+              const ClosetSurtitre('Maison'),
+              const SizedBox(height: AppSpacing.p16),
+              Wrap(
+                spacing: AppSpacing.p12,
+                runSpacing: AppSpacing.p12,
+                children: [
+                  for (final m in maisons.value!)
+                    ClosetChip(
+                      label: m,
+                      isActive: m == maison,
+                      onTap: () => ref
+                          .read(filterBrandProvider.notifier)
+                          .setBrand(m == maison ? null : m),
+                    ),
+                ],
+              ),
+              const SizedBox(height: AppSpacing.p24),
+            ],
+            const ClosetSurtitre('Budget'),
+            const SizedBox(height: AppSpacing.p8),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  formatPrixFcfa(prixMinimum),
+                  style: ClosetTextStyles.prix.copyWith(
+                    color: ClosetColors.vert,
+                  ),
+                ),
+                Text(
+                  formatPrixFcfa(prixMax),
+                  style: ClosetTextStyles.prix.copyWith(
+                    color: ClosetColors.vert,
+                  ),
+                ),
+              ],
+            ),
+            Slider(
+              value: prixMax.clamp(prixMinimum, prixMaximum),
+              min: prixMinimum,
+              max: prixMaximum,
+              divisions: 35,
+              activeColor: ClosetColors.vert,
+              inactiveColor: ClosetColors.ligne,
+              label: formatPrixFcfa(prixMax),
+              onChanged: (v) =>
+                  ref.read(filterPriceProvider.notifier).setPrice(v),
+            ),
+            const SizedBox(height: AppSpacing.p20),
+            SizedBox(
+              height: 44,
+              child: Material(
+                color: ClosetColors.vert,
+                borderRadius: BorderRadius.circular(AppRadius.cercle),
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(AppRadius.cercle),
+                  onTap: () => Navigator.of(context).pop(),
+                  child: Center(
+                    child: Text(
+                      // La maquette porte le compte sur le CTA (« Voir 18
+                      // pièces »). Il n'est affiché qu'une fois connu, pour ne
+                      // pas annoncer un nombre puis le corriger.
+                      nombrePieces == null
+                          ? 'Voir les pièces'
+                          : nombrePieces == 1
+                              ? 'Voir 1 pièce'
+                              : 'Voir $nombrePieces pièces',
+                      style: ClosetTextStyles.bouton.copyWith(
+                        color: ClosetColors.blanc,
                       ),
-                      const SizedBox(height: AppSpacing.p24),
-                      const ClosetSurtitre('taille'),
-                      const SizedBox(height: AppSpacing.p16),
-                      _Puces(
-                        valeurs: taillesDisponibles,
-                        actif: taille,
-                        compact: true,
-                        onTap: (t) => ref
-                            .read(filterSizeProvider.notifier)
-                            .setSize(t == taille ? null : t),
-                      ),
-                      const SizedBox(height: AppSpacing.p24),
-                      const ClosetSurtitre('état de la pièce'),
-                      const SizedBox(height: AppSpacing.p16),
-                      _Puces(
-                        valeurs: etatsDisponibles,
-                        actif: etat,
-                        onTap: (e) => ref
-                            .read(filterConditionProvider.notifier)
-                            .setCondition(e == etat ? null : e),
-                      ),
-                      const SizedBox(height: AppSpacing.p24),
-                      const ClosetSurtitre('les prix'),
-                      const SizedBox(height: AppSpacing.p16),
-                      SliderTheme(
-                        data: SliderTheme.of(context).copyWith(
-                          trackHeight: 4,
-                          activeTrackColor: ClosetColors.vert,
-                          inactiveTrackColor: ClosetColors.fond200,
-                          overlayColor:
-                              ClosetColors.vert.withValues(alpha: 0.12),
-                          rangeThumbShape: const _PoucePrix(),
-                          overlayShape: const RoundSliderOverlayShape(
-                            overlayRadius: 16,
-                          ),
-                        ),
-                        child: RangeSlider(
-                          values: RangeValues(
-                            fourchette.start.clamp(prixMinimum, prixMaximum),
-                            fourchette.end.clamp(prixMinimum, prixMaximum),
-                          ),
-                          min: prixMinimum,
-                          max: prixMaximum,
-                          divisions: 35,
-                          onChanged: (v) => ref
-                              .read(filterPriceRangeProvider.notifier)
-                              .setRange(v),
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 8),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              formatPrixFcfa(fourchette.start),
-                              style: ClosetTextStyles.prix.copyWith(
-                                color: ClosetColors.vert,
-                              ),
-                            ),
-                            Text(
-                              formatPrixFcfa(fourchette.end),
-                              style: ClosetTextStyles.prix.copyWith(
-                                color: ClosetColors.vert,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
+                    ),
                   ),
                 ),
               ),

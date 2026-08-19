@@ -1,14 +1,14 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/closet_colors.dart';
 import '../../../core/theme/closet_text_styles.dart';
+import '../../../core/widgets/closet_app_bar.dart';
+import '../../../core/widgets/toasts.dart';
 import '../../../data/models/user.dart';
 import '../../../data/repositories/auth_repository.dart';
 import '../../../data/repositories/sourceur_repository.dart';
-import '../../transaction/transaction_models.dart';
 
 /// Un moyen de retrait proposé par la maquette `32:511`.
 @immutable
@@ -97,58 +97,64 @@ class _MethodeRetraitOverlayState
     final revenus = ref.watch(revenusSourceurProvider);
     final ClosetUser? user = ref.watch<ClosetUser?>(currentUserProvider);
 
-    return Material(
-      color: Colors.transparent,
+    return DecoratedBox(
+      decoration: const BoxDecoration(
+        color: ClosetColors.blanc,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
       child: SafeArea(
         child: Padding(
           padding: const EdgeInsets.fromLTRB(16, 8, 16, 20),
           child: Column(
             children: [
-              Align(
-                alignment: Alignment.centerRight,
-                child: IconButton(
-                  onPressed: () => Navigator.of(context).pop(),
-                  icon: const Icon(Icons.close, color: Colors.white, size: 22),
-                  tooltip: 'Fermer',
+              Center(
+                child: Container(
+                  width: 48,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: ClosetColors.caseVide,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
                 ),
               ),
-              const SizedBox(height: AppSpacing.p8),
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.fromLTRB(20, 22, 20, 8),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Text(
-                      'Methode de retrait de fonds',
-                      textAlign: TextAlign.center,
-                      style: ClosetTextStyles.libelleFort.copyWith(
-                        fontSize: 16,
-                      ),
-                    ),
-                    const SizedBox(height: AppSpacing.p12),
-                    for (var i = 0; i < moyensRetrait.length; i++) ...[
-                      if (i > 0)
-                        const Divider(
-                          height: 1,
-                          thickness: 1,
-                          color: ClosetColors.caseVide,
-                        ),
-                      _LigneMoyen(
-                        moyen: moyensRetrait[i],
-                        choisi: moyensRetrait[i].id == _choisi,
-                        onTap: () =>
-                            setState(() => _choisi = moyensRetrait[i].id),
-                      ),
-                    ],
-                  ],
+              const SizedBox(height: AppSpacing.p20),
+              Text(
+                'Methode de retrait de fonds',
+                style: ClosetTextStyles.libelle.copyWith(fontSize: 18),
+              ),
+              const SizedBox(height: AppSpacing.p16),
+              Text(
+                'pièces en vente : '
+                '${pieces.maybeWhen(data: _compteEnVente, orElse: () => '--')} '
+                'pièces',
+                style: ClosetTextStyles.actionPetite.copyWith(
+                  letterSpacing: 0.30,
+                  color: ClosetColors.fond300,
                 ),
               ),
-              const Spacer(),
+              const SizedBox(height: AppSpacing.p12),
+              const Divider(
+                color: ClosetColors.caseVide,
+                height: AppStroke.fin,
+                thickness: AppStroke.fin,
+              ),
+              const SizedBox(height: AppSpacing.p12),
+              Text(
+                'à reverser : '
+                '${revenus.maybeWhen(data: (r) => formatPrixFcfa(r.solde.toDouble()), orElse: () => '--')}',
+                style: ClosetTextStyles.actionPetite.copyWith(
+                  letterSpacing: 0.30,
+                  color: ClosetColors.fond300,
+                ),
+              ),
+              const SizedBox(height: AppSpacing.p16),
+              for (final moyen in moyensRetrait)
+                _LigneMoyen(
+                  moyen: moyen,
+                  choisi: moyen.id == _choisi,
+                  onTap: () => setState(() => _choisi = moyen.id),
+                ),
+              const SizedBox(height: AppSpacing.p24),
               SizedBox(
                 height: 44,
                 width: double.infinity,
@@ -163,7 +169,7 @@ class _MethodeRetraitOverlayState
                         'Valider la methode de retrait',
                         style: ClosetTextStyles.bouton.copyWith(
                           fontWeight: FontWeight.w600,
-                          color: Colors.white,
+                          color: ClosetColors.blanc,
                         ),
                       ),
                     ),
@@ -177,37 +183,26 @@ class _MethodeRetraitOverlayState
     );
   }
 
-  /// Ferme le panneau puis ouvre le tunnel de transaction en mode retrait.
+  /// Ferme le panneau. Les retraits sont versés par ClosET : l'API mobile
+  /// n'expose pas de déclenchement de virement.
   void _valider(
     BuildContext context,
     AsyncValue<RevenusSourceur> revenus,
     ClosetUser? user,
   ) {
-    // Maquette : 27 300 FCFA tant que le backend n'a pas de solde à reverser.
-    final montant = revenus.maybeWhen(
-      data: (r) => r.enAttente > 0 ? r.enAttente.toDouble() : 27300.0,
-      orElse: () => 27300.0,
-    );
-
-    MoyenRetrait moyen = moyensRetrait.last;
-    for (final m in moyensRetrait) {
-      if (m.id == _choisi) moyen = m;
-    }
-
-    final router = GoRouter.of(context);
     Navigator.of(context).pop();
-    router.push(
-      '/transaction',
-      extra: DemandeTransaction(
-        type: TypeOperation.retrait,
-        montant: montant,
-        moyen: moyen.libelle,
-        compte: moyen.compte,
-        beneficiaire: user == null
-            ? 'Sourceur ClosET'
-            : '${user.firstName} ${user.lastName}'.trim(),
-      ),
+    toastInfo(
+      ref,
+      'Retraits gérés par ClosET',
+      'Les virements sont émis une fois vos pièces vendues. '
+          'L’historique affiché correspond aux paiements réellement versés.',
     );
+  }
+
+  /// Nombre de pièces effectivement en vente, sur deux chiffres.
+  static String _compteEnVente(List<PieceDeposee> pieces) {
+    final enVente = pieces.where((p) => p.statut == StatutPiece.publiee).length;
+    return enVente.toString().padLeft(2, '0');
   }
 }
 
@@ -234,7 +229,22 @@ class _LigneMoyen extends StatelessWidget {
           padding: const EdgeInsets.symmetric(vertical: 14),
           child: Row(
             children: [
-              _LogoMoyen(moyen: moyen),
+              Container(
+                width: 45,
+                height: 32,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: ClosetColors.blanc,
+                  borderRadius: BorderRadius.circular(4),
+                  border: Border.all(
+                    color: choisi
+                        ? ClosetColors.vert
+                        : ClosetColors.caseVide,
+                    width: AppStroke.fin,
+                  ),
+                ),
+                child: Icon(moyen.icone, size: 18, color: ClosetColors.vert),
+              ),
               const SizedBox(width: AppSpacing.p12),
               Expanded(
                 child: Text(

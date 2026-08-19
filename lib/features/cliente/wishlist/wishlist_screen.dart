@@ -1,4 +1,4 @@
-import 'package:cached_network_image/cached_network_image.dart';
+﻿import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -7,6 +7,10 @@ import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/closet_colors.dart';
 import '../../../core/theme/closet_text_styles.dart';
 import '../../../core/widgets/closet_app_bar.dart';
+import '../../../core/widgets/closet_feedback.dart';
+import '../../../core/widgets/closet_sections.dart';
+import '../../../core/widgets/etat_ecran.dart';
+import '../../../core/widgets/toasts.dart';
 import '../../../data/models/article.dart';
 import '../../../data/repositories/cart_repository.dart';
 import '../../../data/repositories/wishlist_repository.dart';
@@ -21,93 +25,63 @@ class WishlistScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final favoris = ref.watch(wishlistListProvider);
+    final favoris = ref.watch(wishlistProvider);
 
     return Scaffold(
-      backgroundColor: ClosetColors.beige,
-      appBar: const ClosetAppBar(title: 'Mes favoris'),
-      body: favoris.isEmpty
-          ? const _WishlistVide()
-          : ListView.separated(
-              padding: const EdgeInsets.fromLTRB(18, 33, 18, AppSpacing.p32),
-              itemCount: favoris.length,
-              separatorBuilder: (_, _) => const SizedBox(height: 23),
-              itemBuilder: (context, i) {
-                final article = favoris[i];
-                return _CarteFavori(
-                  article: article,
-                  onTap: () => context.push('/product/${article.id}'),
-                  onRetirer: () => ref
-                      .read(wishlistProvider.notifier)
-                      .toggleWishlist(article),
-                  onAjouter: () {
-                    ref.read(cartProvider.notifier).addArticle(article);
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Ajoutée à votre sélection.'),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      appBar: const ClosetAppBar(),
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const SizedBox(height: AppSpacing.p12),
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: AppSpacing.p20),
+            child: ClosetTitreEcran('Mes favoris'),
+          ),
+          Expanded(
+            child: corpsAsync<List<Article>>(
+              favoris,
+              onRetry: () => ref.invalidate(wishlistProvider),
+              data: (liste) => liste.isEmpty
+                  ? ClosetListeVide(
+                      message: 'Aucune pièce n’a été ajoutée aux favoris.',
+                      action: () => context.go('/collections'),
+                      libelleAction: 'Découvrir les collections',
+                    )
+                  : ListView.separated(
+                      padding: const EdgeInsets.fromLTRB(
+                        18,
+                        AppSpacing.p16,
+                        18,
+                        AppSpacing.p32,
                       ),
-                    );
-                  },
-                );
-              },
-            ),
-    );
-  }
-}
-
-class _WishlistVide extends StatelessWidget {
-  const _WishlistVide();
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.p32),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(
-              Icons.favorite_border,
-              size: 48,
-              color: ClosetColors.fond300,
-            ),
-            const SizedBox(height: AppSpacing.p20),
-            Text(
-              'Aucun favori pour l’instant',
-              textAlign: TextAlign.center,
-              style: ClosetTextStyles.titreSection,
-            ),
-            const SizedBox(height: AppSpacing.p12),
-            Text(
-              'Touchez le cœur sur une pièce pour la retrouver ici.',
-              textAlign: TextAlign.center,
-              style: ClosetTextStyles.citation.copyWith(
-                color: ClosetColors.taupe,
-              ),
-            ),
-            const SizedBox(height: AppSpacing.p24),
-            SizedBox(
-              width: 240,
-              height: 44,
-              child: Material(
-                color: ClosetColors.vert,
-                borderRadius: BorderRadius.circular(AppRadius.cercle),
-                child: InkWell(
-                  borderRadius: BorderRadius.circular(AppRadius.cercle),
-                  onTap: () => context.go('/collections'),
-                  child: Center(
-                    child: Text(
-                      'Découvrir les collections',
-                      style: ClosetTextStyles.bouton.copyWith(
-                        color: Colors.white,
-                      ),
+                      itemCount: liste.length,
+                      separatorBuilder: (_, _) =>
+                          const SizedBox(height: 23),
+                      itemBuilder: (context, i) {
+                        final article = liste[i];
+                        return _CarteFavori(
+                          article: article,
+                          onTap: () =>
+                              context.push('/product/${article.id}'),
+                          onRetirer: () => ref
+                              .read(wishlistProvider.notifier)
+                              .toggleWishlist(article),
+                          onAjouter: () {
+                            ref
+                                .read(cartProvider.notifier)
+                                .addArticle(article);
+                            toastSucces(
+                              ref,
+                              'Ajoutée à votre sélection.',
+                            );
+                          },
+                        );
+                      },
                     ),
-                  ),
-                ),
-              ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -149,14 +123,14 @@ class _CarteFavori extends ConsumerWidget {
                 width: 77,
                 height: 78,
                 child: article.imageUrls.isEmpty
-                    ? const ColoredBox(color: Color(0xFFD9D9D9))
+                    ? const ColoredBox(color: ClosetColors.gabaritImage)
                     : CachedNetworkImage(
                         imageUrl: article.imageUrls.first,
                         fit: BoxFit.cover,
                         placeholder: (_, _) =>
-                            const ColoredBox(color: Color(0xFFD9D9D9)),
+                            const ColoredBox(color: ClosetColors.gabaritImage),
                         errorWidget: (_, _, _) =>
-                            const ColoredBox(color: Color(0xFFD9D9D9)),
+                            const ColoredBox(color: ClosetColors.gabaritImage),
                       ),
               ),
             ),
@@ -183,7 +157,7 @@ class _CarteFavori extends ConsumerWidget {
                     overflow: TextOverflow.ellipsis,
                     style: ClosetTextStyles.citation.copyWith(
                       fontSize: 14,
-                      color: Colors.white,
+                      color: ClosetColors.blanc,
                     ),
                   ),
                   const Spacer(),

@@ -1,4 +1,4 @@
-import 'package:cached_network_image/cached_network_image.dart';
+﻿import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -7,6 +7,8 @@ import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/closet_colors.dart';
 import '../../../core/theme/closet_text_styles.dart';
 import '../../../core/widgets/closet_app_bar.dart';
+import '../../../core/widgets/etat_ecran.dart';
+import '../../../core/widgets/toasts.dart';
 import '../../../data/models/article.dart';
 import '../../../data/repositories/cart_repository.dart';
 import '../../../data/repositories/catalog_repository.dart';
@@ -18,11 +20,6 @@ final productDetailProvider =
 });
 
 /// Fiche produit — transcription des maquettes `16:3328` et `16:3063`.
-///
-/// Carrousel plein cadre surmonté de trois boutons ronds, puis maison, titre
-/// Cormorant Garamond, prix EB Garamond, caractéristiques en lignes séparées
-/// de filets dorés, et récit de la pièce dans une carte blanche cerclée d'or.
-/// La barre d'ajout au dressing reste ancrée en bas.
 class ProductScreen extends ConsumerStatefulWidget {
   const ProductScreen({super.key, required this.articleId});
 
@@ -47,28 +44,41 @@ class _ProductScreenState extends ConsumerState<ProductScreen> {
     final articleAsync = ref.watch(productDetailProvider(widget.articleId));
 
     return Scaffold(
-      backgroundColor: ClosetColors.beige,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: articleAsync.when(
         data: (article) {
           if (article == null) {
-            return const Center(child: Text('Pièce introuvable'));
+            return EtatEcran.vide(
+              icone: Icons.search_off_rounded,
+              titre: 'Pièce introuvable',
+              message: 'Cette pièce n’est plus dans le dressing.',
+              action: () => context.pop(),
+              libelleAction: 'Retour',
+            );
           }
-          return _Corps(
-            article: article,
-            pageController: _pageController,
-            imageCourante: _imageCourante,
-            onImageChangee: (i) => setState(() => _imageCourante = i),
+          return Stack(
+            children: [
+              _Corps(
+                article: article,
+                pageController: _pageController,
+                imageCourante: _imageCourante,
+                onImageChangee: (i) => setState(() => _imageCourante = i),
+              ),
+              Positioned(
+                left: 0,
+                right: 0,
+                bottom: 0,
+                child: _BarreAjout(article: article),
+              ),
+            ],
           );
         },
-        loading: () => const Center(
-          child: CircularProgressIndicator(color: ClosetColors.dore),
+        loading: () => const EtatEcran.chargement(),
+        error: (e, _) => EtatEcran.erreur(
+          erreur: e,
+          onRetry: () =>
+              ref.invalidate(productDetailProvider(widget.articleId)),
         ),
-        error: (e, _) => const Center(child: Text('Erreur de chargement')),
-      ),
-      bottomNavigationBar: articleAsync.maybeWhen(
-        data: (article) =>
-            article == null ? null : _BarreAjout(article: article),
-        orElse: () => null,
       ),
     );
   }
@@ -87,10 +97,34 @@ class _Corps extends ConsumerWidget {
   final int imageCourante;
   final ValueChanged<int> onImageChangee;
 
+  static String? _recit(Article article) {
+    final story = article.story?.trim() ?? '';
+    if (story.isNotEmpty) return story;
+    if (article.description.trim().isNotEmpty) {
+      return article.description.trim();
+    }
+    return null;
+  }
+
+  List<({String label, String valeur})> get _caracteristiques {
+    return [
+      if (article.condition.trim().isNotEmpty)
+        (label: 'État de la pièce', valeur: article.condition),
+      if (article.size.trim().isNotEmpty)
+        (label: 'Taille et coupe', valeur: article.size),
+      if (article.material.trim().isNotEmpty)
+        (label: 'Matière', valeur: article.material),
+      if (article.universe.trim().isNotEmpty)
+        (label: 'Univers', valeur: article.universe),
+    ];
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final enWishlist =
         ref.watch(wishlistListProvider).any((a) => a.id == article.id);
+    final recit = _recit(article);
+    final lignes = _caracteristiques;
 
     return CustomScrollView(
       slivers: [
@@ -123,7 +157,8 @@ class _Corps extends ConsumerWidget {
                         ),
                       ),
                     ),
-                    _BadgeMenthe(article.condition),
+                    if (article.condition.trim().isNotEmpty)
+                      _BadgeMenthe(article.condition),
                   ],
                 ),
                 const SizedBox(height: AppSpacing.p12),
@@ -136,6 +171,7 @@ class _Corps extends ConsumerWidget {
                 ),
                 const SizedBox(height: AppSpacing.p16),
                 Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     Expanded(
                       child: Text(
@@ -148,27 +184,22 @@ class _Corps extends ConsumerWidget {
                     const _BadgePieceUnique(),
                   ],
                 ),
-                const SizedBox(height: AppSpacing.p24),
-                const _Filet(),
-                _LigneCaracteristique(
-                  label: 'Etat de la pièce',
-                  valeur: article.condition,
-                ),
-                const _Filet(),
-                _LigneCaracteristique(
-                  label: 'Taille & Coupe',
-                  valeur: article.size,
-                ),
-                const _Filet(),
-                _LigneCaracteristique(
-                  label: 'Matière',
-                  valeur: article.material,
-                ),
-                const _Filet(),
-                const SizedBox(height: AppSpacing.p20),
-                if (article.description.isNotEmpty)
-                  _CarteRecit(description: article.description),
-                const SizedBox(height: AppSpacing.p24),
+                if (lignes.isNotEmpty) ...[
+                  const SizedBox(height: AppSpacing.p24),
+                  const _Filet(),
+                  for (final ligne in lignes) ...[
+                    _LigneCaracteristique(
+                      label: ligne.label,
+                      valeur: ligne.valeur,
+                    ),
+                    const _Filet(),
+                  ],
+                ],
+                if (recit != null) ...[
+                  const SizedBox(height: AppSpacing.p20),
+                  _CarteRecit(description: recit),
+                ],
+                const SizedBox(height: 140),
               ],
             ),
           ),
@@ -178,7 +209,6 @@ class _Corps extends ConsumerWidget {
   }
 }
 
-/// Carrousel plein cadre avec les trois boutons ronds en surimpression.
 class _Carrousel extends StatelessWidget {
   const _Carrousel({
     required this.article,
@@ -207,7 +237,7 @@ class _Carrousel extends StatelessWidget {
         children: [
           Positioned.fill(
             child: images.isEmpty
-                ? const ColoredBox(color: Color(0xFFD9D9D9))
+                ? const ColoredBox(color: ClosetColors.gabaritImage)
                 : PageView.builder(
                     controller: controller,
                     itemCount: images.length,
@@ -216,9 +246,9 @@ class _Carrousel extends StatelessWidget {
                       imageUrl: images[i],
                       fit: BoxFit.cover,
                       placeholder: (_, _) =>
-                          const ColoredBox(color: Color(0xFFD9D9D9)),
+                          const ColoredBox(color: ClosetColors.gabaritImage),
                       errorWidget: (_, _, _) =>
-                          const ColoredBox(color: Color(0xFFD9D9D9)),
+                          const ColoredBox(color: ClosetColors.gabaritImage),
                     ),
                   ),
           ),
@@ -266,7 +296,7 @@ class _Carrousel extends StatelessWidget {
                       height: 6,
                       margin: const EdgeInsets.symmetric(horizontal: 1.5),
                       decoration: BoxDecoration(
-                        color: Colors.white.withValues(
+                        color: ClosetColors.blanc.withValues(
                           alpha: i == indexCourant ? 1 : 0.45,
                         ),
                         shape: BoxShape.circle,
@@ -305,7 +335,7 @@ class _BoutonRondFlottant extends StatelessWidget {
           width: 42,
           height: 42,
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: ClosetColors.blanc,
             shape: BoxShape.circle,
             border: Border.all(
               color: ClosetColors.fond300,
@@ -323,7 +353,6 @@ class _BoutonRondFlottant extends StatelessWidget {
   }
 }
 
-/// Badge vert d'eau (`#A0D0BD`) — état de la pièce.
 class _BadgeMenthe extends StatelessWidget {
   const _BadgeMenthe(this.texte);
 
@@ -350,7 +379,6 @@ class _BadgeMenthe extends StatelessWidget {
   }
 }
 
-/// Pastille « pièce unique » : 111 × 30, rayon 50, avec son point plein.
 class _BadgePieceUnique extends StatelessWidget {
   const _BadgePieceUnique();
 
@@ -376,7 +404,7 @@ class _BadgePieceUnique extends StatelessWidget {
           ),
           const SizedBox(width: AppSpacing.gapChip),
           Text(
-            'pièce unique',
+            'Pièce unique',
             style: ClosetTextStyles.corps.copyWith(color: ClosetColors.vert),
           ),
         ],
@@ -385,7 +413,6 @@ class _BadgePieceUnique extends StatelessWidget {
   }
 }
 
-/// Filet doré de séparation, pleine largeur du contenu.
 class _Filet extends StatelessWidget {
   const _Filet();
 
@@ -399,7 +426,6 @@ class _Filet extends StatelessWidget {
   }
 }
 
-/// Ligne de caractéristique : libellé taupe à gauche, valeur encre à droite.
 class _LigneCaracteristique extends StatelessWidget {
   const _LigneCaracteristique({required this.label, required this.valeur});
 
@@ -413,8 +439,8 @@ class _LigneCaracteristique extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          SizedBox(
-            width: 148,
+          Expanded(
+            flex: 5,
             child: Text(
               label,
               style: ClosetTextStyles.corps.copyWith(
@@ -422,10 +448,13 @@ class _LigneCaracteristique extends StatelessWidget {
               ),
             ),
           ),
+          const SizedBox(width: AppSpacing.p12),
           Expanded(
+            flex: 6,
             child: Text(
               valeur,
-              style: ClosetTextStyles.corps,
+              textAlign: TextAlign.end,
+              style: ClosetTextStyles.corpsMedium,
             ),
           ),
         ],
@@ -434,7 +463,6 @@ class _LigneCaracteristique extends StatelessWidget {
   }
 }
 
-/// Carte blanche cerclée d'or : le récit de la pièce.
 class _CarteRecit extends StatelessWidget {
   const _CarteRecit({required this.description});
 
@@ -446,7 +474,7 @@ class _CarteRecit extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(AppSpacing.p16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: context.closetCarte,
         border: Border.all(color: ClosetColors.fond300, width: AppStroke.fin),
         borderRadius: BorderRadius.circular(AppRadius.carte),
       ),
@@ -461,7 +489,7 @@ class _CarteRecit extends StatelessWidget {
           Text(description, style: ClosetTextStyles.citation),
           const SizedBox(height: AppSpacing.p20),
           Text(
-            'Livrée avec packaging Clos ET exclusif',
+            'Livrée avec packaging ClosET exclusif',
             style: ClosetTextStyles.corps.copyWith(color: ClosetColors.taupe),
           ),
         ],
@@ -470,7 +498,6 @@ class _CarteRecit extends StatelessWidget {
   }
 }
 
-/// Barre verte ancrée en bas : prix à gauche, CTA doré à droite.
 class _BarreAjout extends ConsumerWidget {
   const _BarreAjout({required this.article});
 
@@ -482,67 +509,68 @@ class _BarreAjout extends ConsumerWidget {
         ref.watch(cartListProvider).any((a) => a.id == article.id);
     final indisponible = article.isSoldOut;
 
-    return SafeArea(
-      top: false,
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(19, 0, 19, AppSpacing.p12),
-        child: Container(
-          height: 97,
-          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.p20),
-          decoration: BoxDecoration(
-            color: ClosetColors.vert,
-            borderRadius: BorderRadius.circular(AppRadius.carte),
-          ),
-          child: Row(
-            children: [
-              Expanded(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'à Ajouter',
-                      style: ClosetTextStyles.corpsMedium.copyWith(
-                        fontWeight: FontWeight.w600,
-                        color: ClosetColors.neutre300,
+    return Material(
+      color: Colors.transparent,
+      child: SafeArea(
+        top: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(19, 0, 19, AppSpacing.p12),
+          child: Container(
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.p20,
+              vertical: AppSpacing.p12,
+            ),
+            decoration: BoxDecoration(
+              color: ClosetColors.vert,
+              borderRadius: BorderRadius.circular(AppRadius.carte),
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'À ajouter',
+                        style: ClosetTextStyles.corpsMedium.copyWith(
+                          fontWeight: FontWeight.w600,
+                          color: ClosetColors.neutre300,
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: AppSpacing.p4),
-                    Text(
-                      formatPrixFcfa(article.price),
-                      style: ClosetTextStyles.prixGrand.copyWith(
-                        color: Colors.white,
+                      const SizedBox(height: AppSpacing.p4),
+                      Text(
+                        formatPrixFcfa(article.price),
+                        style: ClosetTextStyles.prixGrand.copyWith(
+                          color: ClosetColors.blanc,
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-              const SizedBox(width: AppSpacing.p12),
-              SizedBox(
-                width: 170,
-                height: 44,
-                child: Material(
-                  color: indisponible
-                      ? ClosetColors.doreDesactive
-                      : ClosetColors.fond300,
-                  borderRadius: BorderRadius.circular(AppRadius.cercle),
-                  child: InkWell(
+                const SizedBox(width: AppSpacing.p8),
+                SizedBox(
+                  width: 170,
+                  height: 44,
+                  child: Material(
+                    color: indisponible
+                        ? ClosetColors.doreDesactive
+                        : ClosetColors.fond300,
                     borderRadius: BorderRadius.circular(AppRadius.cercle),
-                    onTap: indisponible
-                        ? null
-                        : () {
-                            if (!dejaDansPanier) {
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(AppRadius.cercle),
+                      onTap: indisponible
+                          ? null
+                          : () {
                               ref
                                   .read(cartProvider.notifier)
                                   .addArticle(article);
-                            }
-                            context.go('/selection');
-                          },
-                    child: Center(
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: AppSpacing.p8,
-                        ),
+                              toastSucces(
+                                ref,
+                                'Ajoutée à votre sélection.',
+                              );
+                            },
+                      child: Center(
                         child: Text(
                           indisponible
                               ? 'Indisponible'
@@ -550,8 +578,6 @@ class _BarreAjout extends ConsumerWidget {
                                   ? 'Déjà dans ma sélection'
                                   : 'Ajouter à mon dressing',
                           textAlign: TextAlign.center,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
                           style: ClosetTextStyles.actionPetite.copyWith(
                             color: ClosetColors.neutre1000,
                           ),
@@ -560,8 +586,8 @@ class _BarreAjout extends ConsumerWidget {
                     ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/theme/app_spacing.dart';
@@ -13,7 +13,7 @@ class SourceurHeader extends StatelessWidget {
   const SourceurHeader({
     super.key,
     required this.titre,
-    this.surtitre = 'espace sourceur',
+    this.surtitre = 'Espace sourceur',
     this.onRetour,
     this.afficherRetour = true,
     this.actions = const [],
@@ -72,7 +72,9 @@ class SourceurHeader extends StatelessWidget {
                     titre,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: ClosetTextStyles.titreSection,
+                    style: ClosetTextStyles.titreSection.copyWith(
+                      color: context.closetEncre,
+                    ),
                   ),
                 ],
               ),
@@ -105,20 +107,30 @@ class SourceurBoutonRond extends StatelessWidget {
     return Semantics(
       button: true,
       label: label,
-      child: GestureDetector(
-        onTap: onTap,
-        child: Container(
-          width: taille,
-          height: taille,
-          decoration: BoxDecoration(
-            color: Colors.white,
-            shape: BoxShape.circle,
-            border: Border.all(
-              color: ClosetColors.fond300,
-              width: AppStroke.fin,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          customBorder: const CircleBorder(),
+          child: SizedBox(
+            width: AppSpacing.minTouchTarget,
+            height: AppSpacing.minTouchTarget,
+            child: Center(
+              child: Container(
+                width: taille,
+                height: taille,
+                decoration: BoxDecoration(
+                  color: ClosetColors.blanc,
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: ClosetColors.fond300,
+                    width: AppStroke.fin,
+                  ),
+                ),
+                child: Icon(icone, size: taille * 0.4, color: ClosetColors.vert),
+              ),
             ),
           ),
-          child: Icon(icone, size: taille * 0.4, color: ClosetColors.vert),
         ),
       ),
     );
@@ -165,17 +177,17 @@ class SourceurEntree extends StatelessWidget {
                     color: ClosetColors.vert,
                     borderRadius: BorderRadius.circular(AppRadius.carte),
                   ),
-                  child: Icon(icone, size: 18, color: Colors.white),
+                  child: Icon(icone, size: 18, color: ClosetColors.blanc),
                 ),
                 const SizedBox(width: AppSpacing.p16),
                 Expanded(
                   child: Text(label, style: ClosetTextStyles.libelle),
                 ),
                 const Icon(
-                  Icons.chevron_right,
-                  size: 18,
-                  color: ClosetColors.noir,
-                ),
+                Icons.chevron_right,
+                size: 18,
+                color: ClosetColors.taupe,
+              ),
               ],
             ),
           ),

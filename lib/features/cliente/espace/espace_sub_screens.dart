@@ -1,15 +1,15 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../../core/theme/closet_colors.dart';
 import '../../../core/theme/closet_text_styles.dart';
-import '../../../data/models/user.dart';
-import '../../../data/repositories/auth_repository.dart';
+import '../../../core/widgets/closet_feedback.dart';
+import '../../../core/widgets/toasts.dart';
 import 'espace_screen.dart';
 
-// ── Common Back Button AppBar ──────────────────────────────────────────────
+// -- Common Back Button AppBar ----------------------------------------------
 class EspaceSubAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String title;
   final bool italicTitle;
@@ -27,7 +27,7 @@ class EspaceSubAppBar extends StatelessWidget implements PreferredSizeWidget {
   @override
   Widget build(BuildContext context) {
     return AppBar(
-      backgroundColor: ClosetColors.beige,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       elevation: 0,
       scrolledUnderElevation: 0,
       toolbarHeight: 56,
@@ -53,16 +53,17 @@ class EspaceSubAppBar extends StatelessWidget implements PreferredSizeWidget {
           : Text(title, style: _styleTitre),
       centerTitle: true,
       actions: [
-        Padding(
-          padding: const EdgeInsets.only(right: 16),
-          child: Center(
-            child: EspaceBoutonRond(
-              icone: Icons.tune,
-              label: 'Réglages',
-              onTap: onSettingsTap ?? () {},
+        if (onSettingsTap != null)
+          Padding(
+            padding: const EdgeInsets.only(right: 16),
+            child: Center(
+              child: EspaceBoutonRond(
+                icone: Icons.tune,
+                label: 'Réglages',
+                onTap: onSettingsTap!,
+              ),
             ),
           ),
-        ),
       ],
       bottom: PreferredSize(
         preferredSize: const Size.fromHeight(1),
@@ -87,421 +88,24 @@ class EspaceSubAppBar extends StatelessWidget implements PreferredSizeWidget {
   Size get preferredSize => const Size.fromHeight(57);
 }
 
-// ── 1. Mes Informations Screen ─────────────────────────────────────────────
-class EspaceInfoScreen extends ConsumerStatefulWidget {
-  const EspaceInfoScreen({super.key});
-
-  @override
-  ConsumerState<EspaceInfoScreen> createState() => _EspaceInfoScreenState();
-}
-
-class _EspaceInfoScreenState extends ConsumerState<EspaceInfoScreen> {
-  late TextEditingController _firstNameController;
-  late TextEditingController _lastNameController;
-  late TextEditingController _emailController;
-  late TextEditingController _phoneController;
-
-  @override
-  void initState() {
-    super.initState();
-    final user = ref.read<ClosetUser?>(currentUserProvider);
-    _firstNameController = TextEditingController(text: user?.firstName ?? '');
-    _lastNameController = TextEditingController(text: user?.lastName ?? '');
-    _emailController = TextEditingController(text: user?.email ?? '');
-    _phoneController = TextEditingController(text: '+237 677 45 22 18');
-  }
-
-  @override
-  void dispose() {
-    _firstNameController.dispose();
-    _lastNameController.dispose();
-    _emailController.dispose();
-    _phoneController.dispose();
-    super.dispose();
-  }
-
-  void _saveInfo() {
-    // Update local currentUser state
-    final user = ref.read<ClosetUser?>(currentUserProvider);
-    if (user != null) {
-      ref.read(currentUserProvider.notifier).state = user.copyWith(
-        firstName: _firstNameController.text.trim(),
-        lastName: _lastNameController.text.trim(),
-        email: _emailController.text.trim(),
-      );
-    }
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Informations enregistrées avec succès.'),
-        backgroundColor: ClosetColors.vert,
-      ),
-    );
-    context.pop();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: ClosetColors.ivoire,
-      appBar: const EspaceSubAppBar(title: 'Mes informations'),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildField('PRÉNOM', _firstNameController, Icons.person_outline),
-              const SizedBox(height: 20),
-              _buildField('NOM', _lastNameController, Icons.person_outline),
-              const SizedBox(height: 20),
-              _buildField('ADRESSE EMAIL', _emailController, Icons.email_outlined, keyboardType: TextInputType.emailAddress),
-              const SizedBox(height: 20),
-              _buildField('TÉLÉPHONE', _phoneController, Icons.phone_outlined, keyboardType: TextInputType.phone),
-              const SizedBox(height: 40),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: ClosetColors.vert,
-                    foregroundColor: ClosetColors.creme,
-                    elevation: 0,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                  ),
-                  onPressed: _saveInfo,
-                  child: const Text(
-                    'Enregistrer les modifications',
-                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildField(String label, TextEditingController controller, IconData icon, {TextInputType? keyboardType}) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: const TextStyle(
-            fontSize: 10,
-            fontWeight: FontWeight.w700,
-            color: ClosetColors.taupe,
-            letterSpacing: 1.5,
-          ),
-        ),
-        const SizedBox(height: 8),
-        TextField(
-          controller: controller,
-          keyboardType: keyboardType,
-          style: const TextStyle(color: ClosetColors.noir, fontSize: 14),
-          decoration: InputDecoration(
-            prefixIcon: Icon(icon, color: ClosetColors.taupe, size: 20),
-            filled: true,
-            fillColor: ClosetColors.creme,
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(16),
-              borderSide: const BorderSide(color: ClosetColors.bordure),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(16),
-              borderSide: const BorderSide(color: ClosetColors.bordure),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(16),
-              borderSide: const BorderSide(color: ClosetColors.vert, width: 1.5),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-// ── 2. Mes Adresses Screen ─────────────────────────────────────────────────
-class EspaceAdressesScreen extends StatefulWidget {
-  const EspaceAdressesScreen({super.key});
-
-  @override
-  State<EspaceAdressesScreen> createState() => _EspaceAdressesScreenState();
-}
-
-class _EspaceAdressesScreenState extends State<EspaceAdressesScreen> {
-  final List<Map<String, dynamic>> _adresses = [
-    {
-      'id': '1',
-      'label': 'Maison',
-      'address': '61480 Sunbrook Park, PC 5679',
-      'isDefault': true,
-    },
-    {
-      'id': '2',
-      'label': 'Bureau',
-      'address': '69993 Meadow Valley Terra, PC 3637',
-      'isDefault': false,
-    },
-    {
-      'id': '3',
-      'label': 'Appartement',
-      'address': '21833 Clyde Gallagher, PC 4662',
-      'isDefault': false,
-    },
-    {
-      'id': '4',
-      'label': 'Maison Familiale',
-      'address': '5259 Blue Bill Park, PC 4627',
-      'isDefault': false,
-    },
-  ];
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: ClosetColors.beige,
-      appBar: const EspaceSubAppBar(
-        title: 'Mes adresses',
-        italicTitle: true,
-      ),
-      body: ListView.separated(
-        padding: const EdgeInsets.fromLTRB(24, 12, 24, 24),
-        itemCount: _adresses.length,
-        separatorBuilder: (_, _) => Divider(
-          height: 1,
-          thickness: 1,
-          color: ClosetColors.ligne.withValues(alpha: 0.7),
-        ),
-        itemBuilder: (context, index) {
-          final addr = _adresses[index];
-          return _AddressListTile(
-            label: addr['label'] as String,
-            address: addr['address'] as String,
-            isDefault: addr['isDefault'] as bool,
-            onEdit: () {},
-          );
-        },
-      ),
-    );
-  }
-}
-
-class _AddressListTile extends StatelessWidget {
-  const _AddressListTile({
-    required this.label,
-    required this.address,
-    required this.isDefault,
-    required this.onEdit,
-  });
-
-  final String label;
-  final String address;
-  final bool isDefault;
-  final VoidCallback onEdit;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 18),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            width: 46,
-            height: 46,
-            decoration: BoxDecoration(
-              color: ClosetColors.vert,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: const Icon(Icons.location_on_outlined, size: 22, color: ClosetColors.creme),
-          ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Text(
-                      label,
-                      style: GoogleFonts.lato(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w700,
-                        color: ClosetColors.noir,
-                      ),
-                    ),
-                    if (isDefault) ...[
-                      const SizedBox(width: 8),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF98C1B0).withValues(alpha: 0.45),
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                        child: Text(
-                          'PAR DÉFAUT',
-                          style: GoogleFonts.lato(
-                            fontSize: 8,
-                            fontWeight: FontWeight.w800,
-                            letterSpacing: 0.6,
-                            color: ClosetColors.vert,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ],
-                ),
-                const SizedBox(height: 5),
-                Text(
-                  address,
-                  style: GoogleFonts.lato(
-                    fontSize: 12.5,
-                    fontWeight: FontWeight.w400,
-                    color: ClosetColors.taupe,
-                    height: 1.35,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          GestureDetector(
-            onTap: onEdit,
-            behavior: HitTestBehavior.opaque,
-            child: const Padding(
-              padding: EdgeInsets.only(left: 10, top: 2),
-              child: Icon(Icons.edit_outlined, size: 20, color: Color(0xFFC49A6C)),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-// ── 3. Mes Moyens de Paiement Screen ───────────────────────────────────────
-class EspacePaiementsScreen extends StatefulWidget {
+// -- 1. Mes Moyens de Paiement Screen ---------------------------------------
+class EspacePaiementsScreen extends ConsumerWidget {
   const EspacePaiementsScreen({super.key});
 
   @override
-  State<EspacePaiementsScreen> createState() => _EspacePaiementsScreenState();
-}
-
-class _EspacePaiementsScreenState extends State<EspacePaiementsScreen> {
-  final List<Map<String, dynamic>> _methods = [
-    {
-      'id': '1',
-      'type': 'Orange Money',
-      'number': '+237 6 99 ••• •••',
-      'icon': Icons.phone_android,
-      'isDefault': true,
-    },
-    {
-      'id': '2',
-      'type': 'MTN MoMo',
-      'number': '+237 6 77 ••• •••',
-      'icon': Icons.phone_android,
-      'isDefault': false,
-    },
-  ];
-
-  @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
       backgroundColor: ClosetColors.ivoire,
       appBar: const EspaceSubAppBar(title: 'Moyens de paiement'),
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(24.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                'COMPTES DE FACTURATION ENREGISTRÉS',
-                style: TextStyle(
-                  fontSize: 10,
-                  fontWeight: FontWeight.w700,
-                  color: ClosetColors.taupe,
-                  letterSpacing: 1.5,
-                ),
-              ),
-              const SizedBox(height: 16),
-              Expanded(
-                child: ListView.separated(
-                  itemCount: _methods.length,
-                  separatorBuilder: (_, _) => const SizedBox(height: 14),
-                  itemBuilder: (context, index) {
-                    final item = _methods[index];
-                    return Container(
-                      padding: const EdgeInsets.all(18),
-                      decoration: BoxDecoration(
-                        color: ClosetColors.creme,
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: ClosetColors.bordure),
-                      ),
-                      child: Row(
-                        children: [
-                          Container(
-                            width: 44,
-                            height: 44,
-                            decoration: BoxDecoration(
-                              color: ClosetColors.vert.withValues(alpha: 0.1),
-                              shape: BoxShape.circle,
-                            ),
-                            child: Icon(item['icon'] as IconData, color: ClosetColors.vert),
-                          ),
-                          const SizedBox(width: 14),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  item['type'] as String,
-                                  style: const TextStyle(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w700,
-                                    color: ClosetColors.noir,
-                                  ),
-                                ),
-                                const SizedBox(height: 2),
-                                Text(
-                                  item['number'] as String,
-                                  style: const TextStyle(
-                                    fontSize: 12,
-                                    color: ClosetColors.taupe,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          if (item['isDefault'] as bool)
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                              decoration: BoxDecoration(
-                                color: ClosetColors.dore.withValues(alpha: 0.2),
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: const Text(
-                                'Principal',
-                                style: TextStyle(
-                                  fontSize: 9,
-                                  fontWeight: FontWeight.w700,
-                                  color: ClosetColors.doreEncre,
-                                ),
-                              ),
-                            ),
-                        ],
-                      ),
-                    );
-                  },
-                ),
-              ),
-              const SizedBox(height: 16),
-              SizedBox(
+        child: Column(
+          children: [
+            const Expanded(
+              child: ClosetListeVide(),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+              child: SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
@@ -513,151 +117,49 @@ class _EspacePaiementsScreenState extends State<EspacePaiementsScreen> {
                       borderRadius: BorderRadius.circular(16),
                     ),
                   ),
-                  onPressed: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Simulation: Ajout d\'un compte Orange ou MTN.'),
-                        backgroundColor: ClosetColors.vert,
-                      ),
-                    );
-                  },
+                  onPressed: () => toastInfo(
+                    ref,
+                    'Indisponible',
+                    'L’enregistrement d’un moyen de paiement n’est pas encore proposé par le serveur.',
+                  ),
                   child: const Text(
                     '+ Ajouter un moyen de paiement',
                     style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
                   ),
                 ),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
   }
 }
 
-// ── 4. Mes Alertes Pièces Screen ───────────────────────────────────────────
-class EspaceAlertesScreen extends StatefulWidget {
+
+
+// -- 4. Mes notifications ---------------------------------------------------
+class EspaceAlertesScreen extends StatelessWidget {
   const EspaceAlertesScreen({super.key});
-
-  @override
-  State<EspaceAlertesScreen> createState() => _EspaceAlertesScreenState();
-}
-
-class _EspaceAlertesScreenState extends State<EspaceAlertesScreen> {
-  final List<Map<String, dynamic>> _alerts = [
-    {
-      'id': '1',
-      'brand': 'Sézane',
-      'criteria': 'Robes · Taille 38',
-      'active': true,
-    },
-    {
-      'id': '2',
-      'brand': 'Jacquemus',
-      'criteria': 'Sacs · Toutes tailles',
-      'active': true,
-    },
-    {
-      'id': '3',
-      'brand': 'Maje',
-      'criteria': 'Vestes · Taille 36 / 38',
-      'active': false,
-    },
-  ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: ClosetColors.ivoire,
-      appBar: const EspaceSubAppBar(title: 'Mes alertes pièces'),
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(24.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                'ALERTES DE RECHERCHE ACTIVES',
-                style: TextStyle(
-                  fontSize: 10,
-                  fontWeight: FontWeight.w700,
-                  color: ClosetColors.taupe,
-                  letterSpacing: 1.5,
-                ),
-              ),
-              const SizedBox(height: 16),
-              Expanded(
-                child: ListView.separated(
-                  itemCount: _alerts.length,
-                  separatorBuilder: (_, _) => const SizedBox(height: 14),
-                  itemBuilder: (context, index) {
-                    final alert = _alerts[index];
-                    return Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-                      decoration: BoxDecoration(
-                        color: ClosetColors.creme,
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: ClosetColors.bordure),
-                      ),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  alert['brand'] as String,
-                                  style: const TextStyle(
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.w700,
-                                    color: ClosetColors.noir,
-                                  ),
-                                ),
-                                const SizedBox(height: 2),
-                                Text(
-                                  alert['criteria'] as String,
-                                  style: const TextStyle(
-                                    fontSize: 12,
-                                    color: ClosetColors.taupe,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          Switch(
-                            value: alert['active'] as bool,
-                            activeColor: ClosetColors.dore,
-                            activeTrackColor: ClosetColors.vert,
-                            onChanged: (val) {
-                              setState(() {
-                                alert['active'] = val;
-                              });
-                            },
-                          ),
-                          const SizedBox(width: 8),
-                          GestureDetector(
-                            onTap: () {
-                              setState(() {
-                                _alerts.removeAt(index);
-                              });
-                            },
-                            child: const Icon(Icons.delete_outline, color: ClosetColors.erreur, size: 20),
-                          ),
-                        ],
-                      ),
-                    );
-                  },
-                ),
-              ),
-            ],
-          ),
-        ),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      appBar: const EspaceSubAppBar(title: 'Mes notifications'),
+      body: ClosetListeVide(
+        message:
+            'Les nouveautés de vos maisons, le suivi de vos pièces et les '
+            'confirmations de commande s’afficheront ici.',
+        action: () => context.go('/home'),
+        libelleAction: 'Retour au dressing',
       ),
     );
   }
 }
 
-// ── 5. FAQ & Aide Screen ───────────────────────────────────────────────────
+
+// -- 5. FAQ & Aide Screen ---------------------------------------------------
 class EspaceFaqScreen extends StatelessWidget {
   const EspaceFaqScreen({super.key});
 
@@ -731,7 +233,7 @@ class EspaceFaqScreen extends StatelessWidget {
   }
 }
 
-// ── 6. Nous Contacter Screen ───────────────────────────────────────────────
+// -- 6. Nous Contacter Screen -----------------------------------------------
 class EspaceContactScreen extends StatelessWidget {
   const EspaceContactScreen({super.key});
 
@@ -839,7 +341,7 @@ class EspaceContactScreen extends StatelessWidget {
             child: ElevatedButton(
               style: ElevatedButton.styleFrom(
                 backgroundColor: color,
-                foregroundColor: Colors.white,
+                foregroundColor: ClosetColors.blanc,
                 elevation: 0,
                 padding: const EdgeInsets.symmetric(vertical: 14),
                 shape: RoundedRectangleBorder(
@@ -859,7 +361,7 @@ class EspaceContactScreen extends StatelessWidget {
   }
 }
 
-// ── 7. Politique de Confidentialité Screen ──────────────────────────────────
+// -- 7. Politique de Confidentialité Screen ----------------------------------
 class EspaceConfidentialiteScreen extends StatelessWidget {
   const EspaceConfidentialiteScreen({super.key});
 
@@ -930,15 +432,17 @@ class _PolicySection extends StatelessWidget {
   }
 }
 
-// ── 8. Nous Évaluer Screen (New Option) ──────────────────────────────────────
-class EspaceEvaluationScreen extends StatefulWidget {
+// -- 8. Nous Évaluer Screen (New Option) --------------------------------------
+class EspaceEvaluationScreen extends ConsumerStatefulWidget {
   const EspaceEvaluationScreen({super.key});
 
   @override
-  State<EspaceEvaluationScreen> createState() => _EspaceEvaluationScreenState();
+  ConsumerState<EspaceEvaluationScreen> createState() =>
+      _EspaceEvaluationScreenState();
 }
 
-class _EspaceEvaluationScreenState extends State<EspaceEvaluationScreen> {
+class _EspaceEvaluationScreenState
+    extends ConsumerState<EspaceEvaluationScreen> {
   int _starsSelected = 0;
   final _commentController = TextEditingController();
 
@@ -950,52 +454,14 @@ class _EspaceEvaluationScreenState extends State<EspaceEvaluationScreen> {
 
   void _submitFeedback() {
     if (_starsSelected == 0) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Veuillez sélectionner au moins une étoile.'),
-          backgroundColor: ClosetColors.erreur,
-        ),
-      );
+      toastInfo(ref, 'Note manquante', 'Veuillez sélectionner au moins une étoile.');
       return;
     }
 
-    showDialog<void>(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) {
-        return AlertDialog(
-          backgroundColor: ClosetColors.ivoire,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-          title: const Row(
-            children: [
-              Icon(Icons.check_circle_outline, color: ClosetColors.vert),
-              SizedBox(width: 10),
-              Text(
-                'Merci pour votre avis !',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: ClosetColors.noir),
-              ),
-            ],
-          ),
-          content: const Text(
-            'Vos commentaires précieux nous permettent d\'améliorer l\'expérience de dressing privé ClosET chaque jour.',
-            style: TextStyle(fontSize: 13, height: 1.4, color: ClosetColors.noir),
-          ),
-          actions: [
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: ClosetColors.vert,
-                foregroundColor: ClosetColors.creme,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-              ),
-              onPressed: () {
-                Navigator.pop(context); // Close dialog
-                context.pop(); // Pop EspaceEvaluationScreen
-              },
-              child: const Text('Fermer'),
-            ),
-          ],
-        );
-      },
+    toastInfo(
+      ref,
+      'Avis non transmis',
+      'Le serveur n’expose pas encore de dépôt d’évaluation. Votre note n’a pas été envoyée.',
     );
   }
 

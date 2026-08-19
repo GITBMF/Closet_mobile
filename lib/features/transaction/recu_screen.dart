@@ -7,7 +7,15 @@ import '../../core/widgets/closet_app_bar.dart';
 import 'transaction_models.dart';
 import 'widgets/transaction_scaffold.dart';
 
-/// Reçu de transaction — ticket unique, logo ClosEt, total doré.
+/// Reçu de transaction — `32:865` pour un retrait, `162:3473` pour un achat.
+///
+/// Ticket blanc de 310 de large (rayon 30) listant les informations de
+/// l'opération, puis une seconde carte portant le total en EB Garamond doré.
+///
+/// Les deux reçus de la maquette partagent ce gabarit à l'identique et ne
+/// diffèrent que par le corps : mode de retrait, compte et receveur d'un côté,
+/// description de la pièce achetée de l'autre. Ce corps arrive donc par
+/// [DemandeTransaction.lignesRecu], ce qui évite d'entretenir deux écrans.
 class RecuScreen extends StatelessWidget {
   const RecuScreen({
     super.key,
@@ -49,21 +57,13 @@ class RecuScreen extends StatelessWidget {
                 const _LignePointillee(),
                 const SizedBox(height: AppSpacing.p16),
                 _Ligne('Date & heure', _formatDate(recu.horodatage)),
-                _Ligne('Numéro de référence', recu.reference),
-                if (piece != null) ...[
-                  _Ligne('Marque de la pièce', piece.marque),
-                  _Ligne('Catégorie', piece.categorie),
-                  _Ligne('Taille', piece.taille),
-                  _Ligne('Etat de la pièce', piece.etat),
-                  _Ligne('Mode de paiement', d.moyen),
-                  _Ligne('Livraison', piece.livraison),
-                ] else ...[
-                  _Ligne(d.type.libelleMode, d.moyen),
-                  _Ligne('Compte Numéro', d.compteMasque),
-                  _Ligne('Nom du receveur', d.beneficiaire),
-                  _Ligne('Note(s)', d.note ?? ''),
-                ],
-                const SizedBox(height: AppSpacing.p8),
+                if (d.type.afficheReference)
+                  _Ligne('Numéro de référence', recu.reference),
+                for (final ligne in d.lignesRecu)
+                  _Ligne(ligne.libelle, ligne.valeur),
+                if (d.note != null && d.note!.isNotEmpty)
+                  _Ligne('Note(s)', d.note!),
+                const SizedBox(height: AppSpacing.p20),
                 Text(
                   'ClosEt vous remercie !',
                   style: ClosetTextStyles.sousTitre.copyWith(
@@ -98,7 +98,13 @@ class RecuScreen extends StatelessWidget {
             _BoutonPartage(onPressed: onPartager),
             const SizedBox(height: AppSpacing.p16),
             BoutonTransaction(
-              label: retour,
+              label: 'Partager Mon Reçu',
+              dore: false,
+              onPressed: onPartager,
+            ),
+            const SizedBox(height: AppSpacing.p24),
+            BoutonTransaction(
+              label: d.type.libelleSortie,
               onPressed: onRetour,
             ),
           ],
@@ -182,67 +188,15 @@ class _Ticket extends StatelessWidget {
     return Center(
       child: SizedBox(
         width: 310,
-        child: Column(
-          children: [
-            Container(
-              width: 310,
-              padding: const EdgeInsets.fromLTRB(22, 22, 22, 16),
-              decoration: const BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
-              ),
-              child: Column(children: haut),
-            ),
-            SizedBox(
-              height: 20,
-              child: Stack(
-                clipBehavior: Clip.none,
-                alignment: Alignment.center,
-                children: [
-                  const ColoredBox(
-                    color: Colors.white,
-                    child: SizedBox(width: 310, height: 20),
-                  ),
-                  const Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 18),
-                    child: _LignePointillee(),
-                  ),
-                  Positioned(
-                    left: -10,
-                    child: Container(
-                      width: 20,
-                      height: 20,
-                      decoration: const BoxDecoration(
-                        color: ClosetColors.vert,
-                        shape: BoxShape.circle,
-                      ),
-                    ),
-                  ),
-                  Positioned(
-                    right: -10,
-                    child: Container(
-                      width: 20,
-                      height: 20,
-                      decoration: const BoxDecoration(
-                        color: ClosetColors.vert,
-                        shape: BoxShape.circle,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Container(
-              width: 310,
-              padding: const EdgeInsets.fromLTRB(22, 12, 22, 20),
-              decoration: const BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.vertical(bottom: Radius.circular(28)),
-              ),
-              child: bas,
-            ),
-          ],
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.p24,
+          vertical: AppSpacing.p24,
         ),
+        decoration: BoxDecoration(
+          color: ClosetColors.blanc,
+          borderRadius: BorderRadius.circular(30),
+        ),
+        child: Column(children: children),
       ),
     );
   }
@@ -272,6 +226,7 @@ class _Ligne extends StatelessWidget {
               textAlign: TextAlign.right,
               style: ClosetTextStyles.corps.copyWith(
                 fontWeight: FontWeight.w600,
+                color: ClosetColors.noir,
                 color: ClosetColors.noir,
               ),
             ),

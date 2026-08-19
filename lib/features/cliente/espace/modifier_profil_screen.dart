@@ -10,6 +10,7 @@ import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/closet_colors.dart';
 import '../../../core/theme/closet_text_styles.dart';
 import '../../../core/widgets/closet_field.dart';
+import '../../../core/widgets/toasts.dart';
 import '../../../data/models/user.dart';
 import '../../../data/repositories/auth_repository.dart';
 import '../../../data/services/auth_storage_service.dart';
@@ -40,12 +41,9 @@ class _ModifierProfilScreenState
   void initState() {
     super.initState();
     final user = ref.read<ClosetUser?>(currentUserProvider);
-    _nom = TextEditingController(
-      text: user == null ? '' : '${user.firstName} ${user.lastName}'.trim(),
-    );
+    _nom = TextEditingController(text: user?.nomComplet ?? '');
     _email = TextEditingController(text: user?.email ?? '');
-    _telephone = TextEditingController();
-    _avatarPath = user?.avatarPath;
+    _telephone = TextEditingController(text: user?.phone ?? '');
   }
 
   @override
@@ -56,123 +54,29 @@ class _ModifierProfilScreenState
     super.dispose();
   }
 
-  Future<void> _choisirSource() async {
-    final source = await showModalBottomSheet<ImageSource>(
-      context: context,
-      backgroundColor: ClosetColors.beige,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(
-          top: Radius.circular(AppRadius.surface),
-        ),
-      ),
-      builder: (ctx) => SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(8, 12, 8, 16),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              ListTile(
-                leading: const Icon(
-                  Icons.photo_library_outlined,
-                  color: ClosetColors.vert,
-                ),
-                title: Text(
-                  'Choisir dans la galerie',
-                  style: ClosetTextStyles.corps.copyWith(
-                    color: ClosetColors.noir,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                onTap: () => Navigator.pop(ctx, ImageSource.gallery),
-              ),
-              ListTile(
-                leading: const Icon(
-                  Icons.photo_camera_outlined,
-                  color: ClosetColors.vert,
-                ),
-                title: Text(
-                  'Prendre une photo',
-                  style: ClosetTextStyles.corps.copyWith(
-                    color: ClosetColors.noir,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                onTap: () => Navigator.pop(ctx, ImageSource.camera),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-    if (source != null) await _importerPhoto(source);
-  }
-
-  Future<void> _importerPhoto(ImageSource source) async {
-    try {
-      final image = await _picker.pickImage(
-        source: source,
-        imageQuality: 85,
-        maxWidth: 1200,
-      );
-      if (image == null || !mounted) return;
-
-      final docs = await getApplicationDocumentsDirectory();
-      final dest = File('${docs.path}/closet_avatar.jpg');
-      await dest.writeAsBytes(await image.readAsBytes(), flush: true);
-      if (!mounted) return;
-
-      setState(() => _avatarPath = dest.path);
-
-      final user = ref.read<ClosetUser?>(currentUserProvider);
-      if (user != null) {
-        final maj = user.copyWith(avatarPath: dest.path);
-        ref.read(currentUserProvider.notifier).state = maj;
-        await AuthStorageService.saveUser(maj.toJson());
-      }
-    } catch (_) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Impossible d’accéder à vos photos.'),
-        ),
-      );
-    }
-  }
+  /// Envoi en cours. Bloque le bouton pour éviter deux mises à jour
+  /// concurrentes, dont la seconde écraserait la première.
+  bool _envoiEnCours = false;
 
   Future<void> _enregistrer() async {
+    if (_envoiEnCours) return;
     if (!(_formKey.currentState?.validate() ?? false)) return;
 
-    setState(() => _enregistrementEnCours = true);
+    setState(() => _envoiEnCours = true);
     try {
-      final user = ref.read<ClosetUser?>(currentUserProvider);
-      final parties = _nom.text.trim().split(RegExp(r'\s+'));
-      final prenom = parties.isEmpty ? '' : parties.first;
-      final nom = parties.length > 1 ? parties.sublist(1).join(' ') : '';
-
-      final maj = (user ??
-              ClosetUser(
-                firstName: prenom,
-                lastName: nom,
-                email: _email.text.trim(),
-              ))
-          .copyWith(
-        firstName: prenom,
-        lastName: nom,
-        email: _email.text.trim(),
-        avatarPath: _avatarPath,
-      );
-      ref.read(currentUserProvider.notifier).state = maj;
-      await AuthStorageService.saveUser(maj.toJson());
+      await ref.read(authRepositoryProvider).mettreAJourProfil(
+            nomComplet: _nom.text,
+            email: _email.text,
+            phone: _telephone.text,
+          );
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Profil mis à jour.'),
-          backgroundColor: ClosetColors.vert,
-        ),
-      );
+      toastSucces(ref, 'Profil mis à jour');
       context.pop();
+    } catch (e) {
+      if (!mounted) return;
+      toastErreur(ref, e, titre: 'Mise à jour impossible');
     } finally {
-      if (mounted) setState(() => _enregistrementEnCours = false);
+      if (mounted) setState(() => _envoiEnCours = false);
     }
   }
 
@@ -181,7 +85,7 @@ class _ModifierProfilScreenState
     final user = ref.watch<ClosetUser?>(currentUserProvider);
 
     return Scaffold(
-      backgroundColor: ClosetColors.beige,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
         child: Column(
           children: [
@@ -249,21 +153,22 @@ class _ModifierProfilScreenState
                             child: InkWell(
                               borderRadius:
                                   BorderRadius.circular(AppRadius.cercle),
-                              onTap: _enregistrementEnCours ? null : _enregistrer,
+                              onTap: _envoiEnCours ? null : _enregistrer,
                               child: Center(
-                                child: _enregistrementEnCours
+                                child: _envoiEnCours
                                     ? const SizedBox(
                                         width: 18,
                                         height: 18,
                                         child: CircularProgressIndicator(
                                           strokeWidth: 2,
-                                          color: Colors.white,
+                                          color: ClosetColors.blanc,
                                         ),
                                       )
                                     : Text(
                                         'Mettre à jour',
-                                        style: ClosetTextStyles.bouton.copyWith(
-                                          color: Colors.white,
+                                        style:
+                                            ClosetTextStyles.bouton.copyWith(
+                                          color: ClosetColors.blanc,
                                         ),
                                       ),
                               ),
@@ -345,7 +250,7 @@ class _EnTeteRetour extends StatelessWidget {
                       width: 42,
                       height: 42,
                       decoration: BoxDecoration(
-                        color: Colors.white,
+                        color: ClosetColors.blanc,
                         shape: BoxShape.circle,
                         border: Border.all(
                           color: ClosetColors.fond300,
@@ -369,20 +274,16 @@ class _EnTeteRetour extends StatelessWidget {
   }
 }
 
-/// Avatar de 120, photo choisie ou initiales, avec sa pastille d'édition.
-class _AvatarEditable extends StatelessWidget {
-  const _AvatarEditable({
-    required this.user,
-    required this.onChanger,
-    this.imagePath,
-  });
+/// Avatar de 120 aux initiales, avec sa pastille d'édition de 40.
+class _AvatarEditable extends ConsumerWidget {
+  const _AvatarEditable({required this.user});
 
   final ClosetUser? user;
   final String? imagePath;
   final VoidCallback onChanger;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final p = user?.firstName.isNotEmpty ?? false
         ? user!.firstName[0].toUpperCase()
         : '';
@@ -430,7 +331,11 @@ class _AvatarEditable extends StatelessWidget {
               button: true,
               label: 'Changer ma photo',
               child: GestureDetector(
-                onTap: onChanger,
+                onTap: () => toastInfo(
+                  ref,
+                  'Photo indisponible',
+                  'Le changement de photo n’est pas encore proposé par le serveur.',
+                ),
                 child: Container(
                   width: 40,
                   height: 40,
@@ -441,7 +346,7 @@ class _AvatarEditable extends StatelessWidget {
                   child: const Icon(
                     Icons.photo_camera_outlined,
                     size: 17,
-                    color: Colors.white,
+                    color: ClosetColors.blanc,
                   ),
                 ),
               ),

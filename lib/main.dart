@@ -7,6 +7,7 @@ import 'core/router/app_router.dart';
 import 'core/theme/app_theme.dart';
 import 'core/theme/theme_provider.dart';
 import 'core/widgets/top_notification_overlay.dart';
+import 'core/widgets/veille_reseau.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -39,7 +40,16 @@ class ClosetApp extends ConsumerWidget {
       routerConfig: router,
       debugShowCheckedModeBanner: false,
       builder: (context, child) {
-        return TopNotificationOverlay(child: child!);
+        final onSurface = Theme.of(context).colorScheme.onSurface;
+        return DefaultTextStyle(
+          style: TextStyle(color: onSurface),
+          child: IconTheme(
+            data: IconThemeData(color: onSurface),
+            child: VeilleReseau(
+              child: TopNotificationOverlay(child: child!),
+            ),
+          ),
+        );
       },
     );
   }

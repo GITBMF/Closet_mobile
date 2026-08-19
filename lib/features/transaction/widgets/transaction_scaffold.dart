@@ -14,6 +14,7 @@ class TransactionScaffold extends StatelessWidget {
     super.key,
     this.titre,
     required this.child,
+    this.entete,
     this.hautTitre = 124,
     this.mention = mentionChiffrement,
   });
@@ -22,6 +23,11 @@ class TransactionScaffold extends StatelessWidget {
   final String? titre;
 
   final Widget child;
+
+  /// Bandeau posé au-dessus du titre. Sert à la frise 3 étapes du parcours
+  /// acheteuse, que la maquette conserve pendant le traitement (`162:5220`)
+  /// et sur l'écran de succès (`162:3351`).
+  final Widget? entete;
 
   /// Position verticale du titre. 124 dans la maquette, 73 pour le reçu.
   final double hautTitre;
@@ -41,7 +47,17 @@ class TransactionScaffold extends StatelessWidget {
       body: SafeArea(
         child: Column(
           children: [
-            SizedBox(height: hautTitre - 47),
+            if (entete != null)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(
+                  AppSpacing.p24,
+                  AppSpacing.p20,
+                  AppSpacing.p24,
+                  0,
+                ),
+                child: entete,
+              ),
+            SizedBox(height: entete == null ? hautTitre - 47 : AppSpacing.p32),
             if (titre != null)
               Padding(
                 padding:
@@ -49,9 +65,8 @@ class TransactionScaffold extends StatelessWidget {
                 child: Text(
                   titre!,
                   textAlign: TextAlign.center,
-                  style: ClosetTextStyles.titreHero.copyWith(
-                    fontSize: 24,
-                    color: Colors.white,
+                  style: ClosetTextStyles.sousTitre.copyWith(
+                    color: ClosetColors.blanc,
                   ),
                 ),
               ),
@@ -131,9 +146,10 @@ class BoutonTransaction extends StatelessWidget {
             side: dore
                 ? BorderSide.none
                 : const BorderSide(
-                    color: Colors.white,
+                    color: ClosetColors.blanc,
                     width: AppStroke.fin,
                   ),
+          ),
           ),
           child: InkWell(
             borderRadius: rayon,
@@ -142,7 +158,7 @@ class BoutonTransaction extends StatelessWidget {
               child: Text(
                 label,
                 style: ClosetTextStyles.bouton.copyWith(
-                  color: dore ? ClosetColors.noir : Colors.white,
+                  color: dore ? ClosetColors.vert : ClosetColors.blanc,
                 ),
               ),
             ),

@@ -23,65 +23,51 @@ class AdhesionApprouveeScreen extends ConsumerWidget {
       // L'adhésion est actée côté serveur : revenir en arrière renverrait sur
       // un écran de suivi devenu faux.
       canPop: false,
-      child: Scaffold(
-        backgroundColor: ClosetColors.vert,
-        body: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.p24),
-            child: Column(
-              children: [
-                const Spacer(flex: 2),
-                const _ArcheValidation(),
-                const SizedBox(height: AppSpacing.p32),
-                Text(
-                  'Félicitation votre adhésion a été approuvée avec succès !',
-                  textAlign: TextAlign.center,
-                  style: ClosetTextStyles.titreHero.copyWith(
-                    fontSize: 24,
-                    letterSpacing: 0.3,
-                    height: 1.25,
-                    color: ClosetColors.beige,
-                  ),
+      child: TransactionScaffold(
+        hautTitre: 47,
+        mention: 'Confirmation envoyée sur WhatsApp',
+        child: Column(
+          children: [
+            const SizedBox(height: 124),
+            const _ArcheValidation(),
+            const SizedBox(height: 24),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 42),
+              child: Text(
+                'Felicitation votre adhesion a été approuvée avec succès !',
+                textAlign: TextAlign.center,
+                style: ClosetTextStyles.titreEcran.copyWith(
+                  letterSpacing: 0.66,
+                  color: ClosetColors.beige,
                 ),
-                const SizedBox(height: AppSpacing.p16),
-                Text(
-                  'Votre pièce sera préparée avec soin et expédiée très '
-                  'prochainement.',
-                  textAlign: TextAlign.center,
-                  style: ClosetTextStyles.corps.copyWith(
-                    fontSize: 13,
-                    height: 1.45,
-                    color: ClosetColors.neutre300,
-                  ),
-                ),
-                const SizedBox(height: AppSpacing.p12),
-                Text(
-                  'Confirmation envoyée sur WhatsApp',
-                  textAlign: TextAlign.center,
-                  style: ClosetTextStyles.meta.copyWith(
-                    fontWeight: FontWeight.w300,
-                    letterSpacing: 0.2,
-                    color: ClosetColors.neutre400,
-                  ),
-                ),
-                const Spacer(flex: 3),
-                BoutonTransaction(
-                  label: 'Entrer dans mon espace sourceur',
-                  onPressed: () {
-                    ref.read(sourceurRepositoryProvider).validerAdhesion();
-                    context.go('/sourceur/espace');
-                  },
-                ),
-                const SizedBox(height: AppSpacing.p16),
-                BoutonTransaction(
-                  label: 'Poursuivre ma visite',
-                  dore: false,
-                  onPressed: () => context.go('/home'),
-                ),
-                const SizedBox(height: 28),
-              ],
+              ),
             ),
-          ),
+            const SizedBox(height: AppSpacing.p16),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 42),
+              child: Text(
+                'Votre pièce sera préparée avec soin et expédiée très\n'
+                'prochainement',
+                textAlign: TextAlign.center,
+                style: ClosetTextStyles.labelChamp.copyWith(
+                  fontWeight: FontWeight.w500,
+                  color: ClosetColors.blanc,
+                ),
+              ),
+            ),
+            const Spacer(),
+            BoutonTransaction(
+              label: 'Entrer dans mon espace sourceur',
+              onPressed: () => context.go('/sourceur/espace'),
+            ),
+            const SizedBox(height: 24),
+            BoutonTransaction(
+              label: 'Poursuivre ma visite',
+              dore: false,
+              onPressed: () => context.go('/home'),
+            ),
+            const SizedBox(height: 36),
+          ],
         ),
       ),
     );
@@ -104,13 +90,25 @@ class _ArcheValidation extends StatelessWidget {
         AppSpacing.p24,
       ),
       decoration: BoxDecoration(
-        color: ClosetColors.beige,
+        color: ClosetColors.blanc,
         border: Border.all(color: ClosetColors.fond300, width: AppStroke.fin),
         borderRadius: const BorderRadius.vertical(top: Radius.circular(159)),
       ),
       child: Column(
         children: [
-          const _SceauApprouve(),
+          Container(
+            width: 86,
+            height: 86,
+            decoration: const BoxDecoration(
+              color: ClosetColors.vert,
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(
+              Icons.verified_outlined,
+              size: 44,
+              color: ClosetColors.blanc,
+            ),
+          ),
           const Spacer(),
           Text(
             'Vérification approuvée !',

@@ -7,7 +7,9 @@ import '../../../core/theme/closet_colors.dart';
 import '../../../core/theme/closet_text_styles.dart';
 import '../../../core/widgets/closet_app_bar.dart';
 import '../../../core/widgets/closet_chip.dart';
+import '../../../core/widgets/closet_feedback.dart';
 import '../../../core/widgets/closet_sections.dart';
+import '../../../core/widgets/etat_ecran.dart';
 import '../../../core/widgets/piece_card.dart';
 import '../../../data/models/article.dart';
 import '../../../data/repositories/cart_repository.dart';
@@ -17,7 +19,7 @@ import 'filtres_sheet.dart';
 // Notifiers for type-safety under strict-inference
 class UniverseNotifier extends Notifier<String> {
   @override
-  String build() => 'Tout l\'univers';
+  String build() => '';
   void setUniverse(String val) => state = val;
 }
 
@@ -34,23 +36,50 @@ class BrandFilterNotifier extends Notifier<String?> {
   void setBrand(String? val) => state = val;
 }
 
-class SizeFilterNotifier extends Notifier<String?> {
+class PriceFilterNotifier extends Notifier<double?> {
   @override
-  String? build() => null;
-  void setSize(String? val) => state = val;
+  double? build() => null;
+  void setPrice(double? val) => state = val;
 }
 
-class ConditionFilterNotifier extends Notifier<String?> {
-  @override
-  String? build() => null;
-  void setCondition(String? val) => state = val;
+/// Critères de tri de la grille.
+///
+/// La maquette n'affiche que la pilule « Nouveautés » (`14:1281`) et le libellé
+/// « triées par nouveautés », sans dessiner le sélecteur. Les trois autres
+/// critères sont donc une décision : ils recouvrent ce qu'une acheteuse attend
+/// d'une grille de prix, et le tri par défaut reste celui de la maquette.
+enum TriCatalogue {
+  nouveautes,
+  prixCroissant,
+  prixDecroissant,
+  maison;
+
+  /// Libellé de la pilule, tel que la maquette l'écrit pour « Nouveautés ».
+  String get libelle => switch (this) {
+        TriCatalogue.nouveautes => 'Nouveautés',
+        TriCatalogue.prixCroissant => 'Prix croissant',
+        TriCatalogue.prixDecroissant => 'Prix décroissant',
+        TriCatalogue.maison => 'Maison',
+      };
+
+  /// Forme employée dans « N pièces. triées par … ».
+  String get complement => switch (this) {
+        TriCatalogue.nouveautes => 'nouveautés',
+        TriCatalogue.prixCroissant => 'prix croissant',
+        TriCatalogue.prixDecroissant => 'prix décroissant',
+        TriCatalogue.maison => 'maison',
+      };
 }
 
-class PriceRangeFilterNotifier extends Notifier<RangeValues?> {
+class TriNotifier extends Notifier<TriCatalogue> {
   @override
-  RangeValues? build() => null;
-  void setRange(RangeValues? val) => state = val;
+  TriCatalogue build() => TriCatalogue.nouveautes;
+  void setTri(TriCatalogue val) => state = val;
 }
+
+final triProvider = NotifierProvider<TriNotifier, TriCatalogue>(
+  TriNotifier.new,
+);
 
 // State providers for search and filtering
 final selectedUniverseProvider =
@@ -59,48 +88,52 @@ final searchQueryProvider =
     NotifierProvider<SearchQueryNotifier, String>(SearchQueryNotifier.new);
 final filterBrandProvider =
     NotifierProvider<BrandFilterNotifier, String?>(BrandFilterNotifier.new);
-final filterSizeProvider =
-    NotifierProvider<SizeFilterNotifier, String?>(SizeFilterNotifier.new);
-final filterConditionProvider = NotifierProvider<ConditionFilterNotifier,
-    String?>(ConditionFilterNotifier.new);
-final filterPriceRangeProvider =
-    NotifierProvider<PriceRangeFilterNotifier, RangeValues?>(
-        PriceRangeFilterNotifier.new);
+final filterPriceProvider =
+    NotifierProvider<PriceFilterNotifier, double?>(PriceFilterNotifier.new);
 
 // Reactive filtering provider
 final filteredArticlesProvider = FutureProvider<List<Article>>((ref) async {
   final universe = ref.watch<String>(selectedUniverseProvider);
   final query = ref.watch<String>(searchQueryProvider).toLowerCase();
   final brand = ref.watch<String?>(filterBrandProvider);
-  final size = ref.watch<String?>(filterSizeProvider);
-  final condition = ref.watch<String?>(filterConditionProvider);
-  final priceRange = ref.watch<RangeValues?>(filterPriceRangeProvider);
+  final maxPrice = ref.watch<double?>(filterPriceProvider);
+  final tri = ref.watch<TriCatalogue>(triProvider);
 
   final repo = ref.watch<CatalogRepository>(catalogRepositoryProvider);
-  final allArticles = await repo.getCatalog(universe: universe);
+  String? maisonId;
+  if (brand != null) {
+    for (final m in await repo.getMaisons()) {
+      if (m.nom.toLowerCase() == brand.toLowerCase()) {
+        maisonId = m.id;
+        break;
+      }
+    }
+  }
+  final retenus = await repo.getCatalog(
+    universe: universe.isEmpty ? null : universe,
+    filtres: FiltresCatalogue(
+      maisonId: maisonId,
+      recherche: query.isEmpty ? null : query,
+      prixMax: maxPrice,
+    ),
+  );
 
-  return allArticles.where((a) {
-    if (query.isNotEmpty &&
-        !a.title.toLowerCase().contains(query) &&
-        !a.brand.toLowerCase().contains(query) &&
-        !a.description.toLowerCase().contains(query)) {
-      return false;
-    }
-    if (brand != null && a.brand.toLowerCase() != brand.toLowerCase()) {
-      return false;
-    }
-    if (size != null && a.size.toLowerCase() != size.toLowerCase()) {
-      return false;
-    }
-    if (condition != null &&
-        a.condition.toLowerCase() != condition.toLowerCase()) {
-      return false;
-    }
-    if (priceRange != null && (a.price < priceRange.start || a.price > priceRange.end)) {
-      return false;
-    }
-    return true;
-  }).toList();
+  // « Nouveautés » conserve l'ordre du catalogue, qui est déjà chronologique
+  // côté dépôt : le retrier par identifiant supposerait qu'il soit numérique.
+  switch (tri) {
+    case TriCatalogue.nouveautes:
+      break;
+    case TriCatalogue.prixCroissant:
+      retenus.sort((a, b) => a.price.compareTo(b.price));
+    case TriCatalogue.prixDecroissant:
+      retenus.sort((a, b) => b.price.compareTo(a.price));
+    case TriCatalogue.maison:
+      retenus.sort(
+        (a, b) => a.brand.toLowerCase().compareTo(b.brand.toLowerCase()),
+      );
+  }
+
+  return retenus;
 });
 
 /// Collections — maquette « Page collection ».
@@ -110,20 +143,16 @@ final filteredArticlesProvider = FutureProvider<List<Article>>((ref) async {
 class CollectionsScreen extends ConsumerStatefulWidget {
   const CollectionsScreen({super.key});
 
-  static const List<String> universes = [
-    'Tout l\'univers',
-    'Robes',
-    'Vestes',
-    'Sacs',
-    'Escarpins',
-    'Accessoires',
-    'Bijoux',
-    'Maille',
-    'Manteaux',
-  ];
-
   @override
   ConsumerState<CollectionsScreen> createState() => _CollectionsScreenState();
+}
+
+List<String> universCatalogue(WidgetRef ref) {
+  final async = ref.watch(universProvider);
+  return async.maybeWhen(
+    data: (liste) => [for (final u in liste) u.nom],
+    orElse: () => const <String>[],
+  );
 }
 
 class _CollectionsScreenState extends ConsumerState<CollectionsScreen> {
@@ -142,39 +171,29 @@ class _CollectionsScreenState extends ConsumerState<CollectionsScreen> {
   }
 
   bool get _filtresActifs =>
+      ref.watch<String>(selectedUniverseProvider).isNotEmpty ||
       ref.watch<String?>(filterBrandProvider) != null ||
-      ref.watch<String?>(filterSizeProvider) != null ||
-      ref.watch<String?>(filterConditionProvider) != null ||
-      ref.watch<RangeValues?>(filterPriceRangeProvider) != null;
+      ref.watch<double?>(filterPriceProvider) != null;
 
-  /// Filtres réellement posés, chacun avec le moyen de le retirer seul.
-  ///
-  /// La maquette `16:1954` affiche « Robes ✕ », « Taille M ✕ », « Neuf ✕ » :
-  /// on doit pouvoir enlever un critère sans perdre les autres.
   List<({String label, VoidCallback retirer})> get _filtresPosees {
+    final univers = ref.watch<String>(selectedUniverseProvider);
     final marque = ref.watch<String?>(filterBrandProvider);
-    final taille = ref.watch<String?>(filterSizeProvider);
-    final etat = ref.watch<String?>(filterConditionProvider);
-    final fourchette = ref.watch<RangeValues?>(filterPriceRangeProvider);
+    final prixMax = ref.watch<double?>(filterPriceProvider);
 
     return [
+      if (univers.isNotEmpty)
+        (
+          label: univers,
+          retirer: () => ref
+              .read<UniverseNotifier>(selectedUniverseProvider.notifier)
+              .setUniverse(''),
+        ),
       if (marque != null)
         (
           label: marque,
           retirer: () => ref.read(filterBrandProvider.notifier).setBrand(null),
         ),
-      if (taille != null)
-        (
-          label: 'Taille $taille',
-          retirer: () => ref.read(filterSizeProvider.notifier).setSize(null),
-        ),
-      if (etat != null)
-        (
-          label: etat,
-          retirer: () =>
-              ref.read(filterConditionProvider.notifier).setCondition(null),
-        ),
-      if (fourchette != null)
+      if (prixMax != null)
         (
           label:
               '${formatPrixFcfa(fourchette.start)} – ${formatPrixFcfa(fourchette.end)}',
@@ -186,9 +205,8 @@ class _CollectionsScreenState extends ConsumerState<CollectionsScreen> {
 
   void _reinitialiserFiltres() {
     ref.read(filterBrandProvider.notifier).setBrand(null);
-    ref.read(filterSizeProvider.notifier).setSize(null);
-    ref.read(filterConditionProvider.notifier).setCondition(null);
-    ref.read(filterPriceRangeProvider.notifier).setRange(null);
+    ref.read(filterPriceProvider.notifier).setPrice(null);
+    ref.read(selectedUniverseProvider.notifier).setUniverse('');
   }
 
   @override
@@ -197,98 +215,74 @@ class _CollectionsScreenState extends ConsumerState<CollectionsScreen> {
     final cartCount = ref.watch(cartCountProvider);
 
     return Scaffold(
-      backgroundColor: ClosetColors.beige,
-      body: SafeArea(
-        bottom: false,
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.only(bottom: AppSpacing.p32),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const SizedBox(height: AppSpacing.p8),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.p20),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    _BoutonRond(
-                      icone: Icons.shopping_basket_outlined,
-                      label: cartCount > 0
-                          ? 'Panier, $cartCount articles'
-                          : 'Panier',
-                      pastille: cartCount > 0 ? cartCount : null,
-                      onTap: () => context.go('/selection'),
-                    ),
-                    const SizedBox(width: AppSpacing.gapListe),
-                    _BoutonRond(
-                      icone: Icons.notifications_none_rounded,
-                      label: 'Notifications',
-                      onTap: () => context.go('/espace/alertes'),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: AppSpacing.p16),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.p20),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: _BarreRecherche(
-                        controller: _recherche,
-                        onChanged: (v) =>
-                            ref.read(searchQueryProvider.notifier).setQuery(v),
-                        onEffacer: () {
-                          _recherche.clear();
-                          ref.read(searchQueryProvider.notifier).clear();
-                        },
-                      ),
-                    ),
-                    const SizedBox(width: AppSpacing.p8),
-                    _BoutonRond(
-                      icone: Icons.tune,
-                      label: 'Filtrer',
-                      actif: _filtresActifs,
-                      onTap: () => _ouvrirFiltres(context),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: AppSpacing.p24),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 21),
-                child: ClosetEnTeteSection(
-                  titre: 'Pièces du dressing',
-                  lien: 'tout découvrir',
-                  onLien: _toutDecouvrir,
-                ),
-              ),
-              const SizedBox(height: AppSpacing.p16),
-              if (_filtresActifs) ...[
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(21, 0, 21, AppSpacing.p12),
-                  child: _BarreFiltresActifs(
-                    filtres: _filtresPosees,
-                    onToutEffacer: _reinitialiserFiltres,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      appBar: const ClosetAppBar(),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.only(bottom: AppSpacing.p32),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const SizedBox(height: AppSpacing.p12),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 21),
+              child: Row(
+                children: [
+                  const Expanded(child: ClosetTitreEcran('Toutes les pièces')),
+                  _BoutonFiltres(
+                    actif: _filtresActifs,
+                    onTap: () => _ouvrirFiltres(context),
                   ),
-                ),
-              ],
-              catalogue.when(
-                data: (articles) => _Resultats(articles: articles),
-                loading: () => const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 64),
-                  child: Center(
-                    child: CircularProgressIndicator(color: ClosetColors.dore),
+                  const SizedBox(width: AppSpacing.p8),
+                  _PiluleTri(
+                    label: ref.watch<TriCatalogue>(triProvider).libelle,
+                    onTap: _choisirTri,
                   ),
-                ),
-                error: (e, _) => const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 64),
-                  child: Center(child: Text('Erreur de chargement')),
+                ],
+              ),
+            ),
+            const SizedBox(height: AppSpacing.p16),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.p20),
+              child: _BarreRecherche(
+                controller: _recherche,
+                onChanged: (v) =>
+                    ref.read(searchQueryProvider.notifier).setQuery(v),
+                onEffacer: () {
+                  _recherche.clear();
+                  ref.read(searchQueryProvider.notifier).clear();
+                },
+              ),
+            ),
+            const SizedBox(height: AppSpacing.p24),
+            if (_filtresActifs) ...[
+              Padding(
+                padding: const EdgeInsets.fromLTRB(21, 0, 21, AppSpacing.p12),
+                child: _BarreFiltresActifs(
+                  filtres: _filtresPosees,
+                  onToutEffacer: _reinitialiserFiltres,
                 ),
               ),
-              const ClosetSignature(),
             ],
-          ),
+            catalogue.when(
+              data: (articles) => _Resultats(
+                articles: articles,
+                univers: ref.watch<String>(selectedUniverseProvider),
+                tri: ref.watch<TriCatalogue>(triProvider),
+              ),
+              loading: () => const SizedBox(
+                height: 280,
+                child: EtatEcran.chargement(),
+              ),
+              error: (e, _) => SizedBox(
+                height: 280,
+                child: EtatEcran.erreur(
+                  erreur: e,
+                  onRetry: () => ref.invalidate(filteredArticlesProvider),
+                ),
+              ),
+            ),
+            const SizedBox(height: AppSpacing.p24),
+          ],
         ),
       ),
     );
@@ -296,52 +290,104 @@ class _CollectionsScreenState extends ConsumerState<CollectionsScreen> {
 
   void _ouvrirFiltres(BuildContext context) => afficherFiltres(context);
 
-  void _toutDecouvrir() {
-    ref
-        .read(selectedUniverseProvider.notifier)
-        .setUniverse(CollectionsScreen.universes.first);
-    _recherche.clear();
-    ref.read(searchQueryProvider.notifier).clear();
-    _reinitialiserFiltres();
+  /// Feuille de choix du tri, calquée sur les autres sélecteurs de l'app.
+  Future<void> _choisirTri() async {
+    final choix = await showModalBottomSheet<TriCatalogue>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        final courant = ref.read<TriCatalogue>(triProvider);
+        return DecoratedBox(
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.surface,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+          ),
+          child: SafeArea(
+            top: false,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const SizedBox(height: AppSpacing.p20),
+                Text('Trier les pièces', style: ClosetTextStyles.titreBloc),
+                const SizedBox(height: AppSpacing.p12),
+                for (final t in TriCatalogue.values)
+                  ListTile(
+                    title: Text(t.libelle, style: ClosetTextStyles.libelle),
+                    trailing: Icon(
+                      t == courant
+                          ? Icons.radio_button_checked
+                          : Icons.radio_button_unchecked,
+                      size: 20,
+                      color:
+                          t == courant ? ClosetColors.vert : ClosetColors.ligne,
+                    ),
+                    onTap: () => Navigator.of(context).pop(t),
+                  ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+    if (choix != null) ref.read(triProvider.notifier).setTri(choix);
   }
 }
 
 class _Resultats extends StatelessWidget {
-  const _Resultats({required this.articles});
+  const _Resultats({
+    required this.articles,
+    required this.univers,
+    required this.tri,
+  });
 
   final List<Article> articles;
+  final String univers;
+  final TriCatalogue tri;
 
   @override
   Widget build(BuildContext context) {
     if (articles.isEmpty) {
-      return const Padding(
-        padding: EdgeInsets.symmetric(vertical: 64, horizontal: 32),
-        child: Center(
-          child: Text(
-            'Aucune pièce ne correspond à votre recherche.',
-            textAlign: TextAlign.center,
-          ),
-        ),
-      );
+      return const ClosetListeVide();
     }
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 21),
-      child: GridView.builder(
-        shrinkWrap: true,
-        physics: const NeverScrollableScrollPhysics(),
-        itemCount: articles.length,
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2,
-          crossAxisSpacing: AppSpacing.p12,
-          mainAxisSpacing: AppSpacing.p12,
-          childAspectRatio: PieceCard.ratioCarteGrille,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 21),
+          child: ClosetEnTeteSection(
+            titre: univers.isEmpty ? 'Toutes les pièces' : univers,
+          ),
         ),
-        itemBuilder: (context, i) => ArticleCard(
-          article: articles[i],
-          onTap: () => context.push('/product/${articles[i].id}'),
+        const SizedBox(height: AppSpacing.p4),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 21),
+          child: ClosetSurtitre(
+            articles.length == 1
+                ? '1 pièce. triée par ${tri.complement}'
+                : '${articles.length} pièces. triées par ${tri.complement}',
+          ),
         ),
-      ),
+        const SizedBox(height: AppSpacing.p16),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 21),
+          child: GridView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: articles.length,
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2,
+              crossAxisSpacing: AppSpacing.p12,
+              mainAxisSpacing: AppSpacing.p12,
+              childAspectRatio: PieceCard.ratioCarteGrille,
+            ),
+            itemBuilder: (context, i) => ArticleCard(
+              article: articles[i],
+              onTap: () => context.push('/product/${articles[i].id}'),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
@@ -366,7 +412,7 @@ class _BarreRecherche extends StatelessWidget {
         controller: controller,
         onChanged: onChanged,
         textInputAction: TextInputAction.search,
-        style: ClosetTextStyles.saisie.copyWith(color: ClosetColors.noir),
+        style: ClosetTextStyles.saisie.copyWith(color: context.closetEncre),
         cursorColor: ClosetColors.vert,
         decoration: InputDecoration(
           hintText: 'Search...',
@@ -386,7 +432,7 @@ class _BarreRecherche extends StatelessWidget {
                   onPressed: onEffacer,
                 ),
           filled: true,
-          fillColor: Colors.white,
+          fillColor: context.closetChamp,
           isDense: true,
           contentPadding: const EdgeInsets.symmetric(
             horizontal: AppSpacing.p16,
@@ -436,7 +482,7 @@ class _BoutonRond extends StatelessWidget {
               width: 42,
               height: 42,
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: ClosetColors.blanc,
                 shape: BoxShape.circle,
                 border: Border.all(
                   color: ClosetColors.fond300,
@@ -480,6 +526,53 @@ class _BoutonRond extends StatelessWidget {
                 ),
               ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Pilule de tri : 129 × 42, rayon 80.
+class _PiluleTri extends StatelessWidget {
+  const _PiluleTri({required this.label, required this.onTap});
+
+  final String label;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      button: true,
+      child: GestureDetector(
+        onTap: onTap,
+        child: Container(
+          height: 42,
+          padding: const EdgeInsets.symmetric(horizontal: 15),
+          decoration: BoxDecoration(
+            color: ClosetColors.blanc,
+            borderRadius: BorderRadius.circular(80),
+            border: Border.all(
+              color: ClosetColors.fond300,
+              width: AppStroke.fin,
+            ),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(
+                Icons.swap_vert_rounded,
+                size: 16,
+                color: ClosetColors.vert,
+              ),
+              const SizedBox(width: 6),
+              Text(
+                label,
+                style: ClosetTextStyles.corps.copyWith(
+                  color: ClosetColors.vert,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

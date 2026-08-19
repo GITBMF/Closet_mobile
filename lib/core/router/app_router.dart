@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../data/repositories/sourceur_repository.dart';
+import '../../data/repositories/transaction_repository.dart';
 import '../../features/auth/auth_screen.dart';
 import '../../features/checkout/checkout_screen.dart';
 import '../../features/checkout/paiement_flow_screen.dart';
@@ -21,7 +22,6 @@ import '../../features/cliente/selection/selection_screen.dart';
 import '../../features/cliente/wishlist/wishlist_screen.dart';
 import '../../features/main_layout.dart';
 import '../../features/onboarding/onboarding_screen.dart';
-import '../../features/sourceur/atelier/sourceur_atelier_screen.dart';
 import '../../features/sourceur/devenir/devenir_sourceur_screen.dart';
 import '../../features/sourceur/espace/sourceur_espace_screen.dart';
 import '../../features/sourceur/identification/identification_sourceur_screen.dart';
@@ -82,6 +82,12 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         final sourceurRepo = ref.read(sourceurRepositoryProvider);
         if (!sourceurRepo.estInscrit) {
           return '/sourceur/inscription';
+        }
+        // « Le dépôt s'ouvrira après validation » (`27:1970`) : tant que
+        // l'adhésion est à l'étude, l'espace sourceuse reste fermé et la fiche
+        // de suivi tient lieu d'accueil.
+        if (sourceurRepo.adhesion?.estValidee == false) {
+          return '/sourceur/adhesion';
         }
       }
       return null;
@@ -220,8 +226,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             key: state.pageKey,
             child: TransactionFlowScreen(
               demande: demande,
-              // TODO(backend): brancher l'endpoint de transaction.
-              executer: simulerTransaction,
+              executer: ref.read(transactionExecuteurProvider),
             ),
             transitionsBuilder: (context, animation, _, child) {
               return SlideTransition(
@@ -246,12 +251,12 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           return SourceurLayout(navigationShell: navigationShell);
         },
         branches: [
-          // 0 — ATELIER
+          // 0 — ESPACE (`31:109`), accueil de l'espace sourceuse
           StatefulShellBranch(
             routes: [
               GoRoute(
-                path: '/sourceur',
-                builder: (context, state) => const SourceurAtelierScreen(),
+                path: '/sourceur/espace',
+                builder: (context, state) => const SourceurEspaceScreen(),
               ),
             ],
           ),
@@ -282,16 +287,16 @@ final appRouterProvider = Provider<GoRouter>((ref) {
               ),
             ],
           ),
-          // 4 — ESPACE
-          StatefulShellBranch(
-            routes: [
-              GoRoute(
-                path: '/sourceur/espace',
-                builder: (context, state) => const SourceurEspaceScreen(),
-              ),
-            ],
-          ),
         ],
+      ),
+
+      // `/sourceur` servait un tableau de bord « Atelier » absent de la
+      // maquette, qui doublait `31:109` en affichant des compteurs figés à zéro.
+      // L'adresse reste valide et mène désormais à l'espace lui-même.
+      GoRoute(
+        parentNavigatorKey: rootNavigatorKey,
+        path: '/sourceur',
+        redirect: (context, state) => '/sourceur/espace',
       ),
 
       // Suivi d'une piece confiee (hors shell)
@@ -443,6 +448,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
                   ),
                   GoRoute(
                     path: 'alertes',
+                    parentNavigatorKey: rootNavigatorKey,
                     builder: (context, state) => const EspaceAlertesScreen(),
                   ),
                   GoRoute(

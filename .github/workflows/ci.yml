@@ -1,0 +1,39 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+
+jobs:
+  analyse-et-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Dépendances
+        run: flutter pub get
+
+      # Pas de contrôle `dart format` pour l'instant : 81 des 94 fichiers du
+      # projet ne sont pas au format canonique, et les remettre d'aplomb doit
+      # faire l'objet d'un commit dédié plutôt que d'être noyé dans un autre.
+      # Ajouter ici `dart format --output=none --set-exit-if-changed lib test`
+      # une fois ce commit passé.
+
+      # `analysis_options.yaml` traite les avertissements comme des erreurs ;
+      # `--fatal-infos` étend la règle aux informations.
+      - name: Analyse
+        run: flutter analyze --fatal-infos
+
+      - name: Tests
+        run: flutter test --reporter compact
+
+      # Compilation réelle : l'analyse seule laisse passer les erreurs de
+      # génération de code (assets manquants, plugins mal déclarés).
+      - name: Build web
+        run: flutter build web --no-wasm-dry-run

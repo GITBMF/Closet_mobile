@@ -7,11 +7,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 
-import '../../../core/services/notification_service.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/closet_colors.dart';
 import '../../../core/theme/closet_text_styles.dart';
 import '../../../core/widgets/closet_chip.dart';
+import '../../../core/widgets/closet_feedback.dart';
+import '../../../core/widgets/toasts.dart';
 import '../../../data/repositories/sourceur_repository.dart';
 import '../widgets/sourceur_header.dart';
 
@@ -67,18 +68,14 @@ class _SourceurNouvellePieceScreenState
       if (image != null && mounted) setState(() => _photo = image);
     } catch (_) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Impossible d’accéder aux photos.')),
-      );
+      toastErreur(ref, 'Impossible d’accéder aux photos.');
     }
   }
 
   Future<void> _poursuivre() async {
     if (!(_formKey.currentState?.validate() ?? false)) return;
     if (_photo == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Ajoutez une photo de votre pièce.')),
-      );
+      toastInfo(ref, 'Photo manquante', 'Ajoutez une photo de votre pièce.');
       return;
     }
 
@@ -97,29 +94,28 @@ class _SourceurNouvellePieceScreenState
     );
 
     try {
-      await ref
-          .read<SourceurRepository>(sourceurRepositoryProvider)
-          .deposerPiece(piece);
-      if (!mounted) return;
+      final id = await ClosetDialogue.executer(
+        context,
+        message: 'Dépôt en cours…',
+        action: () => ref
+            .read<SourceurRepository>(sourceurRepositoryProvider)
+            .deposerPiece(piece),
+      );
+      if (!mounted || id == null) return;
+      setState(() => _envoiEnCours = false);
 
       unawaited(HapticFeedback.mediumImpact());
-      context.go('/sourceur/piece/${piece.id}');
-
-      // Bandeau différé, comme dans la version précédente : la sourceuse a le
-      // temps d'arriver sur l'écran d'inspection avant d'être notifiée.
-      unawaited(Future.delayed(const Duration(seconds: 4), () {
-        if (!mounted) return;
-        ref.read<NotificationNotifier>(notificationProvider.notifier).show(
-              'Pièce reçue',
-              'Votre pièce « ${piece.nom} » est en cours d’examen par notre '
-                  'comité de sélection.',
-            );
-      }));
+      await dialogueSucces(
+        context,
+        titre: 'Pièce reçue',
+        message:
+            'Votre pièce « ${piece.nom} » est en cours d’examen.',
+      );
+      if (!mounted) return;
+      context.go('/sourceur/piece/$id');
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.toString().replaceAll('Exception: ', ''))),
-      );
+      await dialogueErreur(context, e, titre: 'Dépôt impossible');
     } finally {
       if (mounted) setState(() => _envoiEnCours = false);
     }
@@ -133,7 +129,7 @@ class _SourceurNouvellePieceScreenState
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: ClosetColors.beige,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
         child: Column(
           children: [
@@ -141,6 +137,11 @@ class _SourceurNouvellePieceScreenState
               titre: 'Confier une pièce',
               onRetour: () => context.go('/sourceur/espace'),
               actions: [
+                // Compteur transcrit tel quel de `33:1460`. La maquette ne
+                // dessine aucun autre écran portant un compteur : ni les étapes
+                // 1, 3 et 4, ni un badge sur l'inspection (`34:1534`) ou le
+                // suivi (`34:1710`). Question ouverte côté design plutôt
+                // qu'écart de code — voir le rapport final.
                 Text(
                   'Etape 2/4',
                   style: ClosetTextStyles.actionPetite.copyWith(
@@ -266,13 +267,13 @@ class _SourceurNouvellePieceScreenState
                                         height: 18,
                                         child: CircularProgressIndicator(
                                           strokeWidth: 2,
-                                          color: Colors.white,
+                                          color: ClosetColors.blanc,
                                         ),
                                       )
                                     : Text(
                                         'Poursuivre',
                                         style: ClosetTextStyles.libelleFort
-                                            .copyWith(color: Colors.white),
+                                            .copyWith(color: ClosetColors.blanc),
                                       ),
                               ),
                             ),
@@ -361,7 +362,7 @@ class _Champ extends StatelessWidget {
               color: ClosetColors.placeholderGris,
             ),
             filled: true,
-            fillColor: Colors.white,
+            fillColor: ClosetColors.blanc,
             isDense: true,
             contentPadding: const EdgeInsets.symmetric(
               horizontal: AppSpacing.p16,
@@ -432,7 +433,7 @@ class _ZoneDepotPhotos extends StatelessWidget {
                           child: Icon(
                             Icons.add_a_photo_outlined,
                             size: 30,
-                            color: Colors.white,
+                            color: ClosetColors.blanc,
                           ),
                         )
                       : Image.file(File(photo!.path), fit: BoxFit.cover),
@@ -457,7 +458,7 @@ class _ZoneDepotPhotos extends StatelessWidget {
                         child: const Icon(
                           Icons.close,
                           size: 13,
-                          color: Colors.white,
+                          color: ClosetColors.blanc,
                         ),
                       ),
                     ),
@@ -519,17 +520,16 @@ class _BoutonPhoto extends StatelessWidget {
     return SizedBox(
       height: 44,
       child: Material(
-        color: plein ? ClosetColors.vert : Colors.white,
-        borderRadius: rayon,
-        shape: plein
-            ? null
-            : RoundedRectangleBorder(
-                borderRadius: rayon,
-                side: const BorderSide(
+        color: plein ? ClosetColors.vert : ClosetColors.blanc,
+        shape: RoundedRectangleBorder(
+          borderRadius: rayon,
+          side: plein
+              ? BorderSide.none
+              : const BorderSide(
                   color: ClosetColors.bordureBoutonClair,
                   width: AppStroke.fin,
                 ),
-              ),
+        ),
         child: InkWell(
           borderRadius: rayon,
           onTap: onTap,
@@ -539,7 +539,7 @@ class _BoutonPhoto extends StatelessWidget {
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: ClosetTextStyles.libelle.copyWith(
-                color: plein ? Colors.white : Colors.black,
+                color: plein ? ClosetColors.blanc : Colors.black,
               ),
             ),
           ),

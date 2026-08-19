@@ -6,6 +6,7 @@ import '../../../core/theme/closet_colors.dart';
 import '../../../core/theme/closet_text_styles.dart';
 import '../../../core/widgets/closet_buttons.dart';
 import '../../../core/widgets/closet_chip.dart';
+import '../../../core/widgets/toasts.dart';
 import '../../../data/repositories/sourceur_repository.dart';
 import 'widgets/labeled_field.dart';
 import 'widgets/sourceur_hero_card.dart';
@@ -92,26 +93,19 @@ class _SourceurInscriptionScreenState
         moyenPaiement: _moyenPaiement,
         numeroPaiement: _numeroController.text.trim(),
       ));
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Fiche d’adhésion transmise !'),
-            backgroundColor: ClosetColors.vert,
-          ),
-        );
-        // La maquette place l'ecran de statut entre la soumission et le
-        // tableau de bord : l'adhesion doit d'abord etre etudiee.
-        context.go('/sourceur/adhesion');
-      }
+      if (!mounted) return;
+      setState(() => _isLoading = false);
+      await dialogueSucces(
+        context,
+        titre: 'Adhésion transmise',
+        message: 'Votre fiche d’adhésion a bien été envoyée.',
+      );
+      if (!mounted) return;
+      context.go('/sourceur/adhesion');
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(e.toString()),
-            backgroundColor: ClosetColors.erreur,
-          ),
-        );
-      }
+      if (!mounted) return;
+      setState(() => _isLoading = false);
+      await dialogueErreur(context, e, titre: 'Adhésion impossible');
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }

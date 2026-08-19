@@ -1,105 +1,70 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../features/checkout/brouillon_commande.dart';
+import '../api/api_exception.dart';
+import '../api/api_json.dart';
+import '../bff_client/api_client.dart';
 import '../models/commande.dart';
 
 final commandeRepositoryProvider = Provider<CommandeRepository>((ref) {
-  return CommandeRepository();
+  return CommandeRepository(ref.watch(bffClientProvider));
 });
 
-/// Commandes de la cliente connectée.
 final mesCommandesProvider = FutureProvider<List<Commande>>((ref) {
   return ref.watch(commandeRepositoryProvider).getMesCommandes();
 });
 
-/// Une commande précise, par son numéro.
 final commandeProvider =
     FutureProvider.family<Commande?, String>((ref, numero) {
   return ref.watch(commandeRepositoryProvider).getParNumero(numero);
 });
 
-/// Accès aux commandes.
-///
-/// TODO(backend): remplacer les données simulées par les appels API. La forme
-/// des méthodes est déjà celle attendue côté écrans, seule l'implémentation
-/// changera.
 class CommandeRepository {
+  CommandeRepository(this._client);
+
+  final BffClient _client;
+
   Future<List<Commande>> getMesCommandes() async {
-    await Future<void>.delayed(const Duration(milliseconds: 300));
-    return _commandesSimulees;
+    final page = await _client.getJson('/orders', query: {
+      'limit': 50,
+      'offset': 0,
+    });
+    return [for (final o in objetsDe(page['items'])) Commande.fromJson(o)];
   }
 
   Future<Commande?> getParNumero(String numero) async {
-    await Future<void>.delayed(const Duration(milliseconds: 200));
-    for (final c in _commandesSimulees) {
-      if (c.numero == numero) return c;
+    try {
+      return Commande.fromJson(await _client.getJson('/orders/$numero'));
+    } on ApiException catch (e) {
+      if (e.kind == KindErreurApi.introuvable) return null;
+      rethrow;
     }
-    return null;
+  }
+
+  Future<Commande> creerDepuisBrouillon({
+    required BrouillonCommande brouillon,
+    required List<String> pieceIds,
+    String? email,
+  }) async {
+    final adresse = <String, dynamic>{
+      'line1': brouillon.quartier.trim().isNotEmpty
+          ? brouillon.quartier.trim()
+          : brouillon.adresseResumee,
+      if (brouillon.ville != null) 'city_id': brouillon.ville!.id,
+      if (brouillon.region != null) 'region_id': brouillon.region!.id,
+      if (brouillon.quartier.trim().isNotEmpty)
+        'neighbourhood': brouillon.quartier.trim(),
+    };
+
+    final json = await _client.postJson('/orders', data: {
+      'piece_ids': pieceIds,
+      'customer_name': brouillon.nomComplet,
+      'customer_phone': brouillon.telephone,
+      if (email != null && email.isNotEmpty) 'customer_email': email,
+      'address': adresse,
+      if (brouillon.codePrivilege.isNotEmpty)
+        'privilege_code': brouillon.codePrivilege,
+    });
+    return Commande.fromJson(json);
   }
 }
-
-final List<Commande> _commandesSimulees = [
-  Commande(
-    numero: 'CE-2641',
-    statut: StatutCommande.livree,
-    dateDepot: DateTime(2026, 7, 8, 15, 30),
-    livraison: 3500,
-    adresseLivraison: 'YAOUNDE : Rond point Bastos',
-    lignes: const [
-      LigneCommande(
-        articleId: '1',
-        maison: 'Maison Coco Chanel',
-        nom: 'Robe Elégante Durable',
-        prix: 38500,
-        etat: 'Excellent',
-        imageUrl:
-            'https://images.unsplash.com/photo-1539008835657-9e8e9680c956?w=600&q=80',
-      ),
-      LigneCommande(
-        articleId: '2',
-        maison: 'Maison Coco Chanel',
-        nom: 'Sac Cuir Chanel',
-        prix: 31000,
-        etat: 'Excellent',
-        imageUrl:
-            'https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=600&q=80',
-      ),
-    ],
-  ),
-  Commande(
-    numero: 'CE-2315',
-    statut: StatutCommande.enRoute,
-    dateDepot: DateTime(2026, 7, 8, 15, 30),
-    estimation: DateTime(2026, 7, 11, 20, 30),
-    livraison: 3500,
-    adresseLivraison: 'YAOUNDE : Rond point Bastos',
-    lignes: const [
-      LigneCommande(
-        articleId: '2',
-        maison: 'Maison Coco Chanel',
-        nom: 'Sac Cuir Chanel',
-        prix: 31000,
-        etat: 'Excellent',
-        imageUrl:
-            'https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=600&q=80',
-      ),
-    ],
-  ),
-  Commande(
-    numero: 'CE-6458',
-    statut: StatutCommande.preparation,
-    dateDepot: DateTime(2026, 7, 9, 9, 10),
-    livraison: 3500,
-    adresseLivraison: 'YAOUNDE : Rond point Bastos',
-    lignes: const [
-      LigneCommande(
-        articleId: '3',
-        maison: 'Maison Zara',
-        nom: 'Veste Tweed Crème',
-        prix: 25000,
-        etat: 'Excellent',
-        imageUrl:
-            'https://images.unsplash.com/photo-1591047139829-d91aecb6caea?w=600&q=80',
-      ),
-    ],
-  ),
-];

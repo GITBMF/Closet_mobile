@@ -12,13 +12,10 @@ import '../../../data/models/user.dart';
 import '../../../data/repositories/auth_repository.dart';
 import '../../../data/repositories/sourceur_repository.dart';
 
-/// Portrait par défaut de la maquette « Mon espace ».
-const String _avatarDefaut = 'assets/avatar_aicha.png';
-
-/// Mon espace — transcription de la maquette profil cliente.
+/// Mon espace � transcription de la maquette `24:39`.
 ///
-/// Titre, avatar photo, carte « Devenir Sourceur », puis six accès
-/// (tuile beige, icône encre, chevron).
+/// Ent�te � l'avatar rond de 74, carte verte � Devenir Sourceur �, puis liste
+/// d'acc�s dont chaque entr�e porte une tuile verte de 48 (rayon 8).
 class EspaceScreen extends ConsumerWidget {
   const EspaceScreen({super.key});
 
@@ -29,7 +26,7 @@ class EspaceScreen extends ConsumerWidget {
         ref.watch<SourceurRepository>(sourceurRepositoryProvider);
 
     return Scaffold(
-      backgroundColor: ClosetColors.beige,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.only(bottom: AppSpacing.p32),
@@ -37,18 +34,11 @@ class EspaceScreen extends ConsumerWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: AppSpacing.p8),
-              Padding(
-                padding: const EdgeInsets.symmetric(
+              const Padding(
+                padding: EdgeInsets.symmetric(
                   horizontal: AppSpacing.p20,
                 ),
-                child: Row(
-                  children: [
-                    const Expanded(child: ClosetTitreEcran('Mon espace')),
-                    _BoutonReglages(
-                      onTap: () => context.push('/espace/confidentialite'),
-                    ),
-                  ],
-                ),
+                child: ClosetTitreEcran('Mon espace'),
               ),
               const SizedBox(height: AppSpacing.p24),
               Padding(
@@ -57,7 +47,9 @@ class EspaceScreen extends ConsumerWidget {
                 ),
                 child: _EnTeteProfil(
                   user: user,
-                  onEditer: () => context.push('/espace/infos'),
+                  onEditer: () => context.push(
+                    user == null ? '/auth' : '/espace/infos',
+                  ),
                 ),
               ),
               const SizedBox(height: AppSpacing.p24),
@@ -76,8 +68,9 @@ class EspaceScreen extends ConsumerWidget {
               _EntreeEspace(
                 icone: Icons.inventory_2_outlined,
                 label: 'Mes commandes',
-                premier: true,
-                onTap: () => context.push('/espace/commandes'),
+                onTap: () => user == null
+                    ? context.push('/auth')
+                    : context.push('/espace/commandes'),
               ),
               _EntreeEspace(
                 icone: Icons.favorite_border,
@@ -87,23 +80,35 @@ class EspaceScreen extends ConsumerWidget {
               _EntreeEspace(
                 icone: Icons.location_on_outlined,
                 label: 'Mes adresses',
-                onTap: () => context.push('/espace/adresses'),
+                onTap: () => user == null
+                    ? context.push('/auth')
+                    : context.push('/espace/adresses'),
               ),
               _EntreeEspace(
                 icone: Icons.person_outline,
                 label: 'Mes informations',
-                onTap: () => context.push('/espace/infos'),
+                onTap: () => context.push(
+                  user == null ? '/auth' : '/espace/infos',
+                ),
               ),
               _EntreeEspace(
                 icone: Icons.notifications_none_rounded,
                 label: 'Mes notifications',
                 onTap: () => context.push('/espace/alertes'),
               ),
-              _EntreeEspace(
-                icone: Icons.logout_rounded,
-                label: 'Logout',
-                onTap: () => context.push('/espace/deconnexion'),
-              ),
+              const _BasculeTheme(),
+              if (user == null)
+                _EntreeEspace(
+                  icone: Icons.login_rounded,
+                  label: 'Se connecter / S’inscrire',
+                  onTap: () => context.push('/auth'),
+                )
+              else
+                _EntreeEspace(
+                  icone: Icons.logout_rounded,
+                  label: 'Logout',
+                  onTap: () => context.push('/espace/deconnexion'),
+                ),
             ],
           ),
         ),
@@ -112,7 +117,8 @@ class EspaceScreen extends ConsumerWidget {
   }
 }
 
-/// Bouton circulaire des en-têtes de l'espace cliente.
+/// Bouton rond de r�glages, en haut � droite.
+/// Bouton circulaire des en-t�tes de l'espace cliente.
 class EspaceBoutonRond extends StatelessWidget {
   const EspaceBoutonRond({
     super.key,
@@ -136,7 +142,7 @@ class EspaceBoutonRond extends StatelessWidget {
           width: 42,
           height: 42,
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: ClosetColors.blanc,
             shape: BoxShape.circle,
             border: Border.all(
               color: ClosetColors.fond300,
@@ -150,22 +156,7 @@ class EspaceBoutonRond extends StatelessWidget {
   }
 }
 
-class _BoutonReglages extends StatelessWidget {
-  const _BoutonReglages({required this.onTap});
-
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return EspaceBoutonRond(
-      icone: Icons.tune,
-      label: 'Réglages',
-      onTap: onTap,
-    );
-  }
-}
-
-/// Avatar photo, nom Cormorant, ancienneté, pastille d'édition verte.
+/// Avatar de 74, nom en Cormorant, ancienneté, et pastille d'édition.
 class _EnTeteProfil extends StatelessWidget {
   const _EnTeteProfil({required this.user, required this.onEditer});
 
@@ -175,7 +166,7 @@ class _EnTeteProfil extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final nom = user == null
-        ? 'Aïcha N.'
+        ? 'Invité'
         : '${user!.firstName} ${user!.lastName.isEmpty ? '' : '${user!.lastName[0]}.'}'
             .trim();
 
@@ -212,7 +203,7 @@ class _EnTeteProfil extends StatelessWidget {
                 user == null
                     ? 'Connectez-vous pour retrouver vos pièces'
                     : 'Membre du dressing depuis mars 2026',
-                maxLines: 2,
+                maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: ClosetTextStyles.meta.copyWith(
                   letterSpacing: -0.20,
@@ -237,7 +228,7 @@ class _EnTeteProfil extends StatelessWidget {
               child: const Icon(
                 Icons.edit_outlined,
                 size: 15,
-                color: Colors.white,
+                color: ClosetColors.blanc,
               ),
             ),
           ),
@@ -247,44 +238,7 @@ class _EnTeteProfil extends StatelessWidget {
   }
 }
 
-class _PortraitEspace extends StatelessWidget {
-  const _PortraitEspace({required this.user});
-
-  final ClosetUser? user;
-
-  @override
-  Widget build(BuildContext context) {
-    final chemin = user?.avatarPath;
-    final fichier = chemin == null ? null : File(chemin);
-    if (fichier != null && fichier.existsSync()) {
-      return Image.file(
-        fichier,
-        width: 74,
-        height: 74,
-        fit: BoxFit.cover,
-      );
-    }
-    return Image.asset(
-      _avatarDefaut,
-      width: 74,
-      height: 74,
-      fit: BoxFit.cover,
-      errorBuilder: (_, _, _) => Container(
-        width: 74,
-        height: 74,
-        color: ClosetColors.emeraude100,
-        alignment: Alignment.center,
-        child: const Icon(
-          Icons.person,
-          size: 34,
-          color: ClosetColors.taupe,
-        ),
-      ),
-    );
-  }
-}
-
-/// Carte verte invitant à rejoindre le programme sourceur.
+/// Carte verte 352 � 97 invitant � rejoindre le programme sourceur.
 class _CarteSourceur extends StatelessWidget {
   const _CarteSourceur({required this.dejaInscrit, required this.onTap});
 
@@ -318,7 +272,7 @@ class _CarteSourceur extends StatelessWidget {
                       borderRadius: BorderRadius.circular(AppRadius.vignette),
                     ),
                     child: Text(
-                      'NOUVEAU',
+                      'Nouveau',
                       style: ClosetTextStyles.attribut.copyWith(
                         fontWeight: FontWeight.w600,
                         letterSpacing: 0.4,
@@ -342,16 +296,14 @@ class _CarteSourceur extends StatelessWidget {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  dejaInscrit
-                      ? 'Retrouvez vos dépôts, vos revenus et votre atelier.'
-                      : 'Confiez vos pièces d’exception et rejoignez notre '
-                          'cercle privé de curatrices',
+                  'Confiez vos pièces d’exception et rejoignez notre cercle '
+                  'privé des meilleurs stylistes.',
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: ClosetTextStyles.attribut.copyWith(
                     fontWeight: FontWeight.w300,
                     letterSpacing: 0.16,
-                    color: Colors.white,
+                    color: ClosetColors.blanc,
                   ),
                 ),
               ],
@@ -369,7 +321,7 @@ class _CarteSourceur extends StatelessWidget {
                 onTap: onTap,
                 child: Center(
                   child: Text(
-                    dejaInscrit ? 'MON ATELIER' : 'REJOINDRE LE CERCLE',
+                    dejaInscrit ? 'Mon espace' : 'Rejoindre le cercle',
                     textAlign: TextAlign.center,
                     maxLines: 2,
                     style: ClosetTextStyles.micro.copyWith(
@@ -388,64 +340,98 @@ class _CarteSourceur extends StatelessWidget {
   }
 }
 
-/// Entrée : tuile beige, icône encre, libellé, chevron. Filet entre les lignes.
+/// Entr�e de liste : tuile verte de 48 (rayon 8), libell�, chevron.
 class _EntreeEspace extends StatelessWidget {
   const _EntreeEspace({
     required this.icone,
     required this.label,
     required this.onTap,
-    this.premier = false,
   });
 
   final IconData icone;
   final String label;
   final VoidCallback onTap;
-  final bool premier;
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        if (!premier)
-          const Divider(
-            height: AppStroke.fin,
-            thickness: AppStroke.fin,
-            color: ClosetColors.ligne,
-            indent: 24,
-            endIndent: 24,
-          ),
-        InkWell(
-          onTap: onTap,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppSpacing.p24,
-              vertical: AppSpacing.p12,
-            ),
-            child: Row(
-              children: [
-                Container(
-                  width: 40,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    color: ClosetColors.neutre200,
-                    borderRadius: BorderRadius.circular(AppRadius.carte),
-                  ),
-                  child: Icon(icone, size: 18, color: ClosetColors.noir),
-                ),
-                const SizedBox(width: AppSpacing.p16),
-                Expanded(
-                  child: Text(label, style: ClosetTextStyles.libelle),
-                ),
-                const Icon(
-                  Icons.chevron_right,
-                  size: 18,
-                  color: ClosetColors.noir,
-                ),
-              ],
-            ),
-          ),
+    return InkWell(
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.p24,
+          vertical: AppSpacing.p12,
         ),
-      ],
+        child: Row(
+          children: [
+            Container(
+              width: 48,
+              height: 48,
+              decoration: BoxDecoration(
+                color: ClosetColors.vert,
+                borderRadius: BorderRadius.circular(AppRadius.carte),
+              ),
+              child: Icon(icone, size: 18, color: ClosetColors.blanc),
+            ),
+            const SizedBox(width: AppSpacing.p16),
+            Expanded(
+              child: Text(
+                label,
+                style: ClosetTextStyles.libelle,
+              ),
+            ),
+            const Icon(
+              Icons.chevron_right,
+              size: 18,
+              color: ClosetColors.taupe,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Interrupteur clair / sombre — demandé côté cliente, hors maquette Figma.
+class _BasculeTheme extends ConsumerWidget {
+  const _BasculeTheme();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final sombre = ref.watch<ThemeMode>(themeModeProvider) == ThemeMode.dark;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.p24,
+        vertical: AppSpacing.p12,
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 48,
+            height: 48,
+            decoration: BoxDecoration(
+              color: ClosetColors.vert,
+              borderRadius: BorderRadius.circular(AppRadius.carte),
+            ),
+            child: Icon(
+              sombre ? Icons.dark_mode_outlined : Icons.light_mode_outlined,
+              size: 18,
+              color: ClosetColors.blanc,
+            ),
+          ),
+          const SizedBox(width: AppSpacing.p16),
+          Expanded(
+            child: Text('Thème sombre', style: ClosetTextStyles.libelle),
+          ),
+          Switch(
+            value: sombre,
+            activeThumbColor: ClosetColors.vert,
+            onChanged: (_) => ref
+                .read<ThemeModeNotifier>(themeModeProvider.notifier)
+                .toggleTheme(),
+          ),
+        ],
+      ),
     );
   }
 }

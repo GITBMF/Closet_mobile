@@ -176,8 +176,12 @@ class _Case extends StatelessWidget {
       height: 62,
       alignment: Alignment.center,
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(8),
+        color: rempli || actif ? ClosetColors.blanc : ClosetColors.caseVide,
+        borderRadius: BorderRadius.circular(4),
+        border: Border.all(
+          color: actif ? ClosetColors.fond300 : ClosetColors.caseVide,
+          width: AppStroke.fin,
+        ),
       ),
       child: Text(
         rempli ? chiffre! : (actif ? '|' : ''),

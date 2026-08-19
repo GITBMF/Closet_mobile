@@ -1,0 +1,6 @@
+y= 3781 x=18916  Vérification approuvée !                                                EB Garamond 700/15.0pt       29:76
+y= 3885 x=18842  Felicitation votre adhesion a été approuvée avec succès !               EB Garamond 600/22.0pt       29:67
+y= 3969 x=18891  Votre pièce sera préparée avec soin et  / expédiée très prochainement   Lato 500/12.0pt              29:68
+y= 4066 x=18913  Confirmation envoyée sur WhatsApp                                       Lato 300/10.0pt              29:70
+y= 4116 x=18908  Entrer dans mon espace sourceur                                         Lato 500/12.0pt              29:72
+y= 4184 x=18942  Poursuivre ma visite                                                    Lato 500/12.0pt              29:74

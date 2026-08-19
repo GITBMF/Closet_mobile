@@ -1,0 +1,225 @@
+﻿
+y=   92 x=  402  Application Background                                                  Plus Jakarta Sans 600/12.0pt 
+1:855
+y=  110 x=   57  Color                                                                   Plus Jakarta Sans 800/40.0pt 
+1:841
+y=  176 x=   57  A color palette is simply a set of colors that work well together, com  Plus Jakarta Sans 400/16.0pt 
+1:843
+y=  221 x=  410  100                                                                     Inter 500/12.0pt             
+1:860
+y=  221 x=  538  200                                                                     Inter 500/12.0pt             
+1:865
+y=  221 x=  666  300                                                                     Inter 500/12.0pt             
+1:870
+y=  221 x=  794  400                                                                     Inter 500/12.0pt             
+1:875
+y=  221 x=  922  500                                                                     Inter 500/12.0pt             
+1:880
+y=  221 x= 1050  10                                                                      Inter 500/12.0pt             
+1:885
+y=  241 x=  410  #f3ebdd                                                                 Inter 400/9.0pt              
+1:861
+y=  241 x=  538  #e0cba7                                                                 Inter 400/9.0pt              
+1:866
+y=  241 x=  666  #cdab71                                                                 Inter 400/9.0pt              
+1:871
+y=  241 x=  794  #b58a40                                                                 Inter 400/9.0pt              
+1:876
+y=  241 x=  922  #7f612d                                                                 Inter 400/9.0pt              
+1:881
+y=  241 x= 1050  #f3ebdd                                                                 Inter 400/9.0pt              
+1:886
+y=  272 x=   57  Primary colors : Your brand color defines the interface's feel and eli  Plus Jakarta Sans 400/16.0pt 
+1:845
+y=  314 x=  402  Emerald Green                                                           Plus Jakarta Sans 600/12.0pt 
+1:888
+y=  368 x=   57  Neutral colors : Gray is foundational in UI design, used for text, for  Plus Jakarta Sans 400/16.0pt 
+1:847
+y=  443 x=  410  100                                                                     Inter 500/12.0pt             
+1:893
+y=  443 x=  538  200                                                                     Inter 500/12.0pt             
+1:898
+y=  443 x=  666  300                                                                     Inter 500/12.0pt             
+1:903
+y=  443 x=  794  400                                                                     Inter 500/12.0pt             
+1:908
+y=  443 x=  922  500                                                                     Inter 500/12.0pt             
+1:913
+y=  443 x= 1050  10                                                                      Inter 500/12.0pt             
+1:918
+y=  444 x=   57  Accent colors :  Secondary to the primary color, these grab attention   Plus Jakarta Sans 400/16.0pt 
+1:849
+y=  463 x=  410  #a0d0bd                                                                 Inter 400/9.0pt              
+1:894
+y=  463 x=  538  #71b89c                                                                 Inter 400/9.0pt              
+1:899
+y=  463 x=  666  #4b9779                                                                 Inter 400/9.0pt              
+1:904
+y=  463 x=  794  #346753                                                                 Inter 400/9.0pt              
+1:909
+y=  463 x=  922  #1c382d                                                                 Inter 400/9.0pt              
+1:914
+y=  463 x= 1050  #1c382d                                                                 Inter 400/9.0pt              
+1:919
+y=  536 x=  402  Neutral                                                                 Plus Jakarta Sans 600/12.0pt 
+1:921
+y=  540 x=   57  Feedback colors :  Highlight semantic states to provide visual feedbac  Plus Jakarta Sans 400/16.0pt 
+1:851
+y=  665 x=  410  100                                                                     Inter 500/12.0pt             
+1:926
+y=  665 x=  538  200                                                                     Inter 500/12.0pt             
+1:931
+y=  665 x=  666  300                                                                     Inter 500/12.0pt             
+1:936
+y=  665 x=  794  400                                                                     Inter 500/12.0pt             
+1:941
+y=  665 x=  922  500                                                                     Inter 500/12.0pt             
+1:946
+y=  665 x= 1050  600                                                                     Inter 500/12.0pt             
+1:951
+y=  665 x= 1178  700                                                                     Inter 500/12.0pt             
+1:956
+y=  665 x= 1306  800                                                                     Inter 500/12.0pt             
+1:961
+y=  665 x= 1434  900                                                                     Inter 500/12.0pt             
+1:966
+y=  665 x= 1562  1000                                                                    Inter 500/12.0pt             
+1:971
+y=  665 x= 1690  10                                                                      Inter 500/12.0pt             
+1:976
+y=  685 x=  410  #fbf7ef                                                                 Inter 400/9.0pt              
+1:927
+y=  685 x=  538  #efe2c9                                                                 Inter 400/9.0pt              
+1:932
+y=  685 x=  666  #e1cda6                                                                 Inter 400/9.0pt              
+1:937
+y=  685 x=  794  #d0b685                                                                 Inter 400/9.0pt              
+1:942
+y=  685 x=  922  #bc9f67                                                                 Inter 400/9.0pt              
+1:947
+y=  685 x= 1050  #a08550                                                                 Inter 400/9.0pt              
+1:952
+y=  685 x= 1178  #7a6844                                                                 Inter 400/9.0pt              
+1:957
+y=  685 x= 1306  #564b36                                                                 Inter 400/9.0pt              
+1:962
+y=  685 x= 1434  #353025                                                                 Inter 400/9.0pt              
+1:967
+y=  685 x= 1562  #171512                                                                 Inter 400/9.0pt              
+1:972
+y=  685 x= 1690  #171512                                                                 Inter 400/9.0pt              
+1:977
+y=  758 x=  402  Red                                                                     Plus Jakarta Sans 600/12.0pt 
+1:979
+y=  887 x=  410  100                                                                     Inter 500/12.0pt             
+1:984
+y=  887 x=  538  200                                                                     Inter 500/12.0pt             
+1:989
+y=  887 x=  666  10                                                                      Inter 500/12.0pt             
+1:994
+y=  907 x=  410  #fb3748                                                                 Inter 400/9.0pt              
+1:985
+y=  907 x=  538  #d00416                                                                 Inter 400/9.0pt              
+1:990
+y=  907 x=  666  #fb3748                                                                 Inter 400/9.0pt              
+1:995
+y=  980 x=  402  Yellow                                                                  Plus Jakarta Sans 600/12.0pt 
+1:997
+y= 1109 x=  410  100                                                                     Inter 500/12.0pt             
+1:1002
+y= 1109 x=  538  200                                                                     Inter 500/12.0pt             
+1:1007
+y= 1109 x=  666  10                                                                      Inter 500/12.0pt             
+1:1012
+y= 1129 x=  410  #ffdb43                                                                 Inter 400/9.0pt              
+1:1003
+y= 1129 x=  538  #dfb400                                                                 Inter 400/9.0pt              
+1:1008
+y= 1129 x=  666  #ffdb43                                                                 Inter 400/9.0pt              
+1:1013
+y= 1202 x=  402  Green                                                                   Plus Jakarta Sans 600/12.0pt 
+1:1015
+y= 1331 x=  410  100                                                                     Inter 500/12.0pt             
+1:1020
+y= 1331 x=  538  200                                                                     Inter 500/12.0pt             
+1:1025
+y= 1331 x=  666  10                                                                      Inter 500/12.0pt             
+1:1030
+y= 1351 x=  410  #84ebb4                                                                 Inter 400/9.0pt              
+1:1021
+y= 1351 x=  538  #1fc16b                                                                 Inter 400/9.0pt              
+1:1026
+y= 1351 x=  666  #1fc16b                                                                 Inter 400/9.0pt              
+1:1031
+y= 1424 x=  402  Terre Br├╗l├®e                                                            Plus Jakarta Sans 
+600/12.0pt 1:1033
+y= 1553 x=  410  100                                                                     Inter 500/12.0pt             
+1:1038
+y= 1553 x=  538  200                                                                     Inter 500/12.0pt             
+1:1043
+y= 1553 x=  666  10                                                                      Inter 500/12.0pt             
+1:1048
+y= 1573 x=  410  #d06c60                                                                 Inter 400/9.0pt              
+1:1039
+y= 1573 x=  538  #9b3a2e                                                                 Inter 400/9.0pt              
+1:1044
+y= 1573 x=  666  #9b3a2e                                                                 Inter 400/9.0pt              
+1:1049
+y= 1646 x=  402  Night Green                                                             Plus Jakarta Sans 600/12.0pt 
+1:1051
+y= 1775 x=  410  100                                                                     Inter 500/12.0pt             
+1:1056
+y= 1775 x=  538  200                                                                     Inter 500/12.0pt             
+1:1061
+y= 1775 x=  666  10                                                                      Inter 500/12.0pt             
+1:1066
+y= 1795 x=  410  #45896f                                                                 Inter 400/9.0pt              
+1:1057
+y= 1795 x=  538  #12241d                                                                 Inter 400/9.0pt              
+1:1062
+y= 1795 x=  666  #12241d                                                                 Inter 400/9.0pt              
+1:1067
+y= 1868 x=  402  Dor├® Lumi├¿re                                                            Plus Jakarta Sans 
+600/12.0pt 1:1069
+y= 1997 x=  410  100                                                                     Inter 500/12.0pt             
+1:1074
+y= 1997 x=  538  200                                                                     Inter 500/12.0pt             
+1:1079
+y= 1997 x=  666  10                                                                      Inter 500/12.0pt             
+1:1084
+y= 2017 x=  410  #c6a24b                                                                 Inter 400/9.0pt              
+1:1075
+y= 2017 x=  538  #91742e                                                                 Inter 400/9.0pt              
+1:1080
+y= 2017 x=  666  #c6a24b                                                                 Inter 400/9.0pt              
+1:1085
+y= 2090 x=  402  Dor├® Encre                                                              Plus Jakarta Sans 600/12.0pt 
+1:1087
+y= 2219 x=  410  100                                                                     Inter 500/12.0pt             
+1:1092
+y= 2219 x=  538  200                                                                     Inter 500/12.0pt             
+1:1097
+y= 2219 x=  666  10                                                                      Inter 500/12.0pt             
+1:1102
+y= 2239 x=  410  #d4a73d                                                                 Inter 400/9.0pt              
+1:1093
+y= 2239 x=  538  #7e611c                                                                 Inter 400/9.0pt              
+1:1098
+y= 2239 x=  666  #7e611c                                                                 Inter 400/9.0pt              
+1:1103
+y= 2312 x=  402  Gris Taupe                                                              Plus Jakarta Sans 600/12.0pt 
+1:1105
+y= 2441 x=  410  100                                                                     Inter 500/12.0pt             
+1:1110
+y= 2441 x=  538  200                                                                     Inter 500/12.0pt             
+1:1115
+y= 2441 x=  666  10                                                                      Inter 500/12.0pt             
+1:1120
+y= 2461 x=  410  #a49680                                                                 Inter 400/9.0pt              
+1:1111
+y= 2461 x=  538  #6b5f4c                                                                 Inter 400/9.0pt              
+1:1116
+y= 2461 x=  666  #6b5f4c                                                                 Inter 400/9.0pt              
+1:1121
+
+

@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/theme/app_spacing.dart';
@@ -67,7 +67,7 @@ class _ArcheReception extends StatelessWidget {
         AppSpacing.p24,
       ),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: ClosetColors.blanc,
         border: Border.all(color: ClosetColors.fond300, width: AppStroke.fin),
         borderRadius: const BorderRadius.vertical(top: Radius.circular(159)),
       ),
@@ -83,7 +83,7 @@ class _ArcheReception extends StatelessWidget {
             child: const Icon(
               Icons.inventory_2_outlined,
               size: 40,
-              color: Colors.white,
+              color: ClosetColors.blanc,
             ),
           ),
           const SizedBox(height: AppSpacing.p16),

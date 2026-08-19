@@ -7,31 +7,18 @@ import '../../../core/theme/closet_colors.dart';
 import '../../../core/theme/closet_text_styles.dart';
 import '../../../core/widgets/closet_app_bar.dart';
 import '../../../core/widgets/closet_chip.dart';
+import '../../../core/widgets/closet_feedback.dart';
 import '../../../core/widgets/closet_sections.dart';
+import '../../../core/widgets/etat_ecran.dart';
 import '../../../core/widgets/piece_card.dart';
 import '../../../data/models/article.dart';
 import '../../../data/repositories/catalog_repository.dart';
+import '../../../data/repositories/wishlist_repository.dart';
 import '../collections/collections_screen.dart';
 
-final dressingDataProvider = FutureProvider<Map<String, dynamic>>((ref) async {
-  final repo = ref.watch<CatalogRepository>(catalogRepositoryProvider);
-  final featured = await repo.getFeatured();
-  final allArticles = await repo.getCatalog();
-
-  final Map<String, List<Article>> grouped = {};
-  for (final category in CatalogRepository.categories) {
-    final list = allArticles
-        .where((a) => a.universe.toLowerCase() == category.toLowerCase())
-        .toList();
-    if (list.isNotEmpty) {
-      grouped[category] = list;
-    }
-  }
-
-  return {
-    'featured': featured,
-    'grouped': grouped,
-  };
+/// Contenu de l'accueil, branché sur `GET /pieces` + `GET /showcasing/home`.
+final dressingDataProvider = FutureProvider<AccueilDressing>((ref) {
+  return ref.watch<CatalogRepository>(catalogRepositoryProvider).getAccueil();
 });
 
 /// Accueil « dressing » — transcription de la maquette Figma `11:30` / `11:250`.
@@ -46,37 +33,43 @@ class DressingScreen extends ConsumerWidget {
     final asyncData = ref.watch(dressingDataProvider);
 
     return Scaffold(
-      backgroundColor: ClosetColors.beige,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: const ClosetAppBar(),
       body: asyncData.when(
-        data: (data) => _CorpsAccueil(
-          featured: data['featured'] as Article,
-          grouped: data['grouped'] as Map<String, List<Article>>,
+        data: (data) {
+          if (data.estVide) {
+            return const ClosetListeVide(
+              message: 'Le dressing n’a renvoyé aucune pièce.',
+            );
+          }
+          return _CorpsAccueil(accueil: data);
+        },
+        loading: () => const EtatEcran.chargement(),
+        error: (e, _) => EtatEcran.erreur(
+          erreur: e,
+          onRetry: () => ref.invalidate(dressingDataProvider),
         ),
-        loading: () => const Center(
-          child: CircularProgressIndicator(color: ClosetColors.dore),
-        ),
-        error: (e, _) => const Center(child: Text('Erreur de chargement')),
       ),
     );
   }
 }
 
 class _CorpsAccueil extends ConsumerWidget {
-  const _CorpsAccueil({required this.featured, required this.grouped});
+  const _CorpsAccueil({required this.accueil});
 
-  final Article featured;
-  final Map<String, List<Article>> grouped;
+  final AccueilDressing accueil;
 
   /// Marge latérale de l'écran dans la maquette.
   static const double _marge = 20;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final tous = [for (final liste in grouped.values) ...liste];
-    final nouveautes = tous.take(4).toList();
-    final coupsDeCoeur = tous.skip(4).take(4).toList();
-    final univers = grouped.keys.toList();
+    final featured = accueil.pieceDeLaSemaine;
+    final hero = accueil.hero ?? featured;
+    final nouveautes = accueil.nouveautes;
+    final coupsDeCoeur = accueil.coupsDeCoeur;
+    final univers = accueil.univers;
+    final maisons = accueil.maisons;
 
     void ouvrirUnivers(String categorie) {
       ref
@@ -91,32 +84,35 @@ class _CorpsAccueil extends ConsumerWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const SizedBox(height: 23),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: _marge),
-            child: _CartePieceDeLaSemaine(
-              article: featured,
-              onTap: () => context.push('/product/${featured.id}'),
+          if (featured != null)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: _marge),
+              child: _CartePieceDeLaSemaine(
+                article: featured,
+                onTap: () => context.push('/product/${featured.id}'),
+              ),
             ),
-          ),
-          const SizedBox(height: AppSpacing.p8),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 19),
-            child: _CarteALaUne(
-              article: featured,
-              onTap: () => context.push('/product/${featured.id}'),
+          if (hero != null) ...[
+            const SizedBox(height: AppSpacing.p8),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 19),
+              child: _CarteALaUne(
+                article: hero,
+                onTap: () => context.push('/product/${hero.id}'),
+              ),
             ),
-          ),
-          const SizedBox(height: 33),
+          ],
           if (univers.isNotEmpty) ...[
+            const SizedBox(height: 33),
             const Padding(
               padding: EdgeInsets.symmetric(horizontal: 19),
               child: ClosetSurtitre('explorer par univers'),
             ),
             const SizedBox(height: AppSpacing.p16),
             _RangeeUnivers(univers: univers, onTap: ouvrirUnivers),
-            const SizedBox(height: AppSpacing.p20),
           ],
           if (nouveautes.isNotEmpty) ...[
+            const SizedBox(height: AppSpacing.p20),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 21),
               child: ClosetEnTeteSection(
@@ -141,7 +137,7 @@ class _CorpsAccueil extends ConsumerWidget {
             const SizedBox(height: AppSpacing.p16),
             _GrilleArticles(articles: coupsDeCoeur, marge: 21),
           ],
-          if (univers.isNotEmpty) ...[
+          if (maisons.isNotEmpty) ...[
             const SizedBox(height: AppSpacing.p24),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 19),
@@ -152,9 +148,16 @@ class _CorpsAccueil extends ConsumerWidget {
               ),
             ),
             const SizedBox(height: AppSpacing.p16),
-            _RangeeUnivers(univers: univers, onTap: ouvrirUnivers),
+            _RangeeUnivers(
+              univers: maisons,
+              premiere: false,
+              onTap: (maison) {
+                ref.read(filterBrandProvider.notifier).setBrand(maison);
+                context.go('/collections');
+              },
+            ),
           ],
-          const ClosetSignature(),
+          const SizedBox(height: AppSpacing.p24),
         ],
       ),
     );
@@ -197,7 +200,9 @@ class _CartePieceDeLaSemaine extends StatelessWidget {
             article.title,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: ClosetTextStyles.accroche.copyWith(color: Colors.white),
+            style: ClosetTextStyles.accroche.copyWith(
+              color: ClosetColors.blanc,
+            ),
           ),
           const SizedBox(height: AppSpacing.p4),
           Text(
@@ -237,14 +242,18 @@ class _CartePieceDeLaSemaine extends StatelessWidget {
 }
 
 /// Visuel à la une : carte de 350 × 184 dont l'image occupe 326 × 160.
-class _CarteALaUne extends StatelessWidget {
+class _CarteALaUne extends ConsumerWidget {
   const _CarteALaUne({required this.article, required this.onTap});
 
   final Article article;
   final VoidCallback onTap;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final favorite = ref
+        .watch(wishlistListProvider)
+        .any((a) => a.id == article.id);
+
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -264,12 +273,13 @@ class _CarteALaUne extends StatelessWidget {
             ClipRRect(
               borderRadius: BorderRadius.circular(AppRadius.carte),
               child: article.imageUrls.isEmpty
-                  ? const ColoredBox(color: Color(0xFFE5E5E5))
+                  ? const ColoredBox(color: ClosetColors.gabaritImageClair)
                   : Image.network(
                       article.imageUrls.first,
                       fit: BoxFit.cover,
-                      errorBuilder: (_, _, _) =>
-                          const ColoredBox(color: Color(0xFFE5E5E5)),
+                      errorBuilder: (_, _, _) => const ColoredBox(
+                        color: ClosetColors.gabaritImageClair,
+                      ),
                     ),
             ),
             Positioned(
@@ -292,10 +302,15 @@ class _CarteALaUne extends StatelessWidget {
                 ),
               ),
             ),
-            const Positioned(
+            Positioned(
               top: AppSpacing.p12,
               right: AppSpacing.p8,
-              child: BoutonCoeur(actif: false),
+              child: BoutonCoeur(
+                actif: favorite,
+                onTap: () => ref
+                    .read(wishlistProvider.notifier)
+                    .toggleWishlist(article),
+              ),
             ),
           ],
         ),
@@ -306,32 +321,38 @@ class _CarteALaUne extends StatelessWidget {
 
 
 
-/// Rangée horizontale de puces d'univers. La première (« Tout l'univers »)
-/// est active dans la maquette.
+/// Rangée horizontale de puces. « Tout l'univers » n'est ajouté que si
+/// [premiere] est vrai et que le backend a renvoyé des univers.
 class _RangeeUnivers extends StatelessWidget {
-  const _RangeeUnivers({required this.univers, required this.onTap});
+  const _RangeeUnivers({
+    required this.univers,
+    required this.onTap,
+    this.premiere = true,
+  });
 
   final List<String> univers;
   final ValueChanged<String> onTap;
+  final bool premiere;
 
   @override
   Widget build(BuildContext context) {
+    final extra = premiere ? 1 : 0;
     return SizedBox(
       height: 30,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: 20),
-        itemCount: univers.length + 1,
+        itemCount: univers.length + extra,
         separatorBuilder: (_, _) => const SizedBox(width: AppSpacing.p12),
         itemBuilder: (context, i) {
-          if (i == 0) {
+          if (premiere && i == 0) {
             return ClosetChip(
               label: 'Tout l’univers',
               isActive: true,
               onTap: () => context.go('/collections'),
             );
           }
-          final categorie = univers[i - 1];
+          final categorie = univers[i - extra];
           return ClosetChip(
             label: categorie,
             onTap: () => onTap(categorie),

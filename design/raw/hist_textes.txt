@@ -1,0 +1,21 @@
+y= 3472 x=22158  espace sourceur                                                         Lato 500/10.0pt              32:1286
+y= 3485 x=22158  Historique                                                              Cormorant 600/22.0pt         32:1285
+y= 3551 x=22110  Transactions                                                            Lato 500/12.0pt              32:1377
+y= 3553 x=22406  Voir tout                                                               Lato 400/8.0pt               32:1387
+y= 3605 x=22175  Retrait approuvé                                                        Lato 500/12.0pt              32:1138
+y= 3605 x=22339  32.000 F                                                                Lato 500/12.0pt              32:1146
+y= 3626 x=22175  Retiré le Lun 10 Jui 2026, 10:30                                        Lato 500/10.0pt              32:1139
+y= 3626 x=22362  20.000 FCFA                                                             Lato 500/10.0pt              32:1147
+y= 3695 x=22175  Retrait approuvé                                                        Lato 500/12.0pt              32:1354
+y= 3695 x=22339  32.000 F                                                                Lato 500/12.0pt              32:1355
+y= 3716 x=22175  Retiré le Lun 10 Jui 2026, 10:30                                        Lato 500/10.0pt              32:1356
+y= 3716 x=22362  20.000 FCFA                                                             Lato 500/10.0pt              32:1357
+y= 3785 x=22175  Retrait approuvé                                                        Lato 500/12.0pt              32:1362
+y= 3785 x=22339  32.000 F                                                                Lato 500/12.0pt              32:1363
+y= 3806 x=22175  Retiré le Lun 10 Jui 2026, 10:30                                        Lato 500/10.0pt              32:1364
+y= 3806 x=22362  20.000 FCFA                                                             Lato 500/10.0pt              32:1365
+y= 3875 x=22175  Retrait approuvé                                                        Lato 500/12.0pt              32:1370
+y= 3875 x=22339  32.000 F                                                                Lato 500/12.0pt              32:1371
+y= 3896 x=22175  Retiré le Lun 10 Jui 2026, 10:30                                        Lato 500/10.0pt              32:1372
+y= 3896 x=22362  20.000 FCFA                                                             Lato 500/10.0pt              32:1373
+y= 4184 x=22218  Effectuer une transaction                                               Lato 600/12.0pt              32:1348

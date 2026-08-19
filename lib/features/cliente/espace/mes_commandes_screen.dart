@@ -5,6 +5,8 @@ import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/closet_colors.dart';
 import '../../../core/theme/closet_text_styles.dart';
+import '../../../core/widgets/closet_feedback.dart';
+import '../../../core/widgets/etat_ecran.dart';
 import '../../../core/widgets/status_badge.dart';
 import '../../../data/models/commande.dart';
 import '../../../data/repositories/commande_repository.dart';
@@ -20,69 +22,45 @@ class MesCommandesScreen extends ConsumerWidget {
     final commandes = ref.watch(mesCommandesProvider);
 
     return Scaffold(
-      backgroundColor: ClosetColors.beige,
-      appBar: EspaceSubAppBar(
-        title: 'Mes commandes',
-        italicTitle: true,
-        highlightTitle: true,
-        onSettingsTap: () => context.push('/espace/confidentialite'),
-      ),
-      body: commandes.when(
-        data: (liste) => liste.isEmpty
-            ? const _AucuneCommande()
-            : ListView.separated(
-                padding: const EdgeInsets.fromLTRB(
-                  AppSpacing.p20,
-                  AppSpacing.p24,
-                  AppSpacing.p20,
-                  AppSpacing.p32,
-                ),
-                itemCount: liste.length,
-                separatorBuilder: (_, _) =>
-                    const SizedBox(height: AppSpacing.p12),
-                itemBuilder: (context, i) => _CarteCommande(
-                  commande: liste[i],
-                  onTap: () => afficherDetailCommande(context, liste[i].numero),
-                ),
-              ),
-        loading: () => const Center(
-          child: CircularProgressIndicator(color: ClosetColors.dore),
-        ),
-        error: (e, _) => const Center(child: Text('Erreur de chargement')),
-      ),
-    );
-  }
-}
-
-class _AucuneCommande extends StatelessWidget {
-  const _AucuneCommande();
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.p32),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      body: SafeArea(
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(
-              Icons.receipt_long_outlined,
-              size: 48,
-              color: ClosetColors.fond300,
+            ClosetPageHeader(
+              titre: 'Mes commandes',
+              onRetour: () => context.pop(),
+              action: SourceurBoutonRond(
+                icone: Icons.notifications_none_rounded,
+                label: 'Notifications',
+                onTap: () => context.push('/espace/alertes'),
+              ),
             ),
-            const SizedBox(height: AppSpacing.p20),
-            Text(
-              'Aucune commande pour l’instant',
-              textAlign: TextAlign.center,
-              style: ClosetTextStyles.titreSection,
-            ),
-            const SizedBox(height: AppSpacing.p12),
-            Text(
-              'Vos commandes apparaîtront ici dès votre première pièce '
-              'adoptée.',
-              textAlign: TextAlign.center,
-              style: ClosetTextStyles.citation.copyWith(
-                color: ClosetColors.taupe,
+            Expanded(
+              child: commandes.when(
+                data: (liste) => liste.isEmpty
+                    ? const ClosetListeVide()
+                    : ListView.separated(
+                        padding: const EdgeInsets.fromLTRB(
+                          AppSpacing.p20,
+                          35,
+                          AppSpacing.p20,
+                          AppSpacing.p32,
+                        ),
+                        itemCount: liste.length,
+                        separatorBuilder: (_, _) =>
+                            const SizedBox(height: 13),
+                        itemBuilder: (context, i) => _CarteCommande(
+                          commande: liste[i],
+                          onTap: () => context.push(
+                            '/espace/commandes/${liste[i].numero}',
+                          ),
+                        ),
+                      ),
+                loading: () => const EtatEcran.chargement(),
+                error: (e, _) => EtatEcran.erreur(
+                  erreur: e,
+                  onRetry: () => ref.invalidate(mesCommandesProvider),
+                ),
               ),
             ),
           ],
@@ -92,6 +70,7 @@ class _AucuneCommande extends StatelessWidget {
   }
 }
 
+/// Carte de commande : 350 × 80, blanche cerclée d'or.
 class _CarteCommande extends StatelessWidget {
   const _CarteCommande({required this.commande, required this.onTap});
 
@@ -109,12 +88,9 @@ class _CarteCommande extends StatelessWidget {
           vertical: AppSpacing.p16,
         ),
         decoration: BoxDecoration(
-          color: Colors.white,
-          border: Border.all(
-            color: ClosetColors.carteBordure,
-            width: AppStroke.fin,
-          ),
-          borderRadius: BorderRadius.circular(AppRadius.bloc),
+          color: ClosetColors.blanc,
+          border: Border.all(color: ClosetColors.fond300, width: AppStroke.fin),
+          borderRadius: BorderRadius.circular(AppRadius.carte),
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -154,9 +130,14 @@ class _CarteCommande extends StatelessWidget {
 
 /// Badge correspondant au statut, libellé en capitales comme la maquette.
 StatusBadge badgeStatutCommande(StatutCommande statut) => switch (statut) {
-      StatutCommande.livree => StatusBadge.livree('LIVRÉE'),
-      StatutCommande.enRoute => StatusBadge.enRoute('EN ROUTE'),
-      StatutCommande.preparation => StatusBadge.preparation('PRÉPARATION'),
+      StatutCommande.livree => StatusBadge.livree(),
+      StatutCommande.enRoute => StatusBadge.enRoute(),
+      StatutCommande.preparation ||
+      StatutCommande.paid ||
+      StatutCommande.pending =>
+        StatusBadge.preparation(),
+      StatutCommande.annulee => StatusBadge.refusee(),
+      StatutCommande.devis => StatusBadge.enAnalyse(),
     };
 
 /// « Déposé le… » pour une commande livrée, estimation sinon.

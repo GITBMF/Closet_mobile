@@ -1,0 +1,88 @@
+13:1182        SECTION       531x527  Bottom Navigation Section  |  fill #444444  stroke #FFFFFF @0.10 w1.0
+  6:2008         FRAME          356x58  Bottom Navigation  |  fill #1C382D  r100.0  horizontal  pad 8.0/8.0/8.0/8.0  gap 20.0
+    6:2009         FRAME           95x42  Notification Button  |  fill #F3F3F3  stroke #CDAB71 w1.0  r36.67  horizontal  pad 11.0/11.0/11.0/11.0  gap 4.0
+      6:2010         FRAME           20x20  fa7-solid:home  |  
+        6:2011         VECTOR          16x16  Vector  |  fill #CDAB71
+      6:2012         TEXT            49x14  Dressing "Dressing"  |  fill #CDAB71  Manrope 500/12.0pt lh14.4 ls-0.24
+    6:2013         FRAME           39x38  Notification Button  |  r36.67  horizontal  pad 11.0/11.0/11.0/11.0  gap 9.17
+      6:2014         FRAME           17x16  Collections Button  |  
+        6:2015         GROUP           17x16  Group 2  |  
+    6:2020         FRAME           42x42  Notification Button  |  r36.67  horizontal  pad 11.0/11.0/11.0/11.0  gap 9.17
+      6:2021         FRAME           20x20  icon-park-outline:like  |  
+        6:2022         VECTOR          17x14  Vector  |  stroke #FFFFFF w1.67
+    6:2023         FRAME           42x42  Notification Button  |  r36.67  horizontal  pad 11.0/11.0/11.0/11.0  gap 9.17
+      6:2024         FRAME           20x20  mage:basket  |  
+        6:2025         VECTOR          15x15  Vector  |  stroke #FFFFFF w1.25
+    6:2026         FRAME           42x42  Notification Button  |  r36.67  horizontal  pad 11.0/11.0/11.0/11.0  gap 9.17
+      6:2027         FRAME           20x20  solar:user-outline  |  
+        6:2028         VECTOR          15x18  Vector  |  fill #FFFFFF
+  6:2029         FRAME          370x58  Bottom Navigation  |  fill #1C382D  r100.0  horizontal  pad 8.0/8.0/8.0/8.0  gap 20.0
+    6:2038         FRAME           42x42  Notification Button  |  r36.67  horizontal  pad 11.0/11.0/11.0/11.0  gap 9.17
+      6:2039         FRAME           20x20  fa7-solid:home  |  
+        6:2040         VECTOR          16x16  Vector  |  stroke #FFFFFF w1.0
+    6:2030         FRAME          106x38  Notification Button  |  fill #F3F3F3  stroke #CDAB71 w1.0  r36.67  horizontal  pad 11.0/11.0/11.0/11.0  gap 4.0
+      6:2031         FRAME           17x16  Collections Button  |  
+        6:2032         GROUP           17x16  Group 2  |  
+      6:2037         TEXT            63x14  Collections "Collections"  |  fill #B58A40  Manrope 500/12.0pt lh14.4 ls-0.24
+    6:2041         FRAME           42x42  Notification Button  |  r36.67  horizontal  pad 11.0/11.0/11.0/11.0  gap 9.17
+      6:2042         FRAME           20x20  icon-park-outline:like  |  
+        6:2043         VECTOR          17x14  Vector  |  stroke #FFFFFF w1.67
+    6:2044         FRAME           42x42  Notification Button  |  r36.67  horizontal  pad 11.0/11.0/11.0/11.0  gap 9.17
+      6:2045         FRAME           20x20  mage:basket  |  
+        6:2046         VECTOR          15x15  Vector  |  stroke #FFFFFF w1.25
+    6:2047         FRAME           42x42  Notification Button  |  r36.67  horizontal  pad 11.0/11.0/11.0/11.0  gap 9.17
+      6:2048         FRAME           20x20  solar:user-outline  |  
+        6:2049         VECTOR          15x18  Vector  |  fill #FFFFFF
+  6:2050         FRAME          351x58  Bottom Navigation  |  fill #1C382D  r100.0  horizontal  pad 8.0/8.0/8.0/8.0  gap 20.0
+    6:2065         FRAME           42x42  Notification Button  |  r36.67  horizontal  pad 11.0/11.0/11.0/11.0  gap 9.17
+      6:2066         FRAME           20x20  fa7-solid:home  |  
+        6:2067         VECTOR          16x16  Vector  |  stroke #FFFFFF w1.0
+    6:2055         FRAME           39x38  Notification Button  |  r36.67  horizontal  pad 11.0/11.0/11.0/11.0  gap 9.17
+      6:2056         FRAME           17x16  Collections Button  |  
+        6:2057         GROUP           17x16  Group 2  |  
+    6:2051         FRAME           90x42  Notification Button  |  fill #F3F3F3  stroke #CDAB71 w1.0  r36.67  horizontal  pad 11.0/11.0/11.0/11.0  gap 4.0
+      6:2052         FRAME           20x20  icon-park-outline:like  |  
+        6:2053         VECTOR          17x14  Vector  |  fill #CDAB71
+      6:2054         TEXT            44x14  Wishlist "Wishlist"  |  fill #B58A40  Manrope 500/12.0pt lh14.4 ls-0.24
+    6:2062         FRAME           42x42  Notification Button  |  r36.67  horizontal  pad 11.0/11.0/11.0/11.0  gap 9.17
+      6:2063         FRAME           20x20  mage:basket  |  
+        6:2064         VECTOR          15x15  Vector  |  stroke #FFFFFF w1.25
+    6:2068         FRAME           42x42  Notification Button  |  r36.67  horizontal  pad 11.0/11.0/11.0/11.0  gap 9.17
+      6:2069         FRAME           20x20  solar:user-outline  |  
+        6:2070         VECTOR          15x18  Vector  |  fill #FFFFFF
+  6:2071         FRAME          359x58  Bottom Navigation  |  fill #1C382D  r100.0  horizontal  pad 8.0/8.0/8.0/8.0  gap 20.0
+    6:2119         FRAME           42x42  Notification Button  |  r36.67  horizontal  pad 11.0/11.0/11.0/11.0  gap 9.17
+      6:2120         FRAME           20x20  fa7-solid:home  |  
+        6:2121         VECTOR          16x16  Vector  |  stroke #FFFFFF w1.0
+    6:2076         FRAME           39x38  Notification Button  |  r36.67  horizontal  pad 11.0/11.0/11.0/11.0  gap 9.17
+      6:2077         FRAME           17x16  Collections Button  |  
+        6:2078         GROUP           17x16  Group 2  |  
+    6:2083         FRAME           42x42  Notification Button  |  r36.67  horizontal  pad 11.0/11.0/11.0/11.0  gap 9.17
+      6:2084         FRAME           20x20  icon-park-outline:like  |  
+        6:2085         VECTOR          17x14  Vector  |  stroke #FFFFFF w1.67
+    6:2072         FRAME           98x42  Notification Button  |  fill #F3F3F3  stroke #CDAB71 w1.0  r36.67  horizontal  pad 11.0/11.0/11.0/11.0  gap 4.0
+      6:2073         FRAME           20x20  mage:basket  |  
+        6:2074         VECTOR          15x15  Vector  |  stroke #CDAB71 w1.25
+      6:2075         TEXT            52x14  Selection "Selection"  |  fill #B58A40  Manrope 500/12.0pt lh14.4 ls-0.24
+    6:2089         FRAME           42x42  Notification Button  |  r36.67  horizontal  pad 11.0/11.0/11.0/11.0  gap 9.17
+      6:2090         FRAME           20x20  solar:user-outline  |  
+        6:2091         VECTOR          15x18  Vector  |  fill #FFFFFF
+  6:2092         FRAME          347x58  Bottom Navigation  |  fill #1C382D  r100.0  horizontal  pad 8.0/8.0/8.0/8.0  gap 20.0
+    6:2115         FRAME           42x42  Notification Button  |  r36.67  horizontal  pad 11.0/11.0/11.0/11.0  gap 9.17
+      6:2116         FRAME           20x20  fa7-solid:home  |  
+        6:2117         VECTOR          16x16  Vector  |  stroke #FFFFFF w1.0
+    6:2099         FRAME           39x38  Notification Button  |  r36.67  horizontal  pad 11.0/11.0/11.0/11.0  gap 9.17
+      6:2100         FRAME           17x16  Collections Button  |  
+        6:2101         GROUP           17x16  Group 2  |  
+    6:2106         FRAME           42x42  Notification Button  |  r36.67  horizontal  pad 11.0/11.0/11.0/11.0  gap 9.17
+      6:2107         FRAME           20x20  icon-park-outline:like  |  
+        6:2108         VECTOR          17x14  Vector  |  stroke #FFFFFF w1.67
+    6:2109         FRAME           42x42  Notification Button  |  r36.67  horizontal  pad 11.0/11.0/11.0/11.0  gap 9.17
+      6:2110         FRAME           20x20  mage:basket  |  
+        6:2111         VECTOR          15x15  Vector  |  stroke #FFFFFF w1.25
+    6:2093         FRAME           86x42  Notification Button  |  fill #F3F3F3  stroke #CDAB71 w1.0  r36.67  horizontal  pad 11.0/11.0/11.0/11.0  gap 4.0
+      6:2094         FRAME           20x20  solar:user-outline  |  
+        6:2095         ELLIPSE          14x8  Ellipse 1  |  fill #CDAB71
+        6:2096         VECTOR          15x18  Vector  |  fill #CDAB71
+        6:2097         ELLIPSE           6x6  Ellipse 2  |  fill #CDAB71
+      6:2098         TEXT            40x14  Espace "Espace"  |  fill #B58A40  Manrope 500/12.0pt lh14.4 ls-0.24

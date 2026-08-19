@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../core/widgets/toasts.dart';
 import 'pin_screen.dart';
 import 'recu_screen.dart';
 import 'traitement_screen.dart';
@@ -13,18 +15,26 @@ enum _EtapeTunnel { pin, traitement, succes, recu }
 ///
 /// Le reçu **doit** venir du backend : son numéro et sa référence sont des
 /// identifiants financiers, ils ne peuvent pas être fabriqués côté client.
+///
+/// [pin] n'est renseigné que pour un retrait sourceur ; il est nul pour un
+/// paiement acheteuse, qui ne passe pas par un code.
 typedef ExecuteurTransaction = Future<RecuTransaction> Function(
   DemandeTransaction demande,
-  String pin,
+  String? pin,
 );
 
-/// Tunnel de transaction — orchestre `32:704` → `32:756` → `32:813` → `32:865`.
+/// Tunnel de transaction — orchestre `32:704` → `32:756` → `32:813` → `32:865`
+/// côté retrait, et `162:5220` → `162:3351` → `162:3473` côté paiement.
 ///
-/// Les quatre étapes vivent dans **une seule route**. C'est volontaire : une
-/// fois le code PIN validé, l'opération part au backend et revenir en arrière
-/// n'a plus de sens. `PopScope` bloque donc le retour dès l'étape traitement,
-/// ce qu'un empilement de routes séparées aurait laissé passer.
-class TransactionFlowScreen extends StatefulWidget {
+/// Les étapes vivent dans **une seule route**. C'est volontaire : une fois
+/// l'opération partie au backend, revenir en arrière n'a plus de sens.
+/// `PopScope` bloque donc le retour dès l'étape traitement, ce qu'un
+/// empilement de routes séparées aurait laissé passer.
+///
+/// Le nombre d'étapes dépend de l'opération : quatre pour un retrait, qui
+/// commence par un code PIN, trois pour un paiement, qui n'en a pas
+/// (cf. [ComportementOperation.exigePin]).
+class TransactionFlowScreen extends ConsumerStatefulWidget {
   const TransactionFlowScreen({
     super.key,
     required this.demande,
@@ -38,16 +48,22 @@ class TransactionFlowScreen extends StatefulWidget {
   final ExecuteurTransaction executer;
 
   @override
-  State<TransactionFlowScreen> createState() => _TransactionFlowScreenState();
+  ConsumerState<TransactionFlowScreen> createState() =>
+      _TransactionFlowScreenState();
 }
 
-class _TransactionFlowScreenState extends State<TransactionFlowScreen> {
-  _EtapeTunnel _etape = _EtapeTunnel.pin;
+class _TransactionFlowScreenState extends ConsumerState<TransactionFlowScreen> {
+  late _EtapeTunnel _etape = _etapeInitiale;
 
   /// Code PIN, conservé le temps d'un seul appel puis effacé.
   String? _pin;
 
   RecuTransaction? _recu;
+
+  /// Un paiement acheteuse n'a pas d'écran PIN : le tunnel démarre directement
+  /// sur le traitement.
+  _EtapeTunnel get _etapeInitiale =>
+      widget.demande.type.exigePin ? _EtapeTunnel.pin : _EtapeTunnel.traitement;
 
   bool get _retourAutorise => _etape == _EtapeTunnel.pin;
 
@@ -60,7 +76,7 @@ class _TransactionFlowScreenState extends State<TransactionFlowScreen> {
 
   Future<void> _executer() async {
     final pin = _pin;
-    if (pin == null) {
+    if (widget.demande.type.exigePin && pin == null) {
       throw StateError('Code PIN absent : opération refusée.');
     }
     try {
@@ -78,13 +94,20 @@ class _TransactionFlowScreenState extends State<TransactionFlowScreen> {
 
   void _surEchec(Object erreur) {
     if (!mounted) return;
-    setState(() {
-      _pin = null;
-      _etape = _EtapeTunnel.pin;
-    });
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(messageErreurTransaction(erreur))),
-    );
+    _pin = null;
+    final message = messageErreurTransaction(erreur);
+
+    if (widget.demande.type.exigePin) {
+      // Le retrait revient à la saisie du PIN : c'est l'étape rejouable.
+      setState(() => _etape = _EtapeTunnel.pin);
+    } else {
+      // Un paiement n'a pas d'étape rejouable dans le tunnel — le rejouer sur
+      // place relancerait l'opération en boucle. On rend la main au checkout,
+      // où la cliente peut corriger son moyen de paiement.
+      context.pop();
+    }
+
+    toastErreur(ref, message, titre: 'Transaction refusée');
   }
 
   void _quitter() => context.go(widget.demande.type.routeRetour);
@@ -105,18 +128,22 @@ class _TransactionFlowScreenState extends State<TransactionFlowScreen> {
             onValide: _validerPin,
           ),
         _EtapeTunnel.traitement => TraitementScreen(
+            type: widget.demande.type,
             operation: _executer,
             onTermine: _surSucces,
             onEchec: _surEchec,
           ),
         _EtapeTunnel.succes => SuccesScreen(
+            recu: _recu!,
             onVoirRecu: () => setState(() => _etape = _EtapeTunnel.recu),
             onRetour: _quitter,
           ),
         _EtapeTunnel.recu => RecuScreen(
             recu: _recu!,
-            onPartager: () => ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Partage bientôt disponible.')),
+            onPartager: () => toastInfo(
+              ref,
+              'Partage indisponible',
+              'Le partage du reçu n’est pas encore proposé par le serveur.',
             ),
             onRetour: _quitter,
           ),

@@ -22,6 +22,9 @@ class ClosetNotification {
 class NotificationNotifier extends Notifier<ClosetNotification?> {
   @override
   ClosetNotification? build() {
+    ref.onDispose(() {
+      _dismissTimer?.cancel();
+    });
     return null;
   }
 

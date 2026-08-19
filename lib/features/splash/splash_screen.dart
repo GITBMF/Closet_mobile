@@ -1,22 +1,26 @@
-import 'dart:math' as math;
+﻿import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/theme/closet_colors.dart';
+import '../../../data/models/user.dart';
+import '../../../data/repositories/auth_repository.dart';
+import '../../../data/repositories/sourceur_repository.dart';
 
 /// Écran d'ouverture — transcription de la maquette Figma `5:1210`.
 ///
 /// Photo de dressing en fond plein cadre, carte verte au logo centrée
 /// (232 × 132), et anneau de points en rotation dans le bas de l'écran.
-class SplashScreen extends StatefulWidget {
+class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({super.key});
 
   @override
-  State<SplashScreen> createState() => _SplashScreenState();
+  ConsumerState<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen>
+class _SplashScreenState extends ConsumerState<SplashScreen>
     with TickerProviderStateMixin {
   late final AnimationController _apparition;
   late final AnimationController _rotation;
@@ -42,10 +46,27 @@ class _SplashScreenState extends State<SplashScreen>
     )..repeat();
 
     _apparition.forward();
+    Future<void>.microtask(_restaurerPuisNaviguer);
+  }
 
-    Future.delayed(const Duration(milliseconds: 2600), () {
-      if (mounted) context.go('/onboarding');
-    });
+  Future<void> _restaurerPuisNaviguer() async {
+    final minimum = Future<void>.delayed(const Duration(milliseconds: 1600));
+    ClosetUser? user;
+    try {
+      user = await ref.read(authRepositoryProvider).restaurerSession();
+      if (user != null) {
+        try {
+          await ref.read(sourceurRepositoryProvider).chargerProfil();
+        } catch (_) {
+          // Un échec sourcing ne doit pas bloquer l'entrée cliente.
+        }
+      }
+    } catch (_) {
+      user = null;
+    }
+    await minimum;
+    if (!mounted) return;
+    context.go(user != null ? '/home' : '/onboarding');
   }
 
   @override
@@ -148,7 +169,7 @@ class _AnneauDePoints extends StatelessWidget {
           width: _rayonPoint * 2,
           height: _rayonPoint * 2,
           decoration: const BoxDecoration(
-            color: Colors.white,
+            color: ClosetColors.blanc,
             shape: BoxShape.circle,
           ),
         ),

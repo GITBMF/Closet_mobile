@@ -15,9 +15,8 @@ import 'piece_card.dart';
 /// En-tête principal — transcription de la maquette `11:30`.
 ///
 /// À gauche « Bienvenue, » (EB Garamond) puis le nom de la cliente
-/// (Cormorant, doré encre). Au centre le logo. À droite deux boutons ronds
-/// de 42, fond clair cerclé d'or : panier et notifications. Un filet doré
-/// ferme l'en-tête.
+/// (Cormorant, doré encre). À droite deux boutons ronds de 42, fond clair
+/// cerclé d'or : sélection et notifications. Un filet doré ferme l'en-tête.
 class ClosetAppBar extends ConsumerWidget implements PreferredSizeWidget {
   const ClosetAppBar({
     super.key,
@@ -34,87 +33,72 @@ class ClosetAppBar extends ConsumerWidget implements PreferredSizeWidget {
   final VoidCallback? onBack;
   final List<Widget>? actions;
 
+  static const double _hauteurBarre = 62;
+
+  /// Hauteur de la barre + inset statut, pour que Scaffold réserve assez
+  /// d'espace et que les boutons restent sous la barre système (tappables).
+  static double get _insetStatut {
+    final vues = WidgetsBinding.instance.platformDispatcher.views;
+    if (vues.isEmpty) return 0;
+    final vue = vues.first;
+    return vue.padding.top / vue.devicePixelRatio;
+  }
+
   @override
-  Size get preferredSize => const Size.fromHeight(62);
+  Size get preferredSize => Size.fromHeight(_hauteurBarre + _insetStatut);
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final cartCount = ref.watch(cartCountProvider);
     final user = ref.watch(currentUserProvider);
 
-    return DecoratedBox(
-      decoration: const BoxDecoration(
-        color: ClosetColors.beige,
-        border: Border(
-          bottom: BorderSide(
-            color: ClosetColors.fond400,
-            width: AppStroke.fin,
+    return Material(
+      color: context.closetFond,
+      child: DecoratedBox(
+        decoration: const BoxDecoration(
+          border: Border(
+            bottom: BorderSide(
+              color: ClosetColors.fond400,
+              width: AppStroke.fin,
+            ),
           ),
         ),
-      ),
-      child: SafeArea(
-        bottom: false,
-        child: SizedBox(
-          height: 62,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.p20),
-            child: Row(
-              children: [
-                if (showBackButton) ...[
-                  Semantics(
-                    button: true,
-                    label: 'Retour',
+        child: SafeArea(
+          bottom: false,
+          child: SizedBox(
+            height: _hauteurBarre,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.p20),
+              child: Row(
+                children: [
+                  if (showBackButton) ...[
+                    _BoutonRond(
+                      icone: Icons.arrow_back_ios_new,
+                      label: 'Retour',
+                      onTap: () => context.pop(),
+                    ),
+                    const SizedBox(width: AppSpacing.p8),
+                  ],
+                  Expanded(
                     child: GestureDetector(
-                      onTap: onBack ??
-                          () {
-                            if (context.canPop()) {
-                              context.pop();
-                            } else {
-                              context.go('/home');
-                            }
-                          },
-                      child: const SizedBox(
-                        width: AppSpacing.minTouchTarget,
-                        height: AppSpacing.minTouchTarget,
-                        child: Icon(
-                          Icons.arrow_back_ios_new,
-                          size: 18,
-                          color: ClosetColors.noir,
-                        ),
+                      behavior: HitTestBehavior.opaque,
+                      onTap: user == null ? () => context.push('/auth') : null,
+                      child: _Salutation(
+                        title: title,
+                        subtitle: subtitle,
+                        user: user,
                       ),
                     ),
                   ),
-                  const SizedBox(width: AppSpacing.p8),
-                ],
-                Expanded(
-                  child: _Salutation(
-                    title: title,
-                    subtitle: subtitle,
-                    user: user,
-                  ),
-                ),
-                Image.asset(
-                  'assets/iconheader.png',
-                  width: 73,
-                  height: 29,
-                  fit: BoxFit.contain,
-                  errorBuilder: (_, _, _) => Text(
-                    'CLOS|ET',
-                    style: ClosetTextStyles.titreBloc.copyWith(
-                      color: ClosetColors.noir,
-                    ),
-                  ),
-                ),
-                Expanded(
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
                     children: actions ??
                         [
                           _BoutonRond(
                             icone: Icons.shopping_basket_outlined,
                             label: cartCount > 0
-                                ? 'Panier, $cartCount articles'
-                                : 'Panier',
+                                ? 'Sélection, $cartCount pièces'
+                                : 'Ma sélection',
                             pastille: cartCount > 0 ? cartCount : null,
                             onTap: () => context.go('/selection'),
                           ),
@@ -122,12 +106,12 @@ class ClosetAppBar extends ConsumerWidget implements PreferredSizeWidget {
                           _BoutonRond(
                             icone: Icons.notifications_none_rounded,
                             label: 'Notifications',
-                            onTap: () => context.go('/espace/alertes'),
+                            onTap: () => context.push('/espace/alertes'),
                           ),
                         ],
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),
@@ -151,8 +135,8 @@ class _Salutation extends StatelessWidget {
   Widget build(BuildContext context) {
     final nom = subtitle ??
         (user == null
-            ? 'Invitée'
-            : 'Mme ${user!.firstName} ${user!.lastName.isEmpty ? '' : '${user!.lastName[0]}.'}'
+            ? 'Invité'
+            : '${user!.firstName} ${user!.lastName.isEmpty ? '' : '${user!.lastName[0]}.'}'
                 .trim());
 
     return Column(
@@ -167,7 +151,7 @@ class _Salutation extends StatelessWidget {
           style: ClosetTextStyles.prix.copyWith(
             fontWeight: FontWeight.w600,
             letterSpacing: 0.28,
-            color: ClosetColors.noir,
+            color: context.closetEncre,
           ),
         ),
         Text(
@@ -205,46 +189,56 @@ class _BoutonRond extends StatelessWidget {
     return Semantics(
       button: true,
       label: label,
-      child: GestureDetector(
-        onTap: onTap,
-        child: Stack(
-          clipBehavior: Clip.none,
-          children: [
-            Container(
-              width: 42,
-              height: 42,
-              decoration: BoxDecoration(
-                color: ClosetColors.carteFond,
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color: ClosetColors.fond300,
-                  width: AppStroke.fin,
-                ),
-              ),
-              child: Icon(icone, size: 20, color: ClosetColors.vert),
-            ),
-            if (pastille != null)
-              Positioned(
-                top: -2,
-                right: -2,
-                child: IgnorePointer(
-                  child: Container(
-                    padding: const EdgeInsets.all(AppSpacing.p4),
-                    decoration: const BoxDecoration(
-                      color: ClosetColors.vert,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          customBorder: const CircleBorder(),
+          child: SizedBox(
+            width: AppSpacing.minTouchTarget,
+            height: AppSpacing.minTouchTarget,
+            child: Center(
+              child: Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  Container(
+                    width: 42,
+                    height: 42,
+                    decoration: BoxDecoration(
+                      color: ClosetColors.carteFond,
                       shape: BoxShape.circle,
-                    ),
-                    child: Text(
-                      '$pastille',
-                      style: ClosetTextStyles.micro.copyWith(
-                        color: ClosetColors.creme,
-                        fontWeight: FontWeight.w700,
+                      border: Border.all(
+                        color: ClosetColors.fond300,
+                        width: AppStroke.fin,
                       ),
                     ),
+                    child: Icon(icone, size: 20, color: ClosetColors.vert),
                   ),
-                ),
+                  if (pastille != null)
+                    Positioned(
+                      top: -2,
+                      right: -2,
+                      child: IgnorePointer(
+                        child: Container(
+                          padding: const EdgeInsets.all(AppSpacing.p4),
+                          decoration: const BoxDecoration(
+                            color: ClosetColors.vert,
+                            shape: BoxShape.circle,
+                          ),
+                          child: Text(
+                            '$pastille',
+                            style: ClosetTextStyles.micro.copyWith(
+                              color: ClosetColors.creme,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
               ),
-          ],
+            ),
+          ),
         ),
       ),
     );
@@ -294,7 +288,10 @@ class _ArticleCardState extends ConsumerState<ArticleCard> {
       maison: article.brand,
       nom: article.title,
       prix: formatPrixFcfa(article.price),
-      attribut: 'T.${article.size}. ${article.material}',
+      attribut: [
+        if (article.size.isNotEmpty) 'T.${article.size}',
+        if (article.material.isNotEmpty) article.material,
+      ].join('. '),
       imageUrl: article.imageUrls.isEmpty ? null : article.imageUrls.first,
       statusBadgeText: article.condition,
       isFavorite: isWishlisted,

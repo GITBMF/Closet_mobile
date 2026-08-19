@@ -1,0 +1,6 @@
+y= 3539 x=23088  Inspection et analyse de votre pièce                                    EB Garamond 700/19.0pt       34:1558
+y= 3809 x=23154  Pièce bien reçue !                                                      EB Garamond 700/19.0pt       34:1560
+y= 3899 x=23054  Notre équipe va examiner votre pièce avec le plus grand soin. Nous vér  Lato 500/16.0pt              34:1556
+y= 4074 x=23148  Suivre l’analyse de ma pièce                                            Lato 500/12.0pt              34:1576
+y= 4132 x=23160  Retour dans Mon Espace                                                  Lato 500/12.0pt              34:1571
+y= 4182 x=23070  Toutes vos informations sont chiffrées de bout en bout et stockées sur  Lato 300/11.0pt              34:1557

@@ -1,0 +1,19 @@
+y= 3471 x= 7122  Ma sélection                                                            Cormorant 600/14.0pt         56:11493
+y= 3491 x= 7124  Etape 1/3                                                               Lato 400/8.0pt               56:11492
+y= 3540 x= 7088  livraison                                                               Lato 400/10.0pt              56:11505
+y= 3540 x= 7210  Paiement                                                                Lato 400/10.0pt              56:11498
+y= 3540 x= 7334  confirmation                                                            Lato 400/10.0pt              56:11512
+y= 3542 x= 7075  1                                                                       Lato 400/6.0pt               56:11508
+y= 3542 x= 7197  2                                                                       Lato 400/6.0pt               56:11501
+y= 3542 x= 7321  3                                                                       Lato 400/6.0pt               56:11515
+y= 3585 x= 7070  Nom complet                                                             Lato 500/12.0pt              I56:11518;114:114
+y= 3619 x= 7084  Aîcha N.                                                                Roboto 400/14.0pt            I56:11518;114:117
+y= 3675 x= 7070  Téléphone (Whatsapp)                                                    Lato 500/12.0pt              I56:11519;114:114
+y= 3709 x= 7084  +237 6 90 12 34 56                                                      Roboto 400/14.0pt            I56:11519;114:117
+y= 3743 x= 7070  Nous vous écrirons sur WhatsApp pour suivre votre pièce.                Lato 300/9.0pt               56:11520
+y= 3811 x= 7137  Détails de livraison                                                    Lato 500/15.0pt              56:11548
+y= 3839 x= 7137  Veullez entrez vos informations                                         Lato 500/13.0pt              56:11547
+y= 3892 x= 7137  Méthode de paiement                                                     Lato 500/15.0pt              56:11533
+y= 3920 x= 7137  Veuillez choisir la methode paiement                                    Lato 500/13.0pt              56:11532
+y= 3979 x= 7071  Valider les informations                                                Lato 400/10.0pt              89:15023
+y= 4184 x= 7188  Poursuivre -Paiement                                                    Lato 500/12.0pt              90:15278
