@@ -1,23 +1,58 @@
 class ClosetUser {
+  final String id;
   final String firstName;
   final String lastName;
   final String email;
+  final String phone;
+  final String city;
+  final String role;
   final String? token;
 
   ClosetUser({
+    this.id = '',
     required this.firstName,
     required this.lastName,
     required this.email,
+    this.phone = '',
+    this.city = '',
+    this.role = 'customer',
     this.token,
   });
 
-  factory ClosetUser.fromJson(Map<String, dynamic> json) {
-    final fullName = (json['full_name'] ?? json['fullName']) as String?;
-    final firstName = (json['first_name'] ?? json['firstName']) as String?;
-    final lastName = (json['last_name'] ?? json['lastName']) as String?;
+  ClosetUser copyWith({
+    String? id,
+    String? firstName,
+    String? lastName,
+    String? email,
+    String? phone,
+    String? city,
+    String? role,
+    String? token,
+  }) {
+    return ClosetUser(
+      id: id ?? this.id,
+      firstName: firstName ?? this.firstName,
+      lastName: lastName ?? this.lastName,
+      email: email ?? this.email,
+      phone: phone ?? this.phone,
+      city: city ?? this.city,
+      role: role ?? this.role,
+      token: token ?? this.token,
+    );
+  }
 
-    String parsedFirstName = '';
-    String parsedLastName = '';
+  String get nomComplet => '$firstName $lastName'.trim();
+
+  bool get estSourceur =>
+      role == 'sourcer' || role == 'admin';
+
+  factory ClosetUser.fromJson(Map<String, dynamic> json) {
+    final fullName = json['full_name'] as String? ?? json['fullName'] as String?;
+    final firstName = json['first_name'] as String? ?? json['firstName'] as String?;
+    final lastName = json['last_name'] as String? ?? json['lastName'] as String?;
+
+    var parsedFirstName = '';
+    var parsedLastName = '';
 
     if (firstName != null && firstName.isNotEmpty) {
       parsedFirstName = firstName;
@@ -29,18 +64,27 @@ class ClosetUser {
     }
 
     return ClosetUser(
+      id: (json['id'] ?? '') as String,
       firstName: parsedFirstName,
       lastName: parsedLastName,
       email: (json['email'] ?? '') as String,
-      token: (json['token'] ?? json['access_token']) as String?,
+      phone: (json['phone'] ?? json['telephone'] ?? '') as String,
+      city: (json['city'] ?? '') as String,
+      role: (json['role'] ?? 'customer') as String,
+      token: json['token'] as String? ?? json['access_token'] as String?,
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
+      'id': id,
       'first_name': firstName,
       'last_name': lastName,
+      'full_name': nomComplet,
       'email': email,
+      'phone': phone,
+      'city': city,
+      'role': role,
       if (token != null) 'token': token,
     };
   }

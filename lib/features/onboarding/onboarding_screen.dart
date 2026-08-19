@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 
@@ -205,7 +205,7 @@ class _Slide extends StatelessWidget {
               fontWeight: FontWeight.w500,
               letterSpacing: 1.04,
               height: 15.7 / 13,
-              color: Colors.white,
+              color: ClosetColors.blanc,
             ),
           ),
         ],

@@ -7,16 +7,14 @@ import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/closet_colors.dart';
 import '../../../core/theme/closet_text_styles.dart';
 import '../../../core/widgets/closet_app_bar.dart';
+import '../../../core/widgets/closet_feedback.dart';
 import '../../../core/widgets/closet_sections.dart';
+import '../../../core/widgets/toasts.dart';
 import '../../../data/models/article.dart';
 import '../../../data/repositories/cart_repository.dart';
 import '../../auth/auth_screen.dart';
-
-/// Frais de livraison — valeur de la maquette (`16:3448`).
-///
-/// TODO(backend): les frais doivent venir du serveur, ils dépendent de la
-/// zone de livraison. Constante figée tant que l'endpoint n'existe pas.
-const double fraisLivraison = 3500;
+import '../../checkout/brouillon_commande.dart';
+import '../../checkout/montants.dart';
 
 /// Ma sélection — transcription de la maquette `16:3448`.
 ///
@@ -41,13 +39,16 @@ class _SelectionScreenState extends ConsumerState<SelectionScreen> {
   @override
   Widget build(BuildContext context) {
     final pieces = ref.watch(cartListProvider);
-    final sousTotal = ref.watch(cartTotalProvider);
 
     return Scaffold(
-      backgroundColor: ClosetColors.beige,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: const ClosetAppBar(),
       body: pieces.isEmpty
-          ? const _SelectionVide()
+          ? ClosetListeVide(
+              message: 'Aucune pièce n’a été mise de côté.',
+              action: () => context.go('/collections'),
+              libelleAction: 'Découvrir les collections',
+            )
           : SingleChildScrollView(
               padding: const EdgeInsets.only(bottom: AppSpacing.p32),
               child: Column(
@@ -98,79 +99,17 @@ class _SelectionScreenState extends ConsumerState<SelectionScreen> {
                     child: _CodePrivilege(controller: _codePrivilege),
                   ),
                   const SizedBox(height: AppSpacing.p24),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
+                  const Padding(
+                    padding: EdgeInsets.symmetric(
                       horizontal: AppSpacing.p20,
                     ),
-                    child: _Recapitulatif(
-                      sousTotal: sousTotal,
-                      livraison: fraisLivraison,
-                    ),
+                    child: RecapMontants(),
                   ),
                   const SizedBox(height: AppSpacing.p24),
                   const _BoutonFinaliser(),
                 ],
               ),
             ),
-    );
-  }
-}
-
-class _SelectionVide extends StatelessWidget {
-  const _SelectionVide();
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.p32),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(
-              Icons.shopping_basket_outlined,
-              size: 48,
-              color: ClosetColors.fond300,
-            ),
-            const SizedBox(height: AppSpacing.p20),
-            Text(
-              'Votre sélection est vide',
-              textAlign: TextAlign.center,
-              style: ClosetTextStyles.titreSection,
-            ),
-            const SizedBox(height: AppSpacing.p12),
-            Text(
-              'Parcourez le dressing et mettez de côté les pièces qui vous '
-              'ressemblent.',
-              textAlign: TextAlign.center,
-              style: ClosetTextStyles.citation.copyWith(
-                color: ClosetColors.taupe,
-              ),
-            ),
-            const SizedBox(height: AppSpacing.p24),
-            SizedBox(
-              width: 240,
-              height: 44,
-              child: Material(
-                color: ClosetColors.vert,
-                borderRadius: BorderRadius.circular(AppRadius.cercle),
-                child: InkWell(
-                  borderRadius: BorderRadius.circular(AppRadius.cercle),
-                  onTap: () => context.go('/collections'),
-                  child: Center(
-                    child: Text(
-                      'Découvrir les collections',
-                      style: ClosetTextStyles.bouton.copyWith(
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
     );
   }
 }
@@ -195,7 +134,7 @@ class _LignePiece extends StatelessWidget {
         constraints: const BoxConstraints(minHeight: 146),
         padding: const EdgeInsets.all(AppSpacing.p8),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: ClosetColors.blanc,
           border: Border.all(color: ClosetColors.fond300, width: AppStroke.fin),
           borderRadius: BorderRadius.circular(AppRadius.carte),
         ),
@@ -208,14 +147,14 @@ class _LignePiece extends StatelessWidget {
                 width: 107,
                 height: 127,
                 child: article.imageUrls.isEmpty
-                    ? const ColoredBox(color: Color(0xFFD9D9D9))
+                    ? const ColoredBox(color: ClosetColors.gabaritImage)
                     : CachedNetworkImage(
                         imageUrl: article.imageUrls.first,
                         fit: BoxFit.cover,
                         placeholder: (_, _) =>
-                            const ColoredBox(color: Color(0xFFD9D9D9)),
+                            const ColoredBox(color: ClosetColors.gabaritImage),
                         errorWidget: (_, _, _) =>
-                            const ColoredBox(color: Color(0xFFD9D9D9)),
+                            const ColoredBox(color: ClosetColors.gabaritImage),
                       ),
               ),
             ),
@@ -278,7 +217,11 @@ class _LignePiece extends StatelessWidget {
                 child: const SizedBox(
                   width: 28,
                   height: 28,
-                  child: Icon(Icons.close, size: 15, color: Colors.black),
+                  child: Icon(
+                    Icons.close,
+                    size: 15,
+                    color: ClosetColors.noirPur,
+                  ),
                 ),
               ),
             ),
@@ -290,17 +233,45 @@ class _LignePiece extends StatelessWidget {
 }
 
 /// Carte « Code privilège » : champ 189 × 38 et bouton vert 114 × 38.
-class _CodePrivilege extends StatelessWidget {
+///
+/// Le bouton applique réellement le code et met le récapitulatif à jour. Un
+/// code accepté verrouille le champ : le remplacer supposerait de savoir si les
+/// remises se cumulent, ce que la maquette ne dit pas.
+class _CodePrivilege extends ConsumerWidget {
   const _CodePrivilege({required this.controller});
 
   final TextEditingController controller;
 
+  void _appliquer(BuildContext context, WidgetRef ref) {
+    final code = controller.text.trim();
+    if (code.isEmpty) return;
+
+    final applique = ref.read(brouillonCommandeProvider.notifier)
+        .appliquerCodePrivilege(code);
+
+    if (applique) {
+      toastSucces(
+        ref,
+        'Code enregistré',
+        'La remise sera calculée par ClosET au paiement.',
+      );
+    }
+  }
+
+  void _retirer(WidgetRef ref) {
+    controller.clear();
+    ref.read(brouillonCommandeProvider.notifier).retirerCodePrivilege();
+  }
+
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final applique =
+        ref.watch(brouillonCommandeProvider).codePrivilege.isNotEmpty;
+
     return Container(
       padding: const EdgeInsets.all(AppSpacing.p16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: ClosetColors.blanc,
         border: Border.all(color: ClosetColors.fond300, width: AppStroke.fin),
         borderRadius: BorderRadius.circular(AppRadius.carte),
       ),
@@ -332,7 +303,9 @@ class _CodePrivilege extends StatelessWidget {
                   height: 38,
                   child: TextField(
                     controller: controller,
+                    enabled: !applique,
                     textCapitalization: TextCapitalization.characters,
+                    onSubmitted: (_) => _appliquer(context, ref),
                     style: ClosetTextStyles.nomProduit.copyWith(
                       fontSize: 14,
                       fontWeight: FontWeight.w300,
@@ -360,20 +333,20 @@ class _CodePrivilege extends StatelessWidget {
                 width: 114,
                 height: 38,
                 child: Material(
-                  color: ClosetColors.vert,
+                  color: applique ? ClosetColors.emeraude100 : ClosetColors.vert,
                   borderRadius: BorderRadius.circular(AppRadius.cercle),
                   child: InkWell(
                     borderRadius: BorderRadius.circular(AppRadius.cercle),
-                    onTap: () => ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Codes privilège bientôt disponibles.'),
-                      ),
-                    ),
+                    onTap: applique
+                        ? () => _retirer(ref)
+                        : () => _appliquer(context, ref),
                     child: Center(
                       child: Text(
-                        'Appliquer',
+                        applique ? 'Retirer' : 'Appliquer',
                         style: ClosetTextStyles.actionPetite.copyWith(
-                          color: Colors.white,
+                          color: applique
+                              ? ClosetColors.vert
+                              : ClosetColors.blanc,
                         ),
                       ),
                     ),
@@ -394,85 +367,6 @@ class _CodePrivilege extends StatelessWidget {
           width: AppStroke.fin,
         ),
       );
-}
-
-/// Sous-total, livraison, puis total à régler séparé par un filet doré.
-class _Recapitulatif extends StatelessWidget {
-  const _Recapitulatif({required this.sousTotal, required this.livraison});
-
-  final double sousTotal;
-  final double livraison;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        _LigneMontant(
-          label: 'Sous-total',
-          montant: sousTotal,
-          couleurLabel: ClosetColors.fond500,
-        ),
-        const SizedBox(height: AppSpacing.p20),
-        _LigneMontant(
-          label: 'Livraison délicate',
-          montant: livraison,
-          couleurLabel: ClosetColors.fond500,
-        ),
-        const SizedBox(height: AppSpacing.p16),
-        const Divider(
-          color: ClosetColors.fond400,
-          thickness: AppStroke.fin,
-          height: AppStroke.fin,
-        ),
-        const SizedBox(height: AppSpacing.p16),
-        _LigneMontant(
-          label: 'total à régler',
-          montant: sousTotal + livraison,
-          couleurLabel: ClosetColors.noir,
-          grand: true,
-        ),
-      ],
-    );
-  }
-}
-
-class _LigneMontant extends StatelessWidget {
-  const _LigneMontant({
-    required this.label,
-    required this.montant,
-    required this.couleurLabel,
-    this.grand = false,
-  });
-
-  final String label;
-  final double montant;
-  final Color couleurLabel;
-  final bool grand;
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      crossAxisAlignment: CrossAxisAlignment.end,
-      children: [
-        Text(
-          label.toUpperCase(),
-          style: ClosetTextStyles.meta.copyWith(color: couleurLabel),
-        ),
-        Text(
-          formatPrixFcfa(montant),
-          style: grand
-              ? ClosetTextStyles.prixGrand.copyWith(color: ClosetColors.vert)
-              : ClosetTextStyles.prix.copyWith(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w600,
-                  letterSpacing: 0.30,
-                  color: ClosetColors.vert,
-                ),
-        ),
-      ],
-    );
-  }
 }
 
 /// CTA « Finaliser Ma sélection » : 312 × 44, vert profond, rayon 100.
@@ -498,8 +392,10 @@ class _BoutonFinaliser extends ConsumerWidget {
             onTap: () => context.push(connectee ? '/checkout' : '/auth'),
             child: Center(
               child: Text(
-                'Finaliser Ma sélection',
-                style: ClosetTextStyles.bouton.copyWith(color: Colors.white),
+                'Finaliser ma sélection',
+                style: ClosetTextStyles.bouton.copyWith(
+                  color: ClosetColors.blanc,
+                ),
               ),
             ),
           ),

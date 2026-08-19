@@ -6,6 +6,7 @@ import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/closet_colors.dart';
 import '../../../core/theme/closet_text_styles.dart';
 import '../../../core/widgets/closet_frise.dart';
+import '../../../core/widgets/etat_ecran.dart';
 import '../../../data/models/commande.dart';
 import '../../../data/repositories/commande_repository.dart';
 import '../../sourceur/widgets/sourceur_header.dart';
@@ -25,7 +26,7 @@ class SuiviCommandeScreen extends ConsumerWidget {
     final commande = ref.watch(commandeProvider(numero));
 
     return Scaffold(
-      backgroundColor: ClosetColors.beige,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
         child: Column(
           children: [
@@ -44,13 +45,17 @@ class SuiviCommandeScreen extends ConsumerWidget {
             Expanded(
               child: commande.when(
                 data: (c) => c == null
-                    ? const Center(child: Text('Commande introuvable'))
+                    ? EtatEcran.vide(
+                        titre: 'Commande introuvable',
+                        message: 'Le suivi n’est plus disponible pour cette commande.',
+                        action: () => context.pop(),
+                        libelleAction: 'Retour',
+                      )
                     : _Corps(commande: c),
-                loading: () => const Center(
-                  child: CircularProgressIndicator(color: ClosetColors.dore),
-                ),
-                error: (e, _) => const Center(
-                  child: Text('Erreur de chargement'),
+                loading: () => const EtatEcran.chargement(),
+                error: (e, _) => EtatEcran.erreur(
+                  erreur: e,
+                  onRetry: () => ref.invalidate(commandeProvider(numero)),
                 ),
               ),
             ),
@@ -121,21 +126,26 @@ class _Corps extends StatelessWidget {
         detail: formatDateCommande(c.dateDepot),
         atteinte: true,
       ),
-      const EtapeFrise(
+      EtapeFrise(
         titre: 'Préparée avec soin',
-        detail: 'Votre pièce reçoit son packaging Clos ET',
-        atteinte: true,
+        detail: enRoute
+            ? 'Votre pièce a reçu son packaging Clos ET'
+            : 'Votre pièce reçoit son packaging Clos ET',
+        atteinte: enRoute,
+        enCours: !enRoute,
       ),
       EtapeFrise(
         titre: 'En route pour livraison',
         detail: c.estimation == null
             ? 'Livraison en cours de planification'
             : 'Livraison estimée : ${formatDateCommande(c.estimation!)}',
-        atteinte: enRoute,
+        atteinte: livree,
+        enCours: enRoute && !livree,
       ),
       EtapeFrise(
         titre: 'Dans votre dressing',
-        detail: livree ? 'Votre pièce vous a été remise' : 'Pas encore',
+        detail:
+            livree ? 'Votre pièce vous a été remise' : 'Dès la livraison faite',
         atteinte: livree,
       ),
     ];

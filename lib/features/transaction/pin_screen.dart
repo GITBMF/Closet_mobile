@@ -141,7 +141,7 @@ class _Case extends StatelessWidget {
       height: 60,
       alignment: Alignment.center,
       decoration: BoxDecoration(
-        color: rempli || actif ? Colors.white : ClosetColors.caseVide,
+        color: rempli || actif ? ClosetColors.blanc : ClosetColors.caseVide,
         borderRadius: BorderRadius.circular(4),
         border: Border.all(
           color: actif ? ClosetColors.fond300 : ClosetColors.caseVide,

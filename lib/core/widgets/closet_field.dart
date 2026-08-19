@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 
 import '../theme/app_spacing.dart';
 import '../theme/closet_colors.dart';
@@ -79,7 +79,7 @@ InputDecoration closetFieldDecoration({
     hintText: hint,
     suffixIcon: suffixIcon,
     filled: true,
-    fillColor: Colors.white,
+    fillColor: ClosetColors.blanc,
     floatingLabelBehavior: FloatingLabelBehavior.always,
     labelStyle: ClosetTextStyles.labelChamp.copyWith(
       color: ClosetColors.vert,
@@ -149,7 +149,7 @@ class ClosetChampLibelle extends StatelessWidget {
             enabled: enabled,
             onChanged: onChanged,
             validator: validator,
-            style: ClosetTextStyles.saisie.copyWith(color: ClosetColors.noir),
+            style: ClosetTextStyles.saisie.copyWith(color: context.closetEncre),
             cursorColor: ClosetColors.vert,
             cursorWidth: 1.5,
             decoration: InputDecoration(
@@ -158,7 +158,7 @@ class ClosetChampLibelle extends StatelessWidget {
                 color: ClosetColors.champPlaceholder,
               ),
               filled: true,
-              fillColor: Colors.white,
+              fillColor: context.closetChamp,
               isDense: true,
               contentPadding: const EdgeInsets.symmetric(
                 horizontal: AppSpacing.p12,
@@ -209,14 +209,14 @@ class ClosetSelectField<T> extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return DropdownButtonFormField<T>(
-      value: value,
+      initialValue: value,
       onChanged: onChanged,
       validator: validator,
       isExpanded: true,
       style: ClosetTextStyles.saisie.copyWith(fontWeight: FontWeight.w500),
       icon: const Icon(Icons.keyboard_arrow_down_rounded,
           color: ClosetColors.taupe),
-      dropdownColor: Colors.white,
+      dropdownColor: ClosetColors.blanc,
       borderRadius: BorderRadius.circular(AppRadius.carte),
       decoration: closetFieldDecoration(label: label, hint: hint),
       items: [

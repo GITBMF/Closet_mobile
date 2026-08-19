@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -6,7 +6,7 @@ import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/closet_colors.dart';
 import '../../../core/theme/closet_text_styles.dart';
 import '../../../data/repositories/auth_repository.dart';
-import '../../../data/services/auth_storage_service.dart';
+import '../../../data/repositories/sourceur_repository.dart';
 import '../../transaction/widgets/transaction_scaffold.dart';
 
 /// Étapes de la sortie de session.
@@ -31,11 +31,9 @@ class _DeconnexionScreenState extends ConsumerState<DeconnexionScreen> {
   _EtapeSortie _etape = _EtapeSortie.confirmation;
 
   Future<void> _confirmer() async {
-    // Purge du stockage avant l'état mémoire : sans cet appel les jetons
-    // persistés survivraient à la déconnexion.
-    await AuthStorageService.clearAuthData();
+    await ref.read(authRepositoryProvider).deconnecter();
+    ref.read(sourceurRepositoryProvider).reset();
     if (!mounted) return;
-    ref.read(currentUserProvider.notifier).state = null;
     setState(() => _etape = _EtapeSortie.adieu);
 
     Future.delayed(DeconnexionScreen.delaiRedirection, () {
@@ -80,7 +78,7 @@ class _Confirmation extends StatelessWidget {
               textAlign: TextAlign.center,
               style: ClosetTextStyles.sousTitre.copyWith(
                 fontSize: 27,
-                color: Colors.white,
+                color: ClosetColors.blanc,
               ),
             ),
           ),
@@ -118,7 +116,7 @@ class _ArcheSortie extends StatelessWidget {
         AppSpacing.p24,
       ),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: ClosetColors.blanc,
         border: Border.all(color: ClosetColors.fond300, width: AppStroke.fin),
         borderRadius: const BorderRadius.vertical(top: Radius.circular(159)),
       ),
@@ -132,7 +130,7 @@ class _ArcheSortie extends StatelessWidget {
           ),
           const Spacer(),
           Text(
-            'Par ici la sortie Mme',
+            'Par ici la sortie',
             textAlign: TextAlign.center,
             style: ClosetTextStyles.sousTitre.copyWith(
               letterSpacing: 0.38,
@@ -177,7 +175,7 @@ class _Adieu extends StatelessWidget {
             height: 40,
             child: CircularProgressIndicator(
               strokeWidth: 3,
-              color: Colors.white,
+              color: ClosetColors.blanc,
             ),
           ),
           const SizedBox(height: 48),

@@ -1,0 +1,2915 @@
+===== RegisterRequest
+{
+ "properties": {
+  "email": {
+   "type": "string",
+   "format": "email",
+   "title": "Email"
+  },
+  "password": {
+   "type": "string",
+   "maxLength": 128,
+   "minLength": 1,
+   "title": "Password"
+  },
+  "full_name": {
+   "type": "string",
+   "maxLength": 150,
+   "minLength": 2,
+   "title": "Full Name"
+  },
+  "phone": {
+   "anyOf": [
+    {
+     "type": "string",
+     "maxLength": 32
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "title": "Phone"
+  },
+  "city": {
+   "anyOf": [
+    {
+     "type": "string",
+     "maxLength": 100
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "title": "City"
+  }
+ },
+ "type": "object",
+ "required": [
+  "email",
+  "password",
+  "full_name"
+ ],
+ "title": "RegisterRequest"
+}
+===== LoginRequest
+{
+ "properties": {
+  "email": {
+   "type": "string",
+   "format": "email",
+   "title": "Email"
+  },
+  "password": {
+   "type": "string",
+   "maxLength": 128,
+   "minLength": 1,
+   "title": "Password"
+  }
+ },
+ "type": "object",
+ "required": [
+  "email",
+  "password"
+ ],
+ "title": "LoginRequest"
+}
+===== TokenPair
+{
+ "properties": {
+  "access_token": {
+   "type": "string",
+   "title": "Access Token"
+  },
+  "refresh_token": {
+   "type": "string",
+   "title": "Refresh Token"
+  },
+  "token_type": {
+   "type": "string",
+   "title": "Token Type",
+   "default": "bearer"
+  },
+  "expires_in": {
+   "type": "integer",
+   "title": "Expires In"
+  },
+  "user": {
+   "$ref": "#/components/schemas/UserPublic"
+  }
+ },
+ "type": "object",
+ "required": [
+  "access_token",
+  "refresh_token",
+  "expires_in",
+  "user"
+ ],
+ "title": "TokenPair"
+}
+===== UserPublic
+{
+ "properties": {
+  "id": {
+   "type": "string",
+   "format": "uuid",
+   "title": "Id"
+  },
+  "email": {
+   "anyOf": [
+    {
+     "type": "string"
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "title": "Email"
+  },
+  "full_name": {
+   "type": "string",
+   "title": "Full Name"
+  },
+  "phone": {
+   "anyOf": [
+    {
+     "type": "string"
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "title": "Phone"
+  },
+  "city": {
+   "anyOf": [
+    {
+     "type": "string"
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "title": "City"
+  },
+  "role": {
+   "$ref": "#/components/schemas/UserRole"
+  },
+  "is_active": {
+   "type": "boolean",
+   "title": "Is Active"
+  },
+  "mfa_enabled": {
+   "type": "boolean",
+   "title": "Mfa Enabled",
+   "default": false
+  },
+  "must_change_password": {
+   "type": "boolean",
+   "title": "Must Change Password",
+   "default": false
+  },
+  "created_at": {
+   "type": "string",
+   "format": "date-time",
+   "title": "Created At"
+  },
+  "last_login_at": {
+   "anyOf": [
+    {
+     "type": "string",
+     "format": "date-time"
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "title": "Last Login At"
+  }
+ },
+ "type": "object",
+ "required": [
+  "id",
+  "email",
+  "full_name",
+  "phone",
+  "city",
+  "role",
+  "is_active",
+  "created_at"
+ ],
+ "title": "UserPublic"
+}
+===== MeResponse
+{
+ "properties": {
+  "id": {
+   "type": "string",
+   "format": "uuid",
+   "title": "Id"
+  },
+  "email": {
+   "anyOf": [
+    {
+     "type": "string"
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "title": "Email"
+  },
+  "full_name": {
+   "type": "string",
+   "title": "Full Name"
+  },
+  "phone": {
+   "anyOf": [
+    {
+     "type": "string"
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "title": "Phone"
+  },
+  "city": {
+   "anyOf": [
+    {
+     "type": "string"
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "title": "City"
+  },
+  "role": {
+   "$ref": "#/components/schemas/UserRole"
+  },
+  "is_active": {
+   "type": "boolean",
+   "title": "Is Active"
+  },
+  "mfa_enabled": {
+   "type": "boolean",
+   "title": "Mfa Enabled",
+   "default": false
+  },
+  "must_change_password": {
+   "type": "boolean",
+   "title": "Must Change Password",
+   "default": false
+  },
+  "created_at": {
+   "type": "string",
+   "format": "date-time",
+   "title": "Created At"
+  },
+  "last_login_at": {
+   "anyOf": [
+    {
+     "type": "string",
+     "format": "date-time"
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "title": "Last Login At"
+  },
+  "permissions": {
+   "items": {
+    "type": "string"
+   },
+   "type": "array",
+   "title": "Permissions"
+  }
+ },
+ "type": "object",
+ "required": [
+  "id",
+  "email",
+  "full_name",
+  "phone",
+  "city",
+  "role",
+  "is_active",
+  "created_at"
+ ],
+ "title": "MeResponse"
+}
+===== UpdateProfileRequest
+{
+ "properties": {
+  "full_name": {
+   "anyOf": [
+    {
+     "type": "string",
+     "maxLength": 150,
+     "minLength": 2
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "title": "Full Name"
+  },
+  "phone": {
+   "anyOf": [
+    {
+     "type": "string",
+     "maxLength": 32
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "title": "Phone"
+  },
+  "city": {
+   "anyOf": [
+    {
+     "type": "string",
+     "maxLength": 100
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "title": "City"
+  },
+  "email": {
+   "anyOf": [
+    {
+     "type": "string",
+     "format": "email"
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "title": "Email"
+  },
+  "current_password": {
+   "anyOf": [
+    {
+     "type": "string",
+     "maxLength": 128,
+     "minLength": 1
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "title": "Current Password"
+  }
+ },
+ "type": "object",
+ "title": "UpdateProfileRequest"
+}
+===== ChangePasswordRequest
+{
+ "properties": {
+  "current_password": {
+   "type": "string",
+   "maxLength": 128,
+   "minLength": 1,
+   "title": "Current Password"
+  },
+  "new_password": {
+   "type": "string",
+   "maxLength": 128,
+   "minLength": 1,
+   "title": "New Password"
+  }
+ },
+ "type": "object",
+ "required": [
+  "current_password",
+  "new_password"
+ ],
+ "title": "ChangePasswordRequest"
+}
+===== ForgotPasswordRequest
+{
+ "properties": {
+  "email": {
+   "type": "string",
+   "format": "email",
+   "title": "Email"
+  }
+ },
+ "type": "object",
+ "required": [
+  "email"
+ ],
+ "title": "ForgotPasswordRequest"
+}
+===== ResetPasswordRequest
+{
+ "properties": {
+  "token": {
+   "type": "string",
+   "title": "Token"
+  },
+  "new_password": {
+   "type": "string",
+   "maxLength": 128,
+   "minLength": 1,
+   "title": "New Password"
+  }
+ },
+ "type": "object",
+ "required": [
+  "token",
+  "new_password"
+ ],
+ "title": "ResetPasswordRequest"
+}
+===== LogoutRequest
+{
+ "properties": {
+  "refresh_token": {
+   "anyOf": [
+    {
+     "type": "string"
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "title": "Refresh Token"
+  },
+  "all_devices": {
+   "type": "boolean",
+   "title": "All Devices",
+   "default": false
+  }
+ },
+ "type": "object",
+ "title": "LogoutRequest"
+}
+===== RefreshRequest
+{
+ "properties": {
+  "refresh_token": {
+   "type": "string",
+   "title": "Refresh Token"
+  }
+ },
+ "type": "object",
+ "required": [
+  "refresh_token"
+ ],
+ "title": "RefreshRequest"
+}
+===== RegisterDeviceRequest
+{
+ "properties": {
+  "token": {
+   "type": "string",
+   "maxLength": 255,
+   "minLength": 10,
+   "title": "Token"
+  },
+  "platform": {
+   "type": "string",
+   "pattern": "^(android|ios)$",
+   "title": "Platform"
+  },
+  "marketing_opt_in": {
+   "type": "boolean",
+   "title": "Marketing Opt In",
+   "default": false
+  }
+ },
+ "type": "object",
+ "required": [
+  "token",
+  "platform"
+ ],
+ "title": "RegisterDeviceRequest"
+}
+===== MFARequired
+{
+ "properties": {
+  "mfa_required": {
+   "type": "boolean",
+   "title": "Mfa Required",
+   "default": true
+  },
+  "challenge_token": {
+   "type": "string",
+   "title": "Challenge Token"
+  },
+  "expires_in": {
+   "type": "integer",
+   "title": "Expires In"
+  }
+ },
+ "type": "object",
+ "required": [
+  "challenge_token",
+  "expires_in"
+ ],
+ "title": "MFARequired"
+}
+===== CheckoutIn
+{
+ "properties": {
+  "piece_ids": {
+   "items": {
+    "type": "string",
+    "format": "uuid"
+   },
+   "type": "array",
+   "maxItems": 50,
+   "minItems": 1,
+   "title": "Piece Ids"
+  },
+  "customer_name": {
+   "type": "string",
+   "maxLength": 150,
+   "minLength": 2,
+   "title": "Customer Name"
+  },
+  "customer_phone": {
+   "type": "string",
+   "maxLength": 32,
+   "minLength": 6,
+   "title": "Customer Phone"
+  },
+  "customer_email": {
+   "anyOf": [
+    {
+     "type": "string",
+     "format": "email"
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "title": "Customer Email"
+  },
+  "address": {
+   "$ref": "#/components/schemas/AddressIn"
+  },
+  "customer_note": {
+   "anyOf": [
+    {
+     "type": "string",
+     "maxLength": 2000
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "title": "Customer Note"
+  },
+  "privilege_code": {
+   "anyOf": [
+    {
+     "type": "string",
+     "maxLength": 40
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "title": "Privilege Code"
+  }
+ },
+ "type": "object",
+ "required": [
+  "piece_ids",
+  "customer_name",
+  "customer_phone",
+  "address"
+ ],
+ "title": "CheckoutIn"
+}
+===== AddressIn
+{
+ "properties": {
+  "line1": {
+   "type": "string",
+   "maxLength": 200,
+   "minLength": 1,
+   "title": "Line1"
+  },
+  "line2": {
+   "anyOf": [
+    {
+     "type": "string",
+     "maxLength": 200
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "title": "Line2"
+  },
+  "neighbourhood": {
+   "anyOf": [
+    {
+     "type": "string",
+     "maxLength": 120
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "title": "Neighbourhood"
+  },
+  "landmark": {
+   "anyOf": [
+    {
+     "type": "string",
+     "maxLength": 200
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "title": "Landmark"
+  },
+  "city_id": {
+   "anyOf": [
+    {
+     "type": "integer"
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "title": "City Id"
+  },
+  "region_id": {
+   "anyOf": [
+    {
+     "type": "integer"
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "title": "Region Id"
+  }
+ },
+ "type": "object",
+ "required": [
+  "line1"
+ ],
+ "title": "AddressIn",
+ "description": "Delivery address. Snapshotted onto the order as JSON."
+}
+===== OrderOut
+{
+ "properties": {
+  "id": {
+   "type": "string",
+   "format": "uuid",
+   "title": "Id"
+  },
+  "order_number": {
+   "type": "string",
+   "title": "Order Number"
+  },
+  "status": {
+   "$ref": "#/components/schemas/OrderStatus"
+  },
+  "customer_name": {
+   "type": "string",
+   "title": "Customer Name"
+  },
+  "customer_phone": {
+   "type": "string",
+   "title": "Customer Phone"
+  },
+  "customer_email": {
+   "anyOf": [
+    {
+     "type": "string"
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "title": "Customer Email"
+  },
+  "delivery_address": {
+   "anyOf": [
+    {
+     "type": "object"
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "title": "Delivery Address"
+  },
+  "delivery_city_id": {
+   "anyOf": [
+    {
+     "type": "integer"
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "title": "Delivery City Id"
+  },
+  "delivery_region_id": {
+   "anyOf": [
+    {
+     "type": "integer"
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "title": "Delivery Region Id"
+  },
+  "subtotal": {
+   "type": "string",
+   "title": "Subtotal"
+  },
+  "delivery_fee": {
+   "type": "string",
+   "title": "Delivery Fee"
+  },
+  "discount_amount": {
+   "type": "string",
+   "title": "Discount Amount"
+  },
+  "total": {
+   "type": "string",
+   "title": "Total"
+  },
+  "currency": {
+   "type": "string",
+   "title": "Currency"
+  },
+  "quote_required": {
+   "type": "boolean",
+   "title": "Quote Required"
+  },
+  "customer_note": {
+   "anyOf": [
+    {
+     "type": "string"
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "title": "Customer Note"
+  },
+  "admin_note": {
+   "anyOf": [
+    {
+     "type": "string"
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "title": "Admin Note"
+  },
+  "placed_at": {
+   "anyOf": [
+    {
+     "type": "string",
+     "format": "date-time"
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "title": "Placed At"
+  },
+  "created_at": {
+   "type": "string",
+   "format": "date-time",
+   "title": "Created At"
+  },
+  "items": {
+   "items": {
+    "$ref": "#/components/schemas/OrderItemOut"
+   },
+   "type": "array",
+   "title": "Items",
+   "default": []
+  }
+ },
+ "type": "object",
+ "required": [
+  "id",
+  "order_number",
+  "status",
+  "customer_name",
+  "customer_phone",
+  "customer_email",
+  "delivery_address",
+  "delivery_city_id",
+  "delivery_region_id",
+  "subtotal",
+  "delivery_fee",
+  "discount_amount",
+  "total",
+  "currency",
+  "quote_required",
+  "customer_note",
+  "admin_note",
+  "placed_at",
+  "created_at"
+ ],
+ "title": "OrderOut"
+}
+===== OrderSummary
+{
+ "properties": {
+  "id": {
+   "type": "string",
+   "format": "uuid",
+   "title": "Id"
+  },
+  "order_number": {
+   "type": "string",
+   "title": "Order Number"
+  },
+  "status": {
+   "$ref": "#/components/schemas/OrderStatus"
+  },
+  "customer_name": {
+   "type": "string",
+   "title": "Customer Name"
+  },
+  "total": {
+   "type": "string",
+   "title": "Total"
+  },
+  "currency": {
+   "type": "string",
+   "title": "Currency"
+  },
+  "quote_required": {
+   "type": "boolean",
+   "title": "Quote Required"
+  },
+  "created_at": {
+   "type": "string",
+   "format": "date-time",
+   "title": "Created At"
+  }
+ },
+ "type": "object",
+ "required": [
+  "id",
+  "order_number",
+  "status",
+  "customer_name",
+  "total",
+  "currency",
+  "quote_required",
+  "created_at"
+ ],
+ "title": "OrderSummary",
+ "description": "Trimmed shape for list views."
+}
+===== OrderItemOut
+{
+ "properties": {
+  "piece_id": {
+   "type": "string",
+   "format": "uuid",
+   "title": "Piece Id"
+  },
+  "title": {
+   "type": "string",
+   "title": "Title"
+  },
+  "price": {
+   "type": "string",
+   "title": "Price"
+  }
+ },
+ "type": "object",
+ "required": [
+  "piece_id",
+  "title",
+  "price"
+ ],
+ "title": "OrderItemOut"
+}
+===== OrderStatus
+{
+ "type": "string",
+ "enum": [
+  "pending",
+  "paid",
+  "preparing",
+  "ready",
+  "delivering",
+  "completed",
+  "cancelled",
+  "quote_required"
+ ],
+ "title": "OrderStatus"
+}
+===== OrdersPage
+{
+ "properties": {
+  "items": {
+   "items": {
+    "$ref": "#/components/schemas/OrderSummary"
+   },
+   "type": "array",
+   "title": "Items"
+  },
+  "total": {
+   "type": "integer",
+   "title": "Total"
+  },
+  "limit": {
+   "type": "integer",
+   "title": "Limit"
+  },
+  "offset": {
+   "type": "integer",
+   "title": "Offset"
+  }
+ },
+ "type": "object",
+ "required": [
+  "items",
+  "total",
+  "limit",
+  "offset"
+ ],
+ "title": "OrdersPage"
+}
+===== StatusHistoryOut
+{
+ "properties": {
+  "from_status": {
+   "anyOf": [
+    {
+     "$ref": "#/components/schemas/OrderStatus"
+    },
+    {
+     "type": "null"
+    }
+   ]
+  },
+  "to_status": {
+   "$ref": "#/components/schemas/OrderStatus"
+  },
+  "actor_type": {
+   "$ref": "#/components/schemas/ActorType"
+  },
+  "actor_id": {
+   "anyOf": [
+    {
+     "type": "string",
+     "format": "uuid"
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "title": "Actor Id"
+  },
+  "reason": {
+   "anyOf": [
+    {
+     "type": "string"
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "title": "Reason"
+  },
+  "created_at": {
+   "type": "string",
+   "format": "date-time",
+   "title": "Created At"
+  }
+ },
+ "type": "object",
+ "required": [
+  "from_status",
+  "to_status",
+  "actor_type",
+  "actor_id",
+  "reason",
+  "created_at"
+ ],
+ "title": "StatusHistoryOut",
+ "description": "One entry in an order's status timeline."
+}
+===== InitiateIn
+{
+ "properties": {
+  "order_number": {
+   "type": "string",
+   "maxLength": 40,
+   "minLength": 3,
+   "title": "Order Number"
+  },
+  "customer_phone": {
+   "anyOf": [
+    {
+     "type": "string",
+     "maxLength": 32
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "title": "Customer Phone"
+  },
+  "customer_email": {
+   "anyOf": [
+    {
+     "type": "string",
+     "maxLength": 255
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "title": "Customer Email"
+  },
+  "operator": {
+   "anyOf": [
+    {
+     "type": "string",
+     "maxLength": 40
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "title": "Operator"
+  }
+ },
+ "type": "object",
+ "required": [
+  "order_number"
+ ],
+ "title": "InitiateIn"
+}
+===== InitiateOut
+{
+ "properties": {
+  "id": {
+   "type": "string",
+   "format": "uuid",
+   "title": "Id"
+  },
+  "status": {
+   "$ref": "#/components/schemas/PaymentStatus"
+  },
+  "amount": {
+   "type": "string",
+   "title": "Amount"
+  },
+  "currency": {
+   "type": "string",
+   "title": "Currency"
+  },
+  "payment_url": {
+   "anyOf": [
+    {
+     "type": "string"
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "title": "Payment Url"
+  },
+  "provider_reference": {
+   "anyOf": [
+    {
+     "type": "string"
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "title": "Provider Reference"
+  }
+ },
+ "type": "object",
+ "required": [
+  "id",
+  "status",
+  "amount",
+  "currency",
+  "payment_url",
+  "provider_reference"
+ ],
+ "title": "InitiateOut"
+}
+===== PaymentOut
+{
+ "properties": {
+  "id": {
+   "type": "string",
+   "format": "uuid",
+   "title": "Id"
+  },
+  "purchase_id": {
+   "type": "string",
+   "format": "uuid",
+   "title": "Purchase Id"
+  },
+  "status": {
+   "$ref": "#/components/schemas/PaymentStatus"
+  },
+  "amount": {
+   "type": "string",
+   "title": "Amount"
+  },
+  "currency": {
+   "type": "string",
+   "title": "Currency"
+  },
+  "operator": {
+   "anyOf": [
+    {
+     "type": "string"
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "title": "Operator"
+  },
+  "provider_reference": {
+   "anyOf": [
+    {
+     "type": "string"
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "title": "Provider Reference"
+  },
+  "payer_phone": {
+   "anyOf": [
+    {
+     "type": "string"
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "title": "Payer Phone"
+  },
+  "failure_reason": {
+   "anyOf": [
+    {
+     "type": "string"
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "title": "Failure Reason"
+  },
+  "initiated_at": {
+   "anyOf": [
+    {
+     "type": "string",
+     "format": "date-time"
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "title": "Initiated At"
+  },
+  "confirmed_at": {
+   "anyOf": [
+    {
+     "type": "string",
+     "format": "date-time"
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "title": "Confirmed At"
+  },
+  "reconciled_at": {
+   "anyOf": [
+    {
+     "type": "string",
+     "format": "date-time"
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "title": "Reconciled At"
+  },
+  "created_at": {
+   "type": "string",
+   "format": "date-time",
+   "title": "Created At"
+  }
+ },
+ "type": "object",
+ "required": [
+  "id",
+  "purchase_id",
+  "status",
+  "amount",
+  "currency",
+  "operator",
+  "provider_reference",
+  "payer_phone",
+  "failure_reason",
+  "initiated_at",
+  "confirmed_at",
+  "reconciled_at",
+  "created_at"
+ ],
+ "title": "PaymentOut"
+}
+===== PaymentStatus
+{
+ "type": "string",
+ "enum": [
+  "initiated",
+  "pending",
+  "succeeded",
+  "failed",
+  "refunded",
+  "partially_refunded"
+ ],
+ "title": "PaymentStatus"
+}
+===== CollectionMethod
+{
+ "type": "string",
+ "enum": [
+  "drop_off",
+  "pickup"
+ ],
+ "title": "CollectionMethod"
+}
+===== ApplyIn
+{
+ "properties": {
+  "display_name": {
+   "anyOf": [
+    {
+     "type": "string",
+     "maxLength": 150
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "title": "Display Name"
+  },
+  "phone": {
+   "anyOf": [
+    {
+     "type": "string",
+     "maxLength": 32
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "title": "Phone"
+  },
+  "collaboration_type": {
+   "anyOf": [
+    {
+     "$ref": "#/components/schemas/CollaborationType"
+    },
+    {
+     "type": "null"
+    }
+   ]
+  },
+  "payout_method": {
+   "anyOf": [
+    {
+     "type": "string",
+     "maxLength": 40
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "title": "Payout Method"
+  },
+  "payout_phone": {
+   "anyOf": [
+    {
+     "type": "string",
+     "maxLength": 32
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "title": "Payout Phone"
+  }
+ },
+ "type": "object",
+ "title": "ApplyIn"
+}
+===== SourcerProfileOut
+{
+ "properties": {
+  "id": {
+   "type": "string",
+   "format": "uuid",
+   "title": "Id"
+  },
+  "user_id": {
+   "type": "string",
+   "format": "uuid",
+   "title": "User Id"
+  },
+  "display_name": {
+   "anyOf": [
+    {
+     "type": "string"
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "title": "Display Name"
+  },
+  "phone": {
+   "anyOf": [
+    {
+     "type": "string"
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "title": "Phone"
+  },
+  "status": {
+   "$ref": "#/components/schemas/SourcerStatus"
+  },
+  "collaboration_type": {
+   "anyOf": [
+    {
+     "$ref": "#/components/schemas/CollaborationType"
+    },
+    {
+     "type": "null"
+    }
+   ]
+  },
+  "rejection_reason": {
+   "anyOf": [
+    {
+     "type": "string"
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "title": "Rejection Reason"
+  },
+  "approved_at": {
+   "anyOf": [
+    {
+     "type": "string",
+     "format": "date-time"
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "title": "Approved At"
+  },
+  "payout_method": {
+   "anyOf": [
+    {
+     "type": "string"
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "title": "Payout Method"
+  },
+  "payout_phone": {
+   "anyOf": [
+    {
+     "type": "string"
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "title": "Payout Phone"
+  },
+  "is_featured": {
+   "type": "boolean",
+   "title": "Is Featured"
+  },
+  "created_at": {
+   "type": "string",
+   "format": "date-time",
+   "title": "Created At"
+  }
+ },
+ "type": "object",
+ "required": [
+  "id",
+  "user_id",
+  "display_name",
+  "phone",
+  "status",
+  "collaboration_type",
+  "rejection_reason",
+  "approved_at",
+  "payout_method",
+  "payout_phone",
+  "is_featured",
+  "created_at"
+ ],
+ "title": "SourcerProfileOut"
+}
+===== SourcerStatus
+{
+ "type": "string",
+ "enum": [
+  "pending",
+  "approved",
+  "rejected",
+  "suspended"
+ ],
+ "title": "SourcerStatus"
+}
+===== SourcerBalance
+{
+ "properties": {
+  "sourcer_id": {
+   "type": "string",
+   "format": "uuid",
+   "title": "Sourcer Id"
+  },
+  "display_name": {
+   "anyOf": [
+    {
+     "type": "string"
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "title": "Display Name"
+  },
+  "status": {
+   "type": "string",
+   "title": "Status"
+  },
+  "amount_outstanding": {
+   "type": "string",
+   "title": "Amount Outstanding"
+  },
+  "amount_paid": {
+   "type": "string",
+   "title": "Amount Paid"
+  },
+  "payouts_open": {
+   "type": "integer",
+   "title": "Payouts Open"
+  }
+ },
+ "type": "object",
+ "required": [
+  "sourcer_id",
+  "display_name",
+  "status",
+  "amount_outstanding",
+  "amount_paid",
+  "payouts_open"
+ ],
+ "title": "SourcerBalance"
+}
+===== SubmissionCreate
+{
+ "properties": {
+  "item_type": {
+   "anyOf": [
+    {
+     "type": "string",
+     "maxLength": 80
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "title": "Item Type"
+  },
+  "brand": {
+   "anyOf": [
+    {
+     "type": "string",
+     "maxLength": 120
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "title": "Brand"
+  },
+  "size_label": {
+   "anyOf": [
+    {
+     "type": "string",
+     "maxLength": 32
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "title": "Size Label"
+  },
+  "condition_claimed": {
+   "anyOf": [
+    {
+     "type": "string",
+     "maxLength": 40
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "title": "Condition Claimed"
+  },
+  "desired_price": {
+   "anyOf": [
+    {
+     "type": "number",
+     "minimum": 0.0
+    },
+    {
+     "type": "string"
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "title": "Desired Price"
+  },
+  "story": {
+   "anyOf": [
+    {
+     "type": "string"
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "title": "Story"
+  },
+  "share_permission": {
+   "type": "boolean",
+   "title": "Share Permission",
+   "default": false
+  },
+  "collection_method": {
+   "anyOf": [
+    {
+     "$ref": "#/components/schemas/CollectionMethod"
+    },
+    {
+     "type": "null"
+    }
+   ]
+  }
+ },
+ "type": "object",
+ "title": "SubmissionCreate"
+}
+===== SubmissionOut
+{
+ "properties": {
+  "id": {
+   "type": "string",
+   "format": "uuid",
+   "title": "Id"
+  },
+  "sourcer_id": {
+   "type": "string",
+   "format": "uuid",
+   "title": "Sourcer Id"
+  },
+  "item_type": {
+   "anyOf": [
+    {
+     "type": "string"
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "title": "Item Type"
+  },
+  "brand": {
+   "anyOf": [
+    {
+     "type": "string"
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "title": "Brand"
+  },
+  "size_label": {
+   "anyOf": [
+    {
+     "type": "string"
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "title": "Size Label"
+  },
+  "condition_claimed": {
+   "anyOf": [
+    {
+     "type": "string"
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "title": "Condition Claimed"
+  },
+  "desired_price": {
+   "anyOf": [
+    {
+     "type": "string"
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "title": "Desired Price"
+  },
+  "story": {
+   "anyOf": [
+    {
+     "type": "string"
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "title": "Story"
+  },
+  "share_permission": {
+   "type": "boolean",
+   "title": "Share Permission"
+  },
+  "status": {
+   "$ref": "#/components/schemas/SubmissionStatus"
+  },
+  "refusal_reason": {
+   "anyOf": [
+    {
+     "type": "string"
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "title": "Refusal Reason"
+  },
+  "collection_method": {
+   "anyOf": [
+    {
+     "$ref": "#/components/schemas/CollectionMethod"
+    },
+    {
+     "type": "null"
+    }
+   ]
+  },
+  "piece_id": {
+   "anyOf": [
+    {
+     "type": "string",
+     "format": "uuid"
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "title": "Piece Id"
+  },
+  "created_at": {
+   "type": "string",
+   "format": "date-time",
+   "title": "Created At"
+  },
+  "media": {
+   "items": {
+    "$ref": "#/components/schemas/app__modules__sourcing__schemas__MediaOut"
+   },
+   "type": "array",
+   "title": "Media",
+   "default": []
+  }
+ },
+ "type": "object",
+ "required": [
+  "id",
+  "sourcer_id",
+  "item_type",
+  "brand",
+  "size_label",
+  "condition_claimed",
+  "desired_price",
+  "story",
+  "share_permission",
+  "status",
+  "refusal_reason",
+  "collection_method",
+  "piece_id",
+  "created_at"
+ ],
+ "title": "SubmissionOut"
+}
+===== SubmissionSummary
+{
+ "properties": {
+  "id": {
+   "type": "string",
+   "format": "uuid",
+   "title": "Id"
+  },
+  "sourcer_id": {
+   "type": "string",
+   "format": "uuid",
+   "title": "Sourcer Id"
+  },
+  "item_type": {
+   "anyOf": [
+    {
+     "type": "string"
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "title": "Item Type"
+  },
+  "brand": {
+   "anyOf": [
+    {
+     "type": "string"
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "title": "Brand"
+  },
+  "status": {
+   "$ref": "#/components/schemas/SubmissionStatus"
+  },
+  "created_at": {
+   "type": "string",
+   "format": "date-time",
+   "title": "Created At"
+  }
+ },
+ "type": "object",
+ "required": [
+  "id",
+  "sourcer_id",
+  "item_type",
+  "brand",
+  "status",
+  "created_at"
+ ],
+ "title": "SubmissionSummary"
+}
+===== SubmissionStatus
+{
+ "type": "string",
+ "enum": [
+  "submitted",
+  "in_review",
+  "accepted",
+  "refused",
+  "catalogued"
+ ],
+ "title": "SubmissionStatus"
+}
+===== SubmissionsPage
+{
+ "properties": {
+  "items": {
+   "items": {
+    "$ref": "#/components/schemas/SubmissionSummary"
+   },
+   "type": "array",
+   "title": "Items"
+  },
+  "total": {
+   "type": "integer",
+   "title": "Total"
+  },
+  "limit": {
+   "type": "integer",
+   "title": "Limit"
+  },
+  "offset": {
+   "type": "integer",
+   "title": "Offset"
+  }
+ },
+ "type": "object",
+ "required": [
+  "items",
+  "total",
+  "limit",
+  "offset"
+ ],
+ "title": "SubmissionsPage"
+}
+===== PayoutOut
+{
+ "properties": {
+  "id": {
+   "type": "string",
+   "format": "uuid",
+   "title": "Id"
+  },
+  "sourcer_id": {
+   "type": "string",
+   "format": "uuid",
+   "title": "Sourcer Id"
+  },
+  "amount": {
+   "type": "string",
+   "title": "Amount"
+  },
+  "currency": {
+   "type": "string",
+   "title": "Currency"
+  },
+  "status": {
+   "$ref": "#/components/schemas/PayoutStatus"
+  },
+  "method": {
+   "anyOf": [
+    {
+     "type": "string"
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "title": "Method"
+  },
+  "provider_reference": {
+   "anyOf": [
+    {
+     "type": "string"
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "title": "Provider Reference"
+  },
+  "paid_at": {
+   "anyOf": [
+    {
+     "type": "string",
+     "format": "date-time"
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "title": "Paid At"
+  },
+  "created_at": {
+   "type": "string",
+   "format": "date-time",
+   "title": "Created At"
+  }
+ },
+ "type": "object",
+ "required": [
+  "id",
+  "sourcer_id",
+  "amount",
+  "currency",
+  "status",
+  "method",
+  "provider_reference",
+  "paid_at",
+  "created_at"
+ ],
+ "title": "PayoutOut"
+}
+===== PayoutStatus
+{
+ "type": "string",
+ "enum": [
+  "pending",
+  "approved",
+  "paid",
+  "failed"
+ ],
+ "title": "PayoutStatus"
+}
+===== PieceSummary
+{
+ "properties": {
+  "id": {
+   "type": "string",
+   "format": "uuid",
+   "title": "Id"
+  },
+  "sku": {
+   "type": "string",
+   "title": "Sku"
+  },
+  "title": {
+   "type": "string",
+   "title": "Title"
+  },
+  "slug": {
+   "type": "string",
+   "title": "Slug"
+  },
+  "price": {
+   "type": "string",
+   "title": "Price"
+  },
+  "currency": {
+   "type": "string",
+   "title": "Currency"
+  },
+  "condition": {
+   "$ref": "#/components/schemas/PieceCondition"
+  },
+  "status": {
+   "$ref": "#/components/schemas/PieceStatus"
+  },
+  "size_label": {
+   "anyOf": [
+    {
+     "type": "string"
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "title": "Size Label"
+  },
+  "house_id": {
+   "anyOf": [
+    {
+     "type": "string",
+     "format": "uuid"
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "title": "House Id"
+  },
+  "universe_id": {
+   "anyOf": [
+    {
+     "type": "string",
+     "format": "uuid"
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "title": "Universe Id"
+  },
+  "published_at": {
+   "anyOf": [
+    {
+     "type": "string",
+     "format": "date-time"
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "title": "Published At"
+  },
+  "image_url": {
+   "anyOf": [
+    {
+     "type": "string"
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "title": "Image Url"
+  },
+  "images": {
+   "items": {
+    "type": "string"
+   },
+   "type": "array",
+   "title": "Images",
+   "default": []
+  }
+ },
+ "type": "object",
+ "required": [
+  "id",
+  "sku",
+  "title",
+  "slug",
+  "price",
+  "currency",
+  "condition",
+  "status",
+  "size_label",
+  "house_id",
+  "universe_id",
+  "published_at"
+ ],
+ "title": "PieceSummary",
+ "description": "List/browse card — the trimmed shape used in grids.\n\nCarries the piece's images so a grid can render a thumbnail without a\nsecond request: `image_url` is the primary photo (first image in display\norder) and `images` is every image URL in order. Both are derived from the\npiece's media; build instances with `from_piece()` so the derivation runs."
+}
+===== PieceDetail
+{
+ "properties": {
+  "id": {
+   "type": "string",
+   "format": "uuid",
+   "title": "Id"
+  },
+  "sku": {
+   "type": "string",
+   "title": "Sku"
+  },
+  "title": {
+   "type": "string",
+   "title": "Title"
+  },
+  "slug": {
+   "type": "string",
+   "title": "Slug"
+  },
+  "price": {
+   "type": "string",
+   "title": "Price"
+  },
+  "currency": {
+   "type": "string",
+   "title": "Currency"
+  },
+  "condition": {
+   "$ref": "#/components/schemas/PieceCondition"
+  },
+  "status": {
+   "$ref": "#/components/schemas/PieceStatus"
+  },
+  "size_label": {
+   "anyOf": [
+    {
+     "type": "string"
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "title": "Size Label"
+  },
+  "house_id": {
+   "anyOf": [
+    {
+     "type": "string",
+     "format": "uuid"
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "title": "House Id"
+  },
+  "universe_id": {
+   "anyOf": [
+    {
+     "type": "string",
+     "format": "uuid"
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "title": "Universe Id"
+  },
+  "published_at": {
+   "anyOf": [
+    {
+     "type": "string",
+     "format": "date-time"
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "title": "Published At"
+  },
+  "image_url": {
+   "anyOf": [
+    {
+     "type": "string"
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "title": "Image Url"
+  },
+  "images": {
+   "items": {
+    "type": "string"
+   },
+   "type": "array",
+   "title": "Images",
+   "default": []
+  },
+  "description": {
+   "anyOf": [
+    {
+     "type": "string"
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "title": "Description"
+  },
+  "story": {
+   "anyOf": [
+    {
+     "type": "string"
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "title": "Story"
+  },
+  "media": {
+   "items": {
+    "$ref": "#/components/schemas/app__modules__catalogue__schemas__MediaOut"
+   },
+   "type": "array",
+   "title": "Media",
+   "default": []
+  },
+  "in_wishlist": {
+   "type": "boolean",
+   "title": "In Wishlist",
+   "default": false
+  }
+ },
+ "type": "object",
+ "required": [
+  "id",
+  "sku",
+  "title",
+  "slug",
+  "price",
+  "currency",
+  "condition",
+  "status",
+  "size_label",
+  "house_id",
+  "universe_id",
+  "published_at",
+  "description",
+  "story"
+ ],
+ "title": "PieceDetail",
+ "description": "Full piece view — adds description, story and the full media list."
+}
+===== PieceCondition
+{
+ "type": "string",
+ "enum": [
+  "new",
+  "very_good",
+  "good"
+ ],
+ "title": "PieceCondition"
+}
+===== PieceStatus
+{
+ "type": "string",
+ "enum": [
+  "draft",
+  "published",
+  "reserved",
+  "sold",
+  "withdrawn"
+ ],
+ "title": "PieceStatus"
+}
+===== PiecesPage
+{
+ "properties": {
+  "items": {
+   "items": {
+    "$ref": "#/components/schemas/PieceSummary"
+   },
+   "type": "array",
+   "title": "Items"
+  },
+  "total": {
+   "type": "integer",
+   "title": "Total"
+  },
+  "limit": {
+   "type": "integer",
+   "title": "Limit"
+  },
+  "offset": {
+   "type": "integer",
+   "title": "Offset"
+  }
+ },
+ "type": "object",
+ "required": [
+  "items",
+  "total",
+  "limit",
+  "offset"
+ ],
+ "title": "PiecesPage"
+}
+===== QuoteOut
+{
+ "properties": {
+  "scope": {
+   "$ref": "#/components/schemas/DeliveryScope"
+  },
+  "amount": {
+   "type": "string",
+   "title": "Amount"
+  },
+  "currency": {
+   "type": "string",
+   "title": "Currency"
+  },
+  "city_id": {
+   "anyOf": [
+    {
+     "type": "integer"
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "title": "City Id"
+  },
+  "region_id": {
+   "anyOf": [
+    {
+     "type": "integer"
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "title": "Region Id"
+  },
+  "quote_required": {
+   "type": "boolean",
+   "title": "Quote Required",
+   "default": false
+  }
+ },
+ "type": "object",
+ "required": [
+  "scope",
+  "amount",
+  "currency"
+ ],
+ "title": "QuoteOut",
+ "description": "The fee for a destination, plus how it was resolved."
+}
+===== CityOut
+{
+ "properties": {
+  "id": {
+   "type": "integer",
+   "title": "Id"
+  },
+  "name": {
+   "type": "string",
+   "title": "Name"
+  },
+  "region_id": {
+   "type": "integer",
+   "title": "Region Id"
+  },
+  "is_active": {
+   "type": "boolean",
+   "title": "Is Active"
+  }
+ },
+ "type": "object",
+ "required": [
+  "id",
+  "name",
+  "region_id",
+  "is_active"
+ ],
+ "title": "CityOut"
+}
+===== NeighbourhoodOut
+{
+ "properties": {
+  "id": {
+   "type": "integer",
+   "title": "Id"
+  },
+  "city_id": {
+   "type": "integer",
+   "title": "City Id"
+  },
+  "name": {
+   "type": "string",
+   "title": "Name"
+  },
+  "is_active": {
+   "type": "boolean",
+   "title": "Is Active"
+  }
+ },
+ "type": "object",
+ "required": [
+  "id",
+  "city_id",
+  "name",
+  "is_active"
+ ],
+ "title": "NeighbourhoodOut"
+}
+===== DivisionOut
+{
+ "properties": {
+  "id": {
+   "type": "integer",
+   "title": "Id"
+  },
+  "region_id": {
+   "type": "integer",
+   "title": "Region Id"
+  },
+  "name": {
+   "type": "string",
+   "title": "Name"
+  }
+ },
+ "type": "object",
+ "required": [
+  "id",
+  "region_id",
+  "name"
+ ],
+ "title": "DivisionOut"
+}
+===== SubdivisionOut
+{
+ "properties": {
+  "id": {
+   "type": "integer",
+   "title": "Id"
+  },
+  "division_id": {
+   "type": "integer",
+   "title": "Division Id"
+  },
+  "name": {
+   "type": "string",
+   "title": "Name"
+  }
+ },
+ "type": "object",
+ "required": [
+  "id",
+  "division_id",
+  "name"
+ ],
+ "title": "SubdivisionOut"
+}
+===== RegionOut
+{
+ "properties": {
+  "id": {
+   "type": "integer",
+   "title": "Id"
+  },
+  "name": {
+   "type": "string",
+   "title": "Name"
+  },
+  "code": {
+   "type": "string",
+   "title": "Code"
+  }
+ },
+ "type": "object",
+ "required": [
+  "id",
+  "name",
+  "code"
+ ],
+ "title": "RegionOut"
+}
+===== HouseOut
+{
+ "properties": {
+  "id": {
+   "type": "string",
+   "format": "uuid",
+   "title": "Id"
+  },
+  "name": {
+   "type": "string",
+   "title": "Name"
+  },
+  "slug": {
+   "type": "string",
+   "title": "Slug"
+  },
+  "is_active": {
+   "type": "boolean",
+   "title": "Is Active"
+  }
+ },
+ "type": "object",
+ "required": [
+  "id",
+  "name",
+  "slug",
+  "is_active"
+ ],
+ "title": "HouseOut"
+}
+===== UniverseOut
+{
+ "properties": {
+  "id": {
+   "type": "string",
+   "format": "uuid",
+   "title": "Id"
+  },
+  "name": {
+   "type": "string",
+   "title": "Name"
+  },
+  "slug": {
+   "type": "string",
+   "title": "Slug"
+  },
+  "position": {
+   "type": "integer",
+   "title": "Position"
+  },
+  "is_active": {
+   "type": "boolean",
+   "title": "Is Active"
+  }
+ },
+ "type": "object",
+ "required": [
+  "id",
+  "name",
+  "slug",
+  "position",
+  "is_active"
+ ],
+ "title": "UniverseOut"
+}
+===== HomeShowcase
+{
+ "properties": {
+  "sponsors": {
+   "items": {
+    "$ref": "#/components/schemas/SponsorOut"
+   },
+   "type": "array",
+   "title": "Sponsors"
+  },
+  "featured": {
+   "items": {
+    "$ref": "#/components/schemas/FeaturedSlotWithPiece"
+   },
+   "type": "array",
+   "title": "Featured"
+  }
+ },
+ "type": "object",
+ "required": [
+  "sponsors",
+  "featured"
+ ],
+ "title": "HomeShowcase"
+}
+===== FeaturedSlotWithPiece
+{
+ "properties": {
+  "id": {
+   "type": "integer",
+   "title": "Id"
+  },
+  "slot": {
+   "$ref": "#/components/schemas/FeaturedSlotType"
+  },
+  "piece_id": {
+   "type": "string",
+   "format": "uuid",
+   "title": "Piece Id"
+  },
+  "starts_at": {
+   "anyOf": [
+    {
+     "type": "string",
+     "format": "date-time"
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "title": "Starts At"
+  },
+  "ends_at": {
+   "anyOf": [
+    {
+     "type": "string",
+     "format": "date-time"
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "title": "Ends At"
+  },
+  "created_by": {
+   "anyOf": [
+    {
+     "type": "string",
+     "format": "uuid"
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "title": "Created By"
+  },
+  "created_at": {
+   "type": "string",
+   "format": "date-time",
+   "title": "Created At"
+  },
+  "piece": {
+   "anyOf": [
+    {
+     "$ref": "#/components/schemas/PieceSummary"
+    },
+    {
+     "type": "null"
+    }
+   ]
+  }
+ },
+ "type": "object",
+ "required": [
+  "id",
+  "slot",
+  "piece_id",
+  "starts_at",
+  "ends_at",
+  "created_by",
+  "created_at"
+ ],
+ "title": "FeaturedSlotWithPiece",
+ "description": "Public/admin view: the slot plus the resolved catalogue piece."
+}
+===== SponsorOut
+{
+ "properties": {
+  "id": {
+   "type": "string",
+   "format": "uuid",
+   "title": "Id"
+  },
+  "name": {
+   "type": "string",
+   "title": "Name"
+  },
+  "logo_url": {
+   "anyOf": [
+    {
+     "type": "string"
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "title": "Logo Url"
+  },
+  "link_url": {
+   "anyOf": [
+    {
+     "type": "string"
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "title": "Link Url"
+  },
+  "starts_at": {
+   "anyOf": [
+    {
+     "type": "string",
+     "format": "date-time"
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "title": "Starts At"
+  },
+  "ends_at": {
+   "anyOf": [
+    {
+     "type": "string",
+     "format": "date-time"
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "title": "Ends At"
+  },
+  "position": {
+   "type": "integer",
+   "title": "Position"
+  },
+  "is_active": {
+   "type": "boolean",
+   "title": "Is Active"
+  }
+ },
+ "type": "object",
+ "required": [
+  "id",
+  "name",
+  "logo_url",
+  "link_url",
+  "starts_at",
+  "ends_at",
+  "position",
+  "is_active"
+ ],
+ "title": "SponsorOut"
+}
+===== ReturnCreate
+{
+ "properties": {
+  "purchase_id": {
+   "type": "string",
+   "format": "uuid",
+   "title": "Purchase Id"
+  },
+  "piece_id": {
+   "type": "string",
+   "format": "uuid",
+   "title": "Piece Id"
+  },
+  "reason": {
+   "anyOf": [
+    {
+     "type": "string",
+     "maxLength": 1000
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "title": "Reason"
+  }
+ },
+ "type": "object",
+ "required": [
+  "purchase_id",
+  "piece_id"
+ ],
+ "title": "ReturnCreate"
+}
+===== ReturnOut
+{
+ "properties": {
+  "id": {
+   "type": "string",
+   "format": "uuid",
+   "title": "Id"
+  },
+  "purchase_id": {
+   "type": "string",
+   "format": "uuid",
+   "title": "Purchase Id"
+  },
+  "piece_id": {
+   "type": "string",
+   "format": "uuid",
+   "title": "Piece Id"
+  },
+  "reason": {
+   "anyOf": [
+    {
+     "type": "string"
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "title": "Reason"
+  },
+  "status": {
+   "$ref": "#/components/schemas/ReturnStatus"
+  },
+  "resolution_note": {
+   "anyOf": [
+    {
+     "type": "string"
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "title": "Resolution Note"
+  },
+  "restocked": {
+   "type": "boolean",
+   "title": "Restocked"
+  },
+  "created_by": {
+   "anyOf": [
+    {
+     "type": "string",
+     "format": "uuid"
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "title": "Created By"
+  },
+  "created_at": {
+   "type": "string",
+   "format": "date-time",
+   "title": "Created At"
+  }
+ },
+ "type": "object",
+ "required": [
+  "id",
+  "purchase_id",
+  "piece_id",
+  "reason",
+  "status",
+  "resolution_note",
+  "restocked",
+  "created_by",
+  "created_at"
+ ],
+ "title": "ReturnOut"
+}
+===== ReturnStatus
+{
+ "type": "string",
+ "enum": [
+  "requested",
+  "approved",
+  "rejected",
+  "resolved"
+ ],
+ "title": "ReturnStatus"
+}
+===== AcquisitionType
+{
+ "type": "string",
+ "enum": [
+  "direct_buy",
+  "consignment"
+ ],
+ "title": "AcquisitionType"
+}
+===== CollaborationType
+{
+ "type": "string",
+ "enum": [
+  "direct_sale",
+  "consignment"
+ ],
+ "title": "CollaborationType"
+}
+===== PageMeta
+{
+ "properties": {
+  "page": {
+   "type": "integer",
+   "title": "Page"
+  },
+  "page_size": {
+   "type": "integer",
+   "title": "Page Size"
+  },
+  "total": {
+   "type": "integer",
+   "title": "Total"
+  },
+  "pages": {
+   "type": "integer",
+   "title": "Pages"
+  }
+ },
+ "type": "object",
+ "required": [
+  "page",
+  "page_size",
+  "total",
+  "pages"
+ ],
+ "title": "PageMeta"
+}
+===== MessageResponse
+{
+ "properties": {
+  "message": {
+   "type": "string",
+   "title": "Message"
+  }
+ },
+ "type": "object",
+ "required": [
+  "message"
+ ],
+ "title": "MessageResponse"
+}
+===== app__modules__sourcing__schemas__MediaOut
+{
+ "properties": {
+  "id": {
+   "type": "string",
+   "format": "uuid",
+   "title": "Id"
+  },
+  "url": {
+   "type": "string",
+   "title": "Url"
+  },
+  "position": {
+   "type": "integer",
+   "title": "Position"
+  }
+ },
+ "type": "object",
+ "required": [
+  "id",
+  "url",
+  "position"
+ ],
+ "title": "MediaOut"
+}

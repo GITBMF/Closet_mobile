@@ -5,6 +5,8 @@ import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/closet_colors.dart';
 import '../../../core/theme/closet_text_styles.dart';
+import '../../../core/widgets/closet_feedback.dart';
+import '../../../core/widgets/etat_ecran.dart';
 import '../../../core/widgets/status_badge.dart';
 import '../../../data/models/commande.dart';
 import '../../../data/repositories/commande_repository.dart';
@@ -22,11 +24,11 @@ class MesCommandesScreen extends ConsumerWidget {
     final commandes = ref.watch(mesCommandesProvider);
 
     return Scaffold(
-      backgroundColor: ClosetColors.beige,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
         child: Column(
           children: [
-            _EnTeteCentre(
+            ClosetPageHeader(
               titre: 'Mes commandes',
               onRetour: () => context.pop(),
               action: SourceurBoutonRond(
@@ -38,7 +40,7 @@ class MesCommandesScreen extends ConsumerWidget {
             Expanded(
               child: commandes.when(
                 data: (liste) => liste.isEmpty
-                    ? const _AucuneCommande()
+                    ? const ClosetListeVide()
                     : ListView.separated(
                         padding: const EdgeInsets.fromLTRB(
                           AppSpacing.p20,
@@ -56,50 +58,11 @@ class MesCommandesScreen extends ConsumerWidget {
                           ),
                         ),
                       ),
-                loading: () => const Center(
-                  child: CircularProgressIndicator(color: ClosetColors.dore),
+                loading: () => const EtatEcran.chargement(),
+                error: (e, _) => EtatEcran.erreur(
+                  erreur: e,
+                  onRetry: () => ref.invalidate(mesCommandesProvider),
                 ),
-                error: (e, _) => const Center(
-                  child: Text('Erreur de chargement'),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _AucuneCommande extends StatelessWidget {
-  const _AucuneCommande();
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.p32),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(
-              Icons.receipt_long_outlined,
-              size: 48,
-              color: ClosetColors.fond300,
-            ),
-            const SizedBox(height: AppSpacing.p20),
-            Text(
-              'Aucune commande pour l’instant',
-              textAlign: TextAlign.center,
-              style: ClosetTextStyles.titreSection,
-            ),
-            const SizedBox(height: AppSpacing.p12),
-            Text(
-              'Vos commandes apparaîtront ici dès votre première pièce '
-              'adoptée.',
-              textAlign: TextAlign.center,
-              style: ClosetTextStyles.citation.copyWith(
-                color: ClosetColors.taupe,
               ),
             ),
           ],
@@ -124,7 +87,7 @@ class _CarteCommande extends StatelessWidget {
         constraints: const BoxConstraints(minHeight: 80),
         padding: const EdgeInsets.symmetric(horizontal: AppSpacing.p16),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: ClosetColors.blanc,
           border: Border.all(color: ClosetColors.fond300, width: AppStroke.fin),
           borderRadius: BorderRadius.circular(AppRadius.carte),
         ),
@@ -168,7 +131,12 @@ class _CarteCommande extends StatelessWidget {
 StatusBadge badgeStatutCommande(StatutCommande statut) => switch (statut) {
       StatutCommande.livree => StatusBadge.livree(),
       StatutCommande.enRoute => StatusBadge.enRoute(),
-      StatutCommande.preparation => StatusBadge.preparation(),
+      StatutCommande.preparation ||
+      StatutCommande.paid ||
+      StatutCommande.pending =>
+        StatusBadge.preparation(),
+      StatutCommande.annulee => StatusBadge.refusee(),
+      StatutCommande.devis => StatusBadge.enAnalyse(),
     };
 
 /// « Déposé le… » pour une commande livrée, estimation sinon.
@@ -191,61 +159,4 @@ String formatDateCommande(DateTime d) {
   final hh = d.hour.toString().padLeft(2, '0');
   final mm = d.minute.toString().padLeft(2, '0');
   return '${jours[d.weekday - 1]} ${d.day} ${mois[d.month - 1]}, $hh:$mm';
-}
-
-/// Bandeau à titre centré, bouton de retour à gauche et action à droite.
-class _EnTeteCentre extends StatelessWidget {
-  const _EnTeteCentre({
-    required this.titre,
-    required this.onRetour,
-    this.action,
-  });
-
-  final String titre;
-  final VoidCallback onRetour;
-  final Widget? action;
-
-  @override
-  Widget build(BuildContext context) {
-    return DecoratedBox(
-      decoration: const BoxDecoration(
-        border: Border(
-          bottom: BorderSide(
-            color: ClosetColors.fond400,
-            width: AppStroke.fin,
-          ),
-        ),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(
-          AppSpacing.p20,
-          AppSpacing.p8,
-          AppSpacing.p20,
-          AppSpacing.p12,
-        ),
-        child: Row(
-          children: [
-            SourceurBoutonRond(
-              icone: Icons.arrow_back_ios_new,
-              label: 'Retour',
-              onTap: onRetour,
-            ),
-            Expanded(
-              child: Text(
-                titre,
-                textAlign: TextAlign.center,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: ClosetTextStyles.accroche.copyWith(
-                  fontWeight: FontWeight.w600,
-                  color: ClosetColors.noir,
-                ),
-              ),
-            ),
-            SizedBox(width: 42, child: action),
-          ],
-        ),
-      ),
-    );
-  }
 }

@@ -1,0 +1,162 @@
+
+### 5:1210 — Page d'ouverture [390x844] 0 textes
+   
+
+### 5:1304 — Page de Connexion/Inscription [390x844] 14 textes
+   Bienvenue | Connectez-vous pour retrouver vos pièces | Bienvenue dans votre dressing ! | Email | Example@email.com | Password | At least 8 characters | 8 caractères minimum, dont un chiffre. | ENTRER | Mot de passe oublié | Ou se connecter | CONTINUER avec Google | Pas encore membre ? Rejoindre le cercle | Continuer en invitée
+
+### 5:1279 — Acceuil Interface 1 [390x844] 4 textes
+   Le dressing privé | Une sélection curée, pièce par pièce | Chaque entrée dans le dressing est authentifiée, restaurée et photographiée avec soin. Ici, la seconde main devient un rituel d'élégance. | CONTINUER VOTRE VISITE
+
+### 5:1342 — Acceuil Interface 2 [390x844] 4 textes
+   L'élégance durable | Consommer moins, choisir mieux. | Nous prolongeons la vie de pièces d'exception. Chaque acquisition est un geste pour la planète — sans compromis sur la beauté. | CONTINUER VOTRE VISITE
+
+### 5:1371 — Acceuil Interface 3 [390x844] 5 textes
+   Le cercle privilège | Un accès discret aux plus belles pièces. | Notifications privées sur les nouveautés de vos maisons préférées, avantages exclusifs, livraison écrin. Un service à la hauteur de vos exigences. | CONTINUER VOTRE VISITE | J’AI DéJà UN COMPTE
+
+### 11:30 — Page d'acceuil [390x844] 47 textes
+   Bienvenue, | Mme Aïcha N | pièce de la semaine | Robe élégance Durable | Sandro. Soie. T38. Pièce Unique | Découvrir - 38. 500 FCFA | Découvrir - 38. 500 FCFA | excellent état | explorer par univers | Escaprins | Robes | Sacs | Tout l’univers | Vestes | Nouveauté du dressing | tout découvrir | excellent | excellent | Maison coco chanel | Maison zara | Sac Cuir Coco Chanel | Veste Tweed Crème | 31.000 FCFA | 31.000 FCFA | T.36. Laine. Tweed | T.S Cuire Taille.38 | Dressing | Coup de coeur Clos ET | Voir | excellent | excellent | RUE SEREINE | massimo dutti | Blouse Ivoire Fluide | Robe Plissée Sable | 18.000 FCFA | 22.000 FCFA | T.36. Laine. Tweed | T.S Cuire Taille.38 | Maison du moment | Toutes | Escaprins | Robes | Sacs | Tout l’univers | Vestes | clos et.  abidjan - paris  -Yaoundé
+
+### 11:250 — Page d'acceuil 2 [390x1270] 45 textes
+   Bienvenue, | Mme Aïcha N | pièce de la semaine | Robe élégance Durable | Sandro. Soie. T38. Pièce Unique | Découvrir - 38. 500 FCFA | excellent état | explorer par univers | Escaprins | Robes | Sacs | Tout l’univers | Vestes | Nouveauté du dressing | tout découvrir | excellent | excellent | Maison coco chanel | Maison zara | Sac Cuir Coco Chanel | Veste Tweed Crème | 31.000 FCFA | 31.000 FCFA | T.36. Laine. Tweed | T.S Cuire Taille.38 | Coup de coeur Clos ET | Voir | excellent | excellent | RUE SEREINE | massimo dutti | Blouse Ivoire Fluide | Robe Plissée Sable | 18.000 FCFA | 22.000 FCFA | T.36. Laine. Tweed | T.S Cuire Taille.38 | Maison du moment | Toutes | Escaprins | Robes | Sacs | Tout l’univers | Vestes | clos et.  abidjan - paris  -Yaoundé
+
+### 14:1281 — Page collection [390x844] 43 textes
+   Toutes les pièces | Nouveautés | Search... | explorer par univers | Escaprins | Robes | Sacs | Tout l’univers | Vestes | Nouveauté du dressing | tout découvrir | excellent | excellent | Maison coco chanel | Maison zara | Sac Cuir Coco Chanel | Veste Tweed Crème | 31.000 FCFA | 31.000 FCFA | T.36. Laine. Tweed | T.S Cuire Taille.38 | excellent | excellent | RUE SEREINE | massimo dutti | Collections | Blouse Ivoire Fluide | Robe Plissée Sable | 18.000 FCFA | 22.000 FCFA | T.36. Laine. Tweed | T.S Cuire Taille.38 | excellent | excellent | louboutin paris | massimo dutti | Ensemble Plissée Sable | Escarpins Blancs Louboutin | 25.000 FCFA | 28.000 FCFA | T.36. Laine. Tweed | T.S Cuire Taille.38 | clos et.  abidjan - paris  -Yaoundé
+
+### 13:1032 — Page Collection 2 [390x1197] 42 textes
+   Toutes les pièces | Nouveautés | Search... | explorer par univers | Escaprins | Robes | Sacs | Tout l’univers | Vestes | Nouveauté du dressing | tout découvrir | excellent | excellent | Maison coco chanel | Maison zara | Sac Cuir Coco Chanel | Veste Tweed Crème | 31.000 FCFA | 31.000 FCFA | T.36. Laine. Tweed | T.S Cuire Taille.38 | excellent | excellent | RUE SEREINE | massimo dutti | Blouse Ivoire Fluide | Robe Plissée Sable | 18.000 FCFA | 22.000 FCFA | T.36. Laine. Tweed | T.S Cuire Taille.38 | excellent | excellent | louboutin paris | massimo dutti | Ensemble Plissée Sable | Escarpins Blancs Louboutin | 25.000 FCFA | 28.000 FCFA | T.36. Laine. Tweed | T.S Cuire Taille.38 | clos et.  abidjan - paris  -Yaoundé
+
+### 16:2260 — Page collection avec Filtre [390x844] 80 textes
+   Collections | Search... | explorer par univers | Filtres.3 | Neuf.  x | Robes.  x | Taille M.  x | 18 pièces. triées par nouveautés | Neuf | neuf | Maison coco chanel | Maison zara | Robe Coco Chanel | Robe beige Crème | 31.000 FCFA | 37.000 FCFA | T.36. Laine. Tweed | T.S Cuire Taille.38 | excellent | excellent | maison dior | massimo dutti | Robe Dior | Robe Plissée Sable | 20.000 FCFA | 22.000 FCFA | Collections | T.36. Laine. Tweed | T.S Cuire Taille.38 | excellent | excellent | COCO Chanel | Zara | Ensemble Robe chic Manteau | Robe Hijaab | 28.000 FCFA | 35.000 FCFA | T.36. Laine. Tweed | T.S Cuire Taille.38 | excellent | excellent | RUE SEREINE | massimo dutti | Robe Ivoire Fluide | Robe Plissée Sable | 18.000 FCFA | 22.000 FCFA | T.36. Laine. Tweed | T.S Cuire Taille.38 | excellent | excellent | louboutin paris | massimo dutti | Robe Massimo | Robes Louboutin noire | 24.000 FCFA | 30.000 FCFA | T.36. Laine. Tweed | T.S Cuire Taille.38 | excellent | excellent | RUE SEREINE | massimo dutti | Robe Auchamp Seine | Robe Eclat de fleurs bleues | 18.000 FCFA | 27.000 FCFA | T.36. Laine. Tweed | T.S Cuire Taille.38 | excellent | excellent | dior paris | massimo dutti | Robe Gala Dior | Robe Plissée Sable | 25.000 FCFA | 28.000 FCFA | T.36. Laine. Tweed | T.S Cuire Taille.38 | clos et.  abidjan - paris  -Yaoundé
+
+### 16:1954 — Page collection avec Filtre 2 [390x2239] 79 textes
+   Collections | Search... | explorer par univers | Filtres.3 | Neuf.  x | Robes.  x | Taille M.  x | 18 pièces. triées par nouveautés | Neuf | neuf | Maison coco chanel | Maison zara | Robe Coco Chanel | Robe beige Crème | 31.000 FCFA | 37.000 FCFA | T.36. Laine. Tweed | T.S Cuire Taille.38 | excellent | excellent | maison dior | massimo dutti | Robe Dior | Robe Plissée Sable | 20.000 FCFA | 22.000 FCFA | T.36. Laine. Tweed | T.S Cuire Taille.38 | excellent | excellent | COCO Chanel | Zara | Ensemble Robe chic Manteau | Robe Hijaab | 28.000 FCFA | 35.000 FCFA | T.36. Laine. Tweed | T.S Cuire Taille.38 | excellent | excellent | RUE SEREINE | massimo dutti | Robe Ivoire Fluide | Robe Plissée Sable | 18.000 FCFA | 22.000 FCFA | T.36. Laine. Tweed | T.S Cuire Taille.38 | excellent | excellent | louboutin paris | massimo dutti | Robe Massimo | Robes Louboutin noire | 24.000 FCFA | 30.000 FCFA | T.36. Laine. Tweed | T.S Cuire Taille.38 | excellent | excellent | RUE SEREINE | massimo dutti | Robe Auchamp Seine | Robe Eclat de fleurs bleues | 18.000 FCFA | 27.000 FCFA | T.36. Laine. Tweed | T.S Cuire Taille.38 | excellent | excellent | dior paris | massimo dutti | Robe Gala Dior | Robe Plissée Sable | 25.000 FCFA | 28.000 FCFA | T.36. Laine. Tweed | T.S Cuire Taille.38 | clos et.  abidjan - paris  -Yaoundé
+
+### 14:1514 — Filtre [390x844] 67 textes
+   Toutes les pièces | Nouveautés | Search... | Affiner ma recherche | tout réinitialiser | explorer par univers | Escaprins | Robes | Sacs | Tout l’univers | Vestes | explorer par univers | Accessoires | Robes | Sacs | Vestes | Nouveauté du dressing | tout découvrir | Chaussures | excellent | excellent | Taille | L | M | S | XL | XS | état de la pièce | Maison coco chanel | Maison zara | Bon état | Excellent | Neuf | Sac Cuir Coco Chanel | Très bon état | Veste Tweed Crème | 31.000 FCFA | 31.000 FCFA | T.36. Laine. Tweed | T.S Cuire Taille.38 | Chaussures | excellent | excellent | explorer par univers | 10.000 FCFA | 45.000 FCFA | Voir 18 pièces | RUE SEREINE | massimo dutti | Collections | Blouse Ivoire Fluide | Robe Plissée Sable | 18.000 FCFA | 22.000 FCFA | T.36. Laine. Tweed | T.S Cuire Taille.38 | excellent | excellent | louboutin paris | massimo dutti | Ensemble Plissée Sable | Escarpins Blancs Louboutin | 25.000 FCFA | 28.000 FCFA | T.36. Laine. Tweed | T.S Cuire Taille.38 | clos et.  abidjan - paris  -Yaoundé
+
+### 16:3328 — Page Article 1 [390x844] 20 textes
+   Maison coco chanel | excellent | Robe Durable Vert Emeraude | 38.500 FCFA | pièce unique | Etat de la pièce | Très bon état — portée deux fois | à  Ajouter | M · poitrine 92 cm · longueur 108 cm | Taille & Coupe | 38.500 FCFA | Ajouter à mon dressing | Matière | Soie 70 % · Viscose 30 % | Entretien | Lavage main, séchage à plat | À propos de cette pièce | « Sélectionnée pour son tombé impeccable et sa teinte forêt qui traverse les saisons. Une pièce pensée pour durer avec style. » | Livrée avec packaging Clos ET exclusif | Ajouter à mon dressing
+
+### 16:3063 — Page Article 2 [390x1229] 19 textes
+   Maison coco chanel | excellent | Robe Durable Vert Emeraude | 38.500 FCFA | pièce unique | Etat de la pièce | Très bon état — portée deux fois | M · poitrine 92 cm · longueur 108 cm | Taille & Coupe | Matière | Soie 70 % · Viscose 30 % | Entretien | Lavage main, séchage à plat | À propos de cette pièce | « Sélectionnée pour son tombé impeccable et sa teinte forêt qui traverse les saisons. Une pièce pensée pour durer avec style. » | Livrée avec packaging Clos ET exclusif | à  Ajouter | 38.500 FCFA | Ajouter à mon dressing
+
+### 16:3448 — Page Ma sélection [390x844] 17 textes
+   Ma sélection | 1 pièce unique mise de côté pour vous. | Maison coco chanel | Robe Durable Vert Emeraude | excellent | 38.500 FCFA | Code privilège | Appliquer | cercle-privilège | 38.500 FCFA | Sous-total | 3.500 FCFA | Livraison délicate | 42.000 FCFA | total à régler | Finaliser Ma sélection | Selection
+
+### 56:11462 — Ma sélection E1 [390x844] 19 textes
+   Ma sélection | Etape 1/3 | Paiement | confirmation | livraison | 1 | 2 | 3 | Nom complet | Aîcha N. | Téléphone (Whatsapp) | +237 6 90 12 34 56 | Nous vous écrirons sur WhatsApp pour suivre votre pièce. | Détails de livraison | Veullez entrez vos informations | Méthode de paiement | Veuillez choisir la methode paiement | Valider les informations | Poursuivre -Paiement
+
+### 61:12575 — Input [161x407] 11 textes
+   Région | Adamaoua | Centre | Extrême-Nord | Est | Littoral | Nord Ouest | Ouest | Sud | Sud-Ouest | Nord
+
+### 61:12788 — Input [161x407] 11 textes
+   Région | Haute Sanaga | Lekié | Mbam-et-Inoubou | Mbam-et-Kim | Méfou-et-Afamba | Méfou-et-Akono | Mfoundi | Nyong-et-Kéllé | Nyong-et-Mfoumou | Mbalmayo
+
+### 13:1182 — Bottom Navigation Section [531x527] 5 textes
+   Dressing | Collections | Wishlist | Selection | Espace
+
+### 26:1255 — Statut de commande [164x130] 3 textes
+   Livrée | EN route | Préparation
+
+### 36:2063 — Statut Pièce sourceur [195x249] 5 textes
+   Mis en vente | En cours d’analyse | dépôt reçu | refusé | Retourné
+
+### 32:511 — Methode de retrait [390x844] 21 textes
+   espace sourceur | Mon espace | solde du compte | vérifié | 52.000 FCFA | Methode de retrait de fonds | pièces en vente : 03 pièces | à reverser : 27 300 fcfa | Orange Money | MTN Moblie Money | Historique | Moyens | Plus | Retrait | **** 4864 | Mes dépots | Mes informations | Polices et confidentialités | Logout | + Confier une nouvelle pièce | Valider la methode de retrait
+
+### 32:704 — Ajout du code PIN [390x844] 6 textes
+   Code PIN de sécurité | Ajoutez un code PIN pour renforcer la sécurité de votre portefeuille. | 5 | | | Valider le Numéro PIN | Toutes vos informations sont chiffrées de bout en bout et stockées sur des serveurs sécurisés.
+
+### 32:756 — Traitement de transaction en cours [390x844] 3 textes
+   Traitement en cours | Veuillez patienter quelques instants pendant que nous sécurisons et validons votre transaction. Merci de ne pas fermer cette application. | Toutes vos informations sont chiffrées de bout en bout et stockées sur des serveurs sécurisés.
+
+### 32:813 — Transaction reussie [390x844] 6 textes
+   Transaction reussie ! | C’est tout bon ! | Votre opération a été effectuée avec succès. Vous allez recevoir un reçu de confirmation d'ici quelques instants. | Voir le reçu | Retour dans Mon Espace | Toutes vos informations sont chiffrées de bout en bout et stockées sur des serveurs sécurisés.
+
+### 32:865 — Reçu de transaction [390x844] 18 textes
+   Votre reçu de transaction | Transaction numéro #8512857525 | Date & heure | Lun 8 Jui, 8:58:45 PM | 44277436886 | Numéro de référence | Carte Visa | Mode de Retrait | 34364634152384 | Compte Numéro | Aïcha Noukatte | Nom du receveur | Note(s) | ClosEt vous remercie ! | 30.000 FCFA | Total retiré | Partager Mon Reçu | Retour dans Mon Espace
+
+### 32:1223 — Historique de Transaction [390x844] 21 textes
+   espace sourceur | Historique | Transactions | Voir tout | 32.000 F | Retrait approuvé | 20.000 FCFA | Retiré le Lun 10 Jui 2026, 10:30 | 32.000 F | Retrait approuvé | 20.000 FCFA | Retiré le Lun 10 Jui 2026, 10:30 | 32.000 F | Retrait approuvé | 20.000 FCFA | Retiré le Lun 10 Jui 2026, 10:30 | 32.000 F | Retrait approuvé | 20.000 FCFA | Retiré le Lun 10 Jui 2026, 10:30 | Effectuer une transaction
+
+### 24:39 — Page Mon espace [390x844] 16 textes
+   Mon espace | Aïcha N. | Membre du dressing depuis mars 2026 | nouveau | nouveau | Devenir Sourceur Clos ET | rejoindre le cercle | rejoindre le cercle | Confiez vos pièces d’exception et rejoignez notre cercle privé de curatrices | Mes commandes | Mes favoris | Mes adresses | Mes informations | Mes notifications | Logout | Espace
+
+### 25:710 — Modifier mon profil [390x844] 9 textes
+   Modifier mon profil | Nom complet | Aîcha N. | Email | AïchaN@outlook.com | Téléphone (Whatsapp) | +237 6 90 12 34 56 | Mettre à jour | Espace
+
+### 25:924 — Mes favoris [390x844] 18 textes
+   Mes favoris | Maison coco chanel | Robe Elégante Durable | Ajouter au panier | 38.500 FCFA | Maison zara | Veste Tweed Crème | Ajouter au panier | 31.000 FCFA | Maison louboutin paris | Escarpins Blanc | Ajouter au panier | 28.000 FCFA | Maison massamo dutti | Ensemble Plissé | Ajouter au panier | 25.000 FCFA | Wishlist
+
+### 25:1089 — Mes commandes [390x844] 11 textes
+   Mes commandes | COMMANDE #CE-2641 | Livrée | Déposé le: Mer 8 Juil, 15:30 | COMMANDE #CE-2315 | EN route | Temps d’estimationl: Lun 11 Juil, 20:30 | COMMANDE #CE-6458 | Préparation | Temps d’estimationl: En cours | Espace
+
+### 26:1588 — Mes adresses [390x844] 11 textes
+   Mes adresses | Maison | par Défaut | 61480 Sunbrook Park, PC 5679 | Bureau | 69993 Meadow Valley Terra, PC 3637 | Appartement | 21833 Clyde Gallagher, PC 4662 | Maison Familiale | 5259 Blue Bill Park, PC 4627 | Espace
+
+### 26:1262 — Détails de la commande [390x844] 30 textes
+   Mes commandes | COMMANDE #CE-2641 | Livrée | Déposé le: Mer 8 Juil, 15:30 | COMMANDE #CE-2641 | COMMANDE #CE-2315 | EN route | Statut | Livrée | Temps d’estimationl: Lun 11 Juil, 20:30 | Déposé le: Mer 8 Juil, 15:30 | YAOUNDE : Rond point Bastos | COMMANDE #CE-6458 | Préparation | Maison coco chanel | Temps d’estimationl: En cours | Robe Elégante Durable | 38.500 FCFA | excellent | Maison coco chanel | Sac Cuir Chanel | 31.000 FCFA | excellent | sous-total + livraison | 42.000 FCFA | Ajouter à mon dressing | Total à régler | Paiement chiffré. Votre pièce est réservée pendant 15 minutes | Passer d’autres commandes | Espace
+
+### 36:2064 — Se déconnecter [390x844] 5 textes
+   Par ici la sortie Mme | Êtes vous sûre de vouloir vous déconnecter ? | Oui,me déconnecter | Non, Retour dans Mon Espace | Toutes vos informations sont chiffrées de bout en bout et stockées sur des serveurs sécurisés.
+
+### 36:2113 — Deconnexion reussie [390x844] 3 textes
+   Ce n'est qu'un au revoir ! | Vous êtes maintenant déconnecté en toute sécurité. Prenez soin de vous, nous avons déjà hâte de vous retrouver ! | Vous serez automatiquement redirigé vers l’écran d’acceuil d’ici quelques secondes
+
+### 26:1771 — Devenir Sourceur [390x844] 11 textes
+   Devenir Sourceur ClosET | sourcing Program | programme partenaire | Confiez vos pièces, nous les valorisons | Chaque pièce que vous confiez reste tracée jusqu'à vous. Vous suivez ses statuts en temps réel et vos gains, en toute transparence. Deux formules : vente directe ou dépôt-vente. | Curation soignée | Chaque pièce est premiumisée avant mise en ligne. | Suivi transparent | Six statuts, notifiés à chaque étape | Remplir ma fiche d’adhésion | Déjà partenaire ? Accéder à mon espace
+
+### 26:1877 — Identification Espace Sourceur [390x844] 13 textes
+   Espace Sourceur ClosET | Bienvenue | Connectez-vous pour retrouver vos pièces | sourcing Program | Accéder à mon espace confié | Email ou téléphone | Example@email.com | Password | At least 8 characters | 8 caractères minimum, dont un chiffre. | ENTRER dans mon espace | Mot de passe oublié | Pas encore membre ? Remplir la fiche d’adhésion
+
+### 27:1970 — Mon adhésion sourceur [390x844] 18 textes
+   espace sourceur | Mon adhésion | Statut de votre adhésion | En cours d’étude | Votre fiche est entre nos mains | Soumise le 8 juil. Notre équipe étudie chaque adhésion avec soin — vous serez notifiée par WhatsApp dès validation, sous 48 h ouvrable. | parcours de votre adhesion | Fiche soumise | 8 Juil, 14:30 | En cours d’étude | L’administratice vérifie vos informations | Adhésion validée | Votre espace de dépôt s’ouvrira | Première pièce confiée | Vous pourrez déposer votre première pièce | Le dépôt s’ouvrira après validation | C'est notre garantie de qualité : chaque partenaire est validé avant de confier une pièce. L’équipe ClosET vous remercie pour votre patience. En attendez vous pourrez donner des informations complémentaires sur votre compte | Compléter mon profil en attendant
+
+### 29:46 — Adhésion approuvée [390x844] 6 textes
+   Vérification approuvée ! | Felicitation votre adhesion a été approuvée avec succès ! | Votre pièce sera préparée avec soin et  expédiée très prochainement | Confirmation envoyée sur WhatsApp | Entrer dans mon espace sourceur | Poursuivre ma visite
+
+### 31:109 — Mon Espace Sourceur [390x844] 16 textes
+   espace sourceur | Mon espace | solde du compte | vérifié | 52.000 FCFA | pièces en vente : 03 pièces | à reverser : 27 300 fcfa | Historique | Moyens | Plus | Retrait | Mes dépots | Mes informations | Polices et confidentialités | Logout | + Confier une nouvelle pièce
+
+### 33:1389 — Mon Espace Sourceur [390x1037] 24 textes
+   espace sourceur | Confier une pièce | Etape 2/4 | Spécificité de la pièce | Type d’article | Veste | Marque (Si connue) | Taille | Lin & Co | M | état de la pièce | Bon état | Neuf | Très bon état | Etat correcte | Estimation | Prix souhaité | 30.000 FCFA | Clos ET valorise chaque pièce selon ses critères de qualité et d'élégance. | Storytelling visuel | Upload or take a photo to find similar products | Take Photo | Upload Image | Poursuivre
+
+### 35:1895 — Mes dépôts [390x844] 19 textes
+   Mes dépôts | A reverser | PIèces en vente | TOTAL : 03 pièces | TOTAL : 27 300 FCFA | En cours d’analyse | En vente | Toutes. 6 | Veste en lin écru | Déposée le Lun 10 Jui 2026, 10:30 | Mis en vente | Sac Cuir Coco Chanel | Déposée le Lun 10 Jui 2026, 10:30 | En cours d’analyse | Robe Massamo Dutti | Ne correspond pas aux critères actuels | Retourné | refusé | Confier une nouvelle pièce
+
+### 34:1534 — Inspection et Analyse de la pièce [390x844] 6 textes
+   Inspection et analyse de votre pièce | Pièce bien reçue ! | Notre équipe va examiner votre pièce avec le plus grand soin. Nous vérifions vos informations et nous vous reviendrons très rapidement avec une réponse. | Suivre l’analyse de ma pièce | Retour dans Mon Espace | Toutes vos informations sont chiffrées de bout en bout et stockées sur des serveurs sécurisés.
+
+### 34:1578 — Suivre ma pièce (Cas de refus) [390x844] 17 textes
+   Suivre ma pièce | Maison massamo dutti | Veste en lin Ecru | Informations reçu le 5 Juil 2026 , 14:30 | Evoution & analyse de votre pièce | Reception de la pièce | Lun 6 Juil, 09:30 | En cours d’analyse | Nous vérifions l’état de votre pièce conformément aux normes de ClosET | Décision de ClosET | Acceptation ou refus de la pièce conformément aux normes de ClosET | Article Refusé | La pièce ne correspond pas aux normes actuels de ClosET. | Retour de l’article | Vous recevrez votre pièce d’ici peu | Soumettre une nouvelle pièce | Retour dans Mon Espace
+
+### 34:1710 — Suivre ma pièce (Cas d'acceptation) [390x844] 16 textes
+   Suivre ma pièce | Maison massamo dutti | Veste en lin Ecru | Informations reçu le 5 Juil 2026 , 14:30 | Evoution & analyse de votre pièce | Reception de la pièce | Lun 6 Juil, 09:30 | En cours d’analyse | Nous vérifions l’état de votre pièce conformément aux normes de ClosET | Décision de ClosET | Acceptation ou refus de la pièce conformément aux normes de ClosET | Article Accepté | La pièce  correspond parfaitement aux normes  actuels de ClosET. | Article Mise en Vente | Votre article a été mise en vente avec succès le Mer 8 Juil, 10:00 | Retour dans Mon Espace
+
+### 162:5657 — Page suivie de pièce [390x844] 15 textes
+   Suivre ma pièce | COMMANDE #CE-2641 | Temps d’estimationl: Mer 8 Juil, 15:30 | Voyage de votre pièce | Sélection confirmée | Lun 6 Juil, 09:30 | Paiement confirmé | Lun 6 Juil, 09:30 . MTN MoMo | Préparée avec soin | Votre pièce reçoit son packaging Clos Et | En route pour livraison | Livraison estimée: Mer 8 Juil. | Dans votre dressing | Pas encore | Laissez-nous un message
+
+### 162:3351 — Transaction reussie [390x844] 15 textes
+   Confirmation | Paiement | livraison | 1 | 2 | 3 | Paiement reussi | C’est tout bon ! | Votre pièce sera préparée avec soin et  expédiée très prochainement | Commande N° ce-2641 | Votre paiement a été effectuée avec succès. Vous allez recevoir un reçu de confirmation d'ici quelques instants. | Confirmation envoyée sur WhatsApp | Voir le reçu | Retour dans Mon Espace | Toutes vos informations sont chiffrées de bout en bout et stockées sur des serveurs sécurisés.
+
+### 162:3473 — Reçu de transaction [390x844] 21 textes
+   Votre reçu de transaction | Transaction numéro #8512857525 | Date & heure | Lun 8 Jui, 8:58:45 PM | Coco Chanel | Marque de la pièce | Catégorie | Robe | M | Taille | Etat de la pièce | Excellente | Mode de paiement | Orange Money | A domicile | Livraison | 30.000 FCFA | Total retiré | ClosEt vous remercie ! | Partager Mon Reçu | Poursuivre ma visite
+
+### 162:5220 — Traitement de transaction en cours [390x844] 10 textes
+   Confirmation | Paiement | livraison | 1 | 2 | 3 | Paiement en cours | Veuillez patienter quelques instants pendant que nous sécurisons et validons votre transaction. Merci de ne pas fermer cette application. | Paiement en cours | Toutes vos informations sont chiffrées de bout en bout et stockées sur des serveurs sécurisés.
+
+### 162:3597 — Ma sélection E1 [390x1042] 24 textes
+   Ma sélection | Etape 1/3 | Paiement | confirmation | livraison | 1 | 2 | 3 | Nom complet | Aîcha N. | Téléphone (Whatsapp) | +237 6 90 12 34 56 | Nous vous écrirons sur WhatsApp pour suivre votre pièce. | Détails de livraison | Veullez entrez vos informations | Departement | Région | Quartier | 456625***********52064 | Veullez écrire le nom de votre quartier | Méthode de paiement | Veuillez choisir la methode paiement | Valider les informations | Poursuivre -Paiement
+
+### 162:4255 — Ma sélection E1 [390x845] 51 textes
+   Ma sélection | Etape 1/3 | Paiement | confirmation | livraison | 1 | 2 | 3 | Nom complet | Methode de retrait de fonds | Aîcha N. | Orange Money | Téléphone (Whatsapp) | +237 6 90 12 34 56 | MTN Moblie Money | Nous vous écrirons sur WhatsApp pour suivre votre pièce. | **** 4864 | Détails de livraison | Veullez entrez vos informations | Departement | Région | Région | Centre | Mbalmayo | Adamaoua | Haute Sanaga | Centre | Lekié | Quartier | Newton- Collège Saint Coeur de Marie | Extrême-Nord | Mbam-et-Inoubou | 456625***********52064 | Veullez écrire le nom de votre quartier | Est | Mbam-et-Kim | Littoral | Méfou-et-Afamba | Méthode de paiement | MTN Mobile Money | Méfou-et-Akono | Nord Ouest | Mfoundi | Ouest | Nyong-et-Kéllé | Sud | Nyong-et-Mfoumou | Sud-Ouest | Mbalmayo | Nord | Poursuivre - Paiement
+
+### 162:5427 — Ma sélection E1 [390x1063] 26 textes
+   Ma sélection | Etape 1/3 | Paiement | confirmation | livraison | 1 | 2 | 3 | Nom complet | Aîcha N. | Téléphone (Whatsapp) | +237 6 90 12 34 56 | Nous vous écrirons sur WhatsApp pour suivre votre pièce. | Détails de livraison | Mbalmayo-Centre, Newtown Collège... | Méthode de paiement | Visa Card | Cardholder Name | Aîcha N. | Card Number | 456625***********52064 | CVV | Expiration | MM/YY | Valider les informations | Poursuivre -Paiement
+
+### 162:5119 — Ma sélection E1 [390x845] 24 textes
+   Ma sélection | Etape 1/3 | Paiement | confirmation | livraison | 1 | 2 | 3 | Nom complet | Aîcha N. | Téléphone (Whatsapp) | +237 6 90 12 34 56 | Nous vous écrirons sur WhatsApp pour suivre votre pièce. | Détails de livraison | Mbalmayo-Centre, Newtown Collège... | Méthode de paiement | Visa Card | Valider les informations | sous-total + livraison | 42.000 FCFA | Ajouter à mon dressing | Total à régler | Paiement chiffré. Votre pièce est réservée pendant 15 minutes | Poursuivre - Paiement
+
+### 162:5536 — Ma sélection E1 [390x844] 25 textes
+   Ma sélection | Etape 1/3 | Paiement | confirmation | livraison | 1 | 2 | 3 | Nom complet | Choisir la ville de livraison | Aîcha N. | Yaoundé | Téléphone (Whatsapp) | Livraison à domicile 24h-48h | +237 6 90 12 34 56 | Nous vous écrirons sur WhatsApp pour suivre votre pièce. | Douala | Livraison à domicile 24h-48h | Détails de livraison | Autre | 8000 S Kirkland Ave, Chicago, IL 6065 | A determiner | Méthode de paiement | xxxx xxxx xxxx 4865 | Poursuivre -Paiement

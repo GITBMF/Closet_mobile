@@ -1,0 +1,24 @@
+y= 3472 x=22628  espace sourceur                                                         Lato 500/10.0pt              33:1422
+y= 3485 x=22628  Confier une pièce                                                       Cormorant 600/22.0pt         33:1421
+y= 3496 x=22884  Etape 2/4                                                               Lato 500/10.0pt              33:1460
+y= 3539 x=22580  Spécificité de la pièce                                                 Lato 500/10.0pt              33:1494
+y= 3574 x=22580  Type d’article                                                          Lato 500/12.0pt              33:1462
+y= 3608 x=22594  Veste                                                                   Lato 400/14.0pt              33:1466
+y= 3659 x=22580  Marque (Si connue)                                                      Lato 500/12.0pt              33:1469
+y= 3659 x=22774  Taille                                                                  Lato 500/12.0pt              33:1490
+y= 3693 x=22594  Lin & Co                                                                Lato 400/14.0pt              33:1473
+y= 3693 x=22788  M                                                                       Lato 400/14.0pt              33:1493
+y= 3744 x=22580  état de la pièce                                                        Lato 500/10.0pt              33:1495
+y= 3781 x=22596  Neuf                                                                    Lato 400/12.0pt              33:1499
+y= 3781 x=22666  Très bon état                                                           Lato 400/12.0pt              33:1497
+y= 3781 x=22776  Bon état                                                                Lato 400/12.0pt              33:1502
+y= 3828 x=22596  Etat correcte                                                           Lato 400/12.0pt              33:1504
+y= 3873 x=22580  Estimation                                                              Lato 500/10.0pt              33:1505
+y= 3908 x=22580  Prix souhaité                                                           Lato 500/12.0pt              33:1507
+y= 3942 x=22594  30.000 FCFA                                                             Lato 400/14.0pt              33:1510
+y= 3984 x=22580  Clos ET valorise chaque pièce selon ses critères de qualité et d'éléga  Lato 500/12.0pt              32:726
+y= 4047 x=22580  Storytelling visuel                                                     Lato 500/10.0pt              34:1521
+y= 4216 x=22596  Upload or take a photo to find similar products                         Lato 400/12.0pt              34:1514
+y= 4262 x=22636  Take Photo                                                              Manrope 500/14.0pt           34:1517
+y= 4262 x=22792  Upload Image                                                            Manrope 500/14.0pt           34:1519
+y= 4376 x=22722  Poursuivre                                                              Lato 600/14.0pt              34:1533

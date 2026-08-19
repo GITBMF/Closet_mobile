@@ -1,4 +1,4 @@
-import 'package:cached_network_image/cached_network_image.dart';
+﻿import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -8,6 +8,8 @@ import '../../../core/theme/closet_colors.dart';
 import '../../../core/theme/closet_text_styles.dart';
 import '../../../core/widgets/closet_app_bar.dart';
 import '../../../core/widgets/closet_chip.dart';
+import '../../../core/widgets/closet_feedback.dart';
+import '../../../core/widgets/etat_ecran.dart';
 import '../../../core/widgets/status_badge.dart';
 import '../../../data/repositories/sourceur_repository.dart';
 import '../widgets/sourceur_header.dart';
@@ -15,10 +17,10 @@ import '../widgets/sourceur_header.dart';
 /// Filtres de la maquette `35:1895`.
 enum _FiltreDepot { toutes, enVente, enAnalyse }
 
-/// Mes dépôts — transcription de la maquette `35:1895`.
+/// Mes d�p�ts � transcription de la maquette `35:1895`.
 ///
-/// Deux tuiles de synthèse vert profond (165 × 101), puis la liste des pièces
-/// confiées en cartes blanches de 354 × 106 cerclées d'or.
+/// Deux tuiles de synth�se vert profond (165 � 101), puis la liste des pi�ces
+/// confi�es en cartes blanches de 354 � 106 cercl�es d'or.
 class SourceurPiecesScreen extends ConsumerStatefulWidget {
   const SourceurPiecesScreen({super.key});
 
@@ -43,7 +45,7 @@ class _SourceurPiecesScreenState
     final revenus = ref.watch(revenusSourceurProvider);
 
     return Scaffold(
-      backgroundColor: ClosetColors.beige,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
         child: Column(
           children: [
@@ -75,7 +77,7 @@ class _SourceurPiecesScreenState
                           Expanded(
                             child: _TuileSynthese(
                               icone: Icons.account_balance_wallet_outlined,
-                              label: 'A reverser',
+                              label: 'À reverser',
                               valeur: revenus.maybeWhen(
                                 data: (r) => 'TOTAL : '
                                     '${formatPrixFcfa(r.enAttente.toDouble())}',
@@ -129,17 +131,7 @@ class _SourceurPiecesScreenState
                       ),
                       const SizedBox(height: AppSpacing.p20),
                       if (visibles.isEmpty)
-                        Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 48),
-                          child: Center(
-                            child: Text(
-                              'Aucune pièce dans cette catégorie.',
-                              style: ClosetTextStyles.citation.copyWith(
-                                color: ClosetColors.taupe,
-                              ),
-                            ),
-                          ),
-                        )
+                        const ClosetListeVide()
                       else
                         for (final piece in visibles) ...[
                           _CarteDepot(
@@ -153,11 +145,33 @@ class _SourceurPiecesScreenState
                     ],
                   );
                 },
-                loading: () => const Center(
-                  child: CircularProgressIndicator(color: ClosetColors.dore),
+                loading: () => const EtatEcran.chargement(),
+                error: (e, _) => EtatEcran.erreur(
+                  erreur: e,
+                  onRetry: () => ref.invalidate(mesPiecesProvider),
                 ),
-                error: (e, _) => const Center(
-                  child: Text('Erreur de chargement'),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(39, 0, 39, AppSpacing.p16),
+              child: SizedBox(
+                height: 44,
+                child: Material(
+                  color: ClosetColors.vert,
+                  borderRadius: BorderRadius.circular(AppRadius.cercle),
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(AppRadius.cercle),
+                    onTap: () => context.go('/sourceur/nouvelle'),
+                    child: Center(
+                      child: Text(
+                        '+ Confier une nouvelle pièce',
+                        style: ClosetTextStyles.bouton.copyWith(
+                          fontWeight: FontWeight.w600,
+                          color: ClosetColors.blanc,
+                        ),
+                      ),
+                    ),
+                  ),
                 ),
               ),
             ),
@@ -168,7 +182,7 @@ class _SourceurPiecesScreenState
   }
 }
 
-/// Tuile de synthèse : 165 × 101, vert profond, icône blanche de 36.
+/// Tuile de synth�se : 165 � 101, vert profond, ic�ne blanche de 36.
 class _TuileSynthese extends StatelessWidget {
   const _TuileSynthese({
     required this.icone,
@@ -196,7 +210,7 @@ class _TuileSynthese extends StatelessWidget {
             width: 36,
             height: 36,
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: ClosetColors.blanc,
               borderRadius: BorderRadius.circular(6),
             ),
             child: Icon(icone, size: 18, color: ClosetColors.vert),
@@ -216,7 +230,7 @@ class _TuileSynthese extends StatelessWidget {
             valeur,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: ClosetTextStyles.corps.copyWith(color: Colors.white),
+            style: ClosetTextStyles.corps.copyWith(color: ClosetColors.blanc),
           ),
         ],
       ),
@@ -224,7 +238,7 @@ class _TuileSynthese extends StatelessWidget {
   }
 }
 
-/// Carte de pièce déposée : 354 × 106, blanche cerclée d'or, visuel 70 × 82.
+/// Carte de pi�ce d�pos�e : 354 � 106, blanche cercl�e d'or, visuel 70 � 82.
 class _CarteDepot extends StatelessWidget {
   const _CarteDepot({required this.piece, required this.onTap});
 
@@ -247,7 +261,7 @@ class _CarteDepot extends StatelessWidget {
         constraints: const BoxConstraints(minHeight: 106),
         padding: const EdgeInsets.all(AppSpacing.p12),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: ClosetColors.blanc,
           border: Border.all(color: ClosetColors.fond300, width: AppStroke.fin),
           borderRadius: BorderRadius.circular(AppRadius.carte),
         ),
@@ -259,14 +273,14 @@ class _CarteDepot extends StatelessWidget {
                 width: 70,
                 height: 82,
                 child: piece.imageUrl == null
-                    ? const ColoredBox(color: Color(0xFFD9D9D9))
+                    ? const ColoredBox(color: ClosetColors.gabaritImage)
                     : CachedNetworkImage(
                         imageUrl: piece.imageUrl!,
                         fit: BoxFit.cover,
                         placeholder: (_, _) =>
-                            const ColoredBox(color: Color(0xFFD9D9D9)),
+                            const ColoredBox(color: ClosetColors.gabaritImage),
                         errorWidget: (_, _, _) =>
-                            const ColoredBox(color: Color(0xFFD9D9D9)),
+                            const ColoredBox(color: ClosetColors.gabaritImage),
                       ),
               ),
             ),
@@ -286,7 +300,7 @@ class _CarteDepot extends StatelessWidget {
                   ),
                   const SizedBox(height: AppSpacing.p4),
                   Text(
-                    '${piece.univers} · ${formatPrixFcfa(piece.prix)}',
+                    '${piece.univers} � ${formatPrixFcfa(piece.prix)}',
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: ClosetTextStyles.actionPetite.copyWith(

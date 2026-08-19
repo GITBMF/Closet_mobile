@@ -1,0 +1,17 @@
+y= 3532 x= 6600  Ma sélection                                                            Cormorant 600/22.0pt         16:3488
+y= 3579 x= 6604  1 pièce unique mise de côté pour vous.                                  Cormorant 400/14.0pt         16:3572
+y= 3627 x= 6730  Maison coco chanel                                                      Lato 400/8.0pt               21:514
+y= 3642 x= 6730  Robe Durable Vert Emeraude                                              Cormorant Garamond 700/14.0pt 16:3536
+y= 3668 x= 6742  excellent                                                               Lato 400/8.0pt               16:3568
+y= 3693 x= 6730  38.500 FCFA                                                             EB Garamond 600/22.0pt       16:3546
+y= 3796 x= 6646  Code privilège                                                          Lato 400/10.0pt              16:3580
+y= 3834 x= 6630  cercle-privilège                                                        Cormorant Garamond 300/14.0pt 16:3584
+y= 3834 x= 6850  Appliquer                                                               Lato 500/10.0pt              16:3577
+y= 3905 x= 6865  38.500 FCFA                                                             EB Garamond 600/15.0pt       16:3640
+y= 3910 x= 6600  Sous-total                                                              Lato 400/10.0pt              16:3638
+y= 3934 x= 6873  3.500 FCFA                                                              EB Garamond 600/15.0pt       16:3641
+y= 3942 x= 6600  Livraison délicate                                                      Lato 400/10.0pt              16:3639
+y= 3989 x= 6828  42.000 FCFA                                                             EB Garamond 600/22.0pt       16:3644
+y= 4006 x= 6600  total à régler                                                          Lato 400/10.0pt              16:3643
+y= 4068 x= 6718  Finaliser Ma sélection                                                  Lato 500/12.0pt              16:3647
+y= 4210 x= 6821  Selection                                                               Manrope 500/12.0pt           17:3822

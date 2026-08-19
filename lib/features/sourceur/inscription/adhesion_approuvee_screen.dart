@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/theme/app_spacing.dart';
@@ -42,12 +42,12 @@ class AdhesionApprouveeScreen extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 42),
               child: Text(
-                'Votre pièce sera préparée avec soin et\nexpédiée très '
-                'prochainement.',
+                'Votre pièce sera préparée avec soin et expédiée très\n'
+                'prochainement',
                 textAlign: TextAlign.center,
                 style: ClosetTextStyles.labelChamp.copyWith(
                   fontWeight: FontWeight.w500,
-                  color: Colors.white,
+                  color: ClosetColors.blanc,
                 ),
               ),
             ),
@@ -86,7 +86,7 @@ class _ArcheValidation extends StatelessWidget {
         AppSpacing.p24,
       ),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: ClosetColors.blanc,
         border: Border.all(color: ClosetColors.fond300, width: AppStroke.fin),
         borderRadius: const BorderRadius.vertical(top: Radius.circular(159)),
       ),
@@ -102,7 +102,7 @@ class _ArcheValidation extends StatelessWidget {
             child: const Icon(
               Icons.verified_outlined,
               size: 44,
-              color: Colors.white,
+              color: ClosetColors.blanc,
             ),
           ),
           const Spacer(),

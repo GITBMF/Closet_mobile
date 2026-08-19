@@ -4,63 +4,168 @@ import '../theme/app_spacing.dart';
 import '../theme/closet_colors.dart';
 import '../theme/closet_text_styles.dart';
 
-/// Barre de navigation principale : Dressing, Collections, Wishlist,
-/// Sélection, Espace.
+/// Une entrée de la barre de navigation.
 ///
-/// Transcription de la maquette Figma `13:1182` : fond vert nuit à coins
-/// supérieurs arrondis, **seul l'onglet actif porte son libellé** — il prend
-/// la forme d'une pilule crème bordée d'or. Les quatre autres sont des icônes
-/// en contour crème, sans texte.
+/// L'icône existe en deux versions parce que la maquette fait basculer le
+/// dessin selon l'état : sur `13:1182`, l'icône « maison » et l'icône « cœur »
+/// passent du contour au plein quand l'onglet devient actif, tandis que le
+/// panier reste en contour et l'utilisateur reste plein.
+class ClosetNavItem {
+  const ClosetNavItem({
+    required this.icone,
+    required this.iconeActive,
+    required this.label,
+    this.cle,
+  });
+
+  final IconData icone;
+  final IconData iconeActive;
+  final String label;
+
+  /// Clé posée sur l'onglet, pour que la visite guidée puisse le cibler.
+  final Key? cle;
+}
+
+/// Barre de navigation principale — transcription de la maquette `13:1182`.
+///
+/// Relevé calque par calque des cinq variantes de la maquette :
+///
+/// - la barre est une **pilule** `#1C382D` de 58 px, `r100`, padding 8,
+///   écart 20 entre onglets, **dont la largeur s'ajuste au contenu** ;
+/// - un onglet inactif est un carré de 42 (padding 11 autour d'une icône de
+///   20) sans fond, icône tracée en blanc ;
+/// - **seul l'onglet actif porte son libellé** : il devient une pilule
+///   `#F3F3F3` bordée `#CDAB71`, `r36.67`, écart 4 entre icône et texte,
+///   icône `#CDAB71` et libellé `#B58A40` en Lato 500 / 12 pt.
+///
+/// Les icônes de la maquette proviennent de quatre jeux Iconify distincts
+/// (`fa7-solid`, `icon-park-outline`, `mage`, `solar`) ; aucune librairie du
+/// projet ne les couvre toutes et le dump Figma ne permet pas d'exporter les
+/// SVG. Les paires Material retenues ci-dessous reproduisent la bascule
+/// contour/plein de la maquette, à défaut du tracé exact.
 class ClosetBottomNav extends StatelessWidget {
   const ClosetBottomNav({
     super.key,
+    required this.items,
     required this.indexActif,
     this.onTap,
-    this.compteurSelection,
+    this.compteurs = const {},
   });
+
+  /// Entrées de la barre, dans l'ordre d'affichage.
+  final List<ClosetNavItem> items;
 
   final int indexActif;
   final ValueChanged<int>? onTap;
 
-  /// Pastille de compte sur l'onglet Sélection. `null` = aucune pastille
-  /// (état par défaut de la maquette).
-  final int? compteurSelection;
+  /// Pastilles de compte, indexées par position d'onglet. Une valeur nulle ou
+  /// à zéro n'affiche rien — c'est l'état de la maquette, qui ne montre aucune
+  /// pastille sur ses cinq variantes.
+  final Map<int, int> compteurs;
 
-  static const _items = [
-    (icone: Icons.home_rounded, label: 'Dressing'),
-    (icone: Icons.grid_view_outlined, label: 'Collections'),
-    (icone: Icons.favorite_border, label: 'Wishlist'),
-    (icone: Icons.shopping_basket_outlined, label: 'Selection'),
-    (icone: Icons.person_outline, label: 'Espace'),
+  /// Entrées du parcours cliente, libellées comme la maquette — qui écrit bien
+  /// « Wishlist » et « Selection », sans accent.
+  static const itemsCliente = [
+    ClosetNavItem(
+      icone: Icons.home_outlined,
+      iconeActive: Icons.home,
+      label: 'Dressing',
+    ),
+    ClosetNavItem(
+      icone: Icons.grid_view_outlined,
+      iconeActive: Icons.grid_view,
+      label: 'Collections',
+    ),
+    ClosetNavItem(
+      icone: Icons.favorite_border,
+      iconeActive: Icons.favorite,
+      label: 'Wishlist',
+    ),
+    ClosetNavItem(
+      icone: Icons.shopping_basket_outlined,
+      // Le panier reste en contour à l'état actif dans la maquette.
+      iconeActive: Icons.shopping_basket_outlined,
+      label: 'Selection',
+    ),
+    ClosetNavItem(
+      icone: Icons.person_outline,
+      iconeActive: Icons.person,
+      label: 'Espace',
+    ),
   ];
 
-  static const _indexSelection = 3;
+  /// Entrées du parcours sourceur. La maquette ne décrit pas de barre pour cet
+  /// espace : la géométrie est reprise du composant cliente, seules les
+  /// entrées changent.
+  static const itemsSourceur = [
+    ClosetNavItem(
+      icone: Icons.storefront_outlined,
+      iconeActive: Icons.storefront,
+      label: 'Espace',
+    ),
+    ClosetNavItem(
+      icone: Icons.inventory_2_outlined,
+      iconeActive: Icons.inventory_2,
+      label: 'Dépôts',
+    ),
+    ClosetNavItem(
+      icone: Icons.add_circle_outline,
+      iconeActive: Icons.add_circle,
+      label: 'Confier',
+    ),
+    ClosetNavItem(
+      icone: Icons.account_balance_wallet_outlined,
+      iconeActive: Icons.account_balance_wallet,
+      label: 'Gains',
+    ),
+  ];
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: const BoxDecoration(
-        color: ClosetColors.vertFonce,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
-      ),
-      padding: EdgeInsets.only(
-        left: AppSpacing.p16,
-        right: AppSpacing.p16,
-        top: AppSpacing.p16,
-        bottom: AppSpacing.p16 + MediaQuery.paddingOf(context).bottom,
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          for (var i = 0; i < _items.length; i++)
-            _Onglet(
-              icone: _items[i].icone,
-              label: _items[i].label,
-              actif: i == indexActif,
-              compteur: i == _indexSelection ? compteurSelection : null,
-              onTap: onTap == null ? null : () => onTap!(i),
+    // Maquette `13:1182` : pilule flottante 58 px, r100, fond `#1C382D`,
+    // posée sur le crème de l'écran — pas un bandeau vert pleine largeur.
+    // `heightFactor: 1` empêche le Scaffold d'étirer la barre au milieu.
+    return Material(
+      color: Theme.of(context).scaffoldBackgroundColor,
+      child: SafeArea(
+        top: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(
+            AppSpacing.p8,
+            AppSpacing.p8,
+            AppSpacing.p8,
+            AppSpacing.p8,
+          ),
+          child: Align(
+            alignment: Alignment.bottomCenter,
+            heightFactor: 1,
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Container(
+                padding: const EdgeInsets.all(AppSpacing.p8),
+                decoration: BoxDecoration(
+                  color: ClosetColors.navigationFond,
+                  borderRadius: BorderRadius.circular(AppRadius.cercle),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    for (var i = 0; i < items.length; i++) ...[
+                      if (i > 0) const SizedBox(width: AppSpacing.p20),
+                      _Onglet(
+                        key: items[i].cle,
+                        item: items[i],
+                        actif: i == indexActif,
+                        compteur: compteurs[i],
+                        onTap: onTap == null ? null : () => onTap!(i),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
             ),
-        ],
+          ),
+        ),
       ),
     );
   }
@@ -68,86 +173,94 @@ class ClosetBottomNav extends StatelessWidget {
 
 class _Onglet extends StatelessWidget {
   const _Onglet({
-    required this.icone,
-    required this.label,
+    super.key,
+    required this.item,
     required this.actif,
     required this.compteur,
     required this.onTap,
   });
 
-  final IconData icone;
-  final String label;
+  final ClosetNavItem item;
   final bool actif;
   final int? compteur;
   final VoidCallback? onTap;
 
+  /// Taille des icônes de la maquette : 20 px dans un cadre de 42.
+  static const _tailleIcone = 20.0;
+
   @override
   Widget build(BuildContext context) {
-    final icone = Icon(
-      this.icone,
-      size: 22,
-      color: actif ? ClosetColors.dore : ClosetColors.creme,
+    final couleur =
+        actif ? ClosetColors.navigationActifTrait : ClosetColors.navigationInactif;
+
+    Widget icone = Icon(
+      actif ? item.iconeActive : item.icone,
+      size: _tailleIcone,
+      color: couleur,
     );
 
-    final contenu = compteur == null
-        ? icone
-        : Stack(
-            clipBehavior: Clip.none,
-            children: [
-              icone,
-              Positioned(
-                right: -6,
-                top: -4,
-                child: Container(
-                  padding: const EdgeInsets.all(AppSpacing.p4),
-                  decoration: const BoxDecoration(
-                    color: ClosetColors.dore,
-                    shape: BoxShape.circle,
-                  ),
-                  child: Text(
-                    '$compteur',
-                    style: ClosetTextStyles.micro.copyWith(
-                      color: ClosetColors.vertFonce,
-                      fontWeight: FontWeight.w900,
-                    ),
-                  ),
+    if (compteur != null && compteur! > 0) {
+      icone = Stack(
+        clipBehavior: Clip.none,
+        children: [
+          icone,
+          Positioned(
+            top: -4,
+            right: -6,
+            child: Container(
+              width: 14,
+              height: 14,
+              alignment: Alignment.center,
+              decoration: const BoxDecoration(
+                color: ClosetColors.fond300,
+                shape: BoxShape.circle,
+              ),
+              child: Text(
+                '$compteur',
+                style: ClosetTextStyles.micro.copyWith(
+                  color: ClosetColors.emeraude500,
+                  fontWeight: FontWeight.w800,
                 ),
               ),
-            ],
-          );
+            ),
+          ),
+        ],
+      );
+    }
 
     return Semantics(
       button: true,
       selected: actif,
-      label: label,
+      label: item.label,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(AppRadius.bouton),
+        borderRadius: BorderRadius.circular(AppRadius.carteProduit),
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 220),
           curve: Curves.easeOutCubic,
-          constraints: const BoxConstraints(minHeight: AppSpacing.minTouchTarget),
-          padding: EdgeInsets.symmetric(
-            horizontal: actif ? AppSpacing.p20 : AppSpacing.p12,
-            vertical: AppSpacing.p12,
-          ),
+          // Padding 11 autour d'une icône de 20 : le cadre fait 42, comme la
+          // maquette. C'est aussi ce qui donne sa largeur à la pilule active.
+          padding: const EdgeInsets.all(AppSpacing.gouttiere),
           decoration: BoxDecoration(
-            color: actif ? ClosetColors.creme : Colors.transparent,
-            borderRadius: BorderRadius.circular(AppRadius.bouton),
+            color: actif ? ClosetColors.navigationActifFond : Colors.transparent,
+            borderRadius: BorderRadius.circular(AppRadius.carteProduit),
             border: actif
-                ? Border.all(color: ClosetColors.dore, width: AppStroke.fin)
+                ? Border.all(
+                    color: ClosetColors.navigationActifTrait,
+                    width: AppStroke.fin,
+                  )
                 : null,
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              contenu,
+              icone,
               if (actif) ...[
-                const SizedBox(width: AppSpacing.p8),
+                const SizedBox(width: AppSpacing.p4),
                 Text(
-                  label,
+                  item.label,
                   style: ClosetTextStyles.navigation.copyWith(
-                    color: ClosetColors.dore,
+                    color: ClosetColors.navigationActifTexte,
                   ),
                 ),
               ],

@@ -53,7 +53,9 @@ class ClosetEnTeteSection extends StatelessWidget {
             titre,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: ClosetTextStyles.titreBloc,
+            style: ClosetTextStyles.titreBloc.copyWith(
+              color: context.closetEncre,
+            ),
           ),
         ),
         if (lien != null) ...[
@@ -82,30 +84,6 @@ class ClosetEnTeteSection extends StatelessWidget {
   }
 }
 
-/// Signature de pied de page — « clos et. abidjan - paris - Yaoundé ».
-///
-/// Ferme les écrans de catalogue longs (`11:250`, `13:1032`).
-class ClosetSignature extends StatelessWidget {
-  const ClosetSignature({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
-      child: Center(
-        child: Text(
-          'clos et.  abidjan - paris  - Yaoundé',
-          textAlign: TextAlign.center,
-          style: ClosetTextStyles.meta.copyWith(
-            letterSpacing: 2,
-            color: ClosetColors.taupe,
-          ),
-        ),
-      ),
-    );
-  }
-}
-
 /// Titre d'écran Cormorant 600 / 22 (« Toutes les pièces », « Mon espace »).
 class ClosetTitreEcran extends StatelessWidget {
   const ClosetTitreEcran(this.texte, {super.key});
@@ -119,7 +97,7 @@ class ClosetTitreEcran extends StatelessWidget {
       maxLines: 1,
       overflow: TextOverflow.ellipsis,
       style: ClosetTextStyles.titreSection.copyWith(
-        color: ClosetColors.noir,
+        color: context.closetEncre,
       ),
     );
   }

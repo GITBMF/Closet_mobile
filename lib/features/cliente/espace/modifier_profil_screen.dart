@@ -6,6 +6,7 @@ import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/closet_colors.dart';
 import '../../../core/theme/closet_text_styles.dart';
 import '../../../core/widgets/closet_field.dart';
+import '../../../core/widgets/toasts.dart';
 import '../../../data/models/user.dart';
 import '../../../data/repositories/auth_repository.dart';
 
@@ -32,11 +33,9 @@ class _ModifierProfilScreenState
   void initState() {
     super.initState();
     final user = ref.read<ClosetUser?>(currentUserProvider);
-    _nom = TextEditingController(
-      text: user == null ? '' : '${user.firstName} ${user.lastName}'.trim(),
-    );
+    _nom = TextEditingController(text: user?.nomComplet ?? '');
     _email = TextEditingController(text: user?.email ?? '');
-    _telephone = TextEditingController();
+    _telephone = TextEditingController(text: user?.phone ?? '');
   }
 
   @override
@@ -47,14 +46,30 @@ class _ModifierProfilScreenState
     super.dispose();
   }
 
-  void _enregistrer() {
+  /// Envoi en cours. Bloque le bouton pour éviter deux mises à jour
+  /// concurrentes, dont la seconde écraserait la première.
+  bool _envoiEnCours = false;
+
+  Future<void> _enregistrer() async {
+    if (_envoiEnCours) return;
     if (!(_formKey.currentState?.validate() ?? false)) return;
-    // TODO(backend): brancher la mise à jour du profil sur l'API.
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('La mise à jour du profil arrive bientôt.'),
-      ),
-    );
+
+    setState(() => _envoiEnCours = true);
+    try {
+      await ref.read(authRepositoryProvider).mettreAJourProfil(
+            nomComplet: _nom.text,
+            email: _email.text,
+            phone: _telephone.text,
+          );
+      if (!mounted) return;
+      toastSucces(ref, 'Profil mis à jour');
+      context.pop();
+    } catch (e) {
+      if (!mounted) return;
+      toastErreur(ref, e, titre: 'Mise à jour impossible');
+    } finally {
+      if (mounted) setState(() => _envoiEnCours = false);
+    }
   }
 
   @override
@@ -62,7 +77,7 @@ class _ModifierProfilScreenState
     final user = ref.watch<ClosetUser?>(currentUserProvider);
 
     return Scaffold(
-      backgroundColor: ClosetColors.beige,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
         child: Column(
           children: [
@@ -124,14 +139,24 @@ class _ModifierProfilScreenState
                             child: InkWell(
                               borderRadius:
                                   BorderRadius.circular(AppRadius.cercle),
-                              onTap: _enregistrer,
+                              onTap: _envoiEnCours ? null : _enregistrer,
                               child: Center(
-                                child: Text(
-                                  'Mettre à jour',
-                                  style: ClosetTextStyles.bouton.copyWith(
-                                    color: Colors.white,
-                                  ),
-                                ),
+                                child: _envoiEnCours
+                                    ? const SizedBox(
+                                        width: 18,
+                                        height: 18,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                          color: ClosetColors.blanc,
+                                        ),
+                                      )
+                                    : Text(
+                                        'Mettre à jour',
+                                        style:
+                                            ClosetTextStyles.bouton.copyWith(
+                                          color: ClosetColors.blanc,
+                                        ),
+                                      ),
                               ),
                             ),
                           ),
@@ -211,7 +236,7 @@ class _EnTeteRetour extends StatelessWidget {
                       width: 42,
                       height: 42,
                       decoration: BoxDecoration(
-                        color: Colors.white,
+                        color: ClosetColors.blanc,
                         shape: BoxShape.circle,
                         border: Border.all(
                           color: ClosetColors.fond300,
@@ -236,13 +261,13 @@ class _EnTeteRetour extends StatelessWidget {
 }
 
 /// Avatar de 120 aux initiales, avec sa pastille d'édition de 40.
-class _AvatarEditable extends StatelessWidget {
+class _AvatarEditable extends ConsumerWidget {
   const _AvatarEditable({required this.user});
 
   final ClosetUser? user;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final p = user?.firstName.isNotEmpty ?? false
         ? user!.firstName[0].toUpperCase()
         : '';
@@ -279,10 +304,10 @@ class _AvatarEditable extends StatelessWidget {
               button: true,
               label: 'Changer ma photo',
               child: GestureDetector(
-                onTap: () => ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Changement de photo bientôt disponible.'),
-                  ),
+                onTap: () => toastInfo(
+                  ref,
+                  'Photo indisponible',
+                  'Le changement de photo n’est pas encore proposé par le serveur.',
                 ),
                 child: Container(
                   width: 40,
@@ -294,7 +319,7 @@ class _AvatarEditable extends StatelessWidget {
                   child: const Icon(
                     Icons.photo_camera_outlined,
                     size: 17,
-                    color: Colors.white,
+                    color: ClosetColors.blanc,
                   ),
                 ),
               ),

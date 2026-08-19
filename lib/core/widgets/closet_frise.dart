@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 
 import '../theme/app_spacing.dart';
 import '../theme/closet_colors.dart';
@@ -11,6 +11,7 @@ class EtapeFrise {
     required this.titre,
     required this.detail,
     this.atteinte = false,
+    this.enCours = false,
     this.echec = false,
   });
 
@@ -19,6 +20,12 @@ class EtapeFrise {
 
   /// Étape franchie : pastille pleine et trait coloré.
   final bool atteinte;
+
+  /// Étape en train de se produire : pastille cerclée de vert, non cochée.
+  ///
+  /// Sans cet état, une commande en préparation devait choisir entre se dire
+  /// « préparée » (faux) et « pas encore commencée » (faux aussi).
+  final bool enCours;
 
   /// Étape négative (refus, retour) : pastille en terre brûlée.
   final bool echec;
@@ -74,14 +81,14 @@ class _Etape extends StatelessWidget {
     final Color couleurPastille;
     if (etape.echec) {
       couleurPastille = ClosetColors.erreurCouture;
-    } else if (etape.atteinte) {
+    } else if (etape.atteinte || etape.enCours) {
       couleurPastille = ClosetColors.vert;
     } else {
       couleurPastille = ClosetColors.ligne;
     }
 
-    final couleurTitre = etape.atteinte || etape.echec
-        ? (surFond ? Colors.white : ClosetColors.noir)
+    final couleurTitre = etape.atteinte || etape.enCours || etape.echec
+        ? (surFond ? ClosetColors.blanc : ClosetColors.noir)
         : (surFond ? ClosetColors.beige : ClosetColors.taupe);
 
     return IntrinsicHeight(
@@ -96,7 +103,7 @@ class _Etape extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: etape.atteinte || etape.echec
                       ? couleurPastille
-                      : Colors.white,
+                      : ClosetColors.blanc,
                   shape: BoxShape.circle,
                   border: Border.all(
                     color: couleurPastille,
@@ -104,17 +111,21 @@ class _Etape extends StatelessWidget {
                   ),
                 ),
                 child: etape.echec
-                    ? const Icon(Icons.close, size: 11, color: Colors.white)
+                    ? const Icon(Icons.close, size: 11, color: ClosetColors.blanc)
                     : etape.atteinte
                         ? const Icon(Icons.check,
-                            size: 11, color: Colors.white)
+                            size: 11, color: ClosetColors.blanc)
                         : null,
               ),
               if (!derniere)
                 Expanded(
                   child: Container(
                     width: AppStroke.moyen,
-                    color: couleurPastille,
+                    // Le trait descendant appartient à l'étape suivante : une
+                    // étape en cours ne l'a pas encore franchi.
+                    color: etape.atteinte || etape.echec
+                        ? couleurPastille
+                        : ClosetColors.ligne,
                   ),
                 ),
             ],

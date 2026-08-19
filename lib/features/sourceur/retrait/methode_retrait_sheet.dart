@@ -1,15 +1,14 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/closet_colors.dart';
 import '../../../core/theme/closet_text_styles.dart';
 import '../../../core/widgets/closet_app_bar.dart';
+import '../../../core/widgets/toasts.dart';
 import '../../../data/models/user.dart';
 import '../../../data/repositories/auth_repository.dart';
 import '../../../data/repositories/sourceur_repository.dart';
-import '../../transaction/transaction_models.dart';
 
 /// Un moyen de retrait proposé par la maquette `32:511`.
 @immutable
@@ -85,7 +84,7 @@ class _MethodeRetraitSheetState
 
     return DecoratedBox(
       decoration: const BoxDecoration(
-        color: Colors.white,
+        color: ClosetColors.blanc,
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
       child: SafeArea(
@@ -119,7 +118,7 @@ class _MethodeRetraitSheetState
               const SizedBox(height: AppSpacing.p16),
               Text(
                 'pièces en vente : '
-                '${pieces.maybeWhen(data: (l) => l.length.toString().padLeft(2, '0'), orElse: () => '--')} '
+                '${pieces.maybeWhen(data: _compteEnVente, orElse: () => '--')} '
                 'pièces',
                 style: ClosetTextStyles.actionPetite.copyWith(
                   letterSpacing: 0.30,
@@ -135,7 +134,7 @@ class _MethodeRetraitSheetState
               const SizedBox(height: AppSpacing.p12),
               Text(
                 'à reverser : '
-                '${revenus.maybeWhen(data: (r) => formatPrixFcfa(r.enAttente.toDouble()), orElse: () => '--')}',
+                '${revenus.maybeWhen(data: (r) => formatPrixFcfa(r.solde.toDouble()), orElse: () => '--')}',
                 style: ClosetTextStyles.actionPetite.copyWith(
                   letterSpacing: 0.30,
                   color: ClosetColors.fond300,
@@ -162,7 +161,7 @@ class _MethodeRetraitSheetState
                         'Valider la methode de retrait',
                         style: ClosetTextStyles.bouton.copyWith(
                           fontWeight: FontWeight.w600,
-                          color: Colors.white,
+                          color: ClosetColors.blanc,
                         ),
                       ),
                     ),
@@ -176,41 +175,26 @@ class _MethodeRetraitSheetState
     );
   }
 
-  /// Ferme le panneau puis ouvre le tunnel de transaction en mode retrait.
+  /// Ferme le panneau. Les retraits sont versés par ClosET : l'API mobile
+  /// n'expose pas de déclenchement de virement.
   void _valider(
     BuildContext context,
     AsyncValue<RevenusSourceur> revenus,
     ClosetUser? user,
   ) {
-    final montant = revenus.maybeWhen(
-      data: (r) => r.enAttente.toDouble(),
-      orElse: () => 0.0,
-    );
-    if (montant <= 0) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Aucun montant à reverser.')),
-      );
-      return;
-    }
-
-    MoyenRetrait moyen = moyensRetrait.first;
-    for (final m in moyensRetrait) {
-      if (m.id == _choisi) moyen = m;
-    }
-
     Navigator.of(context).pop();
-    context.push(
-      '/transaction',
-      extra: DemandeTransaction(
-        type: TypeOperation.retrait,
-        montant: montant,
-        moyen: moyen.libelle,
-        compte: moyen.compte,
-        beneficiaire: user == null
-            ? 'Sourceur ClosET'
-            : '${user.firstName} ${user.lastName}'.trim(),
-      ),
+    toastInfo(
+      ref,
+      'Retraits gérés par ClosET',
+      'Les virements sont émis une fois vos pièces vendues. '
+          'L’historique affiché correspond aux paiements réellement versés.',
     );
+  }
+
+  /// Nombre de pièces effectivement en vente, sur deux chiffres.
+  static String _compteEnVente(List<PieceDeposee> pieces) {
+    final enVente = pieces.where((p) => p.statut == StatutPiece.publiee).length;
+    return enVente.toString().padLeft(2, '0');
   }
 }
 
@@ -242,7 +226,7 @@ class _LigneMoyen extends StatelessWidget {
                 height: 32,
                 alignment: Alignment.center,
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: ClosetColors.blanc,
                   borderRadius: BorderRadius.circular(4),
                   border: Border.all(
                     color: choisi

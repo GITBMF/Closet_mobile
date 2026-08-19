@@ -7,20 +7,11 @@ import '../../../core/theme/closet_text_styles.dart';
 import '../../../core/widgets/closet_app_bar.dart';
 import '../../../core/widgets/closet_chip.dart';
 import '../../../core/widgets/closet_sections.dart';
+import '../../../data/repositories/catalog_repository.dart';
 import 'collections_screen.dart';
 
-/// Tailles proposées par la maquette `14:1514`.
-const List<String> taillesDisponibles = ['XS', 'S', 'M', 'L', 'XL'];
-
-/// États proposés par la maquette `14:1514`.
-const List<String> etatsDisponibles = [
-  'Neuf',
-  'Excellent',
-  'Très bon état',
-  'Bon état',
-];
-
-/// Bornes de la fourchette de prix, en FCFA.
+/// Bornes de la fourchette de prix, en FCFA — transmises au backend via
+/// `min_price` / `max_price` de `GET /pieces`.
 const double prixMinimum = 10000;
 const double prixMaximum = 45000;
 
@@ -44,9 +35,10 @@ class _FiltresSheet extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final univers = ref.watch<String>(selectedUniverseProvider);
-    final taille = ref.watch<String?>(filterSizeProvider);
-    final etat = ref.watch<String?>(filterConditionProvider);
+    final maison = ref.watch<String?>(filterBrandProvider);
+    final maisons = ref.watch(maisonsProvider);
     final prixMax = ref.watch<double?>(filterPriceProvider) ?? prixMaximum;
+    final nombrePieces = ref.watch(filteredArticlesProvider).value?.length;
 
     return DraggableScrollableSheet(
       initialChildSize: 0.78,
@@ -54,9 +46,9 @@ class _FiltresSheet extends ConsumerWidget {
       maxChildSize: 0.95,
       expand: false,
       builder: (context, scrollController) => DecoratedBox(
-        decoration: const BoxDecoration(
-          color: ClosetColors.beige,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(56)),
+        decoration: BoxDecoration(
+          color: Theme.of(context).scaffoldBackgroundColor,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(56)),
         ),
         child: ListView(
           controller: scrollController,
@@ -75,74 +67,56 @@ class _FiltresSheet extends ConsumerWidget {
             const SizedBox(height: AppSpacing.p20),
             ClosetEnTeteSection(
               titre: 'Affiner ma recherche',
-              lien: 'tout réinitialiser',
+              lien: 'Tout réinitialiser',
               onLien: () {
                 ref.read(filterBrandProvider.notifier).setBrand(null);
-                ref.read(filterSizeProvider.notifier).setSize(null);
-                ref.read(filterConditionProvider.notifier).setCondition(null);
                 ref.read(filterPriceProvider.notifier).setPrice(null);
                 ref
                     .read<UniverseNotifier>(selectedUniverseProvider.notifier)
-                    .setUniverse(CollectionsScreen.universes.first);
+                    .setUniverse('');
               },
             ),
             const SizedBox(height: AppSpacing.p24),
-            const ClosetSurtitre('explorer par univers'),
-            const SizedBox(height: AppSpacing.p16),
-            Wrap(
-              spacing: AppSpacing.p12,
-              runSpacing: AppSpacing.p12,
-              children: [
-                for (final u in CollectionsScreen.universes)
-                  ClosetChip(
-                    label: u,
-                    isActive: u == univers,
-                    onTap: () => ref
-                        .read<UniverseNotifier>(
-                            selectedUniverseProvider.notifier)
-                        .setUniverse(u),
-                  ),
-              ],
-            ),
-            const SizedBox(height: AppSpacing.p24),
-            const ClosetSurtitre('taille'),
-            const SizedBox(height: AppSpacing.p16),
-            Wrap(
-              spacing: AppSpacing.p12,
-              runSpacing: AppSpacing.p12,
-              children: [
-                for (final t in taillesDisponibles)
-                  ClosetChip(
-                    label: t,
-                    isActive: t == taille,
-                    // Retaper la taille active la retire : c'est le seul
-                    // moyen de revenir à « toutes tailles » sans passer par
-                    // la réinitialisation globale.
-                    onTap: () => ref
-                        .read(filterSizeProvider.notifier)
-                        .setSize(t == taille ? null : t),
-                  ),
-              ],
-            ),
-            const SizedBox(height: AppSpacing.p24),
-            const ClosetSurtitre('état de la pièce'),
-            const SizedBox(height: AppSpacing.p16),
-            Wrap(
-              spacing: AppSpacing.p12,
-              runSpacing: AppSpacing.p12,
-              children: [
-                for (final e in etatsDisponibles)
-                  ClosetChip(
-                    label: e,
-                    isActive: e == etat,
-                    onTap: () => ref
-                        .read(filterConditionProvider.notifier)
-                        .setCondition(e == etat ? null : e),
-                  ),
-              ],
-            ),
-            const SizedBox(height: AppSpacing.p24),
-            const ClosetSurtitre('budget'),
+            if (universCatalogue(ref).isNotEmpty) ...[
+              const ClosetSurtitre('Explorer par univers'),
+              const SizedBox(height: AppSpacing.p16),
+              Wrap(
+                spacing: AppSpacing.p12,
+                runSpacing: AppSpacing.p12,
+                children: [
+                  for (final u in universCatalogue(ref))
+                    ClosetChip(
+                      label: u,
+                      isActive: u == univers,
+                      onTap: () => ref
+                          .read<UniverseNotifier>(
+                              selectedUniverseProvider.notifier)
+                          .setUniverse(u == univers ? '' : u),
+                    ),
+                ],
+              ),
+              const SizedBox(height: AppSpacing.p24),
+            ],
+            if (maisons.value?.isNotEmpty ?? false) ...[
+              const ClosetSurtitre('Maison'),
+              const SizedBox(height: AppSpacing.p16),
+              Wrap(
+                spacing: AppSpacing.p12,
+                runSpacing: AppSpacing.p12,
+                children: [
+                  for (final m in maisons.value!)
+                    ClosetChip(
+                      label: m,
+                      isActive: m == maison,
+                      onTap: () => ref
+                          .read(filterBrandProvider.notifier)
+                          .setBrand(m == maison ? null : m),
+                    ),
+                ],
+              ),
+              const SizedBox(height: AppSpacing.p24),
+            ],
+            const ClosetSurtitre('Budget'),
             const SizedBox(height: AppSpacing.p8),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -183,9 +157,16 @@ class _FiltresSheet extends ConsumerWidget {
                   onTap: () => Navigator.of(context).pop(),
                   child: Center(
                     child: Text(
-                      'Voir les pièces',
+                      // La maquette porte le compte sur le CTA (« Voir 18
+                      // pièces »). Il n'est affiché qu'une fois connu, pour ne
+                      // pas annoncer un nombre puis le corriger.
+                      nombrePieces == null
+                          ? 'Voir les pièces'
+                          : nombrePieces == 1
+                              ? 'Voir 1 pièce'
+                              : 'Voir $nombrePieces pièces',
                       style: ClosetTextStyles.bouton.copyWith(
-                        color: Colors.white,
+                        color: ClosetColors.blanc,
                       ),
                     ),
                   ),

@@ -1,21 +1,42 @@
 import 'package:flutter/foundation.dart';
 
-/// Statuts de commande dessinés dans la maquette `26:1255`.
-enum StatutCommande { preparation, enRoute, livree }
+import '../api/api_json.dart';
+
+enum StatutCommande {
+  pending,
+  paid,
+  preparation,
+  enRoute,
+  livree,
+  annulee,
+  devis,
+}
 
 extension LibelleStatutCommande on StatutCommande {
   String get libelle => switch (this) {
+        StatutCommande.pending => 'En attente',
+        StatutCommande.paid => 'Payée',
         StatutCommande.preparation => 'Préparation',
         StatutCommande.enRoute => 'En route',
         StatutCommande.livree => 'Livrée',
+        StatutCommande.annulee => 'Annulée',
+        StatutCommande.devis => 'Devis',
       };
 }
 
-/// Une pièce achetée, figée au moment de la commande.
-///
-/// Les valeurs sont **copiées** depuis l'article et non référencées : le prix
-/// et l'état d'une commande passée ne doivent pas bouger si la fiche produit
-/// est modifiée plus tard.
+StatutCommande statutCommandeDepuis(String brut) {
+  return switch (brut) {
+    'pending' => StatutCommande.pending,
+    'paid' => StatutCommande.paid,
+    'preparing' || 'ready' => StatutCommande.preparation,
+    'delivering' => StatutCommande.enRoute,
+    'completed' => StatutCommande.livree,
+    'cancelled' => StatutCommande.annulee,
+    'quote_required' => StatutCommande.devis,
+    _ => StatutCommande.preparation,
+  };
+}
+
 @immutable
 class LigneCommande {
   const LigneCommande({
@@ -36,12 +57,12 @@ class LigneCommande {
 
   factory LigneCommande.fromJson(Map<String, dynamic> json) {
     return LigneCommande(
-      articleId: json['articleId'] as String,
-      maison: json['maison'] as String? ?? '',
-      nom: json['nom'] as String? ?? '',
-      prix: (json['prix'] as num).toDouble(),
-      etat: json['etat'] as String? ?? '',
-      imageUrl: json['imageUrl'] as String?,
+      articleId: chaineDe(json['piece_id'], chaineDe(json['articleId'])),
+      maison: chaineDe(json['maison']),
+      nom: chaineDe(json['title'], chaineDe(json['nom'])),
+      prix: montantDe(json['price'] ?? json['prix']),
+      etat: chaineDe(json['etat']),
+      imageUrl: json['imageUrl'] as String? ?? json['image_url'] as String?,
     );
   }
 
@@ -55,7 +76,6 @@ class LigneCommande {
       };
 }
 
-/// Une commande cliente — maquettes `25:1089` et `26:1262`.
 @immutable
 class Commande {
   const Commande({
@@ -64,51 +84,63 @@ class Commande {
     required this.dateDepot,
     required this.lignes,
     required this.livraison,
+    this.id,
     this.estimation,
     this.adresseLivraison,
+    this.remise = 0,
+    this.total,
   });
 
-  /// Numéro affiché, sans le croisillon (« CE-2641 »).
+  final String? id;
   final String numero;
-
   final StatutCommande statut;
   final DateTime dateDepot;
   final List<LigneCommande> lignes;
-
-  /// Frais de livraison figés au moment de la commande.
   final double livraison;
-
-  /// Date de livraison estimée. `null` quand elle n'est pas encore connue.
   final DateTime? estimation;
-
   final String? adresseLivraison;
+  final double remise;
+  final double? total;
 
   double get sousTotal =>
       lignes.fold<double>(0, (somme, l) => somme + l.prix);
 
-  double get total => sousTotal + livraison;
+  double get totalCalcule => total ?? (sousTotal - remise + livraison);
 
   factory Commande.fromJson(Map<String, dynamic> json) {
+    final adresse = json['delivery_address'];
+    var adresseTexte = json['adresseLivraison'] as String?;
+    if (adresseTexte == null && adresse is Map) {
+      final morceaux = [
+        adresse['line1'],
+        adresse['neighbourhood'],
+        adresse['landmark'],
+      ].whereType<Object>().map((e) => e.toString()).where((e) => e.isNotEmpty);
+      adresseTexte = morceaux.join(', ');
+    }
+
     return Commande(
-      numero: json['numero'] as String,
-      statut: StatutCommande.values.firstWhere(
-        (s) => s.name == json['statut'],
-        orElse: () => StatutCommande.preparation,
-      ),
-      dateDepot: DateTime.parse(json['dateDepot'] as String),
+      id: json['id'] as String?,
+      numero: chaineDe(json['order_number'], chaineDe(json['numero'])),
+      statut: statutCommandeDepuis(chaineDe(json['status'], chaineDe(json['statut']))),
+      dateDepot: dateDe(json['placed_at']) ??
+          dateDe(json['created_at']) ??
+          dateDe(json['dateDepot']) ??
+          DateTime.now(),
       lignes: [
-        for (final l in (json['lignes'] as List<dynamic>? ?? <dynamic>[]))
-          LigneCommande.fromJson(l as Map<String, dynamic>),
+        for (final l in objetsDe(json['items'] ?? json['lignes']))
+          LigneCommande.fromJson(l),
       ],
-      livraison: (json['livraison'] as num?)?.toDouble() ?? 0,
-      estimation: json['estimation'] == null
-          ? null
-          : DateTime.parse(json['estimation'] as String),
-      adresseLivraison: json['adresseLivraison'] as String?,
+      livraison: montantDe(json['delivery_fee'] ?? json['livraison']),
+      estimation: dateDe(json['estimation']),
+      adresseLivraison: adresseTexte,
+      remise: montantDe(json['discount_amount']),
+      total: json['total'] == null ? null : montantDe(json['total']),
     );
   }
 
   Map<String, dynamic> toJson() => {
+        'id': id,
         'numero': numero,
         'statut': statut.name,
         'dateDepot': dateDepot.toIso8601String(),

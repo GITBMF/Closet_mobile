@@ -78,6 +78,23 @@ class ClosetColors {
   // ── Hors rampes, relevés sur les composants ───────────────────────────
   // Présents dans la maquette mais absents de la planche `1:830`.
 
+  /// Blanc pur — surfaces et traits. La maquette l'emploie massivement :
+  /// 14 fois sur le splash `5:1210`, 28 fois en trait sur la navigation
+  /// `13:1182`. Distinct de `creme` (#FBF7EF), qui est cassé de jaune.
+  static const Color blanc = Color(0xFFFFFFFF);
+
+  /// Noir pur — vecteurs et ombres (22 occurrences sur `11:30`).
+  /// Distinct de `noir` (#171512), qui est le noir de texte de la palette.
+  static const Color noirPur = Color(0xFF000000);
+
+  /// Gabarit d'image dans la maquette (`16:3328`, `26:1262`, `35:1895`).
+  /// À employer comme fond de substitution le temps du chargement, jamais
+  /// comme couleur décorative.
+  static const Color gabaritImage = Color(0xFFD9D9D9);
+
+  /// Gabarit d'image clair (`11:30` — 8 occurrences)
+  static const Color gabaritImageClair = Color(0xFFE5E5E5);
+
   /// Fond du badge « refusé » (`36:2063`) — rose poudré
   static const Color refusFond = Color(0xFFFFC0C6);
 
@@ -108,6 +125,12 @@ class ClosetColors {
 
   /// Filet de séparation « Ou se connecter »
   static const Color filetSeparateur = Color(0xFFCFDFE2);
+
+  /// Titre de l'écran de connexion
+  static const Color champTitre = Color(0xFF0C1421);
+
+  /// Libellé au-dessus d'un champ de connexion
+  static const Color champLibelle = Color(0xFF122B31);
 
   /// Libellé d'une puce de filtre non sélectionnée (`11:30` — Category Tab)
   static const Color chipTexteInactif = Color(0xFF656565);
@@ -175,6 +198,23 @@ class ClosetColors {
   /// Erreur en ton couture — Figma « Terre Brûlée 200 »
   static const Color erreurCouture = terreBrulee200;
 
+  // ── Barre de navigation (`13:1182`) ───────────────────────────────────
+  // Relevé calque par calque : la barre est une pilule `#1C382D`, l'onglet
+  // actif une pilule `#F3F3F3` bordée `#CDAB71` dont l'icône reprend la
+  // bordure et dont le libellé descend d'un cran à `#B58A40`.
+
+  /// Fond de la pilule de navigation
+  static const Color navigationFond = emeraude500;
+
+  /// Fond de l'onglet actif
+  static const Color navigationActifFond = carteFond;
+
+  /// Bordure et icône de l'onglet actif
+  static const Color navigationActifTrait = fond300;
+
+  /// Libellé de l'onglet actif
+  static const Color navigationActifTexte = fond400;
+
   // ══════════════════════════════════════════════════════════════════════
   // HORS PALETTE FIGMA — conservés de la version précédente
   // ══════════════════════════════════════════════════════════════════════
@@ -185,8 +225,10 @@ class ClosetColors {
   /// Lignes, bordures, séparateurs
   static const Color ligne = Color(0xFFE2D7C2);
 
-  /// Icônes de navigation non sélectionnées
-  static const Color navigationInactif = Color(0xFF7A7870);
+  /// Icônes de navigation non sélectionnées. La maquette `13:1182` les trace
+  /// en blanc pur, pas en gris : les cinq variantes de la barre montrent
+  /// toutes des vecteurs `#FFFFFF` sur les onglets inactifs.
+  static const Color navigationInactif = blanc;
 
   /// Doré sur fond vert profond (dark mode)
   static const Color doreClair = Color(0xFFDCBE72);
@@ -217,4 +259,20 @@ class ClosetColors {
   static const Color texteSecondaire = taupe;
   static const Color texteSurVert = creme;
   static const Color rougeBadge = erreur;
+}
+
+/// Couleurs qui suivent le thème clair / sombre actif.
+extension ClosetThemeX on BuildContext {
+  bool get closetSombre => Theme.of(this).brightness == Brightness.dark;
+
+  Color get closetFond => Theme.of(this).scaffoldBackgroundColor;
+
+  Color get closetEncre =>
+      closetSombre ? ClosetColors.creme : ClosetColors.noir;
+
+  Color get closetCarte =>
+      closetSombre ? ClosetColors.emeraude500 : ClosetColors.blanc;
+
+  Color get closetChamp =>
+      closetSombre ? ClosetColors.emeraude400 : ClosetColors.blanc;
 }

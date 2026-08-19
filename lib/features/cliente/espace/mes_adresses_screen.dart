@@ -5,9 +5,12 @@ import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/closet_colors.dart';
 import '../../../core/theme/closet_text_styles.dart';
+import '../../../core/widgets/closet_feedback.dart';
+import '../../../core/widgets/etat_ecran.dart';
 import '../../../data/models/adresse.dart';
 import '../../../data/repositories/adresse_repository.dart';
 import '../../sourceur/widgets/sourceur_header.dart';
+import 'adresse_sheet.dart';
 
 /// Mes adresses — transcription de la maquette `26:1588`.
 ///
@@ -21,7 +24,7 @@ class MesAdressesScreen extends ConsumerWidget {
     final adresses = ref.watch(mesAdressesProvider);
 
     return Scaffold(
-      backgroundColor: ClosetColors.beige,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
         child: Column(
           children: [
@@ -63,7 +66,7 @@ class MesAdressesScreen extends ConsumerWidget {
                     SourceurBoutonRond(
                       icone: Icons.add,
                       label: 'Ajouter une adresse',
-                      onTap: () => _aVenir(context),
+                      onTap: () => _ouvrirFormulaire(context, ref),
                     ),
                   ],
                 ),
@@ -72,7 +75,10 @@ class MesAdressesScreen extends ConsumerWidget {
             Expanded(
               child: adresses.when(
                 data: (liste) => liste.isEmpty
-                    ? const _AucuneAdresse()
+                    ? ClosetListeVide(
+                        action: () => _ouvrirFormulaire(context, ref),
+                        libelleAction: 'Ajouter une adresse',
+                      )
                     : ListView.separated(
                         padding: const EdgeInsets.fromLTRB(
                           23,
@@ -85,14 +91,17 @@ class MesAdressesScreen extends ConsumerWidget {
                             const SizedBox(height: 49),
                         itemBuilder: (context, i) => _LigneAdresse(
                           adresse: liste[i],
-                          onTap: () => _aVenir(context),
+                          onTap: () => _ouvrirFormulaire(
+                            context,
+                            ref,
+                            adresse: liste[i],
+                          ),
                         ),
                       ),
-                loading: () => const Center(
-                  child: CircularProgressIndicator(color: ClosetColors.dore),
-                ),
-                error: (e, _) => const Center(
-                  child: Text('Erreur de chargement'),
+                loading: () => const EtatEcran.chargement(),
+                error: (e, _) => EtatEcran.erreur(
+                  erreur: e,
+                  onRetry: () => ref.invalidate(mesAdressesProvider),
                 ),
               ),
             ),
@@ -102,51 +111,18 @@ class MesAdressesScreen extends ConsumerWidget {
     );
   }
 
-  static void _aVenir(BuildContext context) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Gestion des adresses bientôt disponible.')),
-    );
+  /// Ouvre le formulaire puis rafraîchit la liste si quelque chose a changé.
+  static Future<void> _ouvrirFormulaire(
+    BuildContext context,
+    WidgetRef ref, {
+    Adresse? adresse,
+  }) async {
+    final modifie =
+        await afficherFormulaireAdresse(context, adresse: adresse);
+    if (modifie) ref.invalidate(mesAdressesProvider);
   }
 }
 
-class _AucuneAdresse extends StatelessWidget {
-  const _AucuneAdresse();
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.p32),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(
-              Icons.location_on_outlined,
-              size: 48,
-              color: ClosetColors.fond300,
-            ),
-            const SizedBox(height: AppSpacing.p20),
-            Text(
-              'Aucune adresse enregistrée',
-              textAlign: TextAlign.center,
-              style: ClosetTextStyles.titreSection,
-            ),
-            const SizedBox(height: AppSpacing.p12),
-            Text(
-              'Ajoutez une adresse pour accélérer vos prochaines commandes.',
-              textAlign: TextAlign.center,
-              style: ClosetTextStyles.citation.copyWith(
-                color: ClosetColors.taupe,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-/// Entrée d'adresse : tuile verte de 48, libellé, badge par défaut, adresse.
 class _LigneAdresse extends StatelessWidget {
   const _LigneAdresse({required this.adresse, required this.onTap});
 
@@ -174,7 +150,7 @@ class _LigneAdresse extends StatelessWidget {
               color: ClosetColors.vert,
               borderRadius: BorderRadius.circular(AppRadius.carte),
             ),
-            child: Icon(_icone, size: 20, color: Colors.white),
+            child: Icon(_icone, size: 20, color: ClosetColors.blanc),
           ),
           const SizedBox(width: AppSpacing.p16),
           Expanded(

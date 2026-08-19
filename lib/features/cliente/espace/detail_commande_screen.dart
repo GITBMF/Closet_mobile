@@ -7,6 +7,7 @@ import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/closet_colors.dart';
 import '../../../core/theme/closet_text_styles.dart';
 import '../../../core/widgets/closet_app_bar.dart';
+import '../../../core/widgets/etat_ecran.dart';
 import '../../../data/models/commande.dart';
 import '../../../data/repositories/commande_repository.dart';
 import '../../sourceur/widgets/sourceur_header.dart';
@@ -26,7 +27,7 @@ class DetailCommandeScreen extends ConsumerWidget {
     final commande = ref.watch(commandeProvider(numero));
 
     return Scaffold(
-      backgroundColor: ClosetColors.beige,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
         child: Column(
           children: [
@@ -34,13 +35,17 @@ class DetailCommandeScreen extends ConsumerWidget {
             Expanded(
               child: commande.when(
                 data: (c) => c == null
-                    ? const Center(child: Text('Commande introuvable'))
+                    ? EtatEcran.vide(
+                        titre: 'Commande introuvable',
+                        message: 'Cette commande n’apparaît plus dans votre historique.',
+                        action: () => context.pop(),
+                        libelleAction: 'Retour',
+                      )
                     : _Corps(commande: c),
-                loading: () => const Center(
-                  child: CircularProgressIndicator(color: ClosetColors.dore),
-                ),
-                error: (e, _) => const Center(
-                  child: Text('Erreur de chargement'),
+                loading: () => const EtatEcran.chargement(),
+                error: (e, _) => EtatEcran.erreur(
+                  erreur: e,
+                  onRetry: () => ref.invalidate(commandeProvider(numero)),
                 ),
               ),
             ),
@@ -140,7 +145,7 @@ class _Corps extends StatelessWidget {
                   child: Text(
                     'Suivre ma commande',
                     style: ClosetTextStyles.bouton.copyWith(
-                      color: Colors.white,
+                      color: ClosetColors.blanc,
                     ),
                   ),
                 ),
@@ -176,7 +181,7 @@ class _CarteSuivi extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.p16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: ClosetColors.blanc,
         border: Border.all(color: ClosetColors.fond300, width: AppStroke.fin),
         borderRadius: BorderRadius.circular(AppRadius.carte),
       ),
@@ -283,7 +288,7 @@ class _LignePiece extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.p12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: ClosetColors.blanc,
         border: Border.all(color: ClosetColors.fond300, width: AppStroke.fin),
         borderRadius: BorderRadius.circular(AppRadius.carte),
       ),
@@ -295,14 +300,14 @@ class _LignePiece extends StatelessWidget {
               width: 78,
               height: 92,
               child: ligne.imageUrl == null
-                  ? const ColoredBox(color: Color(0xFFD9D9D9))
+                  ? const ColoredBox(color: ClosetColors.gabaritImage)
                   : CachedNetworkImage(
                       imageUrl: ligne.imageUrl!,
                       fit: BoxFit.cover,
                       placeholder: (_, _) =>
-                          const ColoredBox(color: Color(0xFFD9D9D9)),
+                          const ColoredBox(color: ClosetColors.gabaritImage),
                       errorWidget: (_, _, _) =>
-                          const ColoredBox(color: Color(0xFFD9D9D9)),
+                          const ColoredBox(color: ClosetColors.gabaritImage),
                     ),
             ),
           ),
@@ -410,9 +415,9 @@ class _CarteRecapitulatif extends StatelessWidget {
                 ),
               ),
               Text(
-                formatPrixFcfa(commande.total),
+                formatPrixFcfa(commande.totalCalcule),
                 style: ClosetTextStyles.prixGrand.copyWith(
-                  color: Colors.white,
+                  color: ClosetColors.blanc,
                 ),
               ),
             ],
@@ -423,7 +428,7 @@ class _CarteRecapitulatif extends StatelessWidget {
             style: ClosetTextStyles.microLegende.copyWith(
               fontWeight: FontWeight.w300,
               letterSpacing: 0.14,
-              color: Colors.white,
+              color: ClosetColors.blanc,
             ),
           ),
         ],

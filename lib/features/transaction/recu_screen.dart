@@ -7,10 +7,15 @@ import '../../core/widgets/closet_app_bar.dart';
 import 'transaction_models.dart';
 import 'widgets/transaction_scaffold.dart';
 
-/// Reçu de transaction — transcription de la maquette `32:865`.
+/// Reçu de transaction — `32:865` pour un retrait, `162:3473` pour un achat.
 ///
 /// Ticket blanc de 310 de large (rayon 30) listant les informations de
 /// l'opération, puis une seconde carte portant le total en EB Garamond doré.
+///
+/// Les deux reçus de la maquette partagent ce gabarit à l'identique et ne
+/// diffèrent que par le corps : mode de retrait, compte et receveur d'un côté,
+/// description de la pièce achetée de l'autre. Ce corps arrive donc par
+/// [DemandeTransaction.lignesRecu], ce qui évite d'entretenir deux écrans.
 class RecuScreen extends StatelessWidget {
   const RecuScreen({
     super.key,
@@ -46,11 +51,12 @@ class RecuScreen extends StatelessWidget {
                 const Divider(color: ClosetColors.champPlaceholder, height: 1),
                 const SizedBox(height: AppSpacing.p16),
                 _Ligne('Date & heure', _formatDate(recu.horodatage)),
-                _Ligne('Numéro de référence', recu.reference),
-                _Ligne(d.type.libelleMode, d.moyen),
-                _Ligne('Compte Numéro', d.compteMasque),
-                _Ligne('Nom du receveur', d.beneficiaire),
-                if (d.note != null) _Ligne('Note(s)', d.note!),
+                if (d.type.afficheReference)
+                  _Ligne('Numéro de référence', recu.reference),
+                for (final ligne in d.lignesRecu)
+                  _Ligne(ligne.libelle, ligne.valeur),
+                if (d.note != null && d.note!.isNotEmpty)
+                  _Ligne('Note(s)', d.note!),
                 const SizedBox(height: AppSpacing.p20),
                 Text(
                   'ClosEt vous remercie !',
@@ -93,7 +99,7 @@ class RecuScreen extends StatelessWidget {
             ),
             const SizedBox(height: AppSpacing.p24),
             BoutonTransaction(
-              label: 'Retour dans Mon Espace',
+              label: d.type.libelleSortie,
               onPressed: onRetour,
             ),
           ],
@@ -133,7 +139,7 @@ class _Ticket extends StatelessWidget {
           vertical: AppSpacing.p24,
         ),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: ClosetColors.blanc,
           borderRadius: BorderRadius.circular(30),
         ),
         child: Column(children: children),
@@ -167,7 +173,7 @@ class _Ligne extends StatelessWidget {
               textAlign: TextAlign.right,
               style: ClosetTextStyles.corps.copyWith(
                 fontWeight: FontWeight.w600,
-                color: Colors.black,
+                color: ClosetColors.noir,
               ),
             ),
           ),

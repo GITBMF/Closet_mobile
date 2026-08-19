@@ -27,6 +27,22 @@ class Adresse {
   /// Adresse retenue par défaut au moment de commander.
   final bool parDefaut;
 
+  Adresse copyWith({
+    String? id,
+    String? libelle,
+    String? ligne,
+    TypeAdresse? type,
+    bool? parDefaut,
+  }) {
+    return Adresse(
+      id: id ?? this.id,
+      libelle: libelle ?? this.libelle,
+      ligne: ligne ?? this.ligne,
+      type: type ?? this.type,
+      parDefaut: parDefaut ?? this.parDefaut,
+    );
+  }
+
   factory Adresse.fromJson(Map<String, dynamic> json) {
     return Adresse(
       id: json['id'] as String,

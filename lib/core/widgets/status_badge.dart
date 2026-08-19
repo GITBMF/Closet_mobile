@@ -11,6 +11,10 @@ import '../theme/closet_text_styles.dart';
 /// pastille de 6 px, écart 7, texte Lato 400 / 8 pt. Seul le couple de
 /// couleurs distingue un statut d'un autre — d'où les constructeurs nommés
 /// ci-dessous plutôt que des couleurs passées à la main sur chaque écran.
+///
+/// Les libellés par défaut reprennent **la casse exacte de la maquette**, qui
+/// est irrégulière à dessein : « EN route » en capitales partielles, « dépôt
+/// reçu » et « refusé » en minuscules.
 class StatusBadge extends StatelessWidget {
   const StatusBadge({
     super.key,
@@ -29,7 +33,7 @@ class StatusBadge extends StatelessWidget {
       );
 
   /// Commande en route — encre sur crème
-  factory StatusBadge.enRoute([String text = 'En route']) => StatusBadge(
+  factory StatusBadge.enRoute([String text = 'EN route']) => StatusBadge(
         text: text,
         backgroundColor: ClosetColors.neutre900,
         textColor: ClosetColors.neutre300,
@@ -61,14 +65,14 @@ class StatusBadge extends StatelessWidget {
       );
 
   /// Dépôt reçu
-  factory StatusBadge.depotRecu([String text = 'Dépôt reçu']) => StatusBadge(
+  factory StatusBadge.depotRecu([String text = 'dépôt reçu']) => StatusBadge(
         text: text,
         backgroundColor: ClosetColors.fond200,
         textColor: ClosetColors.fond500,
       );
 
   /// Pièce refusée — seul statut à sortir des rampes de la palette
-  factory StatusBadge.refusee([String text = 'Refusé']) => StatusBadge(
+  factory StatusBadge.refusee([String text = 'refusé']) => StatusBadge(
         text: text,
         backgroundColor: ClosetColors.refusFond,
         textColor: ClosetColors.refusTexte,

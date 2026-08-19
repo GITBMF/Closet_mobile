@@ -1,0 +1,81 @@
+GET /api/v1/pieces
+   param house_id in=query req=False {"anyOf": [{"type": "string", "format": "uuid"}, {"type": "null"}], "title": "House Id"}
+   param universe_id in=query req=False {"anyOf": [{"type": "string", "format": "uuid"}, {"type": "null"}], "title": "Universe Id"}
+   param min_price in=query req=False {"anyOf": [{"type": "number", "minimum": 0.0}, {"type": "null"}], "title": "Min Price"}
+   param max_price in=query req=False {"anyOf": [{"type": "number", "minimum": 0.0}, {"type": "null"}], "title": "Max Price"}
+   param q in=query req=False {"anyOf": [{"type": "string", "maxLength": 120}, {"type": "null"}], "title": "Q"}
+   param limit in=query req=False {"type": "integer", "maximum": 100, "minimum": 1, "default": 24, "title": "Limit"}
+   param offset in=query req=False {"type": "integer", "minimum": 0, "default": 0, "title": "Offset"}
+   -> 200 {"application/json": {"schema": {"$ref": "#/components/schemas/PiecesPage"}}}
+   -> 422 {"application/json": {"schema": {"$ref": "#/components/schemas/HTTPValidationError"}}}
+GET /api/v1/pieces/search
+   param q in=query req=True {"type": "string", "minLength": 1, "maxLength": 120, "title": "Q"}
+   param limit in=query req=False {"type": "integer", "maximum": 100, "minimum": 1, "default": 24, "title": "Limit"}
+   param offset in=query req=False {"type": "integer", "minimum": 0, "default": 0, "title": "Offset"}
+   -> 200 {"application/json": {"schema": {"$ref": "#/components/schemas/PiecesPage"}}}
+   -> 422 {"application/json": {"schema": {"$ref": "#/components/schemas/HTTPValidationError"}}}
+GET /api/v1/pieces/{piece_id}
+   param piece_id in=path req=True {"type": "string", "format": "uuid", "title": "Piece Id"}
+   -> 200 {"application/json": {"schema": {"$ref": "#/components/schemas/PieceDetail"}}}
+   -> 422 {"application/json": {"schema": {"$ref": "#/components/schemas/HTTPValidationError"}}}
+POST /api/v1/orders
+   body {"application/json": {"schema": {"$ref": "#/components/schemas/CheckoutIn"}}}
+   -> 201 {"application/json": {"schema": {"$ref": "#/components/schemas/OrderOut"}}}
+   -> 422 {"application/json": {"schema": {"$ref": "#/components/schemas/HTTPValidationError"}}}
+GET /api/v1/orders
+   param limit in=query req=False {"type": "integer", "maximum": 100, "minimum": 1, "default": 20, "title": "Limit"}
+   param offset in=query req=False {"type": "integer", "minimum": 0, "default": 0, "title": "Offset"}
+   -> 200 {"application/json": {"schema": {"$ref": "#/components/schemas/OrdersPage"}}}
+   -> 422 {"application/json": {"schema": {"$ref": "#/components/schemas/HTTPValidationError"}}}
+GET /api/v1/orders/{order_number}
+   param order_number in=path req=True {"type": "string", "title": "Order Number"}
+   -> 200 {"application/json": {"schema": {"$ref": "#/components/schemas/OrderOut"}}}
+   -> 422 {"application/json": {"schema": {"$ref": "#/components/schemas/HTTPValidationError"}}}
+GET /api/v1/delivery/quote
+   param city_id in=query req=False {"anyOf": [{"type": "integer"}, {"type": "null"}], "title": "City Id"}
+   param region_id in=query req=False {"anyOf": [{"type": "integer"}, {"type": "null"}], "title": "Region Id"}
+   -> 200 {"application/json": {"schema": {"$ref": "#/components/schemas/QuoteOut"}}}
+   -> 422 {"application/json": {"schema": {"$ref": "#/components/schemas/HTTPValidationError"}}}
+GET /api/v1/sourcing/payouts
+   -> 200 {"application/json": {"schema": {"items": {"$ref": "#/components/schemas/PayoutOut"}, "type": "array", "title": "Response My Payouts Api V1 Sourcing Payouts Get"}}}
+POST /api/v1/sourcing/submissions
+   body {"application/json": {"schema": {"$ref": "#/components/schemas/SubmissionCreate"}}}
+   -> 201 {"application/json": {"schema": {"$ref": "#/components/schemas/SubmissionOut"}}}
+   -> 422 {"application/json": {"schema": {"$ref": "#/components/schemas/HTTPValidationError"}}}
+GET /api/v1/sourcing/submissions
+   param limit in=query req=False {"type": "integer", "maximum": 100, "minimum": 1, "default": 20, "title": "Limit"}
+   param offset in=query req=False {"type": "integer", "minimum": 0, "default": 0, "title": "Offset"}
+   -> 200 {"application/json": {"schema": {"$ref": "#/components/schemas/SubmissionsPage"}}}
+   -> 422 {"application/json": {"schema": {"$ref": "#/components/schemas/HTTPValidationError"}}}
+POST /api/v1/sourcing/apply
+   body {"application/json": {"schema": {"$ref": "#/components/schemas/ApplyIn"}}}
+   -> 201 {"application/json": {"schema": {"$ref": "#/components/schemas/SourcerProfileOut"}}}
+   -> 422 {"application/json": {"schema": {"$ref": "#/components/schemas/HTTPValidationError"}}}
+GET /api/v1/geo/cities
+   param active_only in=query req=False {"type": "boolean", "default": true, "title": "Active Only"}
+   -> 200 {"application/json": {"schema": {"type": "array", "items": {"$ref": "#/components/schemas/CityOut"}, "title": "Response List Cities Api V1 Geo Cities Get"}}}
+   -> 422 {"application/json": {"schema": {"$ref": "#/components/schemas/HTTPValidationError"}}}
+GET /api/v1/geo/cities/{city_id}/neighbourhoods
+   param city_id in=path req=True {"type": "integer", "title": "City Id"}
+   param active_only in=query req=False {"type": "boolean", "default": true, "title": "Active Only"}
+   -> 200 {"application/json": {"schema": {"type": "array", "items": {"$ref": "#/components/schemas/NeighbourhoodOut"}, "title": "Response List Neighbourhoods Api V1 Geo Cities City Id Neighbourhoods Get"}}}
+   -> 422 {"application/json": {"schema": {"$ref": "#/components/schemas/HTTPValidationError"}}}
+GET /api/v1/wishlist
+   -> 200 {"application/json": {"schema": {"items": {"$ref": "#/components/schemas/PieceSummary"}, "type": "array", "title": "Response My Wishlist Api V1 Wishlist Get"}}}
+POST /api/v1/payments/initiate
+   body {"application/json": {"schema": {"$ref": "#/components/schemas/InitiateIn"}}}
+   -> 201 {"application/json": {"schema": {"$ref": "#/components/schemas/InitiateOut"}}}
+   -> 422 {"application/json": {"schema": {"$ref": "#/components/schemas/HTTPValidationError"}}}
+GET /api/v1/payments/{payment_id}
+   param payment_id in=path req=True {"type": "string", "format": "uuid", "title": "Payment Id"}
+   -> 200 {"application/json": {"schema": {"$ref": "#/components/schemas/PaymentOut"}}}
+   -> 422 {"application/json": {"schema": {"$ref": "#/components/schemas/HTTPValidationError"}}}
+POST /api/v1/sourcing/submissions/{submission_id}/media
+   param submission_id in=path req=True {"type": "string", "format": "uuid", "title": "Submission Id"}
+   body {"application/json": {"schema": {"$ref": "#/components/schemas/MediaIn"}}}
+   -> 201 {"application/json": {"schema": {"$ref": "#/components/schemas/app__modules__sourcing__schemas__MediaOut"}}}
+   -> 422 {"application/json": {"schema": {"$ref": "#/components/schemas/HTTPValidationError"}}}
+POST /api/v1/me/devices
+   body {"application/json": {"schema": {"$ref": "#/components/schemas/RegisterDeviceRequest"}}}
+   -> 200 {"application/json": {"schema": {"$ref": "#/components/schemas/MessageResponse"}}}
+   -> 422 {"application/json": {"schema": {"$ref": "#/components/schemas/HTTPValidationError"}}}

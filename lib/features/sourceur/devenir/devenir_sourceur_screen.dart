@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/theme/app_spacing.dart';
@@ -69,7 +69,7 @@ class DevenirSourceurScreen extends StatelessWidget {
                           'Devenir Sourceur ClosET',
                           textAlign: TextAlign.center,
                           style: ClosetTextStyles.sousTitre.copyWith(
-                            color: Colors.white,
+                            color: ClosetColors.blanc,
                           ),
                         ),
                       ),
@@ -89,7 +89,7 @@ class DevenirSourceurScreen extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'programme partenaire',
+                          'Programme partenaire',
                           style: ClosetTextStyles.corpsMedium.copyWith(
                             fontSize: 13,
                             letterSpacing: -0.26,
@@ -101,15 +101,17 @@ class DevenirSourceurScreen extends StatelessWidget {
                           'Confiez vos pièces, nous les valorisons',
                           style: ClosetTextStyles.titreEcran.copyWith(
                             letterSpacing: 0.66,
-                            color: Colors.white,
+                            color: ClosetColors.blanc,
                           ),
                         ),
                         const SizedBox(height: AppSpacing.p12),
                         Text(
                           'Chaque pièce que vous confiez reste tracée '
-                          'jusqu’à vous.',
+                          'jusqu’à vous. Vous suivez ses statuts en temps réel '
+                          'et vos gains, en toute transparence. Deux formules : '
+                          'vente directe ou dépôt-vente.',
                           style: ClosetTextStyles.labelChamp.copyWith(
-                            color: Colors.white,
+                            color: ClosetColors.blanc,
                           ),
                         ),
                         const SizedBox(height: AppSpacing.p24),
@@ -190,33 +192,54 @@ class _ArcheProgramme extends StatelessWidget {
     return Container(
       width: 217,
       height: 275,
-      padding: const EdgeInsets.fromLTRB(
-        AppSpacing.p20,
-        AppSpacing.p32,
-        AppSpacing.p20,
-        AppSpacing.p24,
-      ),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: ClosetColors.blanc,
         border: Border.all(color: ClosetColors.fond300, width: AppStroke.fin),
         borderRadius: const BorderRadius.vertical(top: Radius.circular(159)),
+        image: const DecorationImage(
+          image: AssetImage('assets/onboarding_2.jpg'),
+          fit: BoxFit.cover,
+          alignment: Alignment.center,
+        ),
       ),
-      child: Column(
-        children: [
-          const Icon(
-            Icons.workspace_premium_outlined,
-            size: 54,
-            color: ClosetColors.fond300,
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(159)),
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              ClosetColors.blanc.withValues(alpha: 0.08),
+              ClosetColors.blanc.withValues(alpha: 0.95),
+            ],
+            stops: const [0.4, 1],
           ),
-          const Spacer(),
-          Text(
-            'sourcing Program',
-            style: ClosetTextStyles.corpsMedium.copyWith(
-              letterSpacing: -0.24,
-              color: ClosetColors.vert,
-            ),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(
+            AppSpacing.p20,
+            AppSpacing.p32,
+            AppSpacing.p20,
+            AppSpacing.p24,
           ),
-        ],
+          child: Column(
+            children: [
+              const Icon(
+                Icons.workspace_premium_outlined,
+                size: 40,
+                color: ClosetColors.fond300,
+              ),
+              const Spacer(),
+              Text(
+                'Sourcing program',
+                style: ClosetTextStyles.corpsMedium.copyWith(
+                  letterSpacing: -0.24,
+                  color: ClosetColors.vert,
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

@@ -1,0 +1,33 @@
+
+### 162:3473 — Reçu de transaction [390x844] 21 textes
+   Votre reçu de transaction | Transaction numéro #8512857525 | Date & heure | Lun 8 Jui, 8:58:45 PM | Coco Chanel | Marque de la pièce | Catégorie | Robe | M | Taille | Etat de la pièce | Excellente | Mode de paiement | Orange Money | A domicile | Livraison | 30.000 FCFA | Total retiré | ClosEt vous remercie ! | Partager Mon Reçu | Poursuivre ma visite
+
+### 162:3535 — Reçu de transaction [390x844] 21 textes
+   Votre reçu de transaction | Transaction numéro #8512857525 | Date & heure | Lun 8 Jui, 8:58:45 PM | Coco Chanel | Marque de la pièce | Catégorie | Robe | M | Taille | Etat de la pièce | Excellente | Mode de paiement | Orange Money | A domicile | Livraison | 30.000 FCFA | Total retiré | ClosEt vous remercie ! | Partager Mon Reçu | Poursuivre ma visite
+
+### 162:3351 — Transaction reussie [390x844] 15 textes
+   Confirmation | Paiement | livraison | 1 | 2 | 3 | Paiement reussi | C’est tout bon ! | Votre pièce sera préparée avec soin et  expédiée très prochainement | Commande N° ce-2641 | Votre paiement a été effectuée avec succès. Vous allez recevoir un reçu de confirmation d'ici quelques instants. | Confirmation envoyée sur WhatsApp | Voir le reçu | Retour dans Mon Espace | Toutes vos informations sont chiffrées de bout en bout et stockées sur des serveurs sécurisés.
+
+### 162:3412 — Transaction reussie [390x844] 15 textes
+   Confirmation | Paiement | livraison | 1 | 2 | 3 | Paiement reussi | C’est tout bon ! | Votre pièce sera préparée avec soin et  expédiée très prochainement | Commande N° ce-2641 | Votre paiement a été effectuée avec succès. Vous allez recevoir un reçu de confirmation d'ici quelques instants. | Confirmation envoyée sur WhatsApp | Voir le reçu | Retour dans Mon Espace | Toutes vos informations sont chiffrées de bout en bout et stockées sur des serveurs sécurisés.
+
+### 162:5220 — Traitement de transaction en cours [390x844] 10 textes
+   Confirmation | Paiement | livraison | 1 | 2 | 3 | Paiement en cours | Veuillez patienter quelques instants pendant que nous sécurisons et validons votre transaction. Merci de ne pas fermer cette application. | Paiement en cours | Toutes vos informations sont chiffrées de bout en bout et stockées sur des serveurs sécurisés.
+
+### 162:5273 — Traitement de transaction en cours [390x844] 10 textes
+   Confirmation | Paiement | livraison | 1 | 2 | 3 | Traitement en cours | Veuillez patienter quelques instants pendant que nous sécurisons et validons votre transaction. Merci de ne pas fermer cette application. | Paiement en cours | Toutes vos informations sont chiffrées de bout en bout et stockées sur des serveurs sécurisés.
+
+### 32:865 — Reçu de transaction [390x844] 18 textes
+   Votre reçu de transaction | Transaction numéro #8512857525 | Date & heure | Lun 8 Jui, 8:58:45 PM | 44277436886 | Numéro de référence | Carte Visa | Mode de Retrait | 34364634152384 | Compte Numéro | Aïcha Noukatte | Nom du receveur | Note(s) | ClosEt vous remercie ! | 30.000 FCFA | Total retiré | Partager Mon Reçu | Retour dans Mon Espace
+
+### 32:813 — Transaction reussie [390x844] 6 textes
+   Transaction reussie ! | C’est tout bon ! | Votre opération a été effectuée avec succès. Vous allez recevoir un reçu de confirmation d'ici quelques instants. | Voir le reçu | Retour dans Mon Espace | Toutes vos informations sont chiffrées de bout en bout et stockées sur des serveurs sécurisés.
+
+### 32:756 — Traitement de transaction en cours [390x844] 3 textes
+   Traitement en cours | Veuillez patienter quelques instants pendant que nous sécurisons et validons votre transaction. Merci de ne pas fermer cette application. | Toutes vos informations sont chiffrées de bout en bout et stockées sur des serveurs sécurisés.
+
+### 32:704 — Ajout du code PIN [390x844] 6 textes
+   Code PIN de sécurité | Ajoutez un code PIN pour renforcer la sécurité de votre portefeuille. | 5 | | | Valider le Numéro PIN | Toutes vos informations sont chiffrées de bout en bout et stockées sur des serveurs sécurisés.
+
+### 162:5657 — Page suivie de pièce [390x844] 15 textes
+   Suivre ma pièce | COMMANDE #CE-2641 | Temps d’estimationl: Mer 8 Juil, 15:30 | Voyage de votre pièce | Sélection confirmée | Lun 6 Juil, 09:30 | Paiement confirmé | Lun 6 Juil, 09:30 . MTN MoMo | Préparée avec soin | Votre pièce reçoit son packaging Clos Et | En route pour livraison | Livraison estimée: Mer 8 Juil. | Dans votre dressing | Pas encore | Laissez-nous un message

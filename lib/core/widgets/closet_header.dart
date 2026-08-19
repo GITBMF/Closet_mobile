@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 
 import '../theme/closet_colors.dart';
 import '../theme/closet_text_styles.dart';
@@ -138,7 +138,7 @@ class _ActionCircle extends StatelessWidget {
               child: Text(
                 '$badgeCount',
                 style: ClosetTextStyles.navigation.copyWith(
-                  color: Colors.white,
+                  color: ClosetColors.blanc,
                   letterSpacing: 0,
                 ),
               ),

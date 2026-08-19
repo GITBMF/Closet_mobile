@@ -1,27 +1,33 @@
-import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 
+import '../api/api_exception.dart';
+import '../api/api_json.dart';
 import '../bff_client/api_client.dart';
 import '../models/user.dart';
 import '../services/auth_storage_service.dart';
 
 class AuthRepository {
+  AuthRepository(this._ref, this._client);
+
   final Ref _ref;
   final BffClient _client;
 
-  // Local embedded native database of users for the MVP
-  static final List<ClosetUser> _localDb = [
-    ClosetUser(firstName: 'Closet', lastName: 'Premium', email: 'user@closet.com'),
-  ];
-  static final Map<String, String> _localPasswords = {
-    'user@closet.com': 'closet123',
-  };
-
-  AuthRepository(this._ref, this._client) {
-    // Referencing properties to resolve compiler warnings
-    _ref.toString();
-    _client.toString();
+  /// Restaure la session persistée : jeton + `GET /me`.
+  Future<ClosetUser?> restaurerSession() async {
+    await _client.restaurerJeton();
+    final jeton = await AuthStorageService.getAccessToken();
+    if (jeton == null || jeton.isEmpty) return null;
+    try {
+      final data = await _client.getJson('/me');
+      final user = ClosetUser.fromJson(data);
+      await AuthStorageService.saveUser(user.toJson());
+      _ref.read(currentUserProvider.notifier).state = user;
+      return user;
+    } on ApiException {
+      await deconnecter(tousLesAppareils: false);
+      return null;
+    }
   }
 
   Future<ClosetUser> signUp({
@@ -32,99 +38,124 @@ class AuthRepository {
     required String phone,
   }) async {
     final lowerEmail = email.toLowerCase().trim();
-    if (_localPasswords.containsKey(lowerEmail)) {
-      throw Exception('Un utilisateur avec cet e-mail existe déjà.');
-    }
-
     final fullName = '$firstName $lastName'.trim();
     if (fullName.isEmpty) {
-      throw Exception('Le nom complet est requis.');
+      throw const ApiException(
+        message: 'Le nom complet est requis.',
+        kind: KindErreurApi.validation,
+      );
     }
     if (phone.trim().isEmpty) {
-      throw Exception('Le numéro de téléphone est requis.');
-    }
-
-    try {
-      final response = await _client.dio.post(
-        '/auth/register',
-        data: {
-          'email': lowerEmail,
-          'password': password,
-          'full_name': fullName,
-          'phone': phone.trim(),
-        },
+      throw const ApiException(
+        message: 'Le numéro de téléphone est requis.',
+        kind: KindErreurApi.validation,
       );
-
-      final data = response.data as Map<String, dynamic>;
-      final user = ClosetUser.fromJson(data);
-      _saveToLocal(user, password);
-      return user;
-    } on DioException catch (e) {
-      if (e.response != null && e.response?.data != null) {
-        final errorData = e.response?.data;
-        if (errorData is Map<String, dynamic> && errorData['detail'] != null) {
-          throw Exception(errorData['detail'].toString());
-        }
-        throw Exception(errorData.toString());
-      }
-      throw Exception('Erreur lors de l\'inscription. Veuillez réessayer.');
     }
+
+    await _client.postJson('/auth/register', data: {
+      'email': lowerEmail,
+      'password': password,
+      'full_name': fullName,
+      'phone': phone.trim(),
+    });
+
+    // L'inscription ne renvoie pas de jeton : on ouvre la session tout de
+    // suite avec les identifiants venant d'être créés.
+    return logIn(email: lowerEmail, password: password);
   }
 
   Future<ClosetUser> logIn({
     required String email,
     required String password,
   }) async {
-    final lowerEmail = email.toLowerCase().trim();
-    try {
-      final response = await _client.dio.post(
-        '/auth/login',
-        data: {
-          'email': lowerEmail,
-          'password': password,
-        },
+    final data = await _client.postJson('/auth/login', data: {
+      'email': email.toLowerCase().trim(),
+      'password': password,
+    });
+
+    if (booleenDe(data['mfa_required'])) {
+      throw const ApiException(
+        message:
+            'Ce compte exige une double authentification, non disponible dans '
+            'l’application pour le moment.',
+        kind: KindErreurApi.validation,
       );
-
-      final data = response.data as Map<String, dynamic>;
-      final accessToken = (data['access_token'] ?? '') as String;
-      final refreshToken = (data['refresh_token'] ?? '') as String;
-      final tokenType = (data['token_type'] ?? 'bearer') as String;
-      final expiresIn = data['expires_in'] is int ? data['expires_in'] as int : int.tryParse('${data['expires_in']}') ?? 0;
-      final userJson = (data['user'] as Map<String, dynamic>?) ?? <String, dynamic>{};
-      final user = ClosetUser.fromJson(userJson);
-
-      if (accessToken.isEmpty) {
-        throw Exception('Le backend n\'a pas renvoyé de jeton d\'accès.');
-      }
-
-      await AuthStorageService.saveAuthTokens(
-        accessToken: accessToken,
-        refreshToken: refreshToken,
-        tokenType: tokenType,
-        expiresIn: expiresIn,
-      );
-      await AuthStorageService.saveUser(userJson);
-      _client.setAccessToken(accessToken);
-
-      return user;
-    } on DioException catch (e) {
-      if (e.response != null && e.response?.data != null) {
-        final errorData = e.response?.data;
-        if (errorData is Map<String, dynamic> && errorData['detail'] != null) {
-          throw Exception(errorData['detail'].toString());
-        }
-        throw Exception(errorData.toString());
-      }
-      throw Exception('Erreur lors de la connexion. Veuillez réessayer.');
     }
+
+    return _ouvrirSession(data);
   }
 
-  void _saveToLocal(ClosetUser user, String password) {
-    final lowerEmail = user.email.toLowerCase().trim();
-    if (!_localDb.any((u) => u.email.toLowerCase() == lowerEmail)) {
-      _localDb.add(user);
-      _localPasswords[lowerEmail] = password;
+  Future<ClosetUser> _ouvrirSession(Map<String, dynamic> data) async {
+    final accessToken = chaineDe(data['access_token']);
+    final refreshToken = chaineDe(data['refresh_token']);
+    final tokenType = chaineDe(data['token_type'], 'bearer');
+    final expiresIn = entierDe(data['expires_in']);
+    final userJson = objetDe(data['user']);
+    final user = ClosetUser.fromJson(userJson);
+
+    if (accessToken.isEmpty) {
+      throw const ApiException(
+        message: 'Le serveur n’a pas renvoyé de jeton d’accès.',
+        kind: KindErreurApi.serveur,
+      );
     }
+
+    await AuthStorageService.saveAuthTokens(
+      accessToken: accessToken,
+      refreshToken: refreshToken,
+      tokenType: tokenType,
+      expiresIn: expiresIn,
+    );
+    await AuthStorageService.saveUser(user.toJson());
+    _client.setAccessToken(accessToken);
+    _ref.read(currentUserProvider.notifier).state = user;
+    return user;
+  }
+
+  Future<ClosetUser> mettreAJourProfil({
+    required String nomComplet,
+    required String email,
+    required String phone,
+    String? city,
+  }) async {
+    final data = await _client.patchJson('/me', data: {
+      'full_name': nomComplet.trim(),
+      'email': email.trim().toLowerCase(),
+      'phone': phone.trim(),
+      if (city != null) 'city': city.trim(),
+    });
+    final maj = ClosetUser.fromJson(data);
+    _ref.read(currentUserProvider.notifier).state = maj;
+    await AuthStorageService.saveUser(maj.toJson());
+    return maj;
+  }
+
+  Future<void> demanderReinitialisation(String email) async {
+    final normalise = email.trim().toLowerCase();
+    if (normalise.isEmpty || !normalise.contains('@')) {
+      throw const ApiException(
+        message: 'Renseignez une adresse e-mail valide.',
+        kind: KindErreurApi.validation,
+      );
+    }
+    await _client.postJson('/auth/forgot-password', data: {
+      'email': normalise,
+    });
+  }
+
+  Future<void> deconnecter({bool tousLesAppareils = false}) async {
+    final refresh = await AuthStorageService.getRefreshToken();
+    try {
+      await _client.postJson('/auth/logout', data: {
+        'refresh_token': refresh,
+        'all_devices': tousLesAppareils,
+      });
+    } on ApiException {
+      // On purge localement même si le serveur ne répond plus.
+    }
+    await AuthStorageService.clearAuthData();
+    _client.clearAccessToken();
+    _ref.read(currentUserProvider.notifier).state = null;
   }
 }
 

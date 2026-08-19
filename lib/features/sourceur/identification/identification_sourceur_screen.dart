@@ -1,12 +1,14 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/closet_colors.dart';
 import '../../../core/theme/closet_text_styles.dart';
-import '../../../data/models/user.dart';
+import '../../../core/widgets/toasts.dart';
 import '../../../data/repositories/auth_repository.dart';
+import '../../../data/repositories/sourceur_repository.dart';
+import '../../auth/mot_de_passe_oublie_dialog.dart';
 import '../widgets/sourceur_header.dart';
 
 /// Identification Espace Sourceur — transcription de la maquette `26:1877`.
@@ -41,25 +43,45 @@ class _IdentificationSourceurScreenState
     final motDePasse = _motDePasse.text;
 
     if (identifiant.isEmpty || motDePasse.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Veuillez remplir tous les champs.')),
-      );
+      toastInfo(ref, 'Champs manquants', 'Veuillez remplir tous les champs.');
       return;
     }
 
     setState(() => _enCours = true);
     try {
-      final ClosetUser user = await ref
+      await ref
           .read(authRepositoryProvider)
           .logIn(email: identifiant, password: motDePasse);
       if (!mounted) return;
-      ref.read(currentUserProvider.notifier).state = user;
+      await ref.read(sourceurRepositoryProvider).chargerProfil();
+      if (!mounted) return;
+      final repo = ref.read(sourceurRepositoryProvider);
+      if (!repo.estInscrit) {
+        if (!mounted) return;
+        setState(() => _enCours = false);
+        await dialogueErreur(
+          context,
+          'Ce compte n’a pas de fiche sourceuse. Déposez d’abord une adhésion.',
+          titre: 'Pas encore partenaire',
+        );
+        if (!mounted) return;
+        context.go('/sourceur/inscription');
+        return;
+      }
+      if (!mounted) return;
+      setState(() => _enCours = false);
+      await dialogueSucces(
+        context,
+        titre: 'Identification réussie',
+        message: 'Bienvenue dans l’espace sourceur.',
+      );
+      if (!mounted) return;
       context.go('/sourceur/espace');
     } catch (e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.toString().replaceAll('Exception: ', ''))),
-      );
+      if (mounted) {
+        setState(() => _enCours = false);
+        await dialogueErreur(context, e, titre: 'Identification impossible');
+      }
     } finally {
       if (mounted) setState(() => _enCours = false);
     }
@@ -91,7 +113,7 @@ class _IdentificationSourceurScreenState
                         'Espace Sourceur ClosET',
                         textAlign: TextAlign.center,
                         style: ClosetTextStyles.sousTitre.copyWith(
-                          color: Colors.white,
+                          color: ClosetColors.blanc,
                         ),
                       ),
                     ),
@@ -111,7 +133,7 @@ class _IdentificationSourceurScreenState
                       'Accéder à mon espace confié',
                       style: ClosetTextStyles.titreEcran.copyWith(
                         letterSpacing: 0.44,
-                        color: Colors.white,
+                        color: ClosetColors.blanc,
                       ),
                     ),
                     const SizedBox(height: AppSpacing.p20),
@@ -184,13 +206,9 @@ class _IdentificationSourceurScreenState
                     const SizedBox(height: AppSpacing.p12),
                     Center(
                       child: TextButton(
-                        onPressed: () =>
-                            ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text(
-                              'Un lien de réinitialisation vous sera envoyé.',
-                            ),
-                          ),
+                        onPressed: () => afficherMotDePasseOublie(
+                          context,
+                          emailInitial: _identifiant.text,
                         ),
                         child: Text(
                           'Mot de passe oublié',
@@ -244,21 +262,28 @@ class _ArcheSourcing extends StatelessWidget {
       height: 200,
       padding: const EdgeInsets.all(AppSpacing.p20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: ClosetColors.blanc,
         border: Border.all(color: ClosetColors.fond300, width: AppStroke.fin),
         borderRadius: const BorderRadius.vertical(top: Radius.circular(159)),
       ),
       child: Column(
         children: [
-          const Spacer(),
-          const Icon(
-            Icons.inventory_2_outlined,
-            size: 44,
-            color: ClosetColors.fond300,
+          Expanded(
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(24),
+              child: Image.asset(
+                'assets/onboarding_3.jpg',
+                fit: BoxFit.cover,
+                width: double.infinity,
+                errorBuilder: (_, _, _) => const ColoredBox(
+                  color: ClosetColors.emeraude100,
+                ),
+              ),
+            ),
           ),
-          const Spacer(),
+          const SizedBox(height: AppSpacing.p12),
           Text(
-            'sourcing Program',
+            'Sourcing program',
             style: ClosetTextStyles.corpsMedium.copyWith(
               letterSpacing: -0.24,
               color: ClosetColors.vert,
@@ -312,7 +337,7 @@ class _ChampSourceur extends StatelessWidget {
             keyboardType: keyboardType,
             textInputAction: textInputAction,
             onSubmitted: onSubmitted,
-            style: ClosetTextStyles.saisie.copyWith(color: ClosetColors.noir),
+            style: ClosetTextStyles.saisie.copyWith(color: context.closetEncre),
             cursorColor: ClosetColors.vert,
             cursorWidth: 1.5,
             decoration: InputDecoration(

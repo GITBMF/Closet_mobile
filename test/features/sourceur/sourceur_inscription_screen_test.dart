@@ -1,4 +1,5 @@
 import 'package:closet/core/widgets/closet_buttons.dart';
+import 'package:closet/data/bff_client/api_client.dart';
 import 'package:closet/data/repositories/sourceur_repository.dart';
 import 'package:closet/features/sourceur/inscription/sourceur_inscription_screen.dart';
 import 'package:flutter/material.dart';
@@ -8,6 +9,7 @@ import 'package:go_router/go_router.dart';
 
 /// Dépôt espion : capture ce que l'écran transmet réellement, sans latence.
 class _RepoEspion extends SourceurRepository {
+  _RepoEspion() : super(BffClient());
   SourceurInscriptionData? recu;
   int appels = 0;
 
@@ -247,6 +249,10 @@ void main() {
       await taper(
         tester,
         find.widgetWithText(ClosetPrimaryButton, 'Rejoindre le cercle'),
+      );
+      await taper(
+        tester,
+        find.widgetWithText(ClosetPrimaryButton, 'OK'),
       );
 
       expect(repo.appels, 1);

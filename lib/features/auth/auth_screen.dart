@@ -6,8 +6,11 @@ import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/closet_colors.dart';
 import '../../../core/theme/closet_text_styles.dart';
+import '../../../core/widgets/toasts.dart';
 import '../../../data/models/user.dart';
 import '../../../data/repositories/auth_repository.dart';
+import '../../../data/repositories/sourceur_repository.dart';
+import 'mot_de_passe_oublie_dialog.dart';
 
 // ─── Auth State ──────────────────────────────────────────────────────────────
 
@@ -77,9 +80,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
     final isLogin = ref.read(authModeProvider) == AuthMode.login;
 
     if (email.isEmpty || password.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Veuillez remplir tous les champs.')),
-      );
+      toastInfo(ref, 'Champs manquants', 'Veuillez remplir tous les champs.');
       return;
     }
 
@@ -88,18 +89,14 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
       final lastName = _lastNameController.text.trim();
       final phone = _phoneController.text.trim();
       if (firstName.isEmpty || lastName.isEmpty) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Veuillez renseigner votre nom et prénom.'),
-          ),
-        );
+        toastInfo(ref, 'Champs manquants', 'Veuillez renseigner votre nom et prénom.');
         return;
       }
       if (phone.isEmpty) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Veuillez renseigner votre numéro de téléphone.'),
-          ),
+        toastInfo(
+          ref,
+          'Champs manquants',
+          'Veuillez renseigner votre numéro de téléphone.',
         );
         return;
       }
@@ -109,11 +106,11 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
 
     try {
       final authRepo = ref.read(authRepositoryProvider);
-      ClosetUser? user;
+      final ClosetUser user;
       if (isLogin) {
         user = await authRepo.logIn(email: email, password: password);
       } else {
-        await authRepo.signUp(
+        user = await authRepo.signUp(
           firstName: _nameController.text,
           lastName: _lastNameController.text,
           email: email,
@@ -122,28 +119,23 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
         );
       }
 
-      if (mounted) {
-        if (isLogin && user != null) {
-          ref.read(currentUserProvider.notifier).state = user;
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Bon retour, ${user.firstName} !')),
-          );
-          context.go('/home');
-        } else {
-          ref.read(authModeProvider.notifier).state = AuthMode.login;
-          _passwordController.clear();
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Inscription réussie ! Veuillez vous connecter.'),
-            ),
-          );
-        }
-      }
+      try {
+        await ref.read(sourceurRepositoryProvider).chargerProfil();
+      } catch (_) {}
+
+      if (!mounted) return;
+      setState(() => _isLoading = false);
+      await dialogueSucces(
+        context,
+        titre: isLogin ? 'Connexion réussie' : 'Compte créé',
+        message: 'Bon retour, ${user.firstName} !',
+      );
+      if (!mounted) return;
+      context.go('/home');
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.toString().replaceAll('Exception: ', ''))),
-        );
+        setState(() => _isLoading = false);
+        await dialogueErreur(context, e, titre: 'Connexion impossible');
       }
     } finally {
       if (mounted) {
@@ -257,15 +249,10 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
                       if (isLogin)
                         Center(
                           child: TextButton(
-                            onPressed: () {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text(
-                                    'Un lien de réinitialisation vous sera envoyé.',
-                                  ),
-                                ),
-                              );
-                            },
+                            onPressed: () => afficherMotDePasseOublie(
+                              context,
+                              emailInitial: _emailController.text,
+                            ),
                             child: Text(
                               'Mot de passe oublié',
                               style: ClosetTextStyles.corps.copyWith(
@@ -284,12 +271,10 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
                             label: 'CONTINUER avec Google',
                             icone: Icons.g_mobiledata_rounded,
                             onPressed: () {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text(
-                                    'Connexion Google bientôt disponible.',
-                                  ),
-                                ),
+                              toastInfo(
+                                ref,
+                                'Indisponible',
+                                'La connexion Google n’est pas proposée par le serveur pour le moment.',
                               );
                             },
                           ),
@@ -439,7 +424,7 @@ class _ChampAuth extends StatelessWidget {
             keyboardType: keyboardType,
             textInputAction: textInputAction,
             onSubmitted: onSubmitted,
-            style: ClosetTextStyles.saisie.copyWith(color: ClosetColors.noir),
+            style: ClosetTextStyles.saisie.copyWith(color: context.closetEncre),
             cursorColor: ClosetColors.vert,
             cursorWidth: 1.5,
             decoration: InputDecoration(
