@@ -10,6 +10,7 @@ import '../../../core/widgets/closet_chip.dart';
 import '../../../core/widgets/closet_sections.dart';
 import '../../../core/widgets/piece_card.dart';
 import '../../../data/models/article.dart';
+import '../../../data/repositories/cart_repository.dart';
 import '../../../data/repositories/catalog_repository.dart';
 import 'filtres_sheet.dart';
 
@@ -102,10 +103,10 @@ final filteredArticlesProvider = FutureProvider<List<Article>>((ref) async {
   }).toList();
 });
 
-/// Collections — transcription des maquettes `14:1281` et `16:2260`.
+/// Collections — maquette « Page collection ».
 ///
-/// Titre « Toutes les pièces », bouton de filtres et pilule de tri, barre de
-/// recherche en pilule, puces d'univers, puis grille de deux colonnes.
+/// En-tête compact (panier + alertes, recherche + filtre), puis la grille
+/// « Pièces du dressing ».
 class CollectionsScreen extends ConsumerStatefulWidget {
   const CollectionsScreen({super.key});
 
@@ -192,116 +193,123 @@ class _CollectionsScreenState extends ConsumerState<CollectionsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final universSelectionne = ref.watch<String>(selectedUniverseProvider);
     final catalogue = ref.watch(filteredArticlesProvider);
+    final cartCount = ref.watch(cartCountProvider);
 
     return Scaffold(
       backgroundColor: ClosetColors.beige,
-      appBar: const ClosetAppBar(),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.only(bottom: AppSpacing.p32),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const SizedBox(height: AppSpacing.p12),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 21),
-              child: Row(
-                children: [
-                  const Expanded(child: ClosetTitreEcran('Toutes les pièces')),
-                  _BoutonFiltres(
-                    actif: _filtresActifs,
-                    onTap: () => _ouvrirFiltres(context),
-                  ),
-                  const SizedBox(width: AppSpacing.p8),
-                  _PiluleTri(
-                    label: 'Nouveautés',
-                    onTap: () => _ouvrirFiltres(context),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: AppSpacing.p16),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.p20),
-              child: _BarreRecherche(
-                controller: _recherche,
-                onChanged: (v) =>
-                    ref.read(searchQueryProvider.notifier).setQuery(v),
-                onEffacer: () {
-                  _recherche.clear();
-                  ref.read(searchQueryProvider.notifier).clear();
-                },
-              ),
-            ),
-            const SizedBox(height: AppSpacing.p24),
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 19),
-              child: ClosetSurtitre('explorer par univers'),
-            ),
-            const SizedBox(height: AppSpacing.p16),
-            SizedBox(
-              height: 30,
-              child: ListView.separated(
-                scrollDirection: Axis.horizontal,
-                padding:
-                    const EdgeInsets.symmetric(horizontal: AppSpacing.p20),
-                itemCount: CollectionsScreen.universes.length,
-                separatorBuilder: (_, _) =>
-                    const SizedBox(width: AppSpacing.p12),
-                itemBuilder: (context, i) {
-                  final univers = CollectionsScreen.universes[i];
-                  return ClosetChip(
-                    label: univers,
-                    isActive: univers == universSelectionne,
-                    onTap: () => ref
-                        .read<UniverseNotifier>(selectedUniverseProvider.notifier)
-                        .setUniverse(univers),
-                  );
-                },
-              ),
-            ),
-            const SizedBox(height: AppSpacing.p24),
-            if (_filtresActifs) ...[
+      body: SafeArea(
+        bottom: false,
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.only(bottom: AppSpacing.p32),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SizedBox(height: AppSpacing.p8),
               Padding(
-                padding: const EdgeInsets.fromLTRB(21, 0, 21, AppSpacing.p12),
-                child: _BarreFiltresActifs(
-                  filtres: _filtresPosees,
-                  onToutEffacer: _reinitialiserFiltres,
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.p20),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    _BoutonRond(
+                      icone: Icons.shopping_basket_outlined,
+                      label: cartCount > 0
+                          ? 'Panier, $cartCount articles'
+                          : 'Panier',
+                      pastille: cartCount > 0 ? cartCount : null,
+                      onTap: () => context.go('/selection'),
+                    ),
+                    const SizedBox(width: AppSpacing.gapListe),
+                    _BoutonRond(
+                      icone: Icons.notifications_none_rounded,
+                      label: 'Notifications',
+                      onTap: () => context.go('/espace/alertes'),
+                    ),
+                  ],
                 ),
               ),
+              const SizedBox(height: AppSpacing.p16),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.p20),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: _BarreRecherche(
+                        controller: _recherche,
+                        onChanged: (v) =>
+                            ref.read(searchQueryProvider.notifier).setQuery(v),
+                        onEffacer: () {
+                          _recherche.clear();
+                          ref.read(searchQueryProvider.notifier).clear();
+                        },
+                      ),
+                    ),
+                    const SizedBox(width: AppSpacing.p8),
+                    _BoutonRond(
+                      icone: Icons.tune,
+                      label: 'Filtrer',
+                      actif: _filtresActifs,
+                      onTap: () => _ouvrirFiltres(context),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: AppSpacing.p24),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 21),
+                child: ClosetEnTeteSection(
+                  titre: 'Pièces du dressing',
+                  lien: 'tout découvrir',
+                  onLien: _toutDecouvrir,
+                ),
+              ),
+              const SizedBox(height: AppSpacing.p16),
+              if (_filtresActifs) ...[
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(21, 0, 21, AppSpacing.p12),
+                  child: _BarreFiltresActifs(
+                    filtres: _filtresPosees,
+                    onToutEffacer: _reinitialiserFiltres,
+                  ),
+                ),
+              ],
+              catalogue.when(
+                data: (articles) => _Resultats(articles: articles),
+                loading: () => const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 64),
+                  child: Center(
+                    child: CircularProgressIndicator(color: ClosetColors.dore),
+                  ),
+                ),
+                error: (e, _) => const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 64),
+                  child: Center(child: Text('Erreur de chargement')),
+                ),
+              ),
+              const ClosetSignature(),
             ],
-            catalogue.when(
-              data: (articles) => _Resultats(
-                articles: articles,
-                univers: universSelectionne,
-              ),
-              loading: () => const Padding(
-                padding: EdgeInsets.symmetric(vertical: 64),
-                child: Center(
-                  child: CircularProgressIndicator(color: ClosetColors.dore),
-                ),
-              ),
-              error: (e, _) => const Padding(
-                padding: EdgeInsets.symmetric(vertical: 64),
-                child: Center(child: Text('Erreur de chargement')),
-              ),
-            ),
-            const ClosetSignature(),
-          ],
+          ),
         ),
       ),
     );
   }
 
   void _ouvrirFiltres(BuildContext context) => afficherFiltres(context);
+
+  void _toutDecouvrir() {
+    ref
+        .read(selectedUniverseProvider.notifier)
+        .setUniverse(CollectionsScreen.universes.first);
+    _recherche.clear();
+    ref.read(searchQueryProvider.notifier).clear();
+    _reinitialiserFiltres();
+  }
 }
 
 class _Resultats extends StatelessWidget {
-  const _Resultats({required this.articles, required this.univers});
+  const _Resultats({required this.articles});
 
   final List<Article> articles;
-  final String univers;
 
   @override
   Widget build(BuildContext context) {
@@ -317,40 +325,23 @@ class _Resultats extends StatelessWidget {
       );
     }
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 21),
-          child: ClosetEnTeteSection(titre: univers),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 21),
+      child: GridView.builder(
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        itemCount: articles.length,
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 2,
+          crossAxisSpacing: AppSpacing.p12,
+          mainAxisSpacing: AppSpacing.p12,
+          childAspectRatio: PieceCard.ratioCarteGrille,
         ),
-        const SizedBox(height: AppSpacing.p4),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 21),
-          child: ClosetSurtitre(
-            '${articles.length} pièces. triées par nouveautés',
-          ),
+        itemBuilder: (context, i) => ArticleCard(
+          article: articles[i],
+          onTap: () => context.push('/product/${articles[i].id}'),
         ),
-        const SizedBox(height: AppSpacing.p16),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 21),
-          child: GridView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: articles.length,
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-              crossAxisSpacing: AppSpacing.p12,
-              mainAxisSpacing: AppSpacing.p12,
-              childAspectRatio: PieceCard.ratioCarteGrille,
-            ),
-            itemBuilder: (context, i) => ArticleCard(
-              article: articles[i],
-              onTap: () => context.push('/product/${articles[i].id}'),
-            ),
-          ),
-        ),
-      ],
+      ),
     );
   }
 }
@@ -378,13 +369,13 @@ class _BarreRecherche extends StatelessWidget {
         style: ClosetTextStyles.saisie.copyWith(color: ClosetColors.noir),
         cursorColor: ClosetColors.vert,
         decoration: InputDecoration(
-          hintText: 'Rechercher une pièce, une maison…',
+          hintText: 'Search...',
           hintStyle: ClosetTextStyles.saisie.copyWith(
             color: ClosetColors.chipTexteInactif,
           ),
           prefixIcon: const Icon(
             Icons.search,
-            size: 16,
+            size: 20,
             color: ClosetColors.chipTexteInactif,
           ),
           suffixIcon: controller.text.isEmpty
@@ -415,18 +406,27 @@ class _BarreRecherche extends StatelessWidget {
       );
 }
 
-/// Bouton rond d'ouverture des filtres (42 de diamètre).
-class _BoutonFiltres extends StatelessWidget {
-  const _BoutonFiltres({required this.actif, required this.onTap});
+/// Bouton rond de l'en-tête : 42 de diamètre, fond clair cerclé d'or.
+class _BoutonRond extends StatelessWidget {
+  const _BoutonRond({
+    required this.icone,
+    required this.label,
+    required this.onTap,
+    this.pastille,
+    this.actif = false,
+  });
 
-  final bool actif;
+  final IconData icone;
+  final String label;
   final VoidCallback onTap;
+  final int? pastille;
+  final bool actif;
 
   @override
   Widget build(BuildContext context) {
     return Semantics(
       button: true,
-      label: 'Filtrer',
+      label: label,
       child: GestureDetector(
         onTap: onTap,
         child: Stack(
@@ -443,13 +443,30 @@ class _BoutonFiltres extends StatelessWidget {
                   width: AppStroke.fin,
                 ),
               ),
-              child: const Icon(
-                Icons.tune,
-                size: 18,
-                color: ClosetColors.vert,
-              ),
+              child: Icon(icone, size: 20, color: ClosetColors.vert),
             ),
-            if (actif)
+            if (pastille != null)
+              Positioned(
+                top: -2,
+                right: -2,
+                child: IgnorePointer(
+                  child: Container(
+                    padding: const EdgeInsets.all(AppSpacing.p4),
+                    decoration: const BoxDecoration(
+                      color: ClosetColors.vert,
+                      shape: BoxShape.circle,
+                    ),
+                    child: Text(
+                      '$pastille',
+                      style: ClosetTextStyles.micro.copyWith(
+                        color: ClosetColors.creme,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                ),
+              )
+            else if (actif)
               Positioned(
                 top: 0,
                 right: 0,
@@ -463,53 +480,6 @@ class _BoutonFiltres extends StatelessWidget {
                 ),
               ),
           ],
-        ),
-      ),
-    );
-  }
-}
-
-/// Pilule de tri : 129 × 42, rayon 80.
-class _PiluleTri extends StatelessWidget {
-  const _PiluleTri({required this.label, required this.onTap});
-
-  final String label;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return Semantics(
-      button: true,
-      child: GestureDetector(
-        onTap: onTap,
-        child: Container(
-          height: 42,
-          padding: const EdgeInsets.symmetric(horizontal: 15),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(80),
-            border: Border.all(
-              color: ClosetColors.fond300,
-              width: AppStroke.fin,
-            ),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Icon(
-                Icons.swap_vert_rounded,
-                size: 16,
-                color: ClosetColors.vert,
-              ),
-              const SizedBox(width: 6),
-              Text(
-                label,
-                style: ClosetTextStyles.corps.copyWith(
-                  color: ClosetColors.vert,
-                ),
-              ),
-            ],
-          ),
         ),
       ),
     );

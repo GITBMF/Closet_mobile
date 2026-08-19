@@ -4,14 +4,15 @@ import 'package:flutter/services.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/theme/closet_colors.dart';
 import '../../core/theme/closet_text_styles.dart';
+import '../../core/widgets/closet_buttons.dart';
 import 'transaction_models.dart';
 import 'widgets/transaction_scaffold.dart';
 
 /// Saisie du code PIN — transcription de la maquette `32:704`.
 ///
-/// Quatre cases de 75 × 60 (rayon 4) : grise tant qu'elle est vide, blanche
-/// cerclée d'or quand elle a le focus, blanche cerclée de gris une fois
-/// remplie.
+/// Quatre cases blanches : le chiffre saisi est visible, la case active
+/// porte le curseur, le CTA doré n'est actif qu'une fois les 4 chiffres
+/// entrés.
 class PinScreen extends StatefulWidget {
   const PinScreen({
     super.key,
@@ -51,18 +52,45 @@ class _PinScreenState extends State<PinScreen> {
 
   bool get _complet => _controller.text.length == PinScreen.longueurCode;
 
+  String get _consigne => widget.demande.type == TypeOperation.retrait
+      ? 'Ajoutez un code PIN pour renforcer la sécurité de votre '
+          'portefeuille.'
+      : 'Ajoutez un code PIN pour renforcer la sécurité de votre '
+          'opération.';
+
   @override
   Widget build(BuildContext context) {
     return TransactionScaffold(
-      titre: 'Code PIN de sécurité',
+      titre: null,
+      hautTitre: 72,
       child: Column(
         children: [
-          const SizedBox(height: 55),
-          const TexteTransaction(
-            'Ajoutez un code PIN pour renforcer la sécurité de votre '
-            'opération.',
+          const SizedBox(height: AppSpacing.p24),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.p24),
+            child: Text(
+              'Code PIN de sécurité',
+              textAlign: TextAlign.center,
+              style: ClosetTextStyles.titreHero.copyWith(
+                fontSize: 24,
+                color: Colors.white,
+              ),
+            ),
           ),
-          const SizedBox(height: 32),
+          const SizedBox(height: AppSpacing.p16),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 40),
+            child: Text(
+              _consigne,
+              textAlign: TextAlign.center,
+              style: ClosetTextStyles.corps.copyWith(
+                fontSize: 13,
+                height: 1.45,
+                color: Colors.white,
+              ),
+            ),
+          ),
+          const SizedBox(height: 40),
           _CasesPin(
             code: _controller.text,
             onTap: () => _focus.requestFocus(),
@@ -77,7 +105,6 @@ class _PinScreenState extends State<PinScreen> {
                 focusNode: _focus,
                 keyboardType: TextInputType.number,
                 maxLength: PinScreen.longueurCode,
-                obscureText: true,
                 inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                 onSubmitted: (v) {
                   if (_complet) widget.onValide(v);
@@ -85,11 +112,19 @@ class _PinScreenState extends State<PinScreen> {
               ),
             ),
           ),
-          const SizedBox(height: 88),
-          BoutonTransaction(
-            label: 'Valider le Numéro PIN',
-            onPressed:
-                _complet ? () => widget.onValide(_controller.text) : null,
+          const SizedBox(height: 48),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 32),
+            child: SizedBox(
+              width: double.infinity,
+              child: ClosetPrimaryButton(
+                label: 'Valider le Numéro PIN',
+                dore: true,
+                hauteur: 44,
+                onPressed:
+                    _complet ? () => widget.onValide(_controller.text) : null,
+              ),
+            ),
           ),
           const Spacer(),
         ],
@@ -111,7 +146,7 @@ class _CasesPin extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.p24),
+        padding: const EdgeInsets.symmetric(horizontal: 36),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
@@ -137,23 +172,18 @@ class _Case extends StatelessWidget {
   Widget build(BuildContext context) {
     final rempli = chiffre != null;
     return Container(
-      width: 75,
-      height: 60,
+      width: 62,
+      height: 62,
       alignment: Alignment.center,
       decoration: BoxDecoration(
-        color: rempli || actif ? Colors.white : ClosetColors.caseVide,
-        borderRadius: BorderRadius.circular(4),
-        border: Border.all(
-          color: actif ? ClosetColors.fond300 : ClosetColors.caseVide,
-          width: AppStroke.fin,
-        ),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(8),
       ),
       child: Text(
-        rempli ? '•' : (actif ? '|' : ''),
-        style: ClosetTextStyles.libelle.copyWith(
-          fontSize: 20,
-          fontWeight: FontWeight.w500,
-          color: ClosetColors.pinTexte,
+        rempli ? chiffre! : (actif ? '|' : ''),
+        style: ClosetTextStyles.libelleFort.copyWith(
+          fontSize: 22,
+          color: ClosetColors.noir,
         ),
       ),
     );

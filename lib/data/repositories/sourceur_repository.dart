@@ -194,6 +194,17 @@ class SourceurRepository extends ChangeNotifier {
   bool get estInscrit => _profile != null;
   SourceurProfile? get profile => _profile;
 
+  /// Débloque l'espace sourceur après validation de l'adhésion.
+  /// Si le profil existe déjà (fiche soumise), il est conservé.
+  void validerAdhesion() {
+    _profile ??= SourceurProfile(
+      nomAtelier: 'Sourceur ClosET',
+      ville: '',
+      depuis: _moisAnnee(),
+    );
+    notifyListeners();
+  }
+
   static String _moisAnnee() {
     final now = DateTime.now();
     const mois = [

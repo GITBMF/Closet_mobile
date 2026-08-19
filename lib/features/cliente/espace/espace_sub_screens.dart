@@ -124,11 +124,10 @@ class _EspaceInfoScreenState extends ConsumerState<EspaceInfoScreen> {
     // Update local currentUser state
     final user = ref.read<ClosetUser?>(currentUserProvider);
     if (user != null) {
-      ref.read(currentUserProvider.notifier).state = ClosetUser(
+      ref.read(currentUserProvider.notifier).state = user.copyWith(
         firstName: _firstNameController.text.trim(),
         lastName: _lastNameController.text.trim(),
         email: _emailController.text.trim(),
-        token: user.token,
       );
     }
     ScaffoldMessenger.of(context).showSnackBar(

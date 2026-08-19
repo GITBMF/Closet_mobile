@@ -5,15 +5,17 @@ import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/closet_colors.dart';
 import '../../../core/theme/closet_text_styles.dart';
+import '../../../core/widgets/closet_buttons.dart';
 import '../../../data/models/user.dart';
 import '../../../data/repositories/auth_repository.dart';
 import '../widgets/sourceur_header.dart';
+import '../widgets/sourceur_programme_visuel.dart';
 
-/// Identification Espace Sourceur — transcription de la maquette `26:1877`.
+/// Identification Espace Sourceur — connexion du partenaire déjà validé.
 ///
 /// Même habillage de champ que `5:1304` (fond bleuté, bordure `#D4D7E3`),
-/// arche blanche au-dessus, et renvoi vers la fiche d'adhésion pour qui n'est
-/// pas encore partenaire.
+/// photo dressing en carte arrondie, et renvoi vers la passerelle d'adhésion
+/// pour qui n'est pas encore partenaire.
 class IdentificationSourceurScreen extends ConsumerStatefulWidget {
   const IdentificationSourceurScreen({super.key});
 
@@ -54,7 +56,7 @@ class _IdentificationSourceurScreenState
           .logIn(email: identifiant, password: motDePasse);
       if (!mounted) return;
       ref.read(currentUserProvider.notifier).state = user;
-      context.go('/sourceur/espace');
+      context.go('/sourceur/adhesion');
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -63,6 +65,14 @@ class _IdentificationSourceurScreenState
     } finally {
       if (mounted) setState(() => _enCours = false);
     }
+  }
+
+  void _versAdhesion() {
+    if (context.canPop()) {
+      context.pop();
+      return;
+    }
+    context.go('/sourceur/devenir');
   }
 
   @override
@@ -91,6 +101,7 @@ class _IdentificationSourceurScreenState
                         'Espace Sourceur ClosET',
                         textAlign: TextAlign.center,
                         style: ClosetTextStyles.sousTitre.copyWith(
+                          fontStyle: FontStyle.italic,
                           color: Colors.white,
                         ),
                       ),
@@ -99,9 +110,12 @@ class _IdentificationSourceurScreenState
                   ],
                 ),
               ),
-              const SizedBox(height: AppSpacing.p20),
-              const _ArcheSourcing(),
-              const SizedBox(height: 36),
+              const SizedBox(height: AppSpacing.p16),
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: AppSpacing.p20),
+                child: SourceurVisuelCarte(),
+              ),
+              const SizedBox(height: AppSpacing.p32),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 24),
                 child: Column(
@@ -110,6 +124,7 @@ class _IdentificationSourceurScreenState
                     Text(
                       'Accéder à mon espace confié',
                       style: ClosetTextStyles.titreEcran.copyWith(
+                        fontStyle: FontStyle.italic,
                         letterSpacing: 0.44,
                         color: Colors.white,
                       ),
@@ -124,8 +139,8 @@ class _IdentificationSourceurScreenState
                     ),
                     const SizedBox(height: AppSpacing.p24),
                     _ChampSourceur(
-                      label: 'Mot de passe',
-                      hint: 'Au moins 8 caractères',
+                      label: 'Password',
+                      hint: 'At least 8 characters',
                       controller: _motDePasse,
                       obscure: _masque,
                       textInputAction: TextInputAction.done,
@@ -146,40 +161,29 @@ class _IdentificationSourceurScreenState
                       '8 caractères minimum, dont un chiffre.',
                       style: ClosetTextStyles.meta.copyWith(
                         fontWeight: FontWeight.w300,
-                        color: ClosetColors.beige,
+                        color: Colors.white,
                       ),
                     ),
                     const SizedBox(height: AppSpacing.p24),
                     SizedBox(
                       height: 44,
-                      child: Material(
-                        color: _enCours
-                            ? ClosetColors.doreDesactive
-                            : ClosetColors.fond300,
-                        borderRadius: BorderRadius.circular(AppRadius.cercle),
-                        child: InkWell(
-                          borderRadius:
-                              BorderRadius.circular(AppRadius.cercle),
-                          onTap: _enCours ? null : _entrer,
-                          child: Center(
-                            child: _enCours
-                                ? const SizedBox(
-                                    width: 18,
-                                    height: 18,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                      color: ClosetColors.neutre900,
-                                    ),
-                                  )
-                                : Text(
-                                    'ENTRER dans mon espace',
-                                    style: ClosetTextStyles.bouton.copyWith(
-                                      color: ClosetColors.neutre900,
-                                    ),
-                                  ),
-                          ),
-                        ),
-                      ),
+                      child: _enCours
+                          ? const Center(
+                              child: SizedBox(
+                                width: 18,
+                                height: 18,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: ClosetColors.fond300,
+                                ),
+                              ),
+                            )
+                          : ClosetPrimaryButton(
+                              label: 'ENTRER DANS MON ESPACE',
+                              dore: true,
+                              hauteur: 44,
+                              onPressed: _entrer,
+                            ),
                     ),
                     const SizedBox(height: AppSpacing.p12),
                     Center(
@@ -195,7 +199,7 @@ class _IdentificationSourceurScreenState
                         child: Text(
                           'Mot de passe oublié',
                           style: ClosetTextStyles.corps.copyWith(
-                            color: ClosetColors.beige,
+                            color: Colors.white,
                           ),
                         ),
                       ),
@@ -203,12 +207,12 @@ class _IdentificationSourceurScreenState
                     const SizedBox(height: AppSpacing.p20),
                     Center(
                       child: TextButton(
-                        onPressed: () => context.push('/sourceur/inscription'),
+                        onPressed: _versAdhesion,
                         child: Text.rich(
                           TextSpan(
                             text: 'Pas encore membre ? ',
                             style: ClosetTextStyles.corps.copyWith(
-                              color: ClosetColors.beige,
+                              color: Colors.white,
                             ),
                             children: [
                               TextSpan(
@@ -229,42 +233,6 @@ class _IdentificationSourceurScreenState
             ],
           ),
         ),
-      ),
-    );
-  }
-}
-
-class _ArcheSourcing extends StatelessWidget {
-  const _ArcheSourcing();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 217,
-      height: 200,
-      padding: const EdgeInsets.all(AppSpacing.p20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        border: Border.all(color: ClosetColors.fond300, width: AppStroke.fin),
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(159)),
-      ),
-      child: Column(
-        children: [
-          const Spacer(),
-          const Icon(
-            Icons.inventory_2_outlined,
-            size: 44,
-            color: ClosetColors.fond300,
-          ),
-          const Spacer(),
-          Text(
-            'sourcing Program',
-            style: ClosetTextStyles.corpsMedium.copyWith(
-              letterSpacing: -0.24,
-              color: ClosetColors.vert,
-            ),
-          ),
-        ],
       ),
     );
   }

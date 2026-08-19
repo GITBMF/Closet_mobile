@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -180,23 +182,7 @@ class _EnTeteProfil extends StatelessWidget {
     return Row(
       children: [
         ClipOval(
-          child: Image.asset(
-            _avatarDefaut,
-            width: 74,
-            height: 74,
-            fit: BoxFit.cover,
-            errorBuilder: (_, _, _) => Container(
-              width: 74,
-              height: 74,
-              color: ClosetColors.emeraude100,
-              alignment: Alignment.center,
-              child: const Icon(
-                Icons.person,
-                size: 34,
-                color: ClosetColors.taupe,
-              ),
-            ),
-          ),
+          child: _PortraitEspace(user: user),
         ),
         const SizedBox(width: AppSpacing.p16),
         Expanded(
@@ -257,6 +243,43 @@ class _EnTeteProfil extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+class _PortraitEspace extends StatelessWidget {
+  const _PortraitEspace({required this.user});
+
+  final ClosetUser? user;
+
+  @override
+  Widget build(BuildContext context) {
+    final chemin = user?.avatarPath;
+    final fichier = chemin == null ? null : File(chemin);
+    if (fichier != null && fichier.existsSync()) {
+      return Image.file(
+        fichier,
+        width: 74,
+        height: 74,
+        fit: BoxFit.cover,
+      );
+    }
+    return Image.asset(
+      _avatarDefaut,
+      width: 74,
+      height: 74,
+      fit: BoxFit.cover,
+      errorBuilder: (_, _, _) => Container(
+        width: 74,
+        height: 74,
+        color: ClosetColors.emeraude100,
+        alignment: Alignment.center,
+        child: const Icon(
+          Icons.person,
+          size: 34,
+          color: ClosetColors.taupe,
+        ),
+      ),
     );
   }
 }

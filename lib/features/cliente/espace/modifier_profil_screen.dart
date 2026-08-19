@@ -1,6 +1,10 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:path_provider/path_provider.dart';
 
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/closet_colors.dart';
@@ -8,6 +12,7 @@ import '../../../core/theme/closet_text_styles.dart';
 import '../../../core/widgets/closet_field.dart';
 import '../../../data/models/user.dart';
 import '../../../data/repositories/auth_repository.dart';
+import '../../../data/services/auth_storage_service.dart';
 
 /// Modifier mon profil — transcription de la maquette `25:710`.
 ///
@@ -24,9 +29,12 @@ class ModifierProfilScreen extends ConsumerStatefulWidget {
 class _ModifierProfilScreenState
     extends ConsumerState<ModifierProfilScreen> {
   final _formKey = GlobalKey<FormState>();
+  final _picker = ImagePicker();
   late final TextEditingController _nom;
   late final TextEditingController _email;
   late final TextEditingController _telephone;
+  String? _avatarPath;
+  bool _enregistrementEnCours = false;
 
   @override
   void initState() {
@@ -37,6 +45,7 @@ class _ModifierProfilScreenState
     );
     _email = TextEditingController(text: user?.email ?? '');
     _telephone = TextEditingController();
+    _avatarPath = user?.avatarPath;
   }
 
   @override
@@ -47,14 +56,124 @@ class _ModifierProfilScreenState
     super.dispose();
   }
 
-  void _enregistrer() {
-    if (!(_formKey.currentState?.validate() ?? false)) return;
-    // TODO(backend): brancher la mise à jour du profil sur l'API.
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('La mise à jour du profil arrive bientôt.'),
+  Future<void> _choisirSource() async {
+    final source = await showModalBottomSheet<ImageSource>(
+      context: context,
+      backgroundColor: ClosetColors.beige,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(AppRadius.surface),
+        ),
+      ),
+      builder: (ctx) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(8, 12, 8, 16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                leading: const Icon(
+                  Icons.photo_library_outlined,
+                  color: ClosetColors.vert,
+                ),
+                title: Text(
+                  'Choisir dans la galerie',
+                  style: ClosetTextStyles.corps.copyWith(
+                    color: ClosetColors.noir,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                onTap: () => Navigator.pop(ctx, ImageSource.gallery),
+              ),
+              ListTile(
+                leading: const Icon(
+                  Icons.photo_camera_outlined,
+                  color: ClosetColors.vert,
+                ),
+                title: Text(
+                  'Prendre une photo',
+                  style: ClosetTextStyles.corps.copyWith(
+                    color: ClosetColors.noir,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                onTap: () => Navigator.pop(ctx, ImageSource.camera),
+              ),
+            ],
+          ),
+        ),
       ),
     );
+    if (source != null) await _importerPhoto(source);
+  }
+
+  Future<void> _importerPhoto(ImageSource source) async {
+    try {
+      final image = await _picker.pickImage(
+        source: source,
+        imageQuality: 85,
+        maxWidth: 1200,
+      );
+      if (image == null || !mounted) return;
+
+      final docs = await getApplicationDocumentsDirectory();
+      final dest = File('${docs.path}/closet_avatar.jpg');
+      await dest.writeAsBytes(await image.readAsBytes(), flush: true);
+      if (!mounted) return;
+
+      setState(() => _avatarPath = dest.path);
+
+      final user = ref.read<ClosetUser?>(currentUserProvider);
+      if (user != null) {
+        final maj = user.copyWith(avatarPath: dest.path);
+        ref.read(currentUserProvider.notifier).state = maj;
+        await AuthStorageService.saveUser(maj.toJson());
+      }
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Impossible d’accéder à vos photos.'),
+        ),
+      );
+    }
+  }
+
+  Future<void> _enregistrer() async {
+    if (!(_formKey.currentState?.validate() ?? false)) return;
+
+    setState(() => _enregistrementEnCours = true);
+    try {
+      final user = ref.read<ClosetUser?>(currentUserProvider);
+      final parties = _nom.text.trim().split(RegExp(r'\s+'));
+      final prenom = parties.isEmpty ? '' : parties.first;
+      final nom = parties.length > 1 ? parties.sublist(1).join(' ') : '';
+
+      final maj = (user ??
+              ClosetUser(
+                firstName: prenom,
+                lastName: nom,
+                email: _email.text.trim(),
+              ))
+          .copyWith(
+        firstName: prenom,
+        lastName: nom,
+        email: _email.text.trim(),
+        avatarPath: _avatarPath,
+      );
+      ref.read(currentUserProvider.notifier).state = maj;
+      await AuthStorageService.saveUser(maj.toJson());
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Profil mis à jour.'),
+          backgroundColor: ClosetColors.vert,
+        ),
+      );
+      context.pop();
+    } finally {
+      if (mounted) setState(() => _enregistrementEnCours = false);
+    }
   }
 
   @override
@@ -83,7 +202,13 @@ class _ModifierProfilScreenState
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      Center(child: _AvatarEditable(user: user)),
+                      Center(
+                        child: _AvatarEditable(
+                          user: user,
+                          imagePath: _avatarPath,
+                          onChanger: _choisirSource,
+                        ),
+                      ),
                       const SizedBox(height: 29),
                       ClosetChampLibelle(
                         label: 'Nom complet',
@@ -124,14 +249,23 @@ class _ModifierProfilScreenState
                             child: InkWell(
                               borderRadius:
                                   BorderRadius.circular(AppRadius.cercle),
-                              onTap: _enregistrer,
+                              onTap: _enregistrementEnCours ? null : _enregistrer,
                               child: Center(
-                                child: Text(
-                                  'Mettre à jour',
-                                  style: ClosetTextStyles.bouton.copyWith(
-                                    color: Colors.white,
-                                  ),
-                                ),
+                                child: _enregistrementEnCours
+                                    ? const SizedBox(
+                                        width: 18,
+                                        height: 18,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                          color: Colors.white,
+                                        ),
+                                      )
+                                    : Text(
+                                        'Mettre à jour',
+                                        style: ClosetTextStyles.bouton.copyWith(
+                                          color: Colors.white,
+                                        ),
+                                      ),
                               ),
                             ),
                           ),
@@ -235,11 +369,17 @@ class _EnTeteRetour extends StatelessWidget {
   }
 }
 
-/// Avatar de 120 aux initiales, avec sa pastille d'édition de 40.
+/// Avatar de 120, photo choisie ou initiales, avec sa pastille d'édition.
 class _AvatarEditable extends StatelessWidget {
-  const _AvatarEditable({required this.user});
+  const _AvatarEditable({
+    required this.user,
+    required this.onChanger,
+    this.imagePath,
+  });
 
   final ClosetUser? user;
+  final String? imagePath;
+  final VoidCallback onChanger;
 
   @override
   Widget build(BuildContext context) {
@@ -250,26 +390,37 @@ class _AvatarEditable extends StatelessWidget {
         ? user!.lastName[0].toUpperCase()
         : '';
     final initiales = '$p$n'.isEmpty ? '?' : '$p$n';
+    final fichier = imagePath == null ? null : File(imagePath!);
+    final aUnePhoto = fichier != null && fichier.existsSync();
 
     return SizedBox(
       width: 160,
       height: 120,
       child: Stack(
         children: [
-          Container(
-            width: 120,
-            height: 120,
-            alignment: Alignment.center,
-            decoration: const BoxDecoration(
-              color: ClosetColors.emeraude100,
-              shape: BoxShape.circle,
-            ),
-            child: Text(
-              initiales,
-              style: ClosetTextStyles.montantHero.copyWith(
-                fontSize: 40,
-                color: ClosetColors.vert,
-              ),
+          ClipOval(
+            child: GestureDetector(
+              onTap: onChanger,
+              child: aUnePhoto
+                  ? Image.file(
+                      fichier,
+                      width: 120,
+                      height: 120,
+                      fit: BoxFit.cover,
+                    )
+                  : Container(
+                      width: 120,
+                      height: 120,
+                      alignment: Alignment.center,
+                      color: ClosetColors.emeraude100,
+                      child: Text(
+                        initiales,
+                        style: ClosetTextStyles.montantHero.copyWith(
+                          fontSize: 40,
+                          color: ClosetColors.vert,
+                        ),
+                      ),
+                    ),
             ),
           ),
           Positioned(
@@ -279,11 +430,7 @@ class _AvatarEditable extends StatelessWidget {
               button: true,
               label: 'Changer ma photo',
               child: GestureDetector(
-                onTap: () => ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Changement de photo bientôt disponible.'),
-                  ),
-                ),
+                onTap: onChanger,
                 child: Container(
                   width: 40,
                   height: 40,

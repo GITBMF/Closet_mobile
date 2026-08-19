@@ -3,12 +3,14 @@ class ClosetUser {
   final String lastName;
   final String email;
   final String? token;
+  final String? avatarPath;
 
   ClosetUser({
     required this.firstName,
     required this.lastName,
     required this.email,
     this.token,
+    this.avatarPath,
   });
 
   factory ClosetUser.fromJson(Map<String, dynamic> json) {
@@ -33,6 +35,7 @@ class ClosetUser {
       lastName: parsedLastName,
       email: (json['email'] ?? '') as String,
       token: (json['token'] ?? json['access_token']) as String?,
+      avatarPath: json['avatar_path'] as String?,
     );
   }
 
@@ -42,7 +45,24 @@ class ClosetUser {
       'last_name': lastName,
       'email': email,
       if (token != null) 'token': token,
+      if (avatarPath != null) 'avatar_path': avatarPath,
     };
+  }
+
+  ClosetUser copyWith({
+    String? firstName,
+    String? lastName,
+    String? email,
+    String? token,
+    String? avatarPath,
+  }) {
+    return ClosetUser(
+      firstName: firstName ?? this.firstName,
+      lastName: lastName ?? this.lastName,
+      email: email ?? this.email,
+      token: token ?? this.token,
+      avatarPath: avatarPath ?? this.avatarPath,
+    );
   }
 
   String get initials {

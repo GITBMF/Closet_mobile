@@ -49,8 +49,8 @@ class TransactionScaffold extends StatelessWidget {
                 child: Text(
                   titre!,
                   textAlign: TextAlign.center,
-                  style: ClosetTextStyles.sousTitre.copyWith(
-                    fontStyle: FontStyle.italic,
+                  style: ClosetTextStyles.titreHero.copyWith(
+                    fontSize: 24,
                     color: Colors.white,
                   ),
                 ),
@@ -142,7 +142,7 @@ class BoutonTransaction extends StatelessWidget {
               child: Text(
                 label,
                 style: ClosetTextStyles.bouton.copyWith(
-                  color: dore ? ClosetColors.vert : Colors.white,
+                  color: dore ? ClosetColors.noir : Colors.white,
                 ),
               ),
             ),

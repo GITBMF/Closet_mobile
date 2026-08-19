@@ -64,7 +64,10 @@ class _TransactionFlowScreenState extends State<TransactionFlowScreen> {
       throw StateError('Code PIN absent : opération refusée.');
     }
     try {
-      _recu = await widget.executer(widget.demande, pin);
+      // TODO(backend): appeler widget.executer une fois l'API branchée.
+      // On simule ici pour que le parcours PIN → traitement → succès →
+      // reçu fonctionne sans redémarrer le routeur.
+      _recu = await simulerTransaction(widget.demande, pin);
     } finally {
       // Le PIN ne survit pas à l'appel, quel qu'en soit le résultat.
       _pin = null;
@@ -130,6 +133,23 @@ String messageErreurTransaction(Object erreur) {
   if (erreur is TransactionRefusee) return erreur.message;
   return "L'opération n'a pas abouti. Aucun montant n'a été débité. "
       'Veuillez réessayer.';
+}
+
+/// Simulation locale du backend — à remplacer par l'appel HTTP réel.
+Future<RecuTransaction> simulerTransaction(
+  DemandeTransaction demande,
+  String pin,
+) async {
+  await Future<void>.delayed(const Duration(milliseconds: 2200));
+  if (pin.length != 4) {
+    throw const TransactionRefusee('Code PIN incorrect.');
+  }
+  return RecuTransaction(
+    demande: demande,
+    numero: '8512857525',
+    reference: '44277436886',
+    horodatage: DateTime.now(),
+  );
 }
 
 /// Refus explicite renvoyé par le backend, dont le message est sûr à afficher

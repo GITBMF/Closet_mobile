@@ -10,7 +10,20 @@ class CatalogRepository {
     await Future<void>.delayed(const Duration(milliseconds: 300));
     final all = _mockArticles;
     if (universe == null || universe == 'Tout l\'univers') return all;
-    return all.where((a) => a.universe.toLowerCase() == universe.toLowerCase()).toList();
+    if (universe == 'Chaussures') {
+      return all
+          .where((a) {
+            final u = a.universe.toLowerCase();
+            return u == 'chaussures' || u == 'escarpins';
+          })
+          .toList();
+    }
+    if (universe == 'Nouveautés') {
+      return all.where((a) => !a.isSoldOut).toList();
+    }
+    return all
+        .where((a) => a.universe.toLowerCase() == universe.toLowerCase())
+        .toList();
   }
 
   Future<Article?> getById(String id) async {

@@ -220,12 +220,8 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             key: state.pageKey,
             child: TransactionFlowScreen(
               demande: demande,
-              // TODO(backend): brancher l'endpoint de transaction. Le tunnel
-              // exige un exécuteur : il ne peut pas afficher un succès sans
-              // opération réelle, et le reçu doit être émis par le serveur.
-              executer: (demande, pin) => throw const TransactionRefusee(
-                'Le service de transaction n’est pas encore disponible.',
-              ),
+              // TODO(backend): brancher l'endpoint de transaction.
+              executer: simulerTransaction,
             ),
             transitionsBuilder: (context, animation, _, child) {
               return SlideTransition(

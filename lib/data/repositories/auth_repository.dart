@@ -95,13 +95,20 @@ class AuthRepository {
       for (final u in _localDb) {
         if (u.email.toLowerCase() == lowerEmail) local = u;
       }
-      final user = local ??
+      var user = local ??
           ClosetUser(
             firstName: 'Aïcha',
             lastName: 'N',
             email: lowerEmail.isEmpty ? 'user@closet.com' : lowerEmail,
           );
+      final saved = await AuthStorageService.getUserJson();
+      final savedEmail = (saved?['email'] as String?)?.toLowerCase();
+      final savedAvatar = saved?['avatar_path'] as String?;
+      if (savedAvatar != null && savedEmail == user.email.toLowerCase()) {
+        user = user.copyWith(avatarPath: savedAvatar);
+      }
       _saveToLocal(user, password);
+      await AuthStorageService.saveUser(user.toJson());
       return user;
     }
 

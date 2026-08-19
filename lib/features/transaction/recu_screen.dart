@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../../core/constants/vocabulary.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/theme/closet_colors.dart';
 import '../../core/theme/closet_text_styles.dart';
@@ -25,16 +24,19 @@ class RecuScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final d = recu.demande;
     final piece = recu.piece;
+    final retour = d.type == TypeOperation.retrait
+        ? 'Retour dans Mon Espace'
+        : 'Poursuivre ma visite';
 
     return TransactionScaffold(
       titre: 'Votre reçu de transaction',
       hautTitre: 64,
       child: SingleChildScrollView(
-        padding: const EdgeInsets.only(top: 20, bottom: AppSpacing.p16),
+        padding: const EdgeInsets.only(top: 12, bottom: AppSpacing.p16),
         child: Column(
           children: [
             _Ticket(
-              children: [
+              haut: [
                 const _LogoCloset(),
                 const SizedBox(height: AppSpacing.p12),
                 Text(
@@ -47,6 +49,7 @@ class RecuScreen extends StatelessWidget {
                 const _LignePointillee(),
                 const SizedBox(height: AppSpacing.p16),
                 _Ligne('Date & heure', _formatDate(recu.horodatage)),
+                _Ligne('Numéro de référence', recu.reference),
                 if (piece != null) ...[
                   _Ligne('Marque de la pièce', piece.marque),
                   _Ligne('Catégorie', piece.categorie),
@@ -58,32 +61,9 @@ class RecuScreen extends StatelessWidget {
                   _Ligne(d.type.libelleMode, d.moyen),
                   _Ligne('Compte Numéro', d.compteMasque),
                   _Ligne('Nom du receveur', d.beneficiaire),
-                  if (d.note != null) _Ligne('Note(s)', d.note!),
+                  _Ligne('Note(s)', d.note ?? ''),
                 ],
-                const _LignePointillee(),
-                const SizedBox(height: AppSpacing.p16),
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Text(
-                      d.type.libelleTotal,
-                      style: ClosetTextStyles.corps.copyWith(
-                        fontWeight: FontWeight.w600,
-                        color: ClosetColors.vert,
-                      ),
-                    ),
-                    const Spacer(),
-                    Text(
-                      formatPrixFcfa(d.montant),
-                      style: ClosetTextStyles.montantHero.copyWith(
-                        fontSize: 26,
-                        fontStyle: FontStyle.italic,
-                        color: ClosetColors.fond400,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: AppSpacing.p16),
+                const SizedBox(height: AppSpacing.p8),
                 Text(
                   'ClosEt vous remercie !',
                   style: ClosetTextStyles.sousTitre.copyWith(
@@ -92,12 +72,33 @@ class RecuScreen extends StatelessWidget {
                   ),
                 ),
               ],
+              bas: Row(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text(
+                    d.type.libelleTotal,
+                    style: ClosetTextStyles.corps.copyWith(
+                      fontWeight: FontWeight.w600,
+                      color: ClosetColors.vert,
+                    ),
+                  ),
+                  const Spacer(),
+                  Text(
+                    formatPrixFcfa(d.montant),
+                    style: ClosetTextStyles.montantHero.copyWith(
+                      fontSize: 26,
+                      fontStyle: FontStyle.italic,
+                      color: ClosetColors.fond400,
+                    ),
+                  ),
+                ],
+              ),
             ),
-            const SizedBox(height: 32),
+            const SizedBox(height: 28),
             _BoutonPartage(onPressed: onPartager),
             const SizedBox(height: AppSpacing.p16),
             BoutonTransaction(
-              label: Vocabulary.ctaContinue,
+              label: retour,
               onPressed: onRetour,
             ),
           ],
@@ -126,37 +127,18 @@ class _LogoCloset extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final base = ClosetTextStyles.display.copyWith(
-      fontSize: 22,
-      letterSpacing: 1.4,
-      color: ClosetColors.vert,
-    );
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      crossAxisAlignment: CrossAxisAlignment.end,
-      children: [
-        Text('CL', style: base),
-        Padding(
-          padding: const EdgeInsets.only(bottom: 2),
-          child: const Icon(
-            Icons.checkroom_outlined,
-            size: 20,
-            color: ClosetColors.vert,
-          ),
-        ),
-        Text('S', style: base),
-        Padding(
-          padding: const EdgeInsets.only(bottom: 1),
-          child: Text(
-            'ET',
-            style: base.copyWith(
-              fontSize: 11,
-              color: ClosetColors.fond400,
-              letterSpacing: 0.8,
-            ),
-          ),
-        ),
-      ],
+    return Image.asset(
+      'assets/iconheader.png',
+      height: 28,
+      fit: BoxFit.contain,
+      errorBuilder: (_, _, _) {
+        final base = ClosetTextStyles.display.copyWith(
+          fontSize: 22,
+          letterSpacing: 1.4,
+          color: ClosetColors.vert,
+        );
+        return Text('CLOS ET', style: base);
+      },
     );
   }
 }
@@ -188,22 +170,79 @@ class _LignePointillee extends StatelessWidget {
   }
 }
 
+/// Ticket en deux volets, encoches circulaires à la jointure.
 class _Ticket extends StatelessWidget {
-  const _Ticket({required this.children});
+  const _Ticket({required this.haut, required this.bas});
 
-  final List<Widget> children;
+  final List<Widget> haut;
+  final Widget bas;
 
   @override
   Widget build(BuildContext context) {
     return Center(
-      child: Container(
+      child: SizedBox(
         width: 310,
-        padding: const EdgeInsets.fromLTRB(22, 22, 22, 20),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(28),
+        child: Column(
+          children: [
+            Container(
+              width: 310,
+              padding: const EdgeInsets.fromLTRB(22, 22, 22, 16),
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+              ),
+              child: Column(children: haut),
+            ),
+            SizedBox(
+              height: 20,
+              child: Stack(
+                clipBehavior: Clip.none,
+                alignment: Alignment.center,
+                children: [
+                  const ColoredBox(
+                    color: Colors.white,
+                    child: SizedBox(width: 310, height: 20),
+                  ),
+                  const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 18),
+                    child: _LignePointillee(),
+                  ),
+                  Positioned(
+                    left: -10,
+                    child: Container(
+                      width: 20,
+                      height: 20,
+                      decoration: const BoxDecoration(
+                        color: ClosetColors.vert,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                  ),
+                  Positioned(
+                    right: -10,
+                    child: Container(
+                      width: 20,
+                      height: 20,
+                      decoration: const BoxDecoration(
+                        color: ClosetColors.vert,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Container(
+              width: 310,
+              padding: const EdgeInsets.fromLTRB(22, 12, 22, 20),
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.vertical(bottom: Radius.circular(28)),
+              ),
+              child: bas,
+            ),
+          ],
         ),
-        child: Column(children: children),
       ),
     );
   }
@@ -267,7 +306,11 @@ class _BoutonPartage extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Icon(Icons.ios_share_rounded, size: 16, color: Colors.white),
+                const Icon(
+                  Icons.ios_share_rounded,
+                  size: 16,
+                  color: Colors.white,
+                ),
                 const SizedBox(width: 10),
                 Text(
                   'Partager Mon Reçu',
