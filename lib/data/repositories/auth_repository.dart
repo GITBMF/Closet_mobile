@@ -13,6 +13,9 @@ class AuthRepository {
   final Ref _ref;
   final BffClient _client;
 
+  /// Remettre à `true` quand `/auth/login` et `/auth/register` seront stables.
+  static const bool useBackendAuth = false;
+
   /// Restaure la session persistée : jeton + `GET /me`.
   Future<ClosetUser?> restaurerSession() async {
     await _client.restaurerJeton();

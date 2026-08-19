@@ -12,10 +12,7 @@ import '../../../data/repositories/adresse_repository.dart';
 import '../../sourceur/widgets/sourceur_header.dart';
 import 'adresse_sheet.dart';
 
-/// Mes adresses — transcription de la maquette `26:1588`.
-///
-/// Liste d'entrées à tuile verte de 48 : libellé, badge « par Défaut » sur
-/// l'adresse retenue, puis l'adresse complète en gris.
+/// Mes adresses — liste des adresses enregistrées.
 class MesAdressesScreen extends ConsumerWidget {
   const MesAdressesScreen({super.key});
 
@@ -40,7 +37,7 @@ class MesAdressesScreen extends ConsumerWidget {
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(
                   AppSpacing.p20,
-                  AppSpacing.p8,
+                  AppSpacing.p24,
                   AppSpacing.p20,
                   AppSpacing.p12,
                 ),
@@ -124,17 +121,10 @@ class MesAdressesScreen extends ConsumerWidget {
 }
 
 class _LigneAdresse extends StatelessWidget {
-  const _LigneAdresse({required this.adresse, required this.onTap});
+  const _LigneAdresse({required this.adresse, required this.onEditer});
 
   final Adresse adresse;
-  final VoidCallback onTap;
-
-  IconData get _icone => switch (adresse.type) {
-        TypeAdresse.maison => Icons.home_outlined,
-        TypeAdresse.bureau => Icons.business_center_outlined,
-        TypeAdresse.appartement => Icons.apartment_rounded,
-        TypeAdresse.autre => Icons.place_outlined,
-      };
+  final VoidCallback onEditer;
 
   @override
   Widget build(BuildContext context) {

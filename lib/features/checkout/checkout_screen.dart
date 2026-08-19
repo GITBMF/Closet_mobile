@@ -1,3 +1,6 @@
+import 'dart:async';
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -58,8 +61,10 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
 
   @override
   void dispose() {
+    _timerTotaux?.cancel();
     _nom.dispose();
     _telephone.dispose();
+    _quartier.dispose();
     super.dispose();
   }
 
@@ -151,7 +156,15 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
   }
 
   void _poursuivre() {
-    if (!(_formKey.currentState?.validate() ?? false)) return;
+    if (!_recapLivraison) {
+      _ouvrirEcranAdresse();
+      return;
+    }
+    if (!_totaux) {
+      _ouvrirEcranTotaux();
+      return;
+    }
+    if (!_totauxPrets) return;
 
     final pieces = ref.read(cartListProvider);
     if (pieces.isEmpty) {

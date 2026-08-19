@@ -4,15 +4,15 @@ import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/closet_colors.dart';
 import '../../../core/theme/closet_text_styles.dart';
+import '../../../core/widgets/closet_buttons.dart';
 import '../widgets/sourceur_header.dart';
+import '../widgets/sourceur_programme_visuel.dart';
 
-/// Devenir Sourceur — transcription de la maquette `26:1771`.
+/// Devenir Sourceur ClosET — passerelle du programme partenaire.
 ///
-/// Photo en bandeau, arche blanche cerclée d'or portant la mention du
-/// programme, puis l'argumentaire et le CTA d'adhésion.
-///
-/// Note : la maquette pose « Déjà partenaire ? » en `#122B31`, un bleu nuit
-/// posé sur le fond vert — donc illisible. Rendu ici en crème.
+/// Fond vert profond, photo dressing en arche avec plaque « CLOS ET
+/// SOURCING PROGRAM », argumentaire, puis deux sorties : adhérer ou
+/// accéder à l'espace déjà partenaire.
 class DevenirSourceurScreen extends StatelessWidget {
   const DevenirSourceurScreen({super.key});
 
@@ -254,30 +254,28 @@ class _Argument extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(left: 13),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            titre,
-            style: ClosetTextStyles.prix.copyWith(
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
-              letterSpacing: -0.26,
-              color: ClosetColors.fond300,
-            ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          titre,
+          style: ClosetTextStyles.prix.copyWith(
+            fontSize: 13,
+            fontWeight: FontWeight.w600,
+            fontStyle: FontStyle.italic,
+            letterSpacing: -0.26,
+            color: ClosetColors.fond300,
           ),
-          const SizedBox(height: 5),
-          Text(
-            detail,
-            style: ClosetTextStyles.meta.copyWith(
-              letterSpacing: -0.20,
-              color: ClosetColors.beige,
-            ),
+        ),
+        const SizedBox(height: 5),
+        Text(
+          detail,
+          style: ClosetTextStyles.meta.copyWith(
+            letterSpacing: -0.20,
+            color: Colors.white,
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }

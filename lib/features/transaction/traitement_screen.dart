@@ -1,5 +1,8 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 
+import '../../core/theme/app_spacing.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/theme/closet_colors.dart';
 import '../../core/theme/closet_text_styles.dart';
@@ -197,15 +200,13 @@ class _ArcheSucces extends StatelessWidget {
         borderRadius: const BorderRadius.vertical(top: Radius.circular(159)),
       ),
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const SizedBox(height: 40),
           Container(
-            width: 86,
-            height: 86,
-            decoration: const BoxDecoration(
+            width: 72,
+            height: 72,
+            decoration: BoxDecoration(
               color: ClosetColors.vert,
-              shape: BoxShape.circle,
+              borderRadius: BorderRadius.circular(14),
             ),
             child: const Icon(Icons.check_rounded,
                 size: 44, color: ClosetColors.blanc),
@@ -223,6 +224,21 @@ class _ArcheSucces extends StatelessWidget {
           const SizedBox(height: 28),
         ],
       ),
+    );
+  }
+}
+
+class _BarreBlanche extends StatelessWidget {
+  const _BarreBlanche({this.largeur = 26});
+
+  final double largeur;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: largeur,
+      height: 2,
+      color: Colors.white.withValues(alpha: 0.85),
     );
   }
 }

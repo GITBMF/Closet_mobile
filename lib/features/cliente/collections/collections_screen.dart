@@ -12,6 +12,7 @@ import '../../../core/widgets/closet_sections.dart';
 import '../../../core/widgets/etat_ecran.dart';
 import '../../../core/widgets/piece_card.dart';
 import '../../../data/models/article.dart';
+import '../../../data/repositories/cart_repository.dart';
 import '../../../data/repositories/catalog_repository.dart';
 import 'filtres_sheet.dart';
 
@@ -135,10 +136,10 @@ final filteredArticlesProvider = FutureProvider<List<Article>>((ref) async {
   return retenus;
 });
 
-/// Collections — transcription des maquettes `14:1281` et `16:2260`.
+/// Collections — maquette « Page collection ».
 ///
-/// Titre « Toutes les pièces », bouton de filtres et pilule de tri, barre de
-/// recherche en pilule, puces d'univers, puis grille de deux colonnes.
+/// En-tête compact (panier + alertes, recherche + filtre), puis la grille
+/// « Pièces du dressing ».
 class CollectionsScreen extends ConsumerStatefulWidget {
   const CollectionsScreen({super.key});
 
@@ -194,8 +195,10 @@ class _CollectionsScreenState extends ConsumerState<CollectionsScreen> {
         ),
       if (prixMax != null)
         (
-          label: 'Max ${formatPrixFcfa(prixMax)}',
-          retirer: () => ref.read(filterPriceProvider.notifier).setPrice(null),
+          label:
+              '${formatPrixFcfa(fourchette.start)} – ${formatPrixFcfa(fourchette.end)}',
+          retirer: () =>
+              ref.read(filterPriceRangeProvider.notifier).setRange(null),
         ),
     ];
   }
@@ -209,6 +212,7 @@ class _CollectionsScreenState extends ConsumerState<CollectionsScreen> {
   @override
   Widget build(BuildContext context) {
     final catalogue = ref.watch(filteredArticlesProvider);
+    final cartCount = ref.watch(cartCountProvider);
 
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
@@ -411,13 +415,13 @@ class _BarreRecherche extends StatelessWidget {
         style: ClosetTextStyles.saisie.copyWith(color: context.closetEncre),
         cursorColor: ClosetColors.vert,
         decoration: InputDecoration(
-          hintText: 'Rechercher une pièce, une maison…',
+          hintText: 'Search...',
           hintStyle: ClosetTextStyles.saisie.copyWith(
             color: ClosetColors.chipTexteInactif,
           ),
           prefixIcon: const Icon(
             Icons.search,
-            size: 16,
+            size: 20,
             color: ClosetColors.chipTexteInactif,
           ),
           suffixIcon: controller.text.isEmpty
@@ -448,18 +452,27 @@ class _BarreRecherche extends StatelessWidget {
       );
 }
 
-/// Bouton rond d'ouverture des filtres (42 de diamètre).
-class _BoutonFiltres extends StatelessWidget {
-  const _BoutonFiltres({required this.actif, required this.onTap});
+/// Bouton rond de l'en-tête : 42 de diamètre, fond clair cerclé d'or.
+class _BoutonRond extends StatelessWidget {
+  const _BoutonRond({
+    required this.icone,
+    required this.label,
+    required this.onTap,
+    this.pastille,
+    this.actif = false,
+  });
 
-  final bool actif;
+  final IconData icone;
+  final String label;
   final VoidCallback onTap;
+  final int? pastille;
+  final bool actif;
 
   @override
   Widget build(BuildContext context) {
     return Semantics(
       button: true,
-      label: 'Filtrer',
+      label: label,
       child: GestureDetector(
         onTap: onTap,
         child: Stack(
@@ -476,13 +489,30 @@ class _BoutonFiltres extends StatelessWidget {
                   width: AppStroke.fin,
                 ),
               ),
-              child: const Icon(
-                Icons.tune,
-                size: 18,
-                color: ClosetColors.vert,
-              ),
+              child: Icon(icone, size: 20, color: ClosetColors.vert),
             ),
-            if (actif)
+            if (pastille != null)
+              Positioned(
+                top: -2,
+                right: -2,
+                child: IgnorePointer(
+                  child: Container(
+                    padding: const EdgeInsets.all(AppSpacing.p4),
+                    decoration: const BoxDecoration(
+                      color: ClosetColors.vert,
+                      shape: BoxShape.circle,
+                    ),
+                    child: Text(
+                      '$pastille',
+                      style: ClosetTextStyles.micro.copyWith(
+                        color: ClosetColors.creme,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                ),
+              )
+            else if (actif)
               Positioned(
                 top: 0,
                 right: 0,

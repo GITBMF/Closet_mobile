@@ -151,6 +151,24 @@ class DemandeTransaction {
   final String? note;
 }
 
+/// Détails de pièce affichés sur le reçu commande (maquette reçu ClosEt).
+@immutable
+class DetailPieceRecu {
+  const DetailPieceRecu({
+    required this.marque,
+    required this.categorie,
+    required this.taille,
+    required this.etat,
+    required this.livraison,
+  });
+
+  final String marque;
+  final String categorie;
+  final String taille;
+  final String etat;
+  final String livraison;
+}
+
 /// Ce que le tunnel produit une fois l'opération acceptée.
 @immutable
 class RecuTransaction {

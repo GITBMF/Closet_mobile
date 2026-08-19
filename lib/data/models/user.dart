@@ -7,6 +7,7 @@ class ClosetUser {
   final String city;
   final String role;
   final String? token;
+  final String? avatarPath;
 
   ClosetUser({
     this.id = '',
@@ -17,7 +18,35 @@ class ClosetUser {
     this.city = '',
     this.role = 'customer',
     this.token,
+    this.avatarPath,
   });
+
+  ClosetUser copyWith({
+    String? id,
+    String? firstName,
+    String? lastName,
+    String? email,
+    String? phone,
+    String? city,
+    String? role,
+    String? token,
+  }) {
+    return ClosetUser(
+      id: id ?? this.id,
+      firstName: firstName ?? this.firstName,
+      lastName: lastName ?? this.lastName,
+      email: email ?? this.email,
+      phone: phone ?? this.phone,
+      city: city ?? this.city,
+      role: role ?? this.role,
+      token: token ?? this.token,
+    );
+  }
+
+  String get nomComplet => '$firstName $lastName'.trim();
+
+  bool get estSourceur =>
+      role == 'sourcer' || role == 'admin';
 
   ClosetUser copyWith({
     String? id,
@@ -86,7 +115,24 @@ class ClosetUser {
       'city': city,
       'role': role,
       if (token != null) 'token': token,
+      if (avatarPath != null) 'avatar_path': avatarPath,
     };
+  }
+
+  ClosetUser copyWith({
+    String? firstName,
+    String? lastName,
+    String? email,
+    String? token,
+    String? avatarPath,
+  }) {
+    return ClosetUser(
+      firstName: firstName ?? this.firstName,
+      lastName: lastName ?? this.lastName,
+      email: email ?? this.email,
+      token: token ?? this.token,
+      avatarPath: avatarPath ?? this.avatarPath,
+    );
   }
 
   String get initials {

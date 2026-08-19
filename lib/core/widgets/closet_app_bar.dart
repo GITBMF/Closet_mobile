@@ -23,12 +23,14 @@ class ClosetAppBar extends ConsumerWidget implements PreferredSizeWidget {
     this.title,
     this.subtitle,
     this.showBackButton = false,
+    this.onBack,
     this.actions,
   });
 
   final String? title;
   final String? subtitle;
   final bool showBackButton;
+  final VoidCallback? onBack;
   final List<Widget>? actions;
 
   static const double _hauteurBarre = 62;
