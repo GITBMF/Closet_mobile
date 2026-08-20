@@ -15,14 +15,12 @@ class SourceurHeader extends StatelessWidget {
     required this.titre,
     this.surtitre = 'Espace sourceur',
     this.onRetour,
-    this.afficherRetour = true,
     this.actions = const [],
   });
 
   final String titre;
   final String surtitre;
   final VoidCallback? onRetour;
-  final bool afficherRetour;
   final List<Widget> actions;
 
   @override
@@ -46,14 +44,12 @@ class SourceurHeader extends StatelessWidget {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            if (afficherRetour) ...[
-              SourceurBoutonRond(
-                icone: Icons.arrow_back_ios_new,
-                label: 'Retour',
-                onTap: onRetour ?? () => context.pop(),
-              ),
-              const SizedBox(width: AppSpacing.p8),
-            ],
+            SourceurBoutonRond(
+              icone: Icons.arrow_back_ios_new,
+              label: 'Retour',
+              onTap: onRetour ?? () => context.pop(),
+            ),
+            const SizedBox(width: AppSpacing.p8),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,

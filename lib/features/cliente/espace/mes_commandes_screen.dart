@@ -10,10 +10,12 @@ import '../../../core/widgets/etat_ecran.dart';
 import '../../../core/widgets/status_badge.dart';
 import '../../../data/models/commande.dart';
 import '../../../data/repositories/commande_repository.dart';
-import 'detail_commande_screen.dart';
-import 'espace_sub_screens.dart';
+import '../../sourceur/widgets/sourceur_header.dart';
 
-/// Mes commandes — liste des cartes de suivi.
+/// Mes commandes — transcription de la maquette `25:1089`.
+///
+/// Liste de cartes blanches 350 × 80 cerclées d'or : numéro de commande,
+/// badge de statut, et date de dépôt ou estimation de livraison.
 class MesCommandesScreen extends ConsumerWidget {
   const MesCommandesScreen({super.key});
 
@@ -83,10 +85,7 @@ class _CarteCommande extends StatelessWidget {
       onTap: onTap,
       child: Container(
         constraints: const BoxConstraints(minHeight: 80),
-        padding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.p16,
-          vertical: AppSpacing.p16,
-        ),
+        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.p16),
         decoration: BoxDecoration(
           color: ClosetColors.blanc,
           border: Border.all(color: ClosetColors.fond300, width: AppStroke.fin),
@@ -105,7 +104,7 @@ class _CarteCommande extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                     style: ClosetTextStyles.libelleFort.copyWith(
                       letterSpacing: -0.28,
-                      color: ClosetColors.noir,
+                      color: ClosetColors.vert,
                     ),
                   ),
                 ),
@@ -118,7 +117,7 @@ class _CarteCommande extends StatelessWidget {
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: ClosetTextStyles.corps.copyWith(
-                color: ClosetColors.taupe,
+                color: ClosetColors.neutre900,
               ),
             ),
           ],
@@ -128,7 +127,7 @@ class _CarteCommande extends StatelessWidget {
   }
 }
 
-/// Badge correspondant au statut, libellé en capitales comme la maquette.
+/// Badge correspondant au statut, d'après la maquette `26:1255`.
 StatusBadge badgeStatutCommande(StatutCommande statut) => switch (statut) {
       StatutCommande.livree => StatusBadge.livree(),
       StatutCommande.enRoute => StatusBadge.enRoute(),
@@ -143,11 +142,11 @@ StatusBadge badgeStatutCommande(StatutCommande statut) => switch (statut) {
 /// « Déposé le… » pour une commande livrée, estimation sinon.
 String ligneDateCommande(Commande c) {
   if (c.statut == StatutCommande.livree) {
-    return 'Déposé le: ${formatDateCommande(c.dateDepot)}';
+    return 'Déposé le : ${formatDateCommande(c.dateDepot)}';
   }
   return c.estimation == null
-      ? 'Temps d’estimation: En cours'
-      : 'Temps d’estimation: ${formatDateCommande(c.estimation!)}';
+      ? 'Temps d’estimation : En cours'
+      : 'Temps d’estimation : ${formatDateCommande(c.estimation!)}';
 }
 
 /// Format de la maquette : « Mer 8 Juil, 15:30 ».

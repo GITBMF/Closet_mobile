@@ -25,7 +25,6 @@ class ClosetField extends StatelessWidget {
     this.onChanged,
     this.validator,
     this.enabled = true,
-    this.textInputAction,
   });
 
   final String label;
@@ -38,7 +37,6 @@ class ClosetField extends StatelessWidget {
   final ValueChanged<String>? onChanged;
   final FormFieldValidator<String>? validator;
   final bool enabled;
-  final TextInputAction? textInputAction;
 
   @override
   Widget build(BuildContext context) {
@@ -47,7 +45,6 @@ class ClosetField extends StatelessWidget {
       maxLines: obscureText ? 1 : maxLines,
       keyboardType: keyboardType,
       obscureText: obscureText,
-      textInputAction: textInputAction,
       onChanged: onChanged,
       validator: validator,
       enabled: enabled,

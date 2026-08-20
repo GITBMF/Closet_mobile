@@ -31,30 +31,24 @@ class RecuScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final d = recu.demande;
-    final piece = recu.piece;
-    final retour = d.type == TypeOperation.retrait
-        ? 'Retour dans Mon Espace'
-        : 'Poursuivre ma visite';
 
     return TransactionScaffold(
       titre: 'Votre reçu de transaction',
-      hautTitre: 64,
+      hautTitre: 73,
       child: SingleChildScrollView(
-        padding: const EdgeInsets.only(top: 12, bottom: AppSpacing.p16),
+        padding: const EdgeInsets.only(top: 26, bottom: AppSpacing.p16),
         child: Column(
           children: [
             _Ticket(
-              haut: [
-                const _LogoCloset(),
-                const SizedBox(height: AppSpacing.p12),
+              children: [
                 Text(
-                  'Transaction numéro  #${recu.numero}',
+                  'Transaction numéro #${recu.numero}',
                   style: ClosetTextStyles.meta.copyWith(
-                    color: ClosetColors.taupe,
+                    color: ClosetColors.champPlaceholder,
                   ),
                 ),
                 const SizedBox(height: AppSpacing.p16),
-                const _LignePointillee(),
+                const Divider(color: ClosetColors.champPlaceholder, height: 1),
                 const SizedBox(height: AppSpacing.p16),
                 _Ligne('Date & heure', _formatDate(recu.horodatage)),
                 if (d.type.afficheReference)
@@ -67,36 +61,37 @@ class RecuScreen extends StatelessWidget {
                 Text(
                   'ClosEt vous remercie !',
                   style: ClosetTextStyles.sousTitre.copyWith(
-                    fontStyle: FontStyle.italic,
                     color: ClosetColors.vert,
                   ),
                 ),
               ],
-              bas: Row(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Text(
-                    d.type.libelleTotal,
-                    style: ClosetTextStyles.corps.copyWith(
-                      fontWeight: FontWeight.w600,
-                      color: ClosetColors.vert,
-                    ),
-                  ),
-                  const Spacer(),
-                  Text(
-                    formatPrixFcfa(d.montant),
-                    style: ClosetTextStyles.montantHero.copyWith(
-                      fontSize: 26,
-                      fontStyle: FontStyle.italic,
-                      color: ClosetColors.fond400,
-                    ),
-                  ),
-                ],
-              ),
             ),
-            const SizedBox(height: 28),
-            _BoutonPartage(onPressed: onPartager),
             const SizedBox(height: AppSpacing.p16),
+            _Ticket(
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Text(
+                      d.type.libelleTotal,
+                      style: ClosetTextStyles.corps.copyWith(
+                        fontWeight: FontWeight.w700,
+                        color: ClosetColors.vert,
+                      ),
+                    ),
+                    Text(
+                      formatPrixFcfa(d.montant),
+                      style: ClosetTextStyles.montantHero.copyWith(
+                        fontSize: 25,
+                        color: ClosetColors.fond400,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+            const SizedBox(height: 38),
             BoutonTransaction(
               label: 'Partager Mon Reçu',
               dore: false,
@@ -128,65 +123,16 @@ class RecuScreen extends StatelessWidget {
   }
 }
 
-class _LogoCloset extends StatelessWidget {
-  const _LogoCloset();
-
-  @override
-  Widget build(BuildContext context) {
-    return Image.asset(
-      'assets/iconheader.png',
-      height: 28,
-      fit: BoxFit.contain,
-      errorBuilder: (_, _, _) {
-        final base = ClosetTextStyles.display.copyWith(
-          fontSize: 22,
-          letterSpacing: 1.4,
-          color: ClosetColors.vert,
-        );
-        return Text('CLOS ET', style: base);
-      },
-    );
-  }
-}
-
-class _LignePointillee extends StatelessWidget {
-  const _LignePointillee();
-
-  @override
-  Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, c) {
-        const dash = 5.0;
-        const gap = 4.0;
-        final n = (c.maxWidth / (dash + gap)).floor();
-        return Row(
-          children: [
-            for (var i = 0; i < n; i++) ...[
-              Container(
-                width: dash,
-                height: 1,
-                color: ClosetColors.ligne,
-              ),
-              if (i < n - 1) const SizedBox(width: gap),
-            ],
-          ],
-        );
-      },
-    );
-  }
-}
-
-/// Ticket en deux volets, encoches circulaires à la jointure.
+/// Carte blanche du reçu : 310 de large, rayon 30.
 class _Ticket extends StatelessWidget {
-  const _Ticket({required this.haut, required this.bas});
+  const _Ticket({required this.children});
 
-  final List<Widget> haut;
-  final Widget bas;
+  final List<Widget> children;
 
   @override
   Widget build(BuildContext context) {
     return Center(
-      child: SizedBox(
+      child: Container(
         width: 310,
         padding: const EdgeInsets.symmetric(
           horizontal: AppSpacing.p24,
@@ -202,6 +148,7 @@ class _Ticket extends StatelessWidget {
   }
 }
 
+/// Ligne du reçu : libellé vert à gauche, valeur en gras à droite.
 class _Ligne extends StatelessWidget {
   const _Ligne(this.label, this.valeur);
 
@@ -211,7 +158,7 @@ class _Ligne extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.only(bottom: AppSpacing.p16),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -227,54 +174,10 @@ class _Ligne extends StatelessWidget {
               style: ClosetTextStyles.corps.copyWith(
                 fontWeight: FontWeight.w600,
                 color: ClosetColors.noir,
-                color: ClosetColors.noir,
               ),
             ),
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _BoutonPartage extends StatelessWidget {
-  const _BoutonPartage({required this.onPressed});
-
-  final VoidCallback onPressed;
-
-  @override
-  Widget build(BuildContext context) {
-    final rayon = BorderRadius.circular(AppRadius.cercle);
-    return Center(
-      child: SizedBox(
-        width: 312,
-        height: 44,
-        child: Material(
-          color: ClosetColors.vertFonce,
-          shape: RoundedRectangleBorder(
-            borderRadius: rayon,
-            side: const BorderSide(color: Colors.white, width: AppStroke.fin),
-          ),
-          child: InkWell(
-            borderRadius: rayon,
-            onTap: onPressed,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Icon(
-                  Icons.ios_share_rounded,
-                  size: 16,
-                  color: Colors.white,
-                ),
-                const SizedBox(width: 10),
-                Text(
-                  'Partager Mon Reçu',
-                  style: ClosetTextStyles.bouton.copyWith(color: Colors.white),
-                ),
-              ],
-            ),
-          ),
-        ),
       ),
     );
   }

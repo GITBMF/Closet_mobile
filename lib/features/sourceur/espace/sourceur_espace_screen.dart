@@ -18,15 +18,7 @@ class SourceurEspaceScreen extends ConsumerWidget {
   const SourceurEspaceScreen({super.key});
 
   @override
-  ConsumerState<SourceurEspaceScreen> createState() =>
-      _SourceurEspaceScreenState();
-}
-
-class _SourceurEspaceScreenState extends ConsumerState<SourceurEspaceScreen> {
-  bool _soldeMasque = false;
-
-  @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final revenus = ref.watch(revenusSourceurProvider);
     final pieces = ref.watch(mesPiecesProvider);
     final verifie = ref.watch(sourceurRepositoryProvider).adhesion?.estValidee ==
@@ -39,7 +31,6 @@ class _SourceurEspaceScreenState extends ConsumerState<SourceurEspaceScreen> {
           children: [
             SourceurHeader(
               titre: 'Mon espace',
-              surtitre: 'ESPACE SOURCEUR',
               onRetour: () => context.go('/espace'),
               actions: [
                 SourceurBoutonRond(
@@ -70,14 +61,11 @@ class _SourceurEspaceScreenState extends ConsumerState<SourceurEspaceScreen> {
                       revenus: revenus,
                       verifie: verifie,
                       nbPieces: pieces.maybeWhen(
-                        data: (l) => l
-                            .where((p) => p.statut == StatutPiece.publiee)
-                            .length,
+                        data: (l) =>
+                            l.where((p) => p.statut == StatutPiece.publiee)
+                                .length,
                         orElse: () => null,
                       ),
-                      masque: _soldeMasque,
-                      onMasquer: () =>
-                          setState(() => _soldeMasque = !_soldeMasque),
                     ),
                     const SizedBox(height: AppSpacing.p16),
                     _ActionsRapides(
@@ -86,23 +74,24 @@ class _SourceurEspaceScreenState extends ConsumerState<SourceurEspaceScreen> {
                       onMoyens: () => context.push('/espace/paiements'),
                       onPlus: () => context.go('/sourceur/nouvelle'),
                     ),
-                    const SizedBox(height: AppSpacing.p20),
-                    _LigneMenu(
+                    const SizedBox(height: AppSpacing.p24),
+                    SourceurEntree(
+                      premier: true,
                       icone: Icons.inventory_2_outlined,
                       label: 'Mes dépôts',
                       onTap: () => context.go('/sourceur/pieces'),
                     ),
-                    _LigneMenu(
+                    SourceurEntree(
                       icone: Icons.person_outline,
                       label: 'Mes informations',
                       onTap: () => context.push('/espace/infos'),
                     ),
-                    _LigneMenu(
+                    SourceurEntree(
                       icone: Icons.shield_outlined,
                       label: 'Polices et confidentialités',
                       onTap: () => context.push('/espace/confidentialite'),
                     ),
-                    _LigneMenu(
+                    SourceurEntree(
                       icone: Icons.logout_rounded,
                       label: 'Logout',
                       onTap: () => context.push('/espace/deconnexion'),
@@ -112,10 +101,9 @@ class _SourceurEspaceScreenState extends ConsumerState<SourceurEspaceScreen> {
               ),
             ),
             Padding(
-              padding: const EdgeInsets.fromLTRB(24, 0, 24, AppSpacing.p16),
+              padding: const EdgeInsets.fromLTRB(39, 0, 39, AppSpacing.p16),
               child: SizedBox(
                 height: 44,
-                width: double.infinity,
                 child: Material(
                   color: ClosetColors.vert,
                   borderRadius: BorderRadius.circular(AppRadius.cercle),
@@ -164,11 +152,11 @@ class _CarteSoldeState extends State<_CarteSolde> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      constraints: const BoxConstraints(minHeight: 148),
-      padding: const EdgeInsets.fromLTRB(20, 18, 20, 16),
+      constraints: const BoxConstraints(minHeight: 139),
+      padding: const EdgeInsets.fromLTRB(23, 22, 23, AppSpacing.p16),
       decoration: BoxDecoration(
         color: ClosetColors.vert,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(AppRadius.carte),
       ),
       child: widget.revenus.when(
         data: (r) => Column(
@@ -286,20 +274,17 @@ class _ActionsRapides extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      constraints: const BoxConstraints(minHeight: 96),
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.p16,
-        vertical: AppSpacing.p12,
-      ),
+      constraints: const BoxConstraints(minHeight: 86),
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.p24),
       decoration: BoxDecoration(
         color: ClosetColors.vert,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(AppRadius.carte),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           _Action(
-            icone: Icons.south_outlined,
+            icone: Icons.account_balance_wallet_outlined,
             label: 'Retrait',
             onTap: onRetrait,
           ),
@@ -309,12 +294,11 @@ class _ActionsRapides extends StatelessWidget {
             onTap: onHistorique,
           ),
           _Action(
-            icone: Icons.account_balance_wallet_outlined,
+            icone: Icons.credit_card_outlined,
             label: 'Moyens',
             onTap: onMoyens,
           ),
           _Action(
-            icone: Icons.add,
             icone: Icons.add,
             label: 'Plus',
             onTap: onPlus,
@@ -342,7 +326,7 @@ class _Action extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         SourceurBoutonRond(icone: icone, label: label, onTap: onTap),
-        const SizedBox(height: 6),
+        const SizedBox(height: 3),
         Text(
           label,
           style: ClosetTextStyles.citation.copyWith(
@@ -352,54 +336,6 @@ class _Action extends StatelessWidget {
           ),
         ),
       ],
-    );
-  }
-}
-
-/// Ligne de menu : tuile beige, icône linéaire, chevron.
-class _LigneMenu extends StatelessWidget {
-  const _LigneMenu({
-    required this.icone,
-    required this.label,
-    required this.onTap,
-  });
-
-  final IconData icone;
-  final String label;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: AppSpacing.p8),
-      child: Material(
-        color: ClosetColors.neutre200,
-        borderRadius: BorderRadius.circular(12),
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(12),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppSpacing.p12,
-              vertical: 14,
-            ),
-            child: Row(
-              children: [
-                Icon(icone, size: 22, color: ClosetColors.vert),
-                const SizedBox(width: AppSpacing.p16),
-                Expanded(
-                  child: Text(label, style: ClosetTextStyles.libelle),
-                ),
-                const Icon(
-                  Icons.chevron_right,
-                  size: 20,
-                  color: ClosetColors.noir,
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
     );
   }
 }

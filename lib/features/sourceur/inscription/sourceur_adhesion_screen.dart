@@ -12,8 +12,8 @@ import '../widgets/sourceur_header.dart';
 
 /// Mon adhésion — transcription de la maquette `27:1970`.
 ///
-/// Carte de statut vert profond, frise verticale (fait / en cours / à venir),
-/// encadré de garantie, et CTA « Compléter mon profil en attendant ».
+/// Carte de statut vert profond (350 × 171), puis frise verticale du parcours
+/// d'adhésion, note de garantie, et bouton de sortie.
 ///
 /// Écran distinct de `SourceurInscriptionScreen` : celui-ci **affiche l'état**
 /// d'une adhésion déjà soumise, il ne collecte rien. Cet état vient du dépôt
@@ -50,9 +50,9 @@ class SourceurAdhesionScreen extends ConsumerWidget {
               },
               actions: [
                 SourceurBoutonRond(
-                  icone: Icons.person_outline,
-                  label: 'Mon profil',
-                  onTap: () => context.push('/espace/infos'),
+                  icone: Icons.notifications_none_rounded,
+                  label: 'Notifications',
+                  onTap: () => context.push('/espace/alertes'),
                 ),
               ],
             ),
@@ -62,27 +62,27 @@ class SourceurAdhesionScreen extends ConsumerWidget {
                   AppSpacing.p20,
                   AppSpacing.p20,
                   AppSpacing.p20,
-                  AppSpacing.p16,
+                  AppSpacing.p24,
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     _CarteStatut(
                       etape: etapeCourante,
-                      dateSoumission: soumiseLe,
+                      dateSoumission: dateSoumission,
                     ),
                     const SizedBox(height: AppSpacing.p32),
                     Text(
-                      'PARCOURS DE VOTRE ADHÉSION',
-                      style: ClosetTextStyles.surtitre.copyWith(
-                        letterSpacing: 1.4,
-                        color: ClosetColors.fond400,
+                      'parcours de votre adhesion'.toUpperCase(),
+                      style: ClosetTextStyles.corps.copyWith(
+                        letterSpacing: 0.96,
+                        color: ClosetColors.fond500,
                       ),
                     ),
-                    const SizedBox(height: AppSpacing.p20),
+                    const SizedBox(height: AppSpacing.p24),
                     _FriseAdhesion(
                       etapeCourante: etapeCourante,
-                      dateSoumission: soumiseLe,
+                      dateSoumission: dateSoumission,
                     ),
                     const SizedBox(height: AppSpacing.p24),
                     Text(
@@ -205,20 +205,6 @@ class _AucuneAdhesion extends StatelessWidget {
                 ),
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(24, 8, 24, 20),
-              child: SizedBox(
-                width: double.infinity,
-                child: ClosetOutlineButton(
-                  label: 'Compléter mon profil en attendant',
-                  hauteur: 44,
-                  onPressed: () {
-                    ref.read(sourceurRepositoryProvider).validerAdhesion();
-                    context.go('/sourceur/adhesion/approuvee');
-                  },
-                ),
-              ),
-            ),
           ],
         ),
       ),
@@ -226,21 +212,25 @@ class _AucuneAdhesion extends StatelessWidget {
   }
 }
 
-/// Carte de statut : vert profond, badge doré, titre serif italique.
+/// Carte de statut : 350 × 171, vert profond, rayon 8.
 class _CarteStatut extends StatelessWidget {
   const _CarteStatut({required this.etape, required this.dateSoumission});
 
   final EtapeAdhesion etape;
   final DateTime dateSoumission;
-  final DateTime dateSoumission;
 
   @override
   Widget build(BuildContext context) {
     final (titre, corps) = switch (etape) {
-      EtapeAdhesion.soumise || EtapeAdhesion.enEtude => (
+      EtapeAdhesion.soumise => (
           'Votre fiche est entre nos mains',
           'Notre équipe étudie chaque adhésion avec soin — vous serez '
-              'notifiée par WhatsApp dès validation, sous 48 h ouvrées.',
+              'notifiée dès la validation.',
+        ),
+      EtapeAdhesion.enEtude => (
+          'Votre fiche est entre nos mains',
+          'Notre équipe étudie chaque adhésion avec soin — vous serez '
+              'notifiée dès la validation.',
         ),
       EtapeAdhesion.validee => (
           'Bienvenue dans le cercle',
@@ -253,24 +243,25 @@ class _CarteStatut extends StatelessWidget {
     };
 
     return Container(
-      padding: const EdgeInsets.fromLTRB(20, 18, 20, 20),
+      padding: const EdgeInsets.fromLTRB(24, 17, 24, 24),
       decoration: BoxDecoration(
         color: ClosetColors.vert,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(AppRadius.carte),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'STATUT DE VOTRE ADHÉSION',
-            style: ClosetTextStyles.surtitre.copyWith(
-              letterSpacing: 1.4,
+            'Statut de votre adhésion',
+            style: ClosetTextStyles.corpsMedium.copyWith(
+              fontSize: 13,
+              letterSpacing: -0.26,
               color: ClosetColors.fond300,
             ),
           ),
+          const SizedBox(height: AppSpacing.p8),
+          _badge,
           const SizedBox(height: AppSpacing.p12),
-          _BadgeStatut(etape: etape),
-          const SizedBox(height: AppSpacing.p16),
           Text(
             titre,
             style: ClosetTextStyles.titreBloc.copyWith(
@@ -292,6 +283,14 @@ class _CarteStatut extends StatelessWidget {
     );
   }
 
+  StatusBadge get _badge => switch (etape) {
+        EtapeAdhesion.soumise => StatusBadge.depotRecu('Fiche soumise'),
+        EtapeAdhesion.enEtude => StatusBadge.enAnalyse('En cours d’étude'),
+        EtapeAdhesion.validee => StatusBadge.livree('Adhésion validée'),
+        EtapeAdhesion.premierePiece =>
+          StatusBadge.miseEnVente('Dépôt ouvert'),
+      };
+
   static String _jourMois(DateTime d) {
     const mois = [
       'janv.', 'févr.', 'mars', 'avr.', 'mai', 'juin',
@@ -301,106 +300,7 @@ class _CarteStatut extends StatelessWidget {
   }
 }
 
-class _BadgeStatut extends StatelessWidget {
-  const _BadgeStatut({required this.etape});
-
-  final EtapeAdhesion etape;
-
-  @override
-  Widget build(BuildContext context) {
-    final (libelle, fond, encre) = switch (etape) {
-      EtapeAdhesion.soumise => (
-          'FICHE SOUMISE',
-          ClosetColors.fond300,
-          ClosetColors.vert,
-        ),
-      EtapeAdhesion.enEtude => (
-          'EN COURS D’ÉTUDE',
-          ClosetColors.fond300,
-          ClosetColors.vert,
-        ),
-      EtapeAdhesion.validee => (
-          'ADHÉSION VALIDÉE',
-          ClosetColors.emeraude100,
-          ClosetColors.vert,
-        ),
-      EtapeAdhesion.premierePiece => (
-          'DÉPÔT OUVERT',
-          ClosetColors.fond300,
-          ClosetColors.vert,
-        ),
-    };
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
-      decoration: BoxDecoration(
-        color: fond,
-        borderRadius: BorderRadius.circular(AppRadius.cercle),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            width: 6,
-            height: 6,
-            decoration: BoxDecoration(color: encre, shape: BoxShape.circle),
-          ),
-          const SizedBox(width: 7),
-          Text(
-            libelle,
-            style: ClosetTextStyles.attribut.copyWith(
-              fontWeight: FontWeight.w700,
-              letterSpacing: 0.4,
-              color: encre,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-/// Encadré crème cerclé d'or : le dépôt reste fermé tant que l'étude dure.
-class _EncadreGarantie extends StatelessWidget {
-  const _EncadreGarantie();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: ClosetColors.fond300, width: AppStroke.fin),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Le dépôt s’ouvrira après validation',
-            style: ClosetTextStyles.titreBloc.copyWith(
-              fontStyle: FontStyle.italic,
-              letterSpacing: -0.2,
-              color: ClosetColors.vert,
-            ),
-          ),
-          const SizedBox(height: 6),
-          Text(
-            'C’est notre garantie de qualité : chaque partenaire est validé '
-            'avant de confier ses pièces. Merci de votre patience.',
-            style: ClosetTextStyles.meta.copyWith(
-              height: 1.4,
-              letterSpacing: 0.1,
-              color: ClosetColors.taupe,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-/// Frise verticale : pastille pleine (fait), dorée (en cours), vide (à venir).
+/// Frise verticale : pastille par étape, reliée par un trait.
 class _FriseAdhesion extends StatelessWidget {
   const _FriseAdhesion({
     required this.etapeCourante,
@@ -409,7 +309,6 @@ class _FriseAdhesion extends StatelessWidget {
 
   final EtapeAdhesion etapeCourante;
   final DateTime dateSoumission;
-  final DateTime dateSoumission;
 
   @override
   Widget build(BuildContext context) {
@@ -417,7 +316,6 @@ class _FriseAdhesion extends StatelessWidget {
       (
         EtapeAdhesion.soumise,
         'Fiche soumise',
-        _horodatage(dateSoumission),
         _horodatage(dateSoumission),
       ),
       (
@@ -447,7 +345,7 @@ class _FriseAdhesion extends StatelessWidget {
           _EtapeFrise(
             titre: etapes[i].$2,
             detail: etapes[i].$3,
-            faite: etapes[i].$1.index < etapeCourante.index,
+            atteinte: etapes[i].$1.index <= etapeCourante.index,
             courante: etapes[i].$1 == etapeCourante,
             derniere: i == etapes.length - 1,
           ),
@@ -470,31 +368,20 @@ class _EtapeFrise extends StatelessWidget {
   const _EtapeFrise({
     required this.titre,
     required this.detail,
-    required this.faite,
+    required this.atteinte,
     required this.courante,
     required this.derniere,
   });
 
   final String titre;
   final String detail;
-  final bool faite;
+  final bool atteinte;
   final bool courante;
   final bool derniere;
 
   @override
   Widget build(BuildContext context) {
-    final Color pastille;
-    final Color filet;
-    if (courante) {
-      pastille = ClosetColors.fond300;
-      filet = ClosetColors.fond300;
-    } else if (faite) {
-      pastille = ClosetColors.vert;
-      filet = ClosetColors.vert;
-    } else {
-      pastille = ClosetColors.ligne;
-      filet = ClosetColors.ligne;
-    }
+    final couleur = atteinte ? ClosetColors.vert : ClosetColors.ligne;
 
     return IntrinsicHeight(
       child: Row(
@@ -503,15 +390,12 @@ class _EtapeFrise extends StatelessWidget {
           Column(
             children: [
               Container(
-                width: 14,
-                height: 14,
+                width: 18,
+                height: 18,
                 decoration: BoxDecoration(
                   color: atteinte ? ClosetColors.vert : ClosetColors.blanc,
                   shape: BoxShape.circle,
-                  border: Border.all(
-                    color: pastille,
-                    width: courante ? 3 : AppStroke.epais,
-                  ),
+                  border: Border.all(color: couleur, width: AppStroke.moyen),
                 ),
                 child: atteinte
                     ? const Icon(Icons.check, size: 11, color: ClosetColors.blanc)
@@ -519,7 +403,7 @@ class _EtapeFrise extends StatelessWidget {
               ),
               if (!derniere)
                 Expanded(
-                  child: Container(width: 1.5, color: filet),
+                  child: Container(width: AppStroke.moyen, color: couleur),
                 ),
             ],
           ),
@@ -534,13 +418,11 @@ class _EtapeFrise extends StatelessWidget {
                     titre,
                     style: ClosetTextStyles.libelle.copyWith(
                       fontWeight:
-                          courante || faite ? FontWeight.w700 : FontWeight.w500,
-                      color: faite || courante
-                          ? ClosetColors.noir
-                          : ClosetColors.taupe,
+                          courante ? FontWeight.w700 : FontWeight.w500,
+                      color: atteinte ? ClosetColors.noir : ClosetColors.taupe,
                     ),
                   ),
-                  const SizedBox(height: 3),
+                  const SizedBox(height: AppSpacing.p4),
                   Text(
                     detail,
                     style: ClosetTextStyles.meta.copyWith(

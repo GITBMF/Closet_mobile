@@ -17,8 +17,7 @@ class MoyenRetrait {
     required this.id,
     required this.libelle,
     required this.compte,
-    this.logoAsset,
-    this.libelleListe,
+    required this.icone,
   });
 
   final String id;
@@ -27,13 +26,7 @@ class MoyenRetrait {
   /// Numéro rattaché. Jamais affiché en entier hors de cet écran.
   final String compte;
 
-  /// Logo de l'opérateur, si un fichier existe.
-  final String? logoAsset;
-
-  /// Libellé affiché dans la liste (ex. « VISA **** 4864 »).
-  final String? libelleListe;
-
-  String get libelleAffiche => libelleListe ?? libelle;
+  final IconData icone;
 }
 
 /// TODO(backend): les moyens de retrait doivent venir du profil sourceur.
@@ -42,59 +35,51 @@ const List<MoyenRetrait> moyensRetrait = [
     id: 'orange',
     libelle: 'Orange Money',
     compte: '699000000',
-    logoAsset: 'assets/orange.png',
+    icone: Icons.phone_android_rounded,
   ),
   MoyenRetrait(
     id: 'mtn',
     libelle: 'MTN Mobile Money',
     compte: '677000000',
-    logoAsset: 'assets/mtn.png',
+    icone: Icons.phone_iphone_rounded,
   ),
   MoyenRetrait(
     id: 'visa',
     libelle: 'Carte Visa',
     compte: '4864',
-    libelleListe: 'VISA **** 4864',
+    icone: Icons.credit_card_rounded,
   ),
 ];
 
 /// Ouvre le panneau « Méthode de retrait de fonds » — maquette `32:511`.
 ///
-/// Overlay plein écran au-dessus de l'espace sourceur : carte blanche des
-/// moyens, croix de fermeture, CTA vert ancré en bas. Valider lance le
+/// Posé au-dessus de l'espace sourceur, il choisit le moyen puis lance le
 /// tunnel de transaction en mode retrait.
 Future<void> afficherMethodeRetrait(BuildContext context) {
-  return showGeneralDialog<void>(
+  return showModalBottomSheet<void>(
     context: context,
-    barrierDismissible: true,
-    barrierLabel: 'Fermer',
-    barrierColor: Colors.black.withValues(alpha: 0.45),
-    transitionDuration: const Duration(milliseconds: 220),
-    pageBuilder: (context, _, _) => const _MethodeRetraitOverlay(),
-    transitionBuilder: (context, animation, _, child) {
-      return FadeTransition(
-        opacity: animation,
-        child: child,
-      );
-    },
+    isScrollControlled: true,
+    backgroundColor: Colors.transparent,
+    builder: (context) => const _MethodeRetraitSheet(),
   );
 }
 
-class _MethodeRetraitOverlay extends ConsumerStatefulWidget {
-  const _MethodeRetraitOverlay();
+class _MethodeRetraitSheet extends ConsumerStatefulWidget {
+  const _MethodeRetraitSheet();
 
   @override
-  ConsumerState<_MethodeRetraitOverlay> createState() =>
-      _MethodeRetraitOverlayState();
+  ConsumerState<_MethodeRetraitSheet> createState() =>
+      _MethodeRetraitSheetState();
 }
 
-class _MethodeRetraitOverlayState
-    extends ConsumerState<_MethodeRetraitOverlay> {
-  String _choisi = 'visa';
+class _MethodeRetraitSheetState
+    extends ConsumerState<_MethodeRetraitSheet> {
+  String _choisi = moyensRetrait.first.id;
 
   @override
   Widget build(BuildContext context) {
     final revenus = ref.watch(revenusSourceurProvider);
+    final pieces = ref.watch(mesPiecesProvider);
     final ClosetUser? user = ref.watch<ClosetUser?>(currentUserProvider);
 
     return DecoratedBox(
@@ -103,9 +88,17 @@ class _MethodeRetraitOverlayState
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
       child: SafeArea(
+        top: false,
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(16, 8, 16, 20),
+          padding: const EdgeInsets.fromLTRB(
+            AppSpacing.p24,
+            AppSpacing.p20,
+            AppSpacing.p24,
+            AppSpacing.p20,
+          ),
           child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Center(
                 child: Container(
@@ -157,7 +150,6 @@ class _MethodeRetraitOverlayState
               const SizedBox(height: AppSpacing.p24),
               SizedBox(
                 height: 44,
-                width: double.infinity,
                 child: Material(
                   color: ClosetColors.vert,
                   borderRadius: BorderRadius.circular(AppRadius.cercle),
@@ -206,7 +198,7 @@ class _MethodeRetraitOverlayState
   }
 }
 
-/// Ligne de moyen : logo, libellé, radio de sélection.
+/// Ligne de moyen : vignette 45 × 32 cerclée, libellé, coche de sélection.
 class _LigneMoyen extends StatelessWidget {
   const _LigneMoyen({
     required this.moyen,
@@ -226,7 +218,7 @@ class _LigneMoyen extends StatelessWidget {
       child: InkWell(
         onTap: onTap,
         child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 14),
+          padding: const EdgeInsets.symmetric(vertical: AppSpacing.p12),
           child: Row(
             children: [
               Container(
@@ -248,92 +240,23 @@ class _LigneMoyen extends StatelessWidget {
               const SizedBox(width: AppSpacing.p12),
               Expanded(
                 child: Text(
-                  moyen.libelleAffiche,
+                  moyen.libelle,
                   style: ClosetTextStyles.libelle.copyWith(
-                    color: ClosetColors.noir,
+                    color: ClosetColors.pinTexte,
                   ),
                 ),
               ),
-              _Radio(choisi: choisi),
+              Icon(
+                choisi
+                    ? Icons.radio_button_checked
+                    : Icons.radio_button_unchecked,
+                size: 20,
+                color: choisi ? ClosetColors.vert : ClosetColors.ligne,
+              ),
             ],
           ),
         ),
       ),
-    );
-  }
-}
-
-class _LogoMoyen extends StatelessWidget {
-  const _LogoMoyen({required this.moyen});
-
-  final MoyenRetrait moyen;
-
-  @override
-  Widget build(BuildContext context) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(4),
-      child: SizedBox(
-        width: 42,
-        height: 28,
-        child: moyen.logoAsset != null
-            ? Image.asset(moyen.logoAsset!, fit: BoxFit.cover)
-            : const _LogoVisa(),
-      ),
-    );
-  }
-}
-
-class _LogoVisa extends StatelessWidget {
-  const _LogoVisa();
-
-  @override
-  Widget build(BuildContext context) {
-    return const ColoredBox(
-      color: Color(0xFF1A1F71),
-      child: Center(
-        child: Text(
-          'VISA',
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 10,
-            fontWeight: FontWeight.w800,
-            letterSpacing: 0.8,
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _Radio extends StatelessWidget {
-  const _Radio({required this.choisi});
-
-  final bool choisi;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 20,
-      height: 20,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        border: Border.all(
-          color: choisi ? ClosetColors.noir : ClosetColors.taupe100,
-          width: 1.5,
-        ),
-      ),
-      child: choisi
-          ? Center(
-              child: Container(
-                width: 10,
-                height: 10,
-                decoration: const BoxDecoration(
-                  color: ClosetColors.noir,
-                  shape: BoxShape.circle,
-                ),
-              ),
-            )
-          : null,
     );
   }
 }

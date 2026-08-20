@@ -10,34 +10,22 @@ import '../../../core/widgets/closet_app_bar.dart';
 import '../../../core/widgets/etat_ecran.dart';
 import '../../../data/models/commande.dart';
 import '../../../data/repositories/commande_repository.dart';
+import '../../sourceur/widgets/sourceur_header.dart';
 import 'mes_commandes_screen.dart';
 
-/// Ouvre le détail de commande en feuille remontante — maquette overlay.
-Future<void> afficherDetailCommande(BuildContext context, String numero) {
-  return showModalBottomSheet<void>(
-    context: context,
-    isScrollControlled: true,
-    backgroundColor: Colors.transparent,
-    builder: (context) => DraggableScrollableSheet(
-      initialChildSize: 0.92,
-      minChildSize: 0.5,
-      maxChildSize: 0.96,
-      builder: (context, controller) => _FeuilleDetail(
-        numero: numero,
-        scrollController: controller,
-      ),
-    ),
-  );
-}
-
-/// Route pleine page (lien profond) — même contenu que la feuille.
-class DetailCommandeScreen extends StatelessWidget {
+/// Détails de la commande — transcription de la maquette `26:1262`.
+///
+/// Carte de suivi (numéro, statut, date, adresse), liste des pièces, puis
+/// carte verte de récapitulatif portant le total à régler.
+class DetailCommandeScreen extends ConsumerWidget {
   const DetailCommandeScreen({super.key, required this.numero});
 
   final String numero;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final commande = ref.watch(commandeProvider(numero));
+
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
@@ -68,44 +56,59 @@ class DetailCommandeScreen extends StatelessWidget {
   }
 }
 
-class _FeuilleDetail extends ConsumerWidget {
-  const _FeuilleDetail({required this.numero, this.scrollController});
+class _EnTete extends StatelessWidget {
+  const _EnTete({required this.onRetour});
 
-  final String numero;
-  final ScrollController? scrollController;
+  final VoidCallback onRetour;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final commande = ref.watch(commandeProvider(numero));
-
+  Widget build(BuildContext context) {
     return DecoratedBox(
       decoration: const BoxDecoration(
-        color: ClosetColors.beige,
-        borderRadius: BorderRadius.vertical(
-          top: Radius.circular(AppRadius.surface),
+        border: Border(
+          bottom: BorderSide(
+            color: ClosetColors.fond400,
+            width: AppStroke.fin,
+          ),
         ),
       ),
-      child: commande.when(
-        data: (c) => c == null
-            ? const Center(child: Text('Commande introuvable'))
-            : _Corps(
-                commande: c,
-                scrollController: scrollController,
-              ),
-        loading: () => const Center(
-          child: CircularProgressIndicator(color: ClosetColors.dore),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(
+          AppSpacing.p20,
+          AppSpacing.p8,
+          AppSpacing.p20,
+          AppSpacing.p12,
         ),
-        error: (e, _) => const Center(child: Text('Erreur de chargement')),
+        child: Row(
+          children: [
+            SourceurBoutonRond(
+              icone: Icons.arrow_back_ios_new,
+              label: 'Retour',
+              onTap: onRetour,
+            ),
+            Expanded(
+              child: Text(
+                'Mes commandes',
+                textAlign: TextAlign.center,
+                style: ClosetTextStyles.libelle.copyWith(
+                  fontSize: 18,
+                  letterSpacing: 0.36,
+                  color: ClosetColors.noir,
+                ),
+              ),
+            ),
+            const SizedBox(width: 42),
+          ],
+        ),
       ),
     );
   }
 }
 
 class _Corps extends StatelessWidget {
-  const _Corps({required this.commande, this.scrollController});
+  const _Corps({required this.commande});
 
   final Commande commande;
-  final ScrollController? scrollController;
 
   @override
   Widget build(BuildContext context) {
@@ -167,10 +170,11 @@ class _Corps extends StatelessWidget {
   }
 }
 
-class EspaceBoutonFermer extends StatelessWidget {
-  const EspaceBoutonFermer({super.key, required this.onTap});
+/// Carte de suivi : numéro, statut, dépôt et adresse de livraison.
+class _CarteSuivi extends StatelessWidget {
+  const _CarteSuivi({required this.commande});
 
-  final VoidCallback onTap;
+  final Commande commande;
 
   @override
   Widget build(BuildContext context) {
@@ -235,6 +239,45 @@ class EspaceBoutonFermer extends StatelessWidget {
   }
 }
 
+class _LigneInfo extends StatelessWidget {
+  const _LigneInfo({
+    required this.label,
+    required this.valeur,
+    this.couleurValeur,
+  });
+
+  final String label;
+  final String valeur;
+  final Color? couleurValeur;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SizedBox(
+          width: 104,
+          child: Text(
+            label,
+            style: ClosetTextStyles.corps.copyWith(
+              color: ClosetColors.neutre700,
+            ),
+          ),
+        ),
+        Expanded(
+          child: Text(
+            valeur,
+            style: ClosetTextStyles.corps.copyWith(
+              color: couleurValeur ?? ClosetColors.neutre900,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// Pièce commandée : visuel 78, maison dorée, nom Cormorant, prix EB Garamond.
 class _LignePiece extends StatelessWidget {
   const _LignePiece({required this.ligne});
 
@@ -252,7 +295,7 @@ class _LignePiece extends StatelessWidget {
       child: Row(
         children: [
           ClipRRect(
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(5),
             child: SizedBox(
               width: 78,
               height: 92,
@@ -279,15 +322,16 @@ class _LignePiece extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   style: ClosetTextStyles.attribut.copyWith(
                     fontWeight: FontWeight.w500,
+                    letterSpacing: 0,
                     color: ClosetColors.fond300,
                   ),
                 ),
-                const SizedBox(height: 6),
+                const SizedBox(height: 7),
                 Text(
                   ligne.nom,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
-                  style: ClosetTextStyles.nomProduit.copyWith(fontSize: 16),
+                  style: ClosetTextStyles.citation.copyWith(fontSize: 19),
                 ),
                 const SizedBox(height: AppSpacing.p8),
                 Row(
@@ -300,6 +344,7 @@ class _LignePiece extends StatelessWidget {
                         style: ClosetTextStyles.prix.copyWith(
                           fontSize: 17,
                           fontWeight: FontWeight.w600,
+                          letterSpacing: 0.34,
                           color: ClosetColors.vert,
                         ),
                       ),
@@ -316,7 +361,7 @@ class _LignePiece extends StatelessWidget {
                               BorderRadius.circular(AppRadius.vignette),
                         ),
                         child: Text(
-                          ligne.etat.toUpperCase(),
+                          ligne.etat,
                           style: ClosetTextStyles.attribut.copyWith(
                             color: ClosetColors.emeraude500,
                           ),
@@ -333,6 +378,7 @@ class _LignePiece extends StatelessWidget {
   }
 }
 
+/// Carte verte du récapitulatif : sous-total + livraison, puis total.
 class _CarteRecapitulatif extends StatelessWidget {
   const _CarteRecapitulatif({required this.commande});
 
@@ -344,36 +390,26 @@ class _CarteRecapitulatif extends StatelessWidget {
       padding: const EdgeInsets.all(AppSpacing.p20),
       decoration: BoxDecoration(
         color: ClosetColors.vert,
-        borderRadius: BorderRadius.circular(AppRadius.bloc),
+        borderRadius: BorderRadius.circular(AppRadius.carte),
       ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.end,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'SOUS-TOTAL + LIVRAISON',
-                  style: ClosetTextStyles.micro.copyWith(
-                    fontWeight: FontWeight.w600,
-                    letterSpacing: 0.6,
-                    decoration: TextDecoration.underline,
-                    decorationColor: Colors.white,
-                    color: Colors.white,
-                  ),
-                ),
-                const SizedBox(height: AppSpacing.p8),
-                Text(
-                  'TOTAL RÉGLÉ',
-                  style: ClosetTextStyles.libelleFort.copyWith(
-                    color: Colors.white,
-                  ),
-                ),
-                const SizedBox(height: AppSpacing.p12),
-                Text(
-                  'Les paiements sont chiffrés et sécurisés.',
-                  style: ClosetTextStyles.micro.copyWith(
+          Text(
+            'sous-total + livraison',
+            style: ClosetTextStyles.sousTitre.copyWith(
+              fontSize: 16,
+              color: ClosetColors.neutre300,
+            ),
+          ),
+          const SizedBox(height: AppSpacing.p16),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Expanded(
+                child: Text(
+                  'Total à régler',
+                  style: ClosetTextStyles.corpsMedium.copyWith(
                     color: ClosetColors.neutre300,
                   ),
                 ),

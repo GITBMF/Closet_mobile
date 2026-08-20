@@ -150,7 +150,6 @@ class BoutonTransaction extends StatelessWidget {
                     width: AppStroke.fin,
                   ),
           ),
-          ),
           child: InkWell(
             borderRadius: rayon,
             onTap: onPressed,
