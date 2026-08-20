@@ -1,10 +1,6 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:image_picker/image_picker.dart';
-import 'package:path_provider/path_provider.dart';
 
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/closet_colors.dart';
@@ -13,7 +9,6 @@ import '../../../core/widgets/closet_field.dart';
 import '../../../core/widgets/toasts.dart';
 import '../../../data/models/user.dart';
 import '../../../data/repositories/auth_repository.dart';
-import '../../../data/services/auth_storage_service.dart';
 
 /// Modifier mon profil — transcription de la maquette `25:710`.
 ///
@@ -30,12 +25,9 @@ class ModifierProfilScreen extends ConsumerStatefulWidget {
 class _ModifierProfilScreenState
     extends ConsumerState<ModifierProfilScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _picker = ImagePicker();
   late final TextEditingController _nom;
   late final TextEditingController _email;
   late final TextEditingController _telephone;
-  String? _avatarPath;
-  bool _enregistrementEnCours = false;
 
   @override
   void initState() {
@@ -106,13 +98,7 @@ class _ModifierProfilScreenState
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      Center(
-                        child: _AvatarEditable(
-                          user: user,
-                          imagePath: _avatarPath,
-                          onChanger: _choisirSource,
-                        ),
-                      ),
+                      Center(child: _AvatarEditable(user: user)),
                       const SizedBox(height: 29),
                       ClosetChampLibelle(
                         label: 'Nom complet',
@@ -279,8 +265,6 @@ class _AvatarEditable extends ConsumerWidget {
   const _AvatarEditable({required this.user});
 
   final ClosetUser? user;
-  final String? imagePath;
-  final VoidCallback onChanger;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -291,37 +275,26 @@ class _AvatarEditable extends ConsumerWidget {
         ? user!.lastName[0].toUpperCase()
         : '';
     final initiales = '$p$n'.isEmpty ? '?' : '$p$n';
-    final fichier = imagePath == null ? null : File(imagePath!);
-    final aUnePhoto = fichier != null && fichier.existsSync();
 
     return SizedBox(
       width: 160,
       height: 120,
       child: Stack(
         children: [
-          ClipOval(
-            child: GestureDetector(
-              onTap: onChanger,
-              child: aUnePhoto
-                  ? Image.file(
-                      fichier,
-                      width: 120,
-                      height: 120,
-                      fit: BoxFit.cover,
-                    )
-                  : Container(
-                      width: 120,
-                      height: 120,
-                      alignment: Alignment.center,
-                      color: ClosetColors.emeraude100,
-                      child: Text(
-                        initiales,
-                        style: ClosetTextStyles.montantHero.copyWith(
-                          fontSize: 40,
-                          color: ClosetColors.vert,
-                        ),
-                      ),
-                    ),
+          Container(
+            width: 120,
+            height: 120,
+            alignment: Alignment.center,
+            decoration: const BoxDecoration(
+              color: ClosetColors.emeraude100,
+              shape: BoxShape.circle,
+            ),
+            child: Text(
+              initiales,
+              style: ClosetTextStyles.montantHero.copyWith(
+                fontSize: 40,
+                color: ClosetColors.vert,
+              ),
             ),
           ),
           Positioned(

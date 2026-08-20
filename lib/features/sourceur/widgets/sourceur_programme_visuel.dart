@@ -56,8 +56,8 @@ class _WordmarkClosEt extends StatelessWidget {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        CustomPaint(
-          size: const Size(36, 16),
+        const CustomPaint(
+          size: Size(36, 16),
           painter: _CintrePainter(color: ClosetColors.fond300),
         ),
         const SizedBox(height: 2),

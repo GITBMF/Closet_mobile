@@ -13,14 +13,12 @@ import 'espace_screen.dart';
 class EspaceSubAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String title;
   final bool italicTitle;
-  final bool highlightTitle;
   final VoidCallback? onSettingsTap;
 
   const EspaceSubAppBar({
     super.key,
     required this.title,
     this.italicTitle = false,
-    this.highlightTitle = false,
     this.onSettingsTap,
   });
 
@@ -42,15 +40,17 @@ class EspaceSubAppBar extends StatelessWidget implements PreferredSizeWidget {
         ),
       ),
       leadingWidth: 72,
-      title: highlightTitle
-          ? ColoredBox(
-              color: ClosetColors.jaune100,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                child: Text(title, style: _styleTitre),
-              ),
-            )
-          : Text(title, style: _styleTitre),
+      title: Text(
+        title,
+        style: italicTitle
+            ? GoogleFonts.ebGaramond(
+                fontSize: 24,
+                fontWeight: FontWeight.w600,
+                fontStyle: FontStyle.italic,
+                color: ClosetColors.noir,
+              )
+            : ClosetTextStyles.titreEcran.copyWith(fontSize: 20),
+      ),
       centerTitle: true,
       actions: [
         if (onSettingsTap != null)
@@ -74,15 +74,6 @@ class EspaceSubAppBar extends StatelessWidget implements PreferredSizeWidget {
       ),
     );
   }
-
-  TextStyle get _styleTitre => italicTitle
-      ? GoogleFonts.ebGaramond(
-          fontSize: 24,
-          fontWeight: FontWeight.w600,
-          fontStyle: FontStyle.italic,
-          color: ClosetColors.noir,
-        )
-      : ClosetTextStyles.titreEcran.copyWith(fontSize: 20);
 
   @override
   Size get preferredSize => const Size.fromHeight(57);

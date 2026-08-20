@@ -1,12 +1,11 @@
-import 'dart:io';
-
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/closet_colors.dart';
 import '../../../core/theme/closet_text_styles.dart';
+import '../../../core/theme/theme_provider.dart';
 import '../../../core/widgets/closet_sections.dart';
 import '../../../data/models/user.dart';
 import '../../../data/repositories/auth_repository.dart';
@@ -64,9 +63,9 @@ class EspaceScreen extends ConsumerWidget {
                   ),
                 ),
               ),
-              const SizedBox(height: AppSpacing.p8),
+              const SizedBox(height: AppSpacing.p24),
               _EntreeEspace(
-                icone: Icons.inventory_2_outlined,
+                icone: Icons.receipt_long_outlined,
                 label: 'Mes commandes',
                 onTap: () => user == null
                     ? context.push('/auth')
@@ -115,6 +114,7 @@ class EspaceScreen extends ConsumerWidget {
       ),
     );
   }
+
 }
 
 /// Bouton rond de r�glages, en haut � droite.
@@ -163,6 +163,13 @@ class _EnTeteProfil extends StatelessWidget {
   final ClosetUser? user;
   final VoidCallback onEditer;
 
+  static String _initiales(ClosetUser u) {
+    final p = u.firstName.isNotEmpty ? u.firstName[0].toUpperCase() : '';
+    final n = u.lastName.isNotEmpty ? u.lastName[0].toUpperCase() : '';
+    final i = '$p$n';
+    return i.isEmpty ? '?' : i;
+  }
+
   @override
   Widget build(BuildContext context) {
     final nom = user == null
@@ -172,8 +179,22 @@ class _EnTeteProfil extends StatelessWidget {
 
     return Row(
       children: [
-        ClipOval(
-          child: _PortraitEspace(user: user),
+        Container(
+          width: 74,
+          height: 74,
+          alignment: Alignment.center,
+          decoration: const BoxDecoration(
+            color: ClosetColors.emeraude100,
+            shape: BoxShape.circle,
+          ),
+          child: user == null
+              ? const Icon(Icons.person, size: 34, color: ClosetColors.taupe)
+              : Text(
+                  _initiales(user!),
+                  style: ClosetTextStyles.titreSection.copyWith(
+                    color: ClosetColors.vert,
+                  ),
+                ),
         ),
         const SizedBox(width: AppSpacing.p16),
         Expanded(
@@ -190,12 +211,14 @@ class _EnTeteProfil extends StatelessWidget {
                       style: ClosetTextStyles.titreSection,
                     ),
                   ),
-                  const SizedBox(width: 6),
-                  const Icon(
-                    Icons.verified,
-                    size: 14,
-                    color: ClosetColors.fond300,
-                  ),
+                  if (user != null) ...[
+                    const SizedBox(width: 6),
+                    const Icon(
+                      Icons.verified,
+                      size: 12,
+                      color: ClosetColors.fond300,
+                    ),
+                  ],
                 ],
               ),
               const SizedBox(height: AppSpacing.p4),
@@ -249,7 +272,7 @@ class _CarteSourceur extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       constraints: const BoxConstraints(minHeight: 97),
-      padding: const EdgeInsets.fromLTRB(16, 14, 12, 14),
+      padding: const EdgeInsets.all(AppSpacing.p20),
       decoration: BoxDecoration(
         color: ClosetColors.vert,
         borderRadius: BorderRadius.circular(AppRadius.carte),
@@ -264,19 +287,18 @@ class _CarteSourceur extends StatelessWidget {
                 if (!dejaInscrit)
                   Container(
                     padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
+                      horizontal: AppSpacing.p12,
                       vertical: 2,
                     ),
                     decoration: BoxDecoration(
                       color: ClosetColors.emeraude100,
-                      borderRadius: BorderRadius.circular(AppRadius.vignette),
+                      borderRadius:
+                          BorderRadius.circular(AppRadius.vignette),
                     ),
                     child: Text(
                       'Nouveau',
                       style: ClosetTextStyles.attribut.copyWith(
-                        fontWeight: FontWeight.w600,
-                        letterSpacing: 0.4,
-                        color: Colors.white,
+                        color: ClosetColors.emeraude500,
                       ),
                     ),
                   ),
@@ -289,9 +311,8 @@ class _CarteSourceur extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   style: ClosetTextStyles.prix.copyWith(
                     fontWeight: FontWeight.w600,
-                    fontStyle: FontStyle.italic,
                     letterSpacing: 0,
-                    color: ClosetColors.doreClair,
+                    color: ClosetColors.neutre300,
                   ),
                 ),
                 const SizedBox(height: 2),
@@ -309,10 +330,10 @@ class _CarteSourceur extends StatelessWidget {
               ],
             ),
           ),
-          const SizedBox(width: AppSpacing.p8),
+          const SizedBox(width: AppSpacing.p12),
           SizedBox(
-            width: 118,
-            height: 40,
+            width: 130,
+            height: 44,
             child: Material(
               color: ClosetColors.fond300,
               borderRadius: BorderRadius.circular(AppRadius.cercle),
@@ -323,11 +344,8 @@ class _CarteSourceur extends StatelessWidget {
                   child: Text(
                     dejaInscrit ? 'Mon espace' : 'Rejoindre le cercle',
                     textAlign: TextAlign.center,
-                    maxLines: 2,
-                    style: ClosetTextStyles.micro.copyWith(
-                      fontWeight: FontWeight.w600,
-                      letterSpacing: 0.3,
-                      color: ClosetColors.vert,
+                    style: ClosetTextStyles.actionPetite.copyWith(
+                      color: ClosetColors.neutre1000,
                     ),
                   ),
                 ),
