@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/closet_colors.dart';
 import '../../../core/theme/closet_text_styles.dart';
+import '../../../core/widgets/google_g_icon.dart';
 import '../../../core/widgets/toasts.dart';
 import '../../../data/models/user.dart';
 import '../../../data/repositories/auth_repository.dart';
@@ -83,13 +84,33 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
       toastInfo(ref, 'Champs manquants', 'Veuillez remplir tous les champs.');
       return;
     }
+    if (!_emailValide(email)) {
+      toastInfo(ref, 'E-mail invalide', 'Utilisez une adresse du type nom@domaine.com.');
+      return;
+    }
+    if (password.length > 128) {
+      toastInfo(ref, 'Mot de passe trop long', '128 caractères maximum.');
+      return;
+    }
 
+    var firstName = '';
+    var lastName = '';
+    var phone = '';
     if (!isLogin) {
-      final firstName = _nameController.text.trim();
-      final lastName = _lastNameController.text.trim();
-      final phone = _phoneController.text.trim();
+      firstName = _nameController.text.trim();
+      lastName = _lastNameController.text.trim();
+      phone = _phoneController.text.trim();
       if (firstName.isEmpty || lastName.isEmpty) {
         toastInfo(ref, 'Champs manquants', 'Veuillez renseigner votre nom et prénom.');
+        return;
+      }
+      final nomComplet = '$firstName $lastName'.replaceAll(RegExp(r'\s+'), ' ').trim();
+      if (nomComplet.length < 2) {
+        toastInfo(ref, 'Nom incomplet', 'Le nom doit contenir au moins 2 caractères.');
+        return;
+      }
+      if (nomComplet.length > 150) {
+        toastInfo(ref, 'Nom trop long', '150 caractères maximum.');
         return;
       }
       if (phone.isEmpty) {
@@ -97,6 +118,14 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
           ref,
           'Champs manquants',
           'Veuillez renseigner votre numéro de téléphone.',
+        );
+        return;
+      }
+      if (password.length < 8 || !RegExp(r'\d').hasMatch(password)) {
+        toastInfo(
+          ref,
+          'Mot de passe trop simple',
+          '8 caractères minimum, dont un chiffre.',
         );
         return;
       }
@@ -111,11 +140,11 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
         user = await authRepo.logIn(email: email, password: password);
       } else {
         user = await authRepo.signUp(
-          firstName: _nameController.text,
-          lastName: _lastNameController.text,
+          firstName: firstName,
+          lastName: lastName,
           email: email,
           password: password,
-          phone: _phoneController.text,
+          phone: phone,
         );
       }
 
@@ -135,7 +164,11 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
     } catch (e) {
       if (mounted) {
         setState(() => _isLoading = false);
-        await dialogueErreur(context, e, titre: 'Connexion impossible');
+        await dialogueErreur(
+          context,
+          e,
+          titre: isLogin ? 'Connexion impossible' : 'Inscription impossible',
+        );
       }
     } finally {
       if (mounted) {
@@ -269,7 +302,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
                           width: 312,
                           child: _BoutonDore(
                             label: 'CONTINUER avec Google',
-                            icone: Icons.g_mobiledata_rounded,
+                            icone: const GoogleGIcon(taille: 18),
                             onPressed: () {
                               toastInfo(
                                 ref,
@@ -341,6 +374,10 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
       ),
     );
   }
+}
+
+bool _emailValide(String email) {
+  return RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$').hasMatch(email);
 }
 
 /// Carte photo de 352 × 210 (rayon 19) surmontée de la plaque au logo.
@@ -472,7 +509,7 @@ class _BoutonDore extends StatelessWidget {
   final String label;
   final VoidCallback? onPressed;
   final bool enCours;
-  final IconData? icone;
+  final Widget? icone;
 
   @override
   Widget build(BuildContext context) {
@@ -501,7 +538,7 @@ class _BoutonDore extends StatelessWidget {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       if (icone != null) ...[
-                        Icon(icone, size: 20, color: ClosetColors.neutre900),
+                        icone!,
                         const SizedBox(width: 10),
                       ],
                       Text(

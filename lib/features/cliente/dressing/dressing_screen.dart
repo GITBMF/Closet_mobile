@@ -307,9 +307,7 @@ class _CarteALaUne extends ConsumerWidget {
               right: AppSpacing.p8,
               child: BoutonCoeur(
                 actif: favorite,
-                onTap: () => ref
-                    .read(wishlistProvider.notifier)
-                    .toggleWishlist(article),
+                onTap: () => basculerFavori(ref, article),
               ),
             ),
           ],

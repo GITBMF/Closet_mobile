@@ -90,16 +90,35 @@ class ApiException implements Exception {
       final detail = data['detail'];
       if (detail is String && detail.trim().isNotEmpty) return detail;
       if (detail is List && detail.isNotEmpty) {
-        final premier = detail.first;
-        if (premier is Map && premier['msg'] is String) {
-          return premier['msg'] as String;
+        final messages = <String>[];
+        for (final item in detail) {
+          if (item is! Map) continue;
+          final msg = item['msg'];
+          if (msg is! String || msg.trim().isEmpty) continue;
+          final loc = item['loc'];
+          final champ = loc is List && loc.length >= 2
+              ? _libelleChamp(loc.last.toString())
+              : null;
+          messages.add(champ == null ? msg : '$champ : $msg');
         }
+        if (messages.isNotEmpty) return messages.join('\n');
         return detail.first.toString();
       }
       final message = data['message'];
       if (message is String && message.trim().isNotEmpty) return message;
     }
     return null;
+  }
+
+  static String _libelleChamp(String loc) {
+    return switch (loc) {
+      'email' => 'E-mail',
+      'password' => 'Mot de passe',
+      'full_name' => 'Nom',
+      'phone' => 'Téléphone',
+      'city' => 'Ville',
+      _ => loc,
+    };
   }
 
   @override

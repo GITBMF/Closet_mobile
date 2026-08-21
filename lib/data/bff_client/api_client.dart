@@ -71,9 +71,9 @@ class BffClient {
     String chemin, {
     Map<String, dynamic>? query,
   }) async {
-    final data = await _executer(() => _dio.get<dynamic>(chemin, queryParameters: query));
-    if (data is List) return data;
-    return const [];
+    return listeDe(
+      await _executer(() => _dio.get<dynamic>(chemin, queryParameters: query)),
+    );
   }
 
   Future<Map<String, dynamic>> postJson(
@@ -90,9 +90,23 @@ class BffClient {
     return objetDe(await _executer(() => _dio.patch<dynamic>(chemin, data: data)));
   }
 
-  Future<void> delete(String chemin) async {
-    await _executer(() => _dio.delete<dynamic>(chemin));
+  /// `POST` qui répond 204 sans corps (ex. `POST /wishlist/{id}`).
+  Future<void> postVide(String chemin, {Object? data}) async {
+    await _executer(
+      () => _dio.post<dynamic>(chemin, data: data, options: _reponseVide),
+    );
   }
+
+  Future<void> delete(String chemin) async {
+    await _executer(
+      () => _dio.delete<dynamic>(chemin, options: _reponseVide),
+    );
+  }
+
+  static final _reponseVide = Options(
+    responseType: ResponseType.plain,
+    validateStatus: (statut) => statut != null && statut >= 200 && statut < 300,
+  );
 
   Future<dynamic> _executer(Future<Response<dynamic>> Function() appel) async {
     try {

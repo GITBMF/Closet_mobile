@@ -10,6 +10,7 @@ import '../../../data/repositories/auth_repository.dart';
 import '../../../data/repositories/sourceur_repository.dart';
 import '../../auth/mot_de_passe_oublie_dialog.dart';
 import '../widgets/sourceur_header.dart';
+import '../widgets/sourceur_programme_visuel.dart';
 
 /// Identification Espace Sourceur — transcription de la maquette `26:1877`.
 ///
@@ -122,7 +123,7 @@ class _IdentificationSourceurScreenState
                 ),
               ),
               const SizedBox(height: AppSpacing.p20),
-              const _ArcheSourcing(),
+              const SourceurCadrePhoto(hauteur: 220),
               const SizedBox(height: 36),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -247,49 +248,6 @@ class _IdentificationSourceurScreenState
             ],
           ),
         ),
-      ),
-    );
-  }
-}
-
-class _ArcheSourcing extends StatelessWidget {
-  const _ArcheSourcing();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 217,
-      height: 200,
-      padding: const EdgeInsets.all(AppSpacing.p20),
-      decoration: BoxDecoration(
-        color: ClosetColors.blanc,
-        border: Border.all(color: ClosetColors.fond300, width: AppStroke.fin),
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(159)),
-      ),
-      child: Column(
-        children: [
-          Expanded(
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(24),
-              child: Image.asset(
-                'assets/onboarding_3.jpg',
-                fit: BoxFit.cover,
-                width: double.infinity,
-                errorBuilder: (_, _, _) => const ColoredBox(
-                  color: ClosetColors.emeraude100,
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(height: AppSpacing.p12),
-          Text(
-            'Sourcing program',
-            style: ClosetTextStyles.corpsMedium.copyWith(
-              letterSpacing: -0.24,
-              color: ClosetColors.vert,
-            ),
-          ),
-        ],
       ),
     );
   }

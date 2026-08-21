@@ -5,11 +5,12 @@ import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/closet_colors.dart';
 import '../../../core/theme/closet_text_styles.dart';
 import '../widgets/sourceur_header.dart';
+import '../widgets/sourceur_programme_visuel.dart';
 
 /// Devenir Sourceur — transcription de la maquette `26:1771`.
 ///
-/// Photo en bandeau, arche blanche cerclée d'or portant la mention du
-/// programme, puis l'argumentaire et le CTA d'adhésion.
+/// Photo en bandeau, arche blanche cerclée d'or, puis l'argumentaire
+/// et le CTA d'adhésion.
 ///
 /// Note : la maquette pose « Déjà partenaire ? » en `#122B31`, un bleu nuit
 /// posé sur le fond vert — donc illisible. Rendu ici en crème.
@@ -28,8 +29,9 @@ class DevenirSourceurScreen extends StatelessWidget {
             right: 0,
             height: 300,
             child: Image.asset(
-              'assets/onboarding_1.jpg',
+              'assets/sourceur_atelier.jpg',
               fit: BoxFit.cover,
+              alignment: const Alignment(0, -0.2),
               errorBuilder: (_, _, _) =>
                   const ColoredBox(color: ClosetColors.emeraude400),
             ),
@@ -78,7 +80,7 @@ class DevenirSourceurScreen extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 30),
-                const _ArcheProgramme(),
+                const SourceurCadrePhoto(),
                 const SizedBox(height: 33),
                 Expanded(
                   child: SingleChildScrollView(
@@ -178,68 +180,6 @@ class DevenirSourceurScreen extends StatelessWidget {
             ),
           ),
         ],
-      ),
-    );
-  }
-}
-
-/// Arche blanche de 217 × 275 cerclée d'or, mention du programme en pied.
-class _ArcheProgramme extends StatelessWidget {
-  const _ArcheProgramme();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 217,
-      height: 275,
-      decoration: BoxDecoration(
-        color: ClosetColors.blanc,
-        border: Border.all(color: ClosetColors.fond300, width: AppStroke.fin),
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(159)),
-        image: const DecorationImage(
-          image: AssetImage('assets/onboarding_2.jpg'),
-          fit: BoxFit.cover,
-          alignment: Alignment.center,
-        ),
-      ),
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(159)),
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              ClosetColors.blanc.withValues(alpha: 0.08),
-              ClosetColors.blanc.withValues(alpha: 0.95),
-            ],
-            stops: const [0.4, 1],
-          ),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(
-            AppSpacing.p20,
-            AppSpacing.p32,
-            AppSpacing.p20,
-            AppSpacing.p24,
-          ),
-          child: Column(
-            children: [
-              const Icon(
-                Icons.workspace_premium_outlined,
-                size: 40,
-                color: ClosetColors.fond300,
-              ),
-              const Spacer(),
-              Text(
-                'Sourcing program',
-                style: ClosetTextStyles.corpsMedium.copyWith(
-                  letterSpacing: -0.24,
-                  color: ClosetColors.vert,
-                ),
-              ),
-            ],
-          ),
-        ),
       ),
     );
   }
