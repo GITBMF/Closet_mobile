@@ -140,9 +140,7 @@ class ClosetChampLibelle extends StatelessWidget {
           ),
         ),
         const SizedBox(height: AppSpacing.p8),
-        SizedBox(
-          height: 42,
-          child: TextFormField(
+        TextFormField(
             controller: controller,
             keyboardType: keyboardType,
             textInputAction: textInputAction,
@@ -171,7 +169,6 @@ class ClosetChampLibelle extends StatelessWidget {
               focusedErrorBorder: _bordureLibelle(ClosetColors.erreur),
               disabledBorder: _bordureLibelle(ClosetColors.ligne),
             ),
-          ),
         ),
       ],
     );

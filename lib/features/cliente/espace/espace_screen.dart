@@ -57,9 +57,11 @@ class EspaceScreen extends ConsumerWidget {
                 child: _CarteSourceur(
                   dejaInscrit: sourceurRepo.estInscrit,
                   onTap: () => context.push(
-                    sourceurRepo.estInscrit
-                        ? '/sourceur/espace'
-                        : '/sourceur/devenir',
+                    user == null
+                        ? '/auth'
+                        : sourceurRepo.estInscrit
+                            ? '/sourceur/espace'
+                            : '/sourceur/devenir',
                   ),
                 ),
               ),
@@ -270,13 +272,15 @@ class _CarteSourceur extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return Material(
+      color: ClosetColors.vert,
+      borderRadius: BorderRadius.circular(AppRadius.carte),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(AppRadius.carte),
+        child: Container(
       constraints: const BoxConstraints(minHeight: 97),
       padding: const EdgeInsets.all(AppSpacing.p20),
-      decoration: BoxDecoration(
-        color: ClosetColors.vert,
-        borderRadius: BorderRadius.circular(AppRadius.carte),
-      ),
       child: Row(
         children: [
           Expanded(
@@ -354,11 +358,13 @@ class _CarteSourceur extends StatelessWidget {
           ),
         ],
       ),
+        ),
+      ),
     );
   }
 }
 
-/// Entr�e de liste : tuile verte de 48 (rayon 8), libell�, chevron.
+/// Entrée de liste : tuile verte de 48 (rayon 8), libellé, chevron.
 class _EntreeEspace extends StatelessWidget {
   const _EntreeEspace({
     required this.icone,
@@ -372,7 +378,9 @@ class _EntreeEspace extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
       onTap: onTap,
       child: Padding(
         padding: const EdgeInsets.symmetric(
@@ -404,6 +412,7 @@ class _EntreeEspace extends StatelessWidget {
             ),
           ],
         ),
+      ),
       ),
     );
   }
