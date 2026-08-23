@@ -182,14 +182,14 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
                       if (!isLogin) ...[
                         _ChampAuth(
                           label: 'Prénom',
-                          hint: 'Aïcha',
+                          hint: 'Marie',
                           controller: _nameController,
                           textInputAction: TextInputAction.next,
                         ),
                         const SizedBox(height: AppSpacing.p16),
                         _ChampAuth(
                           label: 'Nom',
-                          hint: 'N.',
+                          hint: 'Dupont',
                           controller: _lastNameController,
                           textInputAction: TextInputAction.next,
                         ),

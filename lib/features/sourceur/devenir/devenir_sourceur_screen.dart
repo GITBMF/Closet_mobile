@@ -5,6 +5,7 @@ import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/closet_colors.dart';
 import '../../../core/theme/closet_text_styles.dart';
 import '../widgets/sourceur_header.dart';
+import '../widgets/sourceur_programme_visuel.dart';
 
 /// Devenir Sourceur — transcription de la maquette `26:1771`.
 ///
@@ -222,22 +223,8 @@ class _ArcheProgramme extends StatelessWidget {
             AppSpacing.p20,
             AppSpacing.p24,
           ),
-          child: Column(
-            children: [
-              const Icon(
-                Icons.workspace_premium_outlined,
-                size: 40,
-                color: ClosetColors.fond300,
-              ),
-              const Spacer(),
-              Text(
-                'Sourcing program',
-                style: ClosetTextStyles.corpsMedium.copyWith(
-                  letterSpacing: -0.24,
-                  color: ClosetColors.vert,
-                ),
-              ),
-            ],
+          child: const Center(
+            child: SourceurBadgeProgramme(largeur: 168),
           ),
         ),
       ),
