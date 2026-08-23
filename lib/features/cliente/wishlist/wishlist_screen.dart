@@ -64,9 +64,7 @@ class WishlistScreen extends ConsumerWidget {
                           article: article,
                           onTap: () =>
                               context.push('/product/${article.id}'),
-                          onRetirer: () => ref
-                              .read(wishlistProvider.notifier)
-                              .toggleWishlist(article),
+                          onRetirer: () => basculerFavori(ref, article),
                           onAjouter: () {
                             ref
                                 .read(cartProvider.notifier)

@@ -1,5 +1,6 @@
 ﻿import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../theme/app_spacing.dart';
 import '../theme/closet_colors.dart';
@@ -240,7 +241,7 @@ class _Visuel extends StatelessWidget {
 
 /// Bouton cœur de la maquette : disque clair cerclé d'or (`11:30` — Like
 /// Button). Réutilisé sur la carte produit et sur la carte à la une.
-class BoutonCoeur extends StatelessWidget {
+class BoutonCoeur extends StatefulWidget {
   const BoutonCoeur({
     super.key,
     required this.actif,
@@ -253,27 +254,76 @@ class BoutonCoeur extends StatelessWidget {
   final double taille;
 
   @override
+  State<BoutonCoeur> createState() => _BoutonCoeurState();
+}
+
+class _BoutonCoeurState extends State<BoutonCoeur>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _pulse;
+  late final Animation<double> _echelle;
+
+  @override
+  void initState() {
+    super.initState();
+    _pulse = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 280),
+    );
+    _echelle = TweenSequence<double>([
+      TweenSequenceItem(
+        tween: Tween<double>(begin: 1.0, end: 1.28)
+            .chain(CurveTween(curve: Curves.easeOut)),
+        weight: 40,
+      ),
+      TweenSequenceItem(
+        tween: Tween<double>(begin: 1.28, end: 1.0)
+            .chain(CurveTween(curve: Curves.easeIn)),
+        weight: 60,
+      ),
+    ]).animate(_pulse);
+  }
+
+  @override
+  void dispose() {
+    _pulse.dispose();
+    super.dispose();
+  }
+
+  void _taper() {
+    HapticFeedback.lightImpact();
+    _pulse.forward(from: 0);
+    widget.onTap?.call();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Semantics(
       button: true,
-      label: actif ? 'Retirer de la wishlist' : 'Ajouter à la wishlist',
+      label: widget.actif
+          ? 'Retirer de la wishlist'
+          : 'Ajouter à la wishlist',
       child: GestureDetector(
-        onTap: onTap,
-        child: Container(
-          width: taille,
-          height: taille,
-          decoration: BoxDecoration(
-            color: ClosetColors.carteFond,
-            shape: BoxShape.circle,
-            border: Border.all(
-              color: ClosetColors.fond300,
-              width: AppStroke.fin,
+        onTap: _taper,
+        child: ScaleTransition(
+          scale: _echelle,
+          child: Container(
+            width: widget.taille,
+            height: widget.taille,
+            decoration: BoxDecoration(
+              color: ClosetColors.carteFond,
+              shape: BoxShape.circle,
+              border: Border.all(
+                color: ClosetColors.fond300,
+                width: AppStroke.fin,
+              ),
             ),
-          ),
-          child: Icon(
-            actif ? Icons.favorite : Icons.favorite_border,
-            size: taille * 0.55,
-            color: actif ? ClosetColors.erreurCouture : ClosetColors.vert,
+            child: Icon(
+              widget.actif ? Icons.favorite : Icons.favorite_border,
+              size: widget.taille * 0.55,
+              color: widget.actif
+                  ? ClosetColors.erreurCouture
+                  : ClosetColors.vert,
+            ),
           ),
         ),
       ),

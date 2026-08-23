@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../data/api/api_exception.dart';
+import '../../data/models/article.dart';
+import '../../data/repositories/wishlist_repository.dart';
 import '../services/notification_service.dart';
 import 'closet_feedback.dart';
 
@@ -17,6 +19,21 @@ void toastSucces(WidgetRef ref, String titre, [String? message]) {
   ref
       .read<NotificationNotifier>(notificationProvider.notifier)
       .showSuccess(titre, message ?? titre);
+}
+
+/// Ajoute ou retire une pièce des favoris, avec toast de confirmation.
+Future<void> basculerFavori(WidgetRef ref, Article article) async {
+  final etait = ref.read(wishlistListProvider).any((a) => a.id == article.id);
+  try {
+    await ref.read(wishlistProvider.notifier).toggleWishlist(article);
+    if (etait) {
+      toastInfo(ref, 'Retirée des favoris', article.title);
+    } else {
+      toastSucces(ref, 'Ajoutée à vos favoris', article.title);
+    }
+  } catch (e) {
+    toastErreur(ref, e, titre: 'Favoris');
+  }
 }
 
 void toastErreur(WidgetRef ref, Object erreur, {String titre = 'Erreur'}) {

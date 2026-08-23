@@ -11,6 +11,7 @@ import '../../../core/widgets/closet_feedback.dart';
 import '../../../core/widgets/closet_sections.dart';
 import '../../../core/widgets/etat_ecran.dart';
 import '../../../core/widgets/piece_card.dart';
+import '../../../core/widgets/toasts.dart';
 import '../../../data/models/article.dart';
 import '../../../data/repositories/catalog_repository.dart';
 import '../../../data/repositories/wishlist_repository.dart';
@@ -290,9 +291,7 @@ class _CarteALaUne extends ConsumerWidget {
               right: AppSpacing.p8,
               child: BoutonCoeur(
                 actif: favorite,
-                onTap: () => ref
-                    .read(wishlistProvider.notifier)
-                    .toggleWishlist(article),
+                onTap: () => basculerFavori(ref, article),
               ),
             ),
           ],

@@ -11,6 +11,7 @@ import '../../data/repositories/auth_repository.dart';
 import '../../data/repositories/cart_repository.dart';
 import '../../data/repositories/wishlist_repository.dart';
 import 'piece_card.dart';
+import 'toasts.dart';
 
 /// En-tête principal — transcription de la maquette `11:30`.
 ///
@@ -297,7 +298,7 @@ class _ArticleCardState extends ConsumerState<ArticleCard> {
       onTap: widget.onTap,
       onFavoriteTap: () {
         setState(() => _localWishlisted = !isWishlisted);
-        ref.read(wishlistProvider.notifier).toggleWishlist(article);
+        basculerFavori(ref, article);
       },
     );
   }
