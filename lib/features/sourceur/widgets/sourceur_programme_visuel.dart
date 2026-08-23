@@ -5,6 +5,8 @@ import '../../../core/theme/closet_text_styles.dart';
 
 /// Plaque blanche « CLOS ET / SOURCING PROGRAM » posée sur les visuels
 /// d'entrée du programme sourceur.
+///
+/// Le wordmark reprend `iconheader.png` — même lockup que le reste de l'app.
 class SourceurBadgeProgramme extends StatelessWidget {
   const SourceurBadgeProgramme({super.key, this.largeur = 220});
 
@@ -26,111 +28,38 @@ class SourceurBadgeProgramme extends StatelessWidget {
           ),
         ],
       ),
-      child: const Column(
+      child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          _WordmarkClosEt(),
-          SizedBox(height: 10),
-          _LibelleSourcing(),
+          Image.asset(
+            'assets/iconheader.png',
+            height: 36,
+            fit: BoxFit.contain,
+            errorBuilder: (_, _, _) => Text(
+              'CLOS ET',
+              style: ClosetTextStyles.libelleFort.copyWith(
+                fontSize: 22,
+                letterSpacing: 1.2,
+                color: ClosetColors.noir,
+              ),
+            ),
+          ),
+          const SizedBox(height: 10),
+          Text(
+            'SOURCING PROGRAM',
+            textAlign: TextAlign.center,
+            style: ClosetTextStyles.libelleFort.copyWith(
+              fontSize: 13,
+              fontWeight: FontWeight.w800,
+              letterSpacing: 1.6,
+              height: 1.2,
+              color: ClosetColors.noir,
+            ),
+          ),
         ],
       ),
     );
   }
-}
-
-/// Wordmark CLOS | ET — Lato extra-gras, cintre doré au-dessus.
-class _WordmarkClosEt extends StatelessWidget {
-  const _WordmarkClosEt();
-
-  @override
-  Widget build(BuildContext context) {
-    final clos = ClosetTextStyles.libelleFort.copyWith(
-      fontSize: 32,
-      fontWeight: FontWeight.w900,
-      letterSpacing: 1.4,
-      height: 1,
-      color: ClosetColors.noir,
-    );
-    final et = clos.copyWith(color: ClosetColors.fond300);
-
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        const CustomPaint(
-          size: Size(36, 16),
-          painter: _CintrePainter(color: ClosetColors.fond300),
-        ),
-        const SizedBox(height: 2),
-        Row(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Text('CLOS', style: clos),
-            Container(
-              width: 2,
-              height: 26,
-              margin: const EdgeInsets.symmetric(horizontal: 8),
-              color: ClosetColors.fond300,
-            ),
-            Text('ET', style: et),
-          ],
-        ),
-      ],
-    );
-  }
-}
-
-class _LibelleSourcing extends StatelessWidget {
-  const _LibelleSourcing();
-
-  @override
-  Widget build(BuildContext context) {
-    return Text(
-      'SOURCING PROGRAM',
-      textAlign: TextAlign.center,
-      style: ClosetTextStyles.libelleFort.copyWith(
-        fontSize: 13,
-        fontWeight: FontWeight.w800,
-        letterSpacing: 1.6,
-        height: 1.2,
-        color: ClosetColors.noir,
-      ),
-    );
-  }
-}
-
-/// Cintre doré du wordmark — filet simple, crochet au centre.
-class _CintrePainter extends CustomPainter {
-  const _CintrePainter({required this.color});
-
-  final Color color;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = color
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 2
-      ..strokeCap = StrokeCap.round;
-
-    final hang = Path()
-      ..moveTo(size.width * 0.08, size.height * 0.92)
-      ..quadraticBezierTo(
-        size.width * 0.5,
-        size.height * -0.15,
-        size.width * 0.92,
-        size.height * 0.92,
-      );
-    canvas.drawPath(hang, paint);
-    canvas.drawCircle(
-      Offset(size.width * 0.5, size.height * 0.28),
-      2.2,
-      paint..style = PaintingStyle.fill,
-    );
-  }
-
-  @override
-  bool shouldRepaint(_CintrePainter oldDelegate) => oldDelegate.color != color;
 }
 
 /// Photo dressing en arche, coiffée du badge programme.

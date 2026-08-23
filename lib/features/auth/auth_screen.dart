@@ -14,9 +14,14 @@ import 'mot_de_passe_oublie_dialog.dart';
 
 // ─── Auth State ──────────────────────────────────────────────────────────────
 
-/// true = l'utilisateur est connecté
-final isAuthenticatedProvider =
-    StateProvider<bool>((ref) => ref.watch(currentUserProvider) != null);
+/// true = une session [currentUserProvider] est ouverte.
+///
+/// Dérivé du user, pas un StateProvider : après login / logout le routeur
+/// et l'espace doivent voir le même état, sinon SE CONNECTER « réussit »
+/// puis toutes les actions protégées restent mortes.
+final isAuthenticatedProvider = Provider<bool>(
+  (ref) => ref.watch(currentUserProvider) != null,
+);
 
 // ─── Auth Screen (Login / Register) ─────────────────────────────────────────
 
@@ -42,6 +47,7 @@ class AuthScreen extends ConsumerStatefulWidget {
 
 class _AuthScreenState extends ConsumerState<AuthScreen>
     with SingleTickerProviderStateMixin {
+  final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _nameController = TextEditingController(); // Prénom
@@ -75,32 +81,11 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
   }
 
   Future<void> _submit() async {
+    if (!(_formKey.currentState?.validate() ?? false)) return;
+
     final email = _emailController.text.trim();
     final password = _passwordController.text;
     final isLogin = ref.read(authModeProvider) == AuthMode.login;
-
-    if (email.isEmpty || password.isEmpty) {
-      toastInfo(ref, 'Champs manquants', 'Veuillez remplir tous les champs.');
-      return;
-    }
-
-    if (!isLogin) {
-      final firstName = _nameController.text.trim();
-      final lastName = _lastNameController.text.trim();
-      final phone = _phoneController.text.trim();
-      if (firstName.isEmpty || lastName.isEmpty) {
-        toastInfo(ref, 'Champs manquants', 'Veuillez renseigner votre nom et prénom.');
-        return;
-      }
-      if (phone.isEmpty) {
-        toastInfo(
-          ref,
-          'Champs manquants',
-          'Veuillez renseigner votre numéro de téléphone.',
-        );
-        return;
-      }
-    }
 
     setState(() => _isLoading = true);
 
@@ -131,7 +116,11 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
         message: 'Bon retour, ${user.firstName} !',
       );
       if (!mounted) return;
-      context.go('/home');
+      if (context.canPop()) {
+        context.pop();
+      } else {
+        context.go('/home');
+      }
     } catch (e) {
       if (mounted) {
         setState(() => _isLoading = false);
@@ -176,22 +165,30 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
                 const SizedBox(height: AppSpacing.p24),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 24),
-                  child: Column(
+                  child: Form(
+                    key: _formKey,
+                    child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       if (!isLogin) ...[
                         _ChampAuth(
                           label: 'Prénom',
-                          hint: 'Aïcha',
+                          hint: 'Marie',
                           controller: _nameController,
                           textInputAction: TextInputAction.next,
+                          validator: (v) => (v == null || v.trim().isEmpty)
+                              ? 'Veuillez renseigner votre prénom.'
+                              : null,
                         ),
                         const SizedBox(height: AppSpacing.p16),
                         _ChampAuth(
                           label: 'Nom',
-                          hint: 'N.',
+                          hint: 'Dupont',
                           controller: _lastNameController,
                           textInputAction: TextInputAction.next,
+                          validator: (v) => (v == null || v.trim().isEmpty)
+                              ? 'Veuillez renseigner votre nom.'
+                              : null,
                         ),
                         const SizedBox(height: AppSpacing.p16),
                         _ChampAuth(
@@ -200,6 +197,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
                           controller: _phoneController,
                           keyboardType: TextInputType.phone,
                           textInputAction: TextInputAction.next,
+                          validator: _validerTelephone,
                         ),
                         const SizedBox(height: AppSpacing.p16),
                       ],
@@ -209,6 +207,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
                         controller: _emailController,
                         keyboardType: TextInputType.emailAddress,
                         textInputAction: TextInputAction.next,
+                        validator: _validerEmail,
                       ),
                       const SizedBox(height: AppSpacing.p16),
                       _ChampAuth(
@@ -218,6 +217,9 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
                         obscure: _obscurePassword,
                         textInputAction: TextInputAction.done,
                         onSubmitted: (_) => _submit(),
+                        validator: isLogin
+                            ? _validerMotDePasseConnexion
+                            : _validerMotDePasseInscription,
                         suffix: IconButton(
                           icon: Icon(
                             _obscurePassword
@@ -241,7 +243,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
                       ),
                       const SizedBox(height: AppSpacing.p24),
                       _BoutonDore(
-                        label: isLogin ? 'ENTRER' : 'CRÉER MON COMPTE',
+                        label: isLogin ? 'SE CONNECTER' : 'CRÉER MON COMPTE',
                         enCours: _isLoading,
                         onPressed: _isLoading ? null : _submit,
                       ),
@@ -332,6 +334,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
                         ),
                       ),
                     ],
+                    ),
                   ),
                 ),
               ],
@@ -340,6 +343,39 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
         ),
       ),
     );
+  }
+
+  static String? _validerEmail(String? v) {
+    final valeur = v?.trim() ?? '';
+    if (valeur.isEmpty) return 'Veuillez renseigner votre email.';
+    if (!RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$').hasMatch(valeur)) {
+      return 'Cet email semble incorrect.';
+    }
+    return null;
+  }
+
+  static String? _validerMotDePasseConnexion(String? v) {
+    if ((v ?? '').isEmpty) return 'Veuillez renseigner votre mot de passe.';
+    return null;
+  }
+
+  static String? _validerMotDePasseInscription(String? v) {
+    final valeur = v ?? '';
+    if (valeur.isEmpty) return 'Veuillez renseigner votre mot de passe.';
+    if (valeur.length < 8) return '8 caractères minimum.';
+    if (!RegExp(r'\d').hasMatch(valeur)) {
+      return 'Ajoutez au moins un chiffre.';
+    }
+    return null;
+  }
+
+  static String? _validerTelephone(String? v) {
+    final valeur = (v ?? '').replaceAll(RegExp(r'[\s.\-]'), '');
+    if (valeur.isEmpty) return 'Veuillez renseigner votre numéro.';
+    if (!RegExp(r'^\+?\d{8,15}$').hasMatch(valeur)) {
+      return 'Ce numéro semble incorrect.';
+    }
+    return null;
   }
 }
 
@@ -393,6 +429,7 @@ class _ChampAuth extends StatelessWidget {
     this.textInputAction,
     this.onSubmitted,
     this.suffix,
+    this.validator,
   });
 
   final String label;
@@ -403,6 +440,7 @@ class _ChampAuth extends StatelessWidget {
   final TextInputAction? textInputAction;
   final ValueChanged<String>? onSubmitted;
   final Widget? suffix;
+  final FormFieldValidator<String>? validator;
 
   @override
   Widget build(BuildContext context) {
@@ -416,38 +454,41 @@ class _ChampAuth extends StatelessWidget {
           ),
         ),
         const SizedBox(height: AppSpacing.p8),
-        SizedBox(
-          height: 42,
-          child: TextField(
-            controller: controller,
-            obscureText: obscure,
-            keyboardType: keyboardType,
-            textInputAction: textInputAction,
-            onSubmitted: onSubmitted,
-            style: ClosetTextStyles.saisie.copyWith(color: context.closetEncre),
-            cursorColor: ClosetColors.vert,
-            cursorWidth: 1.5,
-            decoration: InputDecoration(
-              hintText: hint,
-              hintStyle: ClosetTextStyles.saisie.copyWith(
-                color: ClosetColors.champPlaceholder,
-              ),
-              filled: true,
-              fillColor: ClosetColors.champFond,
-              isDense: true,
-              suffixIcon: suffix,
-              suffixIconConstraints: const BoxConstraints(
-                minWidth: 40,
-                minHeight: 40,
-              ),
-              contentPadding: const EdgeInsets.symmetric(
-                horizontal: AppSpacing.p12,
-                vertical: AppSpacing.p12,
-              ),
-              border: _bordure(ClosetColors.champBordure),
-              enabledBorder: _bordure(ClosetColors.champBordure),
-              focusedBorder: _bordure(ClosetColors.fond300),
+        TextFormField(
+          controller: controller,
+          obscureText: obscure,
+          keyboardType: keyboardType,
+          textInputAction: textInputAction,
+          onFieldSubmitted: onSubmitted,
+          validator: validator,
+          style: ClosetTextStyles.saisie.copyWith(color: context.closetEncre),
+          cursorColor: ClosetColors.vert,
+          cursorWidth: 1.5,
+          decoration: InputDecoration(
+            hintText: hint,
+            hintStyle: ClosetTextStyles.saisie.copyWith(
+              color: ClosetColors.champPlaceholder,
             ),
+            filled: true,
+            fillColor: ClosetColors.champFond,
+            isDense: true,
+            errorStyle: ClosetTextStyles.meta.copyWith(
+              color: ClosetColors.fond300,
+            ),
+            suffixIcon: suffix,
+            suffixIconConstraints: const BoxConstraints(
+              minWidth: 40,
+              minHeight: 40,
+            ),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.p12,
+              vertical: AppSpacing.p12,
+            ),
+            border: _bordure(ClosetColors.champBordure),
+            enabledBorder: _bordure(ClosetColors.champBordure),
+            focusedBorder: _bordure(ClosetColors.fond300),
+            errorBorder: _bordure(ClosetColors.fond300),
+            focusedErrorBorder: _bordure(ClosetColors.fond300),
           ),
         ),
       ],

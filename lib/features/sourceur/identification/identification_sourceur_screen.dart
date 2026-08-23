@@ -282,10 +282,25 @@ class _ArcheSourcing extends StatelessWidget {
             ),
           ),
           const SizedBox(height: AppSpacing.p12),
+          Image.asset(
+            'assets/iconheader.png',
+            height: 22,
+            fit: BoxFit.contain,
+            errorBuilder: (_, _, _) => Text(
+              'CLOS ET',
+              style: ClosetTextStyles.libelleFort.copyWith(
+                fontSize: 16,
+                color: ClosetColors.vert,
+              ),
+            ),
+          ),
+          const SizedBox(height: 4),
           Text(
-            'Sourcing program',
+            'SOURCING PROGRAM',
             style: ClosetTextStyles.corpsMedium.copyWith(
-              letterSpacing: -0.24,
+              fontSize: 11,
+              fontWeight: FontWeight.w800,
+              letterSpacing: 1.2,
               color: ClosetColors.vert,
             ),
           ),

@@ -135,8 +135,7 @@ class _Corps extends ConsumerWidget {
             indexCourant: imageCourante,
             onChange: onImageChangee,
             enWishlist: enWishlist,
-            onWishlist: () =>
-                ref.read(wishlistProvider.notifier).toggleWishlist(article),
+            onWishlist: () => basculerFavori(ref, article),
           ),
         ),
         SliverToBoxAdapter(
