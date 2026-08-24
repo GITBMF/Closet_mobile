@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:go_router/go_router.dart';
@@ -6,8 +7,12 @@ import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/closet_colors.dart';
 import '../../../core/theme/closet_text_styles.dart';
+import '../../../core/validation/formats.dart';
+import '../../../core/validation/indicateurs_pays.dart';
+import '../../../core/widgets/aide_mot_de_passe.dart';
+import '../../../core/widgets/champ_telephone.dart';
+import '../../../core/widgets/google_g_icon.dart';
 import '../../../core/widgets/toasts.dart';
-import '../../../data/models/user.dart';
 import '../../../data/repositories/auth_repository.dart';
 import '../../../data/repositories/sourceur_repository.dart';
 import 'mot_de_passe_oublie_dialog.dart';
@@ -52,7 +57,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
   final _passwordController = TextEditingController();
   final _nameController = TextEditingController(); // Prénom
   final _lastNameController = TextEditingController(); // Nom
-  final _phoneController = TextEditingController();
+  final _phone = TelephoneController();
   bool _obscurePassword = true;
   bool _isLoading = false;
   late AnimationController _animController;
@@ -75,7 +80,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
     _passwordController.dispose();
     _nameController.dispose();
     _lastNameController.dispose();
-    _phoneController.dispose();
+    _phone.dispose();
     _animController.dispose();
     super.dispose();
   }
@@ -87,22 +92,62 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
     final password = _passwordController.text;
     final isLogin = ref.read(authModeProvider) == AuthMode.login;
 
+    final erreurEmail = validerEmail(email);
+    if (erreurEmail != null) {
+      toastInfo(ref, 'E-mail invalide', erreurEmail);
+      return;
+    }
+    final erreurMdp = validerMotDePasse(password, connexion: isLogin);
+    if (erreurMdp != null) {
+      toastInfo(ref, 'Mot de passe', erreurMdp);
+      return;
+    }
+
+    var firstName = '';
+    var lastName = '';
+    var phone = '';
+    if (!isLogin) {
+      firstName = _nameController.text.trim();
+      lastName = _lastNameController.text.trim();
+      phone = _phone.e164;
+      if (firstName.isEmpty || lastName.isEmpty) {
+        toastInfo(
+          ref,
+          'Champs manquants',
+          'Veuillez renseigner votre nom et prénom.',
+        );
+        return;
+      }
+      final nomComplet =
+          '$firstName $lastName'.replaceAll(RegExp(r'\s+'), ' ').trim();
+      if (nomComplet.length < 2) {
+        toastInfo(ref, 'Nom incomplet', 'Le nom doit contenir au moins 2 caractères.');
+        return;
+      }
+      if (nomComplet.length > 150) {
+        toastInfo(ref, 'Nom trop long', '150 caractères maximum.');
+        return;
+      }
+      final erreurTel = validerTelephone(phone, obligatoire: true);
+      if (erreurTel != null) {
+        toastInfo(ref, 'Téléphone', erreurTel);
+        return;
+      }
+    }
+
     setState(() => _isLoading = true);
 
     try {
       final authRepo = ref.read(authRepositoryProvider);
-      final ClosetUser user;
-      if (isLogin) {
-        user = await authRepo.logIn(email: email, password: password);
-      } else {
-        user = await authRepo.signUp(
-          firstName: _nameController.text,
-          lastName: _lastNameController.text,
-          email: email,
-          password: password,
-          phone: _phoneController.text,
-        );
-      }
+      final user = isLogin
+          ? await authRepo.logIn(email: email, password: password)
+          : await authRepo.signUp(
+              firstName: firstName,
+              lastName: lastName,
+              email: email,
+              password: password,
+              phone: phone,
+            );
 
       try {
         await ref.read(sourceurRepositoryProvider).chargerProfil();
@@ -124,7 +169,11 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
     } catch (e) {
       if (mounted) {
         setState(() => _isLoading = false);
-        await dialogueErreur(context, e, titre: 'Connexion impossible');
+        await dialogueErreur(
+          context,
+          e,
+          titre: isLogin ? 'Connexion impossible' : 'Inscription impossible',
+        );
       }
     } finally {
       if (mounted) {
@@ -191,11 +240,12 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
                               : null,
                         ),
                         const SizedBox(height: AppSpacing.p16),
-                        _ChampAuth(
+                        ChampTelephone(
                           label: 'Téléphone',
-                          hint: '+237 6 00 00 00 00',
-                          controller: _phoneController,
-                          keyboardType: TextInputType.phone,
+                          controller: _phone,
+                          hint: '6 90 12 34 56',
+                          style: StyleChampTelephone.auth,
+                          validerAvecLeFormulaire: false,
                           textInputAction: TextInputAction.next,
                           validator: _validerTelephone,
                         ),
@@ -207,7 +257,8 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
                         controller: _emailController,
                         keyboardType: TextInputType.emailAddress,
                         textInputAction: TextInputAction.next,
-                        validator: _validerEmail,
+                        autocorrect: false,
+                        sansEspaces: true,
                       ),
                       const SizedBox(height: AppSpacing.p16),
                       _ChampAuth(
@@ -234,13 +285,22 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
                         ),
                       ),
                       const SizedBox(height: AppSpacing.p8),
-                      Text(
-                        '8 caractères minimum, dont un chiffre.',
-                        style: ClosetTextStyles.meta.copyWith(
-                          fontWeight: FontWeight.w300,
-                          color: ClosetColors.beige,
+                      if (isLogin)
+                        Text(
+                          '8 caractères minimum, dont un chiffre.',
+                          style: ClosetTextStyles.meta.copyWith(
+                            fontWeight: FontWeight.w300,
+                            color: ClosetColors.beige,
+                          ),
+                        )
+                      else
+                        ListenableBuilder(
+                          listenable: _passwordController,
+                          builder: (_, _) => AideMotDePasse(
+                            saisie: _passwordController.text,
+                            surFondSombre: true,
+                          ),
                         ),
-                      ),
                       const SizedBox(height: AppSpacing.p24),
                       _BoutonDore(
                         label: isLogin ? 'SE CONNECTER' : 'CRÉER MON COMPTE',
@@ -271,7 +331,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
                           width: 312,
                           child: _BoutonDore(
                             label: 'CONTINUER avec Google',
-                            icone: Icons.g_mobiledata_rounded,
+                            icone: const GoogleGIcon(taille: 18),
                             onPressed: () {
                               toastInfo(
                                 ref,
@@ -429,7 +489,8 @@ class _ChampAuth extends StatelessWidget {
     this.textInputAction,
     this.onSubmitted,
     this.suffix,
-    this.validator,
+    this.autocorrect = true,
+    this.sansEspaces = false,
   });
 
   final String label;
@@ -440,7 +501,8 @@ class _ChampAuth extends StatelessWidget {
   final TextInputAction? textInputAction;
   final ValueChanged<String>? onSubmitted;
   final Widget? suffix;
-  final FormFieldValidator<String>? validator;
+  final bool autocorrect;
+  final bool sansEspaces;
 
   @override
   Widget build(BuildContext context) {
@@ -454,41 +516,44 @@ class _ChampAuth extends StatelessWidget {
           ),
         ),
         const SizedBox(height: AppSpacing.p8),
-        TextFormField(
-          controller: controller,
-          obscureText: obscure,
-          keyboardType: keyboardType,
-          textInputAction: textInputAction,
-          onFieldSubmitted: onSubmitted,
-          validator: validator,
-          style: ClosetTextStyles.saisie.copyWith(color: context.closetEncre),
-          cursorColor: ClosetColors.vert,
-          cursorWidth: 1.5,
-          decoration: InputDecoration(
-            hintText: hint,
-            hintStyle: ClosetTextStyles.saisie.copyWith(
-              color: ClosetColors.champPlaceholder,
+        SizedBox(
+          height: 42,
+          child: TextField(
+            controller: controller,
+            obscureText: obscure,
+            keyboardType: keyboardType,
+            textInputAction: textInputAction,
+            onSubmitted: onSubmitted,
+            autocorrect: autocorrect,
+            enableSuggestions: autocorrect,
+            inputFormatters: [
+              if (sansEspaces)
+                FilteringTextInputFormatter.deny(RegExp(r'\s')),
+            ],
+            style: ClosetTextStyles.saisie.copyWith(color: context.closetEncre),
+            cursorColor: ClosetColors.vert,
+            cursorWidth: 1.5,
+            decoration: InputDecoration(
+              hintText: hint,
+              hintStyle: ClosetTextStyles.saisie.copyWith(
+                color: ClosetColors.champPlaceholder,
+              ),
+              filled: true,
+              fillColor: ClosetColors.champFond,
+              isDense: true,
+              suffixIcon: suffix,
+              suffixIconConstraints: const BoxConstraints(
+                minWidth: 40,
+                minHeight: 40,
+              ),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.p12,
+                vertical: AppSpacing.p12,
+              ),
+              border: _bordure(ClosetColors.champBordure),
+              enabledBorder: _bordure(ClosetColors.champBordure),
+              focusedBorder: _bordure(ClosetColors.fond300),
             ),
-            filled: true,
-            fillColor: ClosetColors.champFond,
-            isDense: true,
-            errorStyle: ClosetTextStyles.meta.copyWith(
-              color: ClosetColors.fond300,
-            ),
-            suffixIcon: suffix,
-            suffixIconConstraints: const BoxConstraints(
-              minWidth: 40,
-              minHeight: 40,
-            ),
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: AppSpacing.p12,
-              vertical: AppSpacing.p12,
-            ),
-            border: _bordure(ClosetColors.champBordure),
-            enabledBorder: _bordure(ClosetColors.champBordure),
-            focusedBorder: _bordure(ClosetColors.fond300),
-            errorBorder: _bordure(ClosetColors.fond300),
-            focusedErrorBorder: _bordure(ClosetColors.fond300),
           ),
         ),
       ],
@@ -513,7 +578,7 @@ class _BoutonDore extends StatelessWidget {
   final String label;
   final VoidCallback? onPressed;
   final bool enCours;
-  final IconData? icone;
+  final Widget? icone;
 
   @override
   Widget build(BuildContext context) {
@@ -542,7 +607,7 @@ class _BoutonDore extends StatelessWidget {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       if (icone != null) ...[
-                        Icon(icone, size: 20, color: ClosetColors.neutre900),
+                        icone!,
                         const SizedBox(width: 10),
                       ],
                       Text(

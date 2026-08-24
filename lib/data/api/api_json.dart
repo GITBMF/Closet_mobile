@@ -50,3 +50,13 @@ List<String> chainesDe(dynamic valeur) {
   if (valeur is! List) return const [];
   return [for (final e in valeur) if (e != null) e.toString()];
 }
+
+/// Tableau JSON, ou `items` / `results` / `data` d'une page.
+List<dynamic> listeDe(dynamic valeur) {
+  if (valeur is List) return valeur;
+  if (valeur is Map) {
+    final items = valeur['items'] ?? valeur['results'] ?? valeur['data'];
+    if (items is List) return items;
+  }
+  return const [];
+}

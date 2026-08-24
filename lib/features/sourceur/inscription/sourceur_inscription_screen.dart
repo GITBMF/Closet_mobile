@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/theme/closet_colors.dart';
 import '../../../core/theme/closet_text_styles.dart';
+import '../../../core/widgets/champ_telephone.dart';
 import '../../../core/widgets/closet_buttons.dart';
 import '../../../core/widgets/closet_chip.dart';
 import '../../../core/widgets/toasts.dart';
@@ -38,7 +39,7 @@ class _SourceurInscriptionScreenState
   // Étape 1 — Atelier
   final _atelierController = TextEditingController();
   final _villeController = TextEditingController();
-  final _whatsappController = TextEditingController();
+  final _whatsapp = TelephoneController();
 
   // Étape 2 — Univers
   final _universController = TextEditingController();
@@ -48,7 +49,7 @@ class _SourceurInscriptionScreenState
   static const _typesCollaboration = ['Dépôt-vente (commission 25%)', 'Vente directe (achat immédiat)'];
   String _typeCollaboration = _typesCollaboration.first;
   String _moyenPaiement = _moyensPaiement.first;
-  final _numeroController = TextEditingController();
+  final _numero = TelephoneController();
 
   int _etape = 0;
 
@@ -57,18 +58,20 @@ class _SourceurInscriptionScreenState
     _scrollController.dispose();
     _atelierController.dispose();
     _villeController.dispose();
-    _whatsappController.dispose();
+    _whatsapp.dispose();
     _universController.dispose();
-    _numeroController.dispose();
+    _numero.dispose();
     super.dispose();
   }
 
   bool get _etapeValide => switch (_etape) {
         0 => _atelierController.text.trim().isNotEmpty &&
             _villeController.text.trim().isNotEmpty &&
-            _whatsappController.text.trim().isNotEmpty,
+            _whatsapp.estValide,
         1 => _universController.text.trim().isNotEmpty && _specialite != null,
-        _ => _numeroController.text.trim().isNotEmpty,
+        _ => _moyenPaiement == 'Virement bancaire'
+            ? _numero.national.text.trim().isNotEmpty
+            : _numero.estValide,
       };
 
   void _changerEtape(int delta) {
@@ -87,11 +90,13 @@ class _SourceurInscriptionScreenState
       await repo.inscrire(SourceurInscriptionData(
         nomAtelier: _atelierController.text.trim(),
         ville: _villeController.text.trim(),
-        whatsapp: _whatsappController.text.trim(),
+        whatsapp: _whatsapp.e164,
         univers: _universController.text.trim(),
         specialite: _specialite,
         moyenPaiement: _moyenPaiement,
-        numeroPaiement: _numeroController.text.trim(),
+        numeroPaiement: _numero.e164.isNotEmpty
+            ? _numero.e164
+            : _numero.national.text.trim(),
       ));
       if (!mounted) return;
       setState(() => _isLoading = false);
@@ -147,9 +152,9 @@ class _SourceurInscriptionScreenState
                       listenable: Listenable.merge([
                         _atelierController,
                         _villeController,
-                        _whatsappController,
+                        _whatsapp,
                         _universController,
-                        _numeroController,
+                        _numero,
                       ]),
                       builder: (_, _) => _buildBoutons(),
                     ),
@@ -213,12 +218,13 @@ class _SourceurInscriptionScreenState
           hint: 'Yaoundé',
         ),
         const SizedBox(height: 22),
-        LabeledField(
+        ChampTelephone(
           icone: Icons.phone_outlined,
           label: 'Téléphone WhatsApp',
-          controller: _whatsappController,
-          hint: '+237 6 77 45 22 18',
-          keyboardType: TextInputType.phone,
+          controller: _whatsapp,
+          hint: '6 77 45 22 18',
+          style: StyleChampTelephone.sourceur,
+          validerAvecLeFormulaire: false,
         ),
       ],
     );
@@ -301,12 +307,13 @@ class _SourceurInscriptionScreenState
           const SizedBox(height: 12),
         ],
         const SizedBox(height: 14),
-        LabeledField(
+        ChampTelephone(
           icone: Icons.phone_outlined,
           label: 'Numéro',
-          controller: _numeroController,
-          hint: '+237 6 ...',
-          keyboardType: TextInputType.phone,
+          controller: _numero,
+          hint: '6 90 12 34 56',
+          style: StyleChampTelephone.sourceur,
+          validerAvecLeFormulaire: false,
         ),
         const SizedBox(height: 24),
         Container(

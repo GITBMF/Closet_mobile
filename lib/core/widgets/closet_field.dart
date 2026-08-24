@@ -1,4 +1,5 @@
 ﻿import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../theme/app_spacing.dart';
 import '../theme/closet_colors.dart';
@@ -116,6 +117,8 @@ class ClosetChampLibelle extends StatelessWidget {
     this.enabled = true,
     this.onChanged,
     this.validator,
+    this.inputFormatters,
+    this.autocorrect = true,
   });
 
   final String label;
@@ -126,6 +129,8 @@ class ClosetChampLibelle extends StatelessWidget {
   final bool enabled;
   final ValueChanged<String>? onChanged;
   final FormFieldValidator<String>? validator;
+  final List<TextInputFormatter>? inputFormatters;
+  final bool autocorrect;
 
   @override
   Widget build(BuildContext context) {
@@ -147,6 +152,9 @@ class ClosetChampLibelle extends StatelessWidget {
             enabled: enabled,
             onChanged: onChanged,
             validator: validator,
+            inputFormatters: inputFormatters,
+            autocorrect: autocorrect,
+            enableSuggestions: autocorrect,
             style: ClosetTextStyles.saisie.copyWith(color: context.closetEncre),
             cursorColor: ClosetColors.vert,
             cursorWidth: 1.5,

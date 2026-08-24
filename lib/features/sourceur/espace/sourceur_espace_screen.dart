@@ -7,7 +7,6 @@ import '../../../core/theme/closet_colors.dart';
 import '../../../core/theme/closet_text_styles.dart';
 import '../../../core/widgets/closet_app_bar.dart';
 import '../../../data/repositories/sourceur_repository.dart';
-import '../retrait/methode_retrait_sheet.dart';
 import '../widgets/sourceur_header.dart';
 
 /// Mon espace sourceur � transcription de la maquette `31:109`.
@@ -38,12 +37,6 @@ class SourceurEspaceScreen extends ConsumerWidget {
                   label: 'Profil',
                   onTap: () => context.push('/espace/infos'),
                 ),
-                const SizedBox(width: AppSpacing.gapListe),
-                SourceurBoutonRond(
-                  icone: Icons.notifications_none_rounded,
-                  label: 'Notifications',
-                  onTap: () => context.push('/espace/alertes'),
-                ),
               ],
             ),
             Expanded(
@@ -69,9 +62,7 @@ class SourceurEspaceScreen extends ConsumerWidget {
                     ),
                     const SizedBox(height: AppSpacing.p16),
                     _ActionsRapides(
-                      onRetrait: () => afficherMethodeRetrait(context),
                       onHistorique: () => context.push('/sourceur/revenus'),
-                      onMoyens: () => context.push('/espace/paiements'),
                       onPlus: () => context.go('/sourceur/nouvelle'),
                     ),
                     const SizedBox(height: AppSpacing.p24),
@@ -260,15 +251,11 @@ class _CarteSoldeState extends State<_CarteSolde> {
 /// Rang�e de quatre actions : 350 � 86, vert profond.
 class _ActionsRapides extends StatelessWidget {
   const _ActionsRapides({
-    required this.onRetrait,
     required this.onHistorique,
-    required this.onMoyens,
     required this.onPlus,
   });
 
-  final VoidCallback onRetrait;
   final VoidCallback onHistorique;
-  final VoidCallback onMoyens;
   final VoidCallback onPlus;
 
   @override
@@ -281,22 +268,12 @@ class _ActionsRapides extends StatelessWidget {
         borderRadius: BorderRadius.circular(AppRadius.carte),
       ),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
-          _Action(
-            icone: Icons.account_balance_wallet_outlined,
-            label: 'Retrait',
-            onTap: onRetrait,
-          ),
           _Action(
             icone: Icons.history_rounded,
             label: 'Historique',
             onTap: onHistorique,
-          ),
-          _Action(
-            icone: Icons.credit_card_outlined,
-            label: 'Moyens',
-            onTap: onMoyens,
           ),
           _Action(
             icone: Icons.add,

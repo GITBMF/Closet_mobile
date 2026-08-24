@@ -259,10 +259,10 @@ void main() {
       expect(repo.recu, isNotNull);
       expect(repo.recu!.nomAtelier, 'Atelier Ngo Bell');
       expect(repo.recu!.ville, 'Douala');
-      expect(repo.recu!.whatsapp, '+237 6 99 88 77 66');
+      expect(repo.recu!.whatsapp, '+237699887766');
       expect(repo.recu!.univers, 'Pièces chinées, coupes structurées.');
       expect(repo.recu!.specialite, 'Robes');
-      expect(repo.recu!.numeroPaiement, '+237 6 99 00 11 22');
+      expect(repo.recu!.numeroPaiement, '+237699001122');
       expect(find.text(_ecranAdhesion), findsOneWidget);
     });
 
@@ -343,7 +343,7 @@ void main() {
     );
 
     testWidgets(
-      'ÉCART — un numéro WhatsApp manifestement invalide est accepté',
+      'un numéro WhatsApp invalide bloque l’étape atelier',
       (tester) async {
         await monter(tester);
 
@@ -355,8 +355,8 @@ void main() {
 
         expect(
           bouton(tester, 'Continuer').onPressed,
-          isNotNull,
-          reason: 'aucun contrôle de format sur le téléphone',
+          isNull,
+          reason: 'le téléphone doit respecter l’indicatif et la longueur',
         );
       },
     );

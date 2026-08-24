@@ -1,15 +1,18 @@
 ﻿import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/closet_colors.dart';
 import '../../../core/theme/closet_text_styles.dart';
+import '../../../core/validation/formats.dart';
 import '../../../core/widgets/toasts.dart';
 import '../../../data/repositories/auth_repository.dart';
 import '../../../data/repositories/sourceur_repository.dart';
 import '../../auth/mot_de_passe_oublie_dialog.dart';
 import '../widgets/sourceur_header.dart';
+import '../widgets/sourceur_programme_visuel.dart';
 
 /// Identification Espace Sourceur — transcription de la maquette `26:1877`.
 ///
@@ -42,8 +45,14 @@ class _IdentificationSourceurScreenState
     final identifiant = _identifiant.text.trim();
     final motDePasse = _motDePasse.text;
 
-    if (identifiant.isEmpty || motDePasse.isEmpty) {
-      toastInfo(ref, 'Champs manquants', 'Veuillez remplir tous les champs.');
+    final erreurId = validerIdentifiantConnexion(identifiant);
+    if (erreurId != null) {
+      toastInfo(ref, 'Identifiant', erreurId);
+      return;
+    }
+    final erreurMdp = validerMotDePasse(motDePasse, connexion: true);
+    if (erreurMdp != null) {
+      toastInfo(ref, 'Mot de passe', erreurMdp);
       return;
     }
 
@@ -122,7 +131,7 @@ class _IdentificationSourceurScreenState
                 ),
               ),
               const SizedBox(height: AppSpacing.p20),
-              const _ArcheSourcing(),
+              const SourceurCadrePhoto(hauteur: 220),
               const SizedBox(height: 36),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -143,6 +152,7 @@ class _IdentificationSourceurScreenState
                       controller: _identifiant,
                       keyboardType: TextInputType.emailAddress,
                       textInputAction: TextInputAction.next,
+                      sansEspaces: true,
                     ),
                     const SizedBox(height: AppSpacing.p24),
                     _ChampSourceur(
@@ -252,64 +262,6 @@ class _IdentificationSourceurScreenState
   }
 }
 
-class _ArcheSourcing extends StatelessWidget {
-  const _ArcheSourcing();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 217,
-      height: 200,
-      padding: const EdgeInsets.all(AppSpacing.p20),
-      decoration: BoxDecoration(
-        color: ClosetColors.blanc,
-        border: Border.all(color: ClosetColors.fond300, width: AppStroke.fin),
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(159)),
-      ),
-      child: Column(
-        children: [
-          Expanded(
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(24),
-              child: Image.asset(
-                'assets/onboarding_3.jpg',
-                fit: BoxFit.cover,
-                width: double.infinity,
-                errorBuilder: (_, _, _) => const ColoredBox(
-                  color: ClosetColors.emeraude100,
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(height: AppSpacing.p12),
-          Image.asset(
-            'assets/iconheader.png',
-            height: 22,
-            fit: BoxFit.contain,
-            errorBuilder: (_, _, _) => Text(
-              'CLOS ET',
-              style: ClosetTextStyles.libelleFort.copyWith(
-                fontSize: 16,
-                color: ClosetColors.vert,
-              ),
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            'SOURCING PROGRAM',
-            style: ClosetTextStyles.corpsMedium.copyWith(
-              fontSize: 11,
-              fontWeight: FontWeight.w800,
-              letterSpacing: 1.2,
-              color: ClosetColors.vert,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
 /// Champ de l'espace sourceur : libellé doré, zone bleutée de 42, rayon 8.
 class _ChampSourceur extends StatelessWidget {
   const _ChampSourceur({
@@ -321,6 +273,7 @@ class _ChampSourceur extends StatelessWidget {
     this.textInputAction,
     this.onSubmitted,
     this.suffix,
+    this.sansEspaces = false,
   });
 
   final String label;
@@ -331,6 +284,7 @@ class _ChampSourceur extends StatelessWidget {
   final TextInputAction? textInputAction;
   final ValueChanged<String>? onSubmitted;
   final Widget? suffix;
+  final bool sansEspaces;
 
   @override
   Widget build(BuildContext context) {
@@ -352,6 +306,12 @@ class _ChampSourceur extends StatelessWidget {
             keyboardType: keyboardType,
             textInputAction: textInputAction,
             onSubmitted: onSubmitted,
+            autocorrect: !sansEspaces,
+            enableSuggestions: !sansEspaces,
+            inputFormatters: [
+              if (sansEspaces)
+                FilteringTextInputFormatter.deny(RegExp(r'\s')),
+            ],
             style: ClosetTextStyles.saisie.copyWith(color: context.closetEncre),
             cursorColor: ClosetColors.vert,
             cursorWidth: 1.5,

@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/closet_colors.dart';
 import '../../../core/theme/closet_text_styles.dart';
+import '../../../core/validation/formats.dart';
+import '../../../core/validation/indicateurs_pays.dart';
+import '../../../core/widgets/champ_telephone.dart';
 import '../../../core/widgets/closet_field.dart';
 import '../../../core/widgets/toasts.dart';
 import '../../../data/models/user.dart';
@@ -27,7 +31,7 @@ class _ModifierProfilScreenState
   final _formKey = GlobalKey<FormState>();
   late final TextEditingController _nom;
   late final TextEditingController _email;
-  late final TextEditingController _telephone;
+  late final TelephoneController _telephone;
 
   @override
   void initState() {
@@ -35,7 +39,7 @@ class _ModifierProfilScreenState
     final user = ref.read<ClosetUser?>(currentUserProvider);
     _nom = TextEditingController(text: user?.nomComplet ?? '');
     _email = TextEditingController(text: user?.email ?? '');
-    _telephone = TextEditingController(text: user?.phone ?? '');
+    _telephone = TelephoneController(initial: user?.phone);
   }
 
   @override
@@ -59,7 +63,7 @@ class _ModifierProfilScreenState
       await ref.read(authRepositoryProvider).mettreAJourProfil(
             nomComplet: _nom.text,
             email: _email.text,
-            phone: _telephone.text,
+            phone: _telephone.e164,
           );
       if (!mounted) return;
       toastSucces(ref, 'Profil mis à jour');
@@ -116,16 +120,25 @@ class _ModifierProfilScreenState
                         hint: 'marie.dupont@email.com',
                         keyboardType: TextInputType.emailAddress,
                         textInputAction: TextInputAction.next,
-                        validator: _validerEmail,
+                        validator: validerEmail,
+                        autocorrect: false,
+                        inputFormatters: [
+                          FilteringTextInputFormatter.deny(RegExp(r'\s')),
+                        ],
                       ),
                       const SizedBox(height: AppSpacing.p24),
-                      ClosetChampLibelle(
+                      ChampTelephone(
                         label: 'Téléphone (Whatsapp)',
                         controller: _telephone,
-                        hint: '+237 6 90 12 34 56',
-                        keyboardType: TextInputType.phone,
+                        hint: '6 90 12 34 56',
+                        style: StyleChampTelephone.libelle,
+                        obligatoire: false,
                         textInputAction: TextInputAction.done,
-                        validator: _validerTelephone,
+                        validator: (v) => validerTelephone(
+                          v,
+                          obligatoire: false,
+                          libelle: 'numéro WhatsApp',
+                        ),
                       ),
                       const SizedBox(height: 47),
                       Center(
@@ -173,22 +186,6 @@ class _ModifierProfilScreenState
     );
   }
 
-  static String? _validerEmail(String? v) {
-    final valeur = v?.trim() ?? '';
-    if (valeur.isEmpty) return 'Veuillez renseigner votre email.';
-    final motif = RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$');
-    if (!motif.hasMatch(valeur)) return 'Cet email semble incorrect.';
-    return null;
-  }
-
-  static String? _validerTelephone(String? v) {
-    final valeur = (v ?? '').replaceAll(RegExp(r'[\s.\-]'), '');
-    if (valeur.isEmpty) return null; // champ facultatif
-    if (!RegExp(r'^\+?\d{8,15}$').hasMatch(valeur)) {
-      return 'Ce numéro semble incorrect.';
-    }
-    return null;
-  }
 }
 
 /// Bandeau de retour : bouton rond à gauche, titre centré, filet doré.

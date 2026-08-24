@@ -73,7 +73,10 @@ class EtatEcran extends StatelessWidget {
       key: key,
       icone: Icons.error_outline_rounded,
       titre: 'Une erreur est survenue',
-      message: messageErreur(erreur ?? 'Veuillez réessayer.'),
+      message: messageMelange(
+        local: 'Veuillez réessayer.',
+        backend: messageErreur(erreur ?? ''),
+      ),
       action: onRetry,
       libelleAction: 'Réessayer',
     );

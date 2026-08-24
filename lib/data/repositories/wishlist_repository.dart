@@ -1,81 +1,103 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../core/widgets/toasts.dart';
 import '../api/api_exception.dart';
+import '../api/api_json.dart';
 import '../bff_client/api_client.dart';
 import '../models/article.dart';
-import '../services/local_storage_service.dart';
 import 'auth_repository.dart';
-import 'cart_repository.dart' show localStorageProvider;
 import 'catalog_repository.dart';
 
 class WishlistNotifier extends AsyncNotifier<List<Article>> {
-  late LocalStorageService _storage;
-
   bool get _connectee => ref.read(currentUserProvider) != null;
 
   @override
   Future<List<Article>> build() async {
-    _storage = await ref.watch(localStorageProvider.future);
-    if (_connectee) {
-      return _depuisServeur();
-    }
-    return _storage.loadWishlist();
+    ref.watch(currentUserProvider);
+    if (!_connectee) return const [];
+    await ref.read(bffClientProvider).restaurerJeton();
+    return chargerDepuisServeur();
   }
 
-  Future<List<Article>> _depuisServeur() async {
+  /// `GET /wishlist` → liste de `PieceSummary`.
+  Future<List<Article>> chargerDepuisServeur() async {
     final client = ref.read(bffClientProvider);
-    final catalog = ref.read(catalogRepositoryProvider);
-    final maisons = {for (final m in await catalog.getMaisons()) m.id: m.nom};
-    final univers = {for (final u in await catalog.getUnivers()) u.id: u.nom};
     final brut = await client.getList('/wishlist');
+
+    var maisons = const <String, String>{};
+    var univers = const <String, String>{};
+    try {
+      final catalog = ref.read(catalogRepositoryProvider);
+      maisons = {for (final m in await catalog.getMaisons()) m.id: m.nom};
+      univers = {for (final u in await catalog.getUnivers()) u.id: u.nom};
+    } on ApiException {
+      // Les noms de maison / univers sont du confort : la liste reste lisible.
+    }
+
     return [
-      for (final o in brut)
-        if (o is Map<String, dynamic>)
-          Article.fromApi(
-            o,
-            nomMaison: maisons[o['house_id'] as String?],
-            nomUnivers: univers[o['universe_id'] as String?],
-          ).copyWith(isWishlisted: true),
+      for (final o in objetsDe(brut))
+        Article.fromApi(
+          o,
+          nomMaison: maisons[chaineDe(o['house_id'])],
+          nomUnivers: univers[chaineDe(o['universe_id'])],
+        ).copyWith(isWishlisted: true),
     ];
   }
 
-  Future<void> toggleWishlist(Article article) async {
-    final actuel = isWishlisted(article.id);
-    if (actuel) {
-      await removeArticle(article.id);
-    } else {
-      await addArticle(article);
+  Future<String?> toggleWishlist(Article article) async {
+    if (!_connectee) {
+      throw const ApiException(
+        message:
+            'Connectez-vous pour enregistrer cette pièce dans vos favoris.',
+        kind: KindErreurApi.nonAutorise,
+      );
+    }
+    if (isWishlisted(article.id)) {
+      return removeArticle(article.id);
+    }
+    return addArticle(article);
+  }
+
+  Future<String?> addArticle(Article article) async {
+    if (!_connectee) {
+      throw const ApiException(
+        message:
+            'Connectez-vous pour enregistrer cette pièce dans vos favoris.',
+        kind: KindErreurApi.nonAutorise,
+      );
+    }
+    final avant = state.value ?? [];
+    if (!isWishlisted(article.id)) {
+      state = AsyncData([...avant, article.copyWith(isWishlisted: true)]);
+    }
+    try {
+      final message =
+          await ref.read(bffClientProvider).postVide('/wishlist/${article.id}');
+      state = AsyncData(await chargerDepuisServeur());
+      return message;
+    } catch (e) {
+      state = AsyncData(avant);
+      rethrow;
     }
   }
 
-  Future<void> addArticle(Article article) async {
-    if (_connectee) {
-      try {
-        await ref.read(bffClientProvider).postJson('/wishlist/${article.id}');
-      } on ApiException {
-        rethrow;
-      }
-      state = AsyncData([
-        ...state.value ?? [],
-        if (!isWishlisted(article.id)) article.copyWith(isWishlisted: true),
-      ]);
-      return;
+  Future<String?> removeArticle(String id) async {
+    if (!_connectee) {
+      throw const ApiException(
+        message: 'Connectez-vous pour modifier vos favoris.',
+        kind: KindErreurApi.nonAutorise,
+      );
     }
-    final current = state.value ?? [];
-    if (!current.any((a) => a.id == article.id)) {
-      final next = [...current, article];
-      state = AsyncData(next);
-      await _storage.saveWishlist(next);
+    final avant = state.value ?? [];
+    state = AsyncData(avant.where((a) => a.id != id).toList());
+    try {
+      final message = await ref.read(bffClientProvider).delete('/wishlist/$id');
+      state = AsyncData(await chargerDepuisServeur());
+      return message;
+    } catch (e) {
+      state = AsyncData(avant);
+      rethrow;
     }
-  }
-
-  Future<void> removeArticle(String id) async {
-    if (_connectee) {
-      await ref.read(bffClientProvider).delete('/wishlist/$id');
-    }
-    final next = (state.value ?? []).where((a) => a.id != id).toList();
-    state = AsyncData(next);
-    if (!_connectee) await _storage.saveWishlist(next);
   }
 
   bool isWishlisted(String id) =>
@@ -90,3 +112,38 @@ final wishlistProvider =
 final wishlistListProvider = Provider<List<Article>>((ref) {
   return ref.watch(wishlistProvider).value ?? [];
 });
+
+/// Cœur : `POST` / `DELETE /wishlist/{id}`, puis resynchronise via `GET`.
+Future<void> basculerFavori(WidgetRef ref, Article article) async {
+  if (ref.read(currentUserProvider) == null) {
+    toastInfo(
+      ref,
+      'Connexion requise',
+      'Connectez-vous pour ajouter cette pièce à vos favoris.',
+    );
+    return;
+  }
+  try {
+    final deja = ref.read(wishlistProvider.notifier).isWishlisted(article.id);
+    final message =
+        await ref.read(wishlistProvider.notifier).toggleWishlist(article);
+    if (deja) {
+      toastMelange(
+        ref,
+        titre: 'Retiré des favoris',
+        local: article.title,
+        backend: message,
+      );
+    } else {
+      toastMelange(
+        ref,
+        titre: 'Ajouté aux favoris',
+        local: article.title,
+        backend: message,
+        succes: true,
+      );
+    }
+  } catch (e) {
+    toastErreur(ref, e, titre: 'Favoris');
+  }
+}

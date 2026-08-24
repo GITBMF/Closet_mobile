@@ -12,6 +12,7 @@ import '../../../core/widgets/closet_sections.dart';
 import '../../../core/widgets/etat_ecran.dart';
 import '../../../core/widgets/toasts.dart';
 import '../../../data/models/article.dart';
+import '../../../data/repositories/auth_repository.dart';
 import '../../../data/repositories/cart_repository.dart';
 import '../../../data/repositories/wishlist_repository.dart';
 
@@ -25,6 +26,7 @@ class WishlistScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final connectee = ref.watch(currentUserProvider) != null;
     final favoris = ref.watch(wishlistProvider);
 
     return Scaffold(
@@ -39,45 +41,54 @@ class WishlistScreen extends ConsumerWidget {
             child: ClosetTitreEcran('Mes favoris'),
           ),
           Expanded(
-            child: corpsAsync<List<Article>>(
-              favoris,
-              onRetry: () => ref.invalidate(wishlistProvider),
-              data: (liste) => liste.isEmpty
-                  ? ClosetListeVide(
-                      message: 'Aucune pièce n’a été ajoutée aux favoris.',
-                      action: () => context.go('/collections'),
-                      libelleAction: 'Découvrir les collections',
-                    )
-                  : ListView.separated(
-                      padding: const EdgeInsets.fromLTRB(
-                        18,
-                        AppSpacing.p16,
-                        18,
-                        AppSpacing.p32,
-                      ),
-                      itemCount: liste.length,
-                      separatorBuilder: (_, _) =>
-                          const SizedBox(height: 23),
-                      itemBuilder: (context, i) {
-                        final article = liste[i];
-                        return _CarteFavori(
-                          article: article,
-                          onTap: () =>
-                              context.push('/product/${article.id}'),
-                          onRetirer: () => basculerFavori(ref, article),
-                          onAjouter: () {
-                            ref
-                                .read(cartProvider.notifier)
-                                .addArticle(article);
-                            toastSucces(
-                              ref,
-                              'Ajoutée à votre sélection.',
-                            );
-                          },
-                        );
-                      },
-                    ),
-            ),
+            child: !connectee
+                ? ClosetListeVide(
+                    message:
+                        'Connectez-vous pour enregistrer et retrouver vos pièces favorites.',
+                    action: () => context.push('/auth'),
+                    libelleAction: 'Se connecter',
+                  )
+                : corpsAsync<List<Article>>(
+                    favoris,
+                    onRetry: () => ref.invalidate(wishlistProvider),
+                    data: (liste) => liste.isEmpty
+                        ? ClosetListeVide(
+                            message:
+                                'Aucune pièce n’a été ajoutée aux favoris.',
+                            action: () => context.go('/collections'),
+                            libelleAction: 'Découvrir les collections',
+                          )
+                        : ListView.separated(
+                            padding: const EdgeInsets.fromLTRB(
+                              18,
+                              AppSpacing.p16,
+                              18,
+                              AppSpacing.p32,
+                            ),
+                            itemCount: liste.length,
+                            separatorBuilder: (_, _) =>
+                                const SizedBox(height: 23),
+                            itemBuilder: (context, i) {
+                              final article = liste[i];
+                              return _CarteFavori(
+                                article: article,
+                                onTap: () =>
+                                    context.push('/product/${article.id}'),
+                                onRetirer: () =>
+                                    basculerFavori(ref, article),
+                                onAjouter: () {
+                                  ref
+                                      .read(cartProvider.notifier)
+                                      .addArticle(article);
+                                  toastSucces(
+                                    ref,
+                                    'Ajoutée à votre sélection.',
+                                  );
+                                },
+                              );
+                            },
+                          ),
+                  ),
           ),
         ],
       ),

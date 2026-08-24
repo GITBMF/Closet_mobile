@@ -5,6 +5,8 @@ import 'package:go_router/go_router.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/theme/closet_colors.dart';
 import '../../core/theme/closet_text_styles.dart';
+import '../../core/validation/indicateurs_pays.dart';
+import '../../core/widgets/champ_telephone.dart';
 import '../../core/widgets/closet_app_bar.dart';
 import '../../core/widgets/closet_sections.dart';
 import '../../core/widgets/frise_tunnel.dart';
@@ -40,7 +42,7 @@ class CheckoutScreen extends ConsumerStatefulWidget {
 class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
   final _formKey = GlobalKey<FormState>();
   final _nom = TextEditingController();
-  final _telephone = TextEditingController();
+  late final TelephoneController _telephone;
 
   @override
   void initState() {
@@ -53,7 +55,11 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
         : user == null
             ? ''
             : '${user.firstName} ${user.lastName}'.trim();
-    _telephone.text = brouillon.telephone;
+    _telephone = TelephoneController(
+      initial: brouillon.telephone.isNotEmpty
+          ? brouillon.telephone
+          : user?.phone,
+    );
   }
 
   @override
@@ -81,7 +87,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
 
     _brouillon.majCoordonnees(
       nomComplet: _nom.text.trim(),
-      telephone: _telephone.text.trim(),
+      telephone: _telephone.e164,
     );
     _brouillon.validerCoordonnees();
     _signaler('Informations de livraison enregistrées.');
@@ -191,7 +197,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
     // à un tiers.
     _brouillon.majCoordonnees(
       nomComplet: _nom.text.trim(),
-      telephone: _telephone.text.trim(),
+      telephone: _telephone.e164,
     );
 
     context.push(
@@ -205,7 +211,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
             ? brouillon.numeroCarte
             : brouillon.numeroPaiement,
         beneficiaire: _nom.text.trim(),
-        note: _telephone.text.trim(),
+        note: _telephone.e164,
         // Corps du reçu de l'acheteuse (`162:3473`) : la pièce achetée, le
         // moyen employé et l'adresse retenue.
         lignesRecu: [
@@ -275,13 +281,17 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                           : null,
                     ),
                     const SizedBox(height: AppSpacing.p20),
-                    ChampCheckout(
+                    ChampTelephone(
                       label: 'Téléphone (WhatsApp)',
-                      hint: '+237 6 90 12 34 56',
                       controller: _telephone,
-                      keyboardType: TextInputType.phone,
+                      hint: '6 90 12 34 56',
+                      style: StyleChampTelephone.checkout,
                       textInputAction: TextInputAction.done,
-                      validator: _validerTelephone,
+                      validator: (v) => validerTelephone(
+                        v,
+                        obligatoire: true,
+                        libelle: 'numéro WhatsApp',
+                      ),
                     ),
                     const SizedBox(height: AppSpacing.p8),
                     Text(
@@ -364,13 +374,6 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
     );
   }
 
-  /// Numéro camerounais ou international : au moins 9 chiffres.
-  static String? _validerTelephone(String? v) {
-    final chiffres = (v ?? '').replaceAll(RegExp(r'[^\d]'), '');
-    if (chiffres.isEmpty) return 'Indiquez un numéro WhatsApp.';
-    if (chiffres.length < 9) return 'Ce numéro semble incomplet.';
-    return null;
-  }
 }
 
 /// Bloc d'adresse, dans l'une des deux saisies de la maquette.
@@ -546,10 +549,12 @@ class _LignePaiement extends StatelessWidget {
                 AppSpacing.p16,
               ),
               child: switch (moyen.saisie) {
-                SaisieMoyen.telephone => ChampCheckout(
+                SaisieMoyen.telephone => ChampTelephone(
+                    key: ValueKey('tel-${moyen.id}'),
                     label: 'Numéro ${moyen.libelle}',
                     hint: '6 90 12 34 56',
-                    keyboardType: TextInputType.phone,
+                    style: StyleChampTelephone.checkout,
+                    validerAvecLeFormulaire: false,
                     onChanged: (v) => onSaisie(numeroPaiement: v),
                   ),
                 SaisieMoyen.carte => Column(

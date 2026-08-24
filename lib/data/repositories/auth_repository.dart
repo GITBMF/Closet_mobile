@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 
@@ -36,48 +37,46 @@ class AuthRepository {
     required String email,
     required String password,
     required String phone,
+    String city = '',
   }) async {
-    final lowerEmail = email.toLowerCase().trim();
-    final fullName = '$firstName $lastName'.trim();
-    if (fullName.isEmpty) {
-      throw const ApiException(
-        message: 'Le nom complet est requis.',
-        kind: KindErreurApi.validation,
-      );
-    }
-    if (phone.trim().isEmpty) {
-      throw const ApiException(
-        message: 'Le numéro de téléphone est requis.',
-        kind: KindErreurApi.validation,
-      );
-    }
+    _client.clearAccessToken();
 
-    await _client.postJson('/auth/register', data: {
-      'email': lowerEmail,
-      'password': password,
-      'full_name': fullName,
-      'phone': phone.trim(),
-    });
+    final payload = payloadInscriptionCliente(
+      email: email,
+      password: password,
+      firstName: firstName,
+      lastName: lastName,
+      phone: phone,
+      city: city,
+    );
+    await _client.postJson('/auth/register', data: payload);
 
     // L'inscription ne renvoie pas de jeton : on ouvre la session tout de
     // suite avec les identifiants venant d'être créés.
-    return logIn(email: lowerEmail, password: password);
+    return logIn(
+      email: payload['email'] as String,
+      password: password,
+    );
   }
 
   Future<ClosetUser> logIn({
     required String email,
     required String password,
   }) async {
+    _client.clearAccessToken();
     final data = await _client.postJson('/auth/login', data: {
       'email': email.toLowerCase().trim(),
       'password': password,
     });
 
     if (booleenDe(data['mfa_required'])) {
-      throw const ApiException(
-        message:
-            'Ce compte exige une double authentification, non disponible dans '
-            'l’application pour le moment.',
+      throw ApiException(
+        message: messageMelange(
+          local:
+              'Ce compte exige une double authentification, non disponible dans '
+              'l’application pour le moment.',
+          backend: messageDepuisCorps(data),
+        ),
         kind: KindErreurApi.validation,
       );
     }
@@ -94,8 +93,11 @@ class AuthRepository {
     final user = ClosetUser.fromJson(userJson);
 
     if (accessToken.isEmpty) {
-      throw const ApiException(
-        message: 'Le serveur n’a pas renvoyé de jeton d’accès.',
+      throw ApiException(
+        message: messageMelange(
+          local: 'Le serveur n’a pas renvoyé de jeton d’accès.',
+          backend: messageDepuisCorps(data),
+        ),
         kind: KindErreurApi.serveur,
       );
     }
@@ -130,17 +132,11 @@ class AuthRepository {
     return maj;
   }
 
-  Future<void> demanderReinitialisation(String email) async {
-    final normalise = email.trim().toLowerCase();
-    if (normalise.isEmpty || !normalise.contains('@')) {
-      throw const ApiException(
-        message: 'Renseignez une adresse e-mail valide.',
-        kind: KindErreurApi.validation,
-      );
-    }
-    await _client.postJson('/auth/forgot-password', data: {
-      'email': normalise,
+  Future<String> demanderReinitialisation(String email) async {
+    final data = await _client.postJson('/auth/forgot-password', data: {
+      'email': email.trim().toLowerCase(),
     });
+    return messageDepuisCorps(data);
   }
 
   Future<void> deconnecter({bool tousLesAppareils = false}) async {
@@ -165,3 +161,38 @@ final authRepositoryProvider = Provider<AuthRepository>((ref) {
 });
 
 final currentUserProvider = StateProvider<ClosetUser?>((ref) => null);
+
+/// Corps de `POST /auth/register` — miroir de `RegisterRequest` (OpenAPI).
+///
+/// Champs requis : `email`, `password`, `full_name`. `phone` et `city` ne
+/// partent que s'ils sont renseignés (le schéma les accepte nuls).
+@visibleForTesting
+Map<String, dynamic> payloadInscriptionCliente({
+  required String email,
+  required String password,
+  required String firstName,
+  required String lastName,
+  String phone = '',
+  String city = '',
+}) {
+  final payload = <String, dynamic>{
+    'email': email.toLowerCase().trim(),
+    'password': password,
+    'full_name': '$firstName $lastName'.replaceAll(RegExp(r'\s+'), ' ').trim(),
+  };
+  final tel = telephoneInscription(phone);
+  if (tel != null) payload['phone'] = tel;
+  final ville = city.trim();
+  if (ville.isNotEmpty) {
+    payload['city'] = ville.length > 100 ? ville.substring(0, 100) : ville;
+  }
+  return payload;
+}
+
+/// Téléphone compact (E.164 léger), 32 caractères max comme le backend.
+@visibleForTesting
+String? telephoneInscription(String brut) {
+  final compact = brut.replaceAll(RegExp(r'[\s.\-]'), '');
+  if (compact.isEmpty) return null;
+  return compact.length > 32 ? compact.substring(0, 32) : compact;
+}

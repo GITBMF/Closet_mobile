@@ -260,26 +260,11 @@ class ArticleCard extends ConsumerStatefulWidget {
 }
 
 class _ArticleCardState extends ConsumerState<ArticleCard> {
-  bool? _localWishlisted;
-
-  @override
-  void didUpdateWidget(covariant ArticleCard oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (oldWidget.article.id != widget.article.id) {
-      _localWishlisted = null;
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
-    final wishlist = ref.watch(wishlistListProvider);
-    final isWishlistedReal = wishlist.any((a) => a.id == widget.article.id);
-
-    // Remet l'état optimiste à zéro dès que le provider l'a rattrapé.
-    if (_localWishlisted == isWishlistedReal) {
-      _localWishlisted = null;
-    }
-    final isWishlisted = _localWishlisted ?? isWishlistedReal;
+    final isWishlisted = ref
+        .watch(wishlistListProvider)
+        .any((a) => a.id == widget.article.id);
 
     final article = widget.article;
 
@@ -296,10 +281,7 @@ class _ArticleCardState extends ConsumerState<ArticleCard> {
       isFavorite: isWishlisted,
       isSold: article.isSoldOut,
       onTap: widget.onTap,
-      onFavoriteTap: () {
-        setState(() => _localWishlisted = !isWishlisted);
-        basculerFavori(ref, article);
-      },
+      onFavoriteTap: () => basculerFavori(ref, article),
     );
   }
 }

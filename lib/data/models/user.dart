@@ -47,31 +47,31 @@ class ClosetUser {
       role == 'sourcer' || role == 'admin';
 
   factory ClosetUser.fromJson(Map<String, dynamic> json) {
-    final fullName = json['full_name'] as String? ?? json['fullName'] as String?;
-    final firstName = json['first_name'] as String? ?? json['firstName'] as String?;
-    final lastName = json['last_name'] as String? ?? json['lastName'] as String?;
+    final fullName = _texte(json['full_name'] ?? json['fullName']);
+    final firstName = _texte(json['first_name'] ?? json['firstName']);
+    final lastName = _texte(json['last_name'] ?? json['lastName']);
 
     var parsedFirstName = '';
     var parsedLastName = '';
 
-    if (firstName != null && firstName.isNotEmpty) {
+    if (firstName.isNotEmpty) {
       parsedFirstName = firstName;
-      parsedLastName = lastName ?? '';
-    } else if (fullName != null && fullName.isNotEmpty) {
+      parsedLastName = lastName;
+    } else if (fullName.isNotEmpty) {
       final parts = fullName.trim().split(RegExp(r'\s+'));
       parsedFirstName = parts.first;
       parsedLastName = parts.length > 1 ? parts.sublist(1).join(' ') : '';
     }
 
     return ClosetUser(
-      id: (json['id'] ?? '') as String,
+      id: _texte(json['id']),
       firstName: parsedFirstName,
       lastName: parsedLastName,
-      email: (json['email'] ?? '') as String,
-      phone: (json['phone'] ?? json['telephone'] ?? '') as String,
-      city: (json['city'] ?? '') as String,
-      role: (json['role'] ?? 'customer') as String,
-      token: json['token'] as String? ?? json['access_token'] as String?,
+      email: _texte(json['email']),
+      phone: _texte(json['phone'] ?? json['telephone']),
+      city: _texte(json['city']),
+      role: _texte(json['role'], 'customer'),
+      token: _texteOuNul(json['token'] ?? json['access_token']),
     );
   }
 
@@ -94,4 +94,15 @@ class ClosetUser {
     final l = lastName.isNotEmpty ? lastName[0].toUpperCase() : '';
     return '$f$l';
   }
+}
+
+String _texte(dynamic valeur, [String defaut = '']) {
+  if (valeur == null) return defaut;
+  final texte = valeur.toString().trim();
+  return texte.isEmpty ? defaut : texte;
+}
+
+String? _texteOuNul(dynamic valeur) {
+  final texte = _texte(valeur);
+  return texte.isEmpty ? null : texte;
 }
