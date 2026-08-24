@@ -1,10 +1,12 @@
 ﻿import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/closet_colors.dart';
 import '../../../core/theme/closet_text_styles.dart';
+import '../../../core/validation/formats.dart';
 import '../../../core/widgets/toasts.dart';
 import '../../../data/repositories/auth_repository.dart';
 import '../../../data/repositories/sourceur_repository.dart';
@@ -43,8 +45,14 @@ class _IdentificationSourceurScreenState
     final identifiant = _identifiant.text.trim();
     final motDePasse = _motDePasse.text;
 
-    if (identifiant.isEmpty || motDePasse.isEmpty) {
-      toastInfo(ref, 'Champs manquants', 'Veuillez remplir tous les champs.');
+    final erreurId = validerIdentifiantConnexion(identifiant);
+    if (erreurId != null) {
+      toastInfo(ref, 'Identifiant', erreurId);
+      return;
+    }
+    final erreurMdp = validerMotDePasse(motDePasse, connexion: true);
+    if (erreurMdp != null) {
+      toastInfo(ref, 'Mot de passe', erreurMdp);
       return;
     }
 
@@ -144,6 +152,7 @@ class _IdentificationSourceurScreenState
                       controller: _identifiant,
                       keyboardType: TextInputType.emailAddress,
                       textInputAction: TextInputAction.next,
+                      sansEspaces: true,
                     ),
                     const SizedBox(height: AppSpacing.p24),
                     _ChampSourceur(
@@ -264,6 +273,7 @@ class _ChampSourceur extends StatelessWidget {
     this.textInputAction,
     this.onSubmitted,
     this.suffix,
+    this.sansEspaces = false,
   });
 
   final String label;
@@ -274,6 +284,7 @@ class _ChampSourceur extends StatelessWidget {
   final TextInputAction? textInputAction;
   final ValueChanged<String>? onSubmitted;
   final Widget? suffix;
+  final bool sansEspaces;
 
   @override
   Widget build(BuildContext context) {
@@ -295,6 +306,12 @@ class _ChampSourceur extends StatelessWidget {
             keyboardType: keyboardType,
             textInputAction: textInputAction,
             onSubmitted: onSubmitted,
+            autocorrect: !sansEspaces,
+            enableSuggestions: !sansEspaces,
+            inputFormatters: [
+              if (sansEspaces)
+                FilteringTextInputFormatter.deny(RegExp(r'\s')),
+            ],
             style: ClosetTextStyles.saisie.copyWith(color: context.closetEncre),
             cursorColor: ClosetColors.vert,
             cursorWidth: 1.5,

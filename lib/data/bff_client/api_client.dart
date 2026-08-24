@@ -91,16 +91,21 @@ class BffClient {
   }
 
   /// `POST` qui répond 204 sans corps (ex. `POST /wishlist/{id}`).
-  Future<void> postVide(String chemin, {Object? data}) async {
-    await _executer(
+  /// Si le serveur joint un `message` / `detail`, il est renvoyé tel quel.
+  Future<String?> postVide(String chemin, {Object? data}) async {
+    final brut = await _executer(
       () => _dio.post<dynamic>(chemin, data: data, options: _reponseVide),
     );
+    final texte = messageDepuisCorps(brut);
+    return texte.isEmpty ? null : texte;
   }
 
-  Future<void> delete(String chemin) async {
-    await _executer(
+  Future<String?> delete(String chemin) async {
+    final brut = await _executer(
       () => _dio.delete<dynamic>(chemin, options: _reponseVide),
     );
+    final texte = messageDepuisCorps(brut);
+    return texte.isEmpty ? null : texte;
   }
 
   static final _reponseVide = Options(

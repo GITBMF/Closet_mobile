@@ -19,10 +19,31 @@ void toastSucces(WidgetRef ref, String titre, [String? message]) {
       .showSuccess(titre, message ?? titre);
 }
 
+/// Titre prédéfini + texte serveur s’il existe, sinon le complément local.
+void toastMelange(
+  WidgetRef ref, {
+  required String titre,
+  String? local,
+  String? backend,
+  bool succes = false,
+}) {
+  final corps = messageMelange(local: local ?? titre, backend: backend);
+  final notifier = ref.read<NotificationNotifier>(notificationProvider.notifier);
+  if (succes) {
+    notifier.showSuccess(titre, corps);
+  } else {
+    notifier.show(titre, corps);
+  }
+}
+
 void toastErreur(WidgetRef ref, Object erreur, {String titre = 'Erreur'}) {
+  final texte = messageMelange(
+    local: titre,
+    backend: messageErreur(erreur),
+  );
   ref
       .read<NotificationNotifier>(notificationProvider.notifier)
-      .showError(titre, messageErreur(erreur));
+      .showError(titre, texte);
 }
 
 /// Fenêtre de succès — à utiliser pour une action aboutie (dépôt, auth…).
@@ -41,7 +62,7 @@ Future<void> dialogueSucces(
   );
 }
 
-/// Fenêtre d'erreur — à utiliser pour une action échouée.
+/// Fenêtre d'erreur : titre local, corps = message serveur ou le titre.
 Future<void> dialogueErreur(
   BuildContext context,
   Object erreur, {
@@ -51,6 +72,6 @@ Future<void> dialogueErreur(
     context,
     succes: false,
     titre: titre,
-    message: messageErreur(erreur),
+    message: messageMelange(local: titre, backend: messageErreur(erreur)),
   );
 }

@@ -77,23 +77,11 @@ class EspaceScreen extends ConsumerWidget {
                 onTap: () => context.go('/wishlist'),
               ),
               _EntreeEspace(
-                icone: Icons.location_on_outlined,
-                label: 'Mes adresses',
-                onTap: () => user == null
-                    ? context.push('/auth')
-                    : context.push('/espace/adresses'),
-              ),
-              _EntreeEspace(
                 icone: Icons.person_outline,
                 label: 'Mes informations',
                 onTap: () => context.push(
                   user == null ? '/auth' : '/espace/infos',
                 ),
-              ),
-              _EntreeEspace(
-                icone: Icons.notifications_none_rounded,
-                label: 'Mes notifications',
-                onTap: () => context.push('/espace/alertes'),
               ),
               const _BasculeTheme(),
               if (user == null)

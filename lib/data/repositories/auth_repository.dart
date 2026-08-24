@@ -49,13 +49,6 @@ class AuthRepository {
       phone: phone,
       city: city,
     );
-    if ((payload['full_name'] as String).length < 2) {
-      throw const ApiException(
-        message: 'Le nom complet est requis.',
-        kind: KindErreurApi.validation,
-      );
-    }
-
     await _client.postJson('/auth/register', data: payload);
 
     // L'inscription ne renvoie pas de jeton : on ouvre la session tout de
@@ -77,10 +70,13 @@ class AuthRepository {
     });
 
     if (booleenDe(data['mfa_required'])) {
-      throw const ApiException(
-        message:
-            'Ce compte exige une double authentification, non disponible dans '
-            'l’application pour le moment.',
+      throw ApiException(
+        message: messageMelange(
+          local:
+              'Ce compte exige une double authentification, non disponible dans '
+              'l’application pour le moment.',
+          backend: messageDepuisCorps(data),
+        ),
         kind: KindErreurApi.validation,
       );
     }
@@ -97,8 +93,11 @@ class AuthRepository {
     final user = ClosetUser.fromJson(userJson);
 
     if (accessToken.isEmpty) {
-      throw const ApiException(
-        message: 'Le serveur n’a pas renvoyé de jeton d’accès.',
+      throw ApiException(
+        message: messageMelange(
+          local: 'Le serveur n’a pas renvoyé de jeton d’accès.',
+          backend: messageDepuisCorps(data),
+        ),
         kind: KindErreurApi.serveur,
       );
     }
@@ -133,17 +132,11 @@ class AuthRepository {
     return maj;
   }
 
-  Future<void> demanderReinitialisation(String email) async {
-    final normalise = email.trim().toLowerCase();
-    if (normalise.isEmpty || !normalise.contains('@')) {
-      throw const ApiException(
-        message: 'Renseignez une adresse e-mail valide.',
-        kind: KindErreurApi.validation,
-      );
-    }
-    await _client.postJson('/auth/forgot-password', data: {
-      'email': normalise,
+  Future<String> demanderReinitialisation(String email) async {
+    final data = await _client.postJson('/auth/forgot-password', data: {
+      'email': email.trim().toLowerCase(),
     });
+    return messageDepuisCorps(data);
   }
 
   Future<void> deconnecter({bool tousLesAppareils = false}) async {

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:go_router/go_router.dart';
@@ -6,9 +7,12 @@ import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/closet_colors.dart';
 import '../../../core/theme/closet_text_styles.dart';
+import '../../../core/validation/formats.dart';
+import '../../../core/validation/indicateurs_pays.dart';
+import '../../../core/widgets/aide_mot_de_passe.dart';
+import '../../../core/widgets/champ_telephone.dart';
 import '../../../core/widgets/google_g_icon.dart';
 import '../../../core/widgets/toasts.dart';
-import '../../../data/models/user.dart';
 import '../../../data/repositories/auth_repository.dart';
 import '../../../data/repositories/sourceur_repository.dart';
 import 'mot_de_passe_oublie_dialog.dart';
@@ -47,7 +51,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
   final _passwordController = TextEditingController();
   final _nameController = TextEditingController(); // Prénom
   final _lastNameController = TextEditingController(); // Nom
-  final _phoneController = TextEditingController();
+  final _phone = TelephoneController();
   bool _obscurePassword = true;
   bool _isLoading = false;
   late AnimationController _animController;
@@ -70,7 +74,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
     _passwordController.dispose();
     _nameController.dispose();
     _lastNameController.dispose();
-    _phoneController.dispose();
+    _phone.dispose();
     _animController.dispose();
     super.dispose();
   }
@@ -80,16 +84,14 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
     final password = _passwordController.text;
     final isLogin = ref.read(authModeProvider) == AuthMode.login;
 
-    if (email.isEmpty || password.isEmpty) {
-      toastInfo(ref, 'Champs manquants', 'Veuillez remplir tous les champs.');
+    final erreurEmail = validerEmail(email);
+    if (erreurEmail != null) {
+      toastInfo(ref, 'E-mail invalide', erreurEmail);
       return;
     }
-    if (!_emailValide(email)) {
-      toastInfo(ref, 'E-mail invalide', 'Utilisez une adresse du type nom@domaine.com.');
-      return;
-    }
-    if (password.length > 128) {
-      toastInfo(ref, 'Mot de passe trop long', '128 caractères maximum.');
+    final erreurMdp = validerMotDePasse(password, connexion: isLogin);
+    if (erreurMdp != null) {
+      toastInfo(ref, 'Mot de passe', erreurMdp);
       return;
     }
 
@@ -99,12 +101,17 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
     if (!isLogin) {
       firstName = _nameController.text.trim();
       lastName = _lastNameController.text.trim();
-      phone = _phoneController.text.trim();
+      phone = _phone.e164;
       if (firstName.isEmpty || lastName.isEmpty) {
-        toastInfo(ref, 'Champs manquants', 'Veuillez renseigner votre nom et prénom.');
+        toastInfo(
+          ref,
+          'Champs manquants',
+          'Veuillez renseigner votre nom et prénom.',
+        );
         return;
       }
-      final nomComplet = '$firstName $lastName'.replaceAll(RegExp(r'\s+'), ' ').trim();
+      final nomComplet =
+          '$firstName $lastName'.replaceAll(RegExp(r'\s+'), ' ').trim();
       if (nomComplet.length < 2) {
         toastInfo(ref, 'Nom incomplet', 'Le nom doit contenir au moins 2 caractères.');
         return;
@@ -113,20 +120,9 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
         toastInfo(ref, 'Nom trop long', '150 caractères maximum.');
         return;
       }
-      if (phone.isEmpty) {
-        toastInfo(
-          ref,
-          'Champs manquants',
-          'Veuillez renseigner votre numéro de téléphone.',
-        );
-        return;
-      }
-      if (password.length < 8 || !RegExp(r'\d').hasMatch(password)) {
-        toastInfo(
-          ref,
-          'Mot de passe trop simple',
-          '8 caractères minimum, dont un chiffre.',
-        );
+      final erreurTel = validerTelephone(phone, obligatoire: true);
+      if (erreurTel != null) {
+        toastInfo(ref, 'Téléphone', erreurTel);
         return;
       }
     }
@@ -135,18 +131,15 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
 
     try {
       final authRepo = ref.read(authRepositoryProvider);
-      final ClosetUser user;
-      if (isLogin) {
-        user = await authRepo.logIn(email: email, password: password);
-      } else {
-        user = await authRepo.signUp(
-          firstName: firstName,
-          lastName: lastName,
-          email: email,
-          password: password,
-          phone: phone,
-        );
-      }
+      final user = isLogin
+          ? await authRepo.logIn(email: email, password: password)
+          : await authRepo.signUp(
+              firstName: firstName,
+              lastName: lastName,
+              email: email,
+              password: password,
+              phone: phone,
+            );
 
       try {
         await ref.read(sourceurRepositoryProvider).chargerProfil();
@@ -227,11 +220,12 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
                           textInputAction: TextInputAction.next,
                         ),
                         const SizedBox(height: AppSpacing.p16),
-                        _ChampAuth(
+                        ChampTelephone(
                           label: 'Téléphone',
-                          hint: '+237 6 00 00 00 00',
-                          controller: _phoneController,
-                          keyboardType: TextInputType.phone,
+                          controller: _phone,
+                          hint: '6 90 12 34 56',
+                          style: StyleChampTelephone.auth,
+                          validerAvecLeFormulaire: false,
                           textInputAction: TextInputAction.next,
                         ),
                         const SizedBox(height: AppSpacing.p16),
@@ -242,6 +236,8 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
                         controller: _emailController,
                         keyboardType: TextInputType.emailAddress,
                         textInputAction: TextInputAction.next,
+                        autocorrect: false,
+                        sansEspaces: true,
                       ),
                       const SizedBox(height: AppSpacing.p16),
                       _ChampAuth(
@@ -265,13 +261,22 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
                         ),
                       ),
                       const SizedBox(height: AppSpacing.p8),
-                      Text(
-                        '8 caractères minimum, dont un chiffre.',
-                        style: ClosetTextStyles.meta.copyWith(
-                          fontWeight: FontWeight.w300,
-                          color: ClosetColors.beige,
+                      if (isLogin)
+                        Text(
+                          '8 caractères minimum, dont un chiffre.',
+                          style: ClosetTextStyles.meta.copyWith(
+                            fontWeight: FontWeight.w300,
+                            color: ClosetColors.beige,
+                          ),
+                        )
+                      else
+                        ListenableBuilder(
+                          listenable: _passwordController,
+                          builder: (_, _) => AideMotDePasse(
+                            saisie: _passwordController.text,
+                            surFondSombre: true,
+                          ),
                         ),
-                      ),
                       const SizedBox(height: AppSpacing.p24),
                       _BoutonDore(
                         label: isLogin ? 'ENTRER' : 'CRÉER MON COMPTE',
@@ -376,10 +381,6 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
   }
 }
 
-bool _emailValide(String email) {
-  return RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$').hasMatch(email);
-}
-
 /// Carte photo de 352 × 210 (rayon 19) surmontée de la plaque au logo.
 class _HeroLogo extends StatelessWidget {
   const _HeroLogo();
@@ -430,6 +431,8 @@ class _ChampAuth extends StatelessWidget {
     this.textInputAction,
     this.onSubmitted,
     this.suffix,
+    this.autocorrect = true,
+    this.sansEspaces = false,
   });
 
   final String label;
@@ -440,6 +443,8 @@ class _ChampAuth extends StatelessWidget {
   final TextInputAction? textInputAction;
   final ValueChanged<String>? onSubmitted;
   final Widget? suffix;
+  final bool autocorrect;
+  final bool sansEspaces;
 
   @override
   Widget build(BuildContext context) {
@@ -461,6 +466,12 @@ class _ChampAuth extends StatelessWidget {
             keyboardType: keyboardType,
             textInputAction: textInputAction,
             onSubmitted: onSubmitted,
+            autocorrect: autocorrect,
+            enableSuggestions: autocorrect,
+            inputFormatters: [
+              if (sansEspaces)
+                FilteringTextInputFormatter.deny(RegExp(r'\s')),
+            ],
             style: ClosetTextStyles.saisie.copyWith(color: context.closetEncre),
             cursorColor: ClosetColors.vert,
             cursorWidth: 1.5,

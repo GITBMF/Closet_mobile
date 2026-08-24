@@ -44,24 +44,25 @@ class WishlistNotifier extends AsyncNotifier<List<Article>> {
     ];
   }
 
-  Future<void> toggleWishlist(Article article) async {
+  Future<String?> toggleWishlist(Article article) async {
     if (!_connectee) {
       throw const ApiException(
-        message: 'Connectez-vous pour enregistrer cette pièce dans vos favoris.',
+        message:
+            'Connectez-vous pour enregistrer cette pièce dans vos favoris.',
         kind: KindErreurApi.nonAutorise,
       );
     }
     if (isWishlisted(article.id)) {
-      await removeArticle(article.id);
-    } else {
-      await addArticle(article);
+      return removeArticle(article.id);
     }
+    return addArticle(article);
   }
 
-  Future<void> addArticle(Article article) async {
+  Future<String?> addArticle(Article article) async {
     if (!_connectee) {
       throw const ApiException(
-        message: 'Connectez-vous pour enregistrer cette pièce dans vos favoris.',
+        message:
+            'Connectez-vous pour enregistrer cette pièce dans vos favoris.',
         kind: KindErreurApi.nonAutorise,
       );
     }
@@ -70,15 +71,17 @@ class WishlistNotifier extends AsyncNotifier<List<Article>> {
       state = AsyncData([...avant, article.copyWith(isWishlisted: true)]);
     }
     try {
-      await ref.read(bffClientProvider).postVide('/wishlist/${article.id}');
+      final message =
+          await ref.read(bffClientProvider).postVide('/wishlist/${article.id}');
       state = AsyncData(await chargerDepuisServeur());
+      return message;
     } catch (e) {
       state = AsyncData(avant);
       rethrow;
     }
   }
 
-  Future<void> removeArticle(String id) async {
+  Future<String?> removeArticle(String id) async {
     if (!_connectee) {
       throw const ApiException(
         message: 'Connectez-vous pour modifier vos favoris.',
@@ -88,8 +91,9 @@ class WishlistNotifier extends AsyncNotifier<List<Article>> {
     final avant = state.value ?? [];
     state = AsyncData(avant.where((a) => a.id != id).toList());
     try {
-      await ref.read(bffClientProvider).delete('/wishlist/$id');
+      final message = await ref.read(bffClientProvider).delete('/wishlist/$id');
       state = AsyncData(await chargerDepuisServeur());
+      return message;
     } catch (e) {
       state = AsyncData(avant);
       rethrow;
@@ -120,7 +124,25 @@ Future<void> basculerFavori(WidgetRef ref, Article article) async {
     return;
   }
   try {
-    await ref.read(wishlistProvider.notifier).toggleWishlist(article);
+    final deja = ref.read(wishlistProvider.notifier).isWishlisted(article.id);
+    final message =
+        await ref.read(wishlistProvider.notifier).toggleWishlist(article);
+    if (deja) {
+      toastMelange(
+        ref,
+        titre: 'Retiré des favoris',
+        local: article.title,
+        backend: message,
+      );
+    } else {
+      toastMelange(
+        ref,
+        titre: 'Ajouté aux favoris',
+        local: article.title,
+        backend: message,
+        succes: true,
+      );
+    }
   } catch (e) {
     toastErreur(ref, e, titre: 'Favoris');
   }
