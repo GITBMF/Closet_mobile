@@ -11,6 +11,7 @@ import '../../../core/widgets/closet_feedback.dart';
 import '../../../core/widgets/closet_sections.dart';
 import '../../../core/widgets/etat_ecran.dart';
 import '../../../core/widgets/piece_card.dart';
+import '../../../core/widgets/toasts.dart';
 import '../../../data/models/article.dart';
 import '../../../data/repositories/catalog_repository.dart';
 import '../../../data/repositories/wishlist_repository.dart';
@@ -65,11 +66,14 @@ class _CorpsAccueil extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final featured = accueil.pieceDeLaSemaine;
-    final hero = accueil.hero ?? featured;
-    final nouveautes = accueil.nouveautes;
-    final coupsDeCoeur = accueil.coupsDeCoeur;
+    final heroBrut = accueil.hero ?? featured;
+    // Une seule mise en avant si le back renvoie la même pièce deux fois.
+    final hero = featured != null && heroBrut?.id == featured.id
+        ? null
+        : heroBrut;
+    final nouveautes = accueil.nouveautes.take(2).toList();
+    final coupsDeCoeur = accueil.coupsDeCoeur.take(2).toList();
     final univers = accueil.univers;
-    final maisons = accueil.maisons;
 
     void ouvrirUnivers(String categorie) {
       ref
@@ -136,26 +140,6 @@ class _CorpsAccueil extends ConsumerWidget {
             ),
             const SizedBox(height: AppSpacing.p16),
             _GrilleArticles(articles: coupsDeCoeur, marge: 21),
-          ],
-          if (maisons.isNotEmpty) ...[
-            const SizedBox(height: AppSpacing.p24),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 19),
-              child: ClosetEnTeteSection(
-                titre: 'Maison du moment',
-                lien: 'toutes',
-                onLien: () => context.go('/collections'),
-              ),
-            ),
-            const SizedBox(height: AppSpacing.p16),
-            _RangeeUnivers(
-              univers: maisons,
-              premiere: false,
-              onTap: (maison) {
-                ref.read(filterBrandProvider.notifier).setBrand(maison);
-                context.go('/collections');
-              },
-            ),
           ],
           const SizedBox(height: AppSpacing.p24),
         ],

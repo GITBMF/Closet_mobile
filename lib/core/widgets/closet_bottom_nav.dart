@@ -6,10 +6,10 @@ import '../theme/closet_text_styles.dart';
 
 /// Une entrée de la barre de navigation.
 ///
-/// L'icône existe en deux versions parce que la maquette fait basculer le
-/// dessin selon l'état : sur `13:1182`, l'icône « maison » et l'icône « cœur »
-/// passent du contour au plein quand l'onglet devient actif, tandis que le
-/// panier reste en contour et l'utilisateur reste plein.
+/// L'icône existe en deux versions : contour à l'état inactif, plein à
+/// l'état actif — le même bascule que Dressing, Collections, Wishlist et
+/// Espace. Selection utilise le sac Material (`shopping_bag`), pas le
+/// panier (`shopping_basket`), pour garder le même trait que les autres.
 class ClosetNavItem {
   const ClosetNavItem({
     required this.icone,
@@ -82,9 +82,8 @@ class ClosetBottomNav extends StatelessWidget {
       label: 'Wishlist',
     ),
     ClosetNavItem(
-      icone: Icons.shopping_basket_outlined,
-      // Le panier reste en contour à l'état actif dans la maquette.
-      iconeActive: Icons.shopping_basket_outlined,
+      icone: Icons.shopping_bag_outlined,
+      iconeActive: Icons.shopping_bag,
       label: 'Selection',
     ),
     ClosetNavItem(

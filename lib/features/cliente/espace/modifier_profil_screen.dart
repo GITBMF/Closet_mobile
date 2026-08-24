@@ -107,7 +107,7 @@ class _ModifierProfilScreenState
                       ClosetChampLibelle(
                         label: 'Nom complet',
                         controller: _nom,
-                        hint: 'Aïcha N.',
+                        hint: 'Marie Dupont',
                         textInputAction: TextInputAction.next,
                         validator: (v) => (v == null || v.trim().isEmpty)
                             ? 'Veuillez renseigner votre nom.'
@@ -117,7 +117,7 @@ class _ModifierProfilScreenState
                       ClosetChampLibelle(
                         label: 'Email',
                         controller: _email,
-                        hint: 'AichaN@outlook.com',
+                        hint: 'marie.dupont@email.com',
                         keyboardType: TextInputType.emailAddress,
                         textInputAction: TextInputAction.next,
                         validator: validerEmail,

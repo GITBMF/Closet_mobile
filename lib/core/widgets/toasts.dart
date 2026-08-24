@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../data/api/api_exception.dart';
+import '../../data/models/article.dart';
+import '../../data/repositories/wishlist_repository.dart';
 import '../services/notification_service.dart';
 import 'closet_feedback.dart';
 

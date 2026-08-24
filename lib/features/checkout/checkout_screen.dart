@@ -273,7 +273,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                     const SizedBox(height: AppSpacing.p20),
                     ChampCheckout(
                       label: 'Nom complet',
-                      hint: 'Aïcha N.',
+                      hint: 'Marie Dupont',
                       controller: _nom,
                       textInputAction: TextInputAction.next,
                       validator: (v) => (v == null || v.trim().length < 2)
@@ -561,7 +561,7 @@ class _LignePaiement extends StatelessWidget {
                     children: [
                       ChampCheckout(
                         label: 'Nom du porteur',
-                        hint: 'AICHA NGONO',
+                        hint: 'MARIE DUPONT',
                         textCapitalization: TextCapitalization.characters,
                         onChanged: (v) => onSaisie(porteurCarte: v),
                       ),
