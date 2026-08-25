@@ -304,26 +304,31 @@ class _BoutonCoeurState extends State<BoutonCoeur>
           : 'Ajouter à la wishlist',
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
-        onTap: onTap,
+        onTap: _taper,
         child: SizedBox(
           width: 44,
           height: 44,
           child: Center(
-            child: Container(
-              width: taille,
-              height: taille,
-              decoration: BoxDecoration(
-                color: ClosetColors.carteFond,
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color: ClosetColors.fond300,
-                  width: AppStroke.fin,
+            child: ScaleTransition(
+              scale: _echelle,
+              child: Container(
+                width: widget.taille,
+                height: widget.taille,
+                decoration: BoxDecoration(
+                  color: ClosetColors.carteFond,
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: ClosetColors.fond300,
+                    width: AppStroke.fin,
+                  ),
                 ),
-              ),
-              child: Icon(
-                actif ? Icons.favorite : Icons.favorite_border,
-                size: taille * 0.55,
-                color: actif ? ClosetColors.erreurCouture : ClosetColors.vert,
+                child: Icon(
+                  widget.actif ? Icons.favorite : Icons.favorite_border,
+                  size: widget.taille * 0.55,
+                  color: widget.actif
+                      ? ClosetColors.erreurCouture
+                      : ClosetColors.vert,
+                ),
               ),
             ),
           ),

@@ -259,6 +259,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
                         textInputAction: TextInputAction.next,
                         autocorrect: false,
                         sansEspaces: true,
+                        validator: _validerEmail,
                       ),
                       const SizedBox(height: AppSpacing.p16),
                       _ChampAuth(
@@ -491,6 +492,7 @@ class _ChampAuth extends StatelessWidget {
     this.suffix,
     this.autocorrect = true,
     this.sansEspaces = false,
+    this.validator,
   });
 
   final String label;
@@ -503,6 +505,7 @@ class _ChampAuth extends StatelessWidget {
   final Widget? suffix;
   final bool autocorrect;
   final bool sansEspaces;
+  final FormFieldValidator<String>? validator;
 
   @override
   Widget build(BuildContext context) {
@@ -516,44 +519,46 @@ class _ChampAuth extends StatelessWidget {
           ),
         ),
         const SizedBox(height: AppSpacing.p8),
-        SizedBox(
-          height: 42,
-          child: TextField(
-            controller: controller,
-            obscureText: obscure,
-            keyboardType: keyboardType,
-            textInputAction: textInputAction,
-            onSubmitted: onSubmitted,
-            autocorrect: autocorrect,
-            enableSuggestions: autocorrect,
-            inputFormatters: [
-              if (sansEspaces)
-                FilteringTextInputFormatter.deny(RegExp(r'\s')),
-            ],
-            style: ClosetTextStyles.saisie.copyWith(color: context.closetEncre),
-            cursorColor: ClosetColors.vert,
-            cursorWidth: 1.5,
-            decoration: InputDecoration(
-              hintText: hint,
-              hintStyle: ClosetTextStyles.saisie.copyWith(
-                color: ClosetColors.champPlaceholder,
-              ),
-              filled: true,
-              fillColor: ClosetColors.champFond,
-              isDense: true,
-              suffixIcon: suffix,
-              suffixIconConstraints: const BoxConstraints(
-                minWidth: 40,
-                minHeight: 40,
-              ),
-              contentPadding: const EdgeInsets.symmetric(
-                horizontal: AppSpacing.p12,
-                vertical: AppSpacing.p12,
-              ),
-              border: _bordure(ClosetColors.champBordure),
-              enabledBorder: _bordure(ClosetColors.champBordure),
-              focusedBorder: _bordure(ClosetColors.fond300),
+        TextFormField(
+          controller: controller,
+          obscureText: obscure,
+          keyboardType: keyboardType,
+          textInputAction: textInputAction,
+          onFieldSubmitted: onSubmitted,
+          autocorrect: autocorrect,
+          enableSuggestions: autocorrect,
+          validator: validator,
+          inputFormatters: [
+            if (sansEspaces) FilteringTextInputFormatter.deny(RegExp(r'\s')),
+          ],
+          style: ClosetTextStyles.saisie.copyWith(color: context.closetEncre),
+          cursorColor: ClosetColors.vert,
+          cursorWidth: 1.5,
+          decoration: InputDecoration(
+            hintText: hint,
+            hintStyle: ClosetTextStyles.saisie.copyWith(
+              color: ClosetColors.champPlaceholder,
             ),
+            filled: true,
+            fillColor: ClosetColors.champFond,
+            isDense: true,
+            errorStyle: ClosetTextStyles.meta.copyWith(
+              color: ClosetColors.fond300,
+            ),
+            suffixIcon: suffix,
+            suffixIconConstraints: const BoxConstraints(
+              minWidth: 40,
+              minHeight: 40,
+            ),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.p12,
+              vertical: AppSpacing.p12,
+            ),
+            border: _bordure(ClosetColors.champBordure),
+            enabledBorder: _bordure(ClosetColors.champBordure),
+            focusedBorder: _bordure(ClosetColors.fond300),
+            errorBorder: _bordure(ClosetColors.fond300),
+            focusedErrorBorder: _bordure(ClosetColors.fond300),
           ),
         ),
       ],
