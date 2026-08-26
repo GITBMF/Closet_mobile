@@ -8,7 +8,7 @@ class Vocabulary {
   static const String navProfile = 'Mon espace';
 
   // Boutons (CTA)
-  static const String ctaBuy = 'Ajouter à mon dressing';
+  static const String ctaBuy = 'Ajouter à ma sélection';
   static const String ctaCheckout = 'Finaliser ma sélection';
   static const String ctaContinue = 'Poursuivre ma visite';
   static const String ctaRemove = 'Retirer de ma sélection';
@@ -20,7 +20,7 @@ class Vocabulary {
   static const String productBrand = 'Maison';
   static const String productSize = 'Taille & coupe';
 
-  // Panier / Checkout
+  // Sélection / Checkout
   static const String cartSummary = 'Récapitulatif de ma sélection';
   static const String cartEmpty = 'Votre dressing attend sa prochaine pièce';
   static const String cartPromoCode = 'Ajouter un privilège';

@@ -46,7 +46,7 @@ class ClosetChip extends StatelessWidget {
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 180),
           curve: Curves.easeOut,
-          height: 30,
+          constraints: const BoxConstraints(minHeight: 30),
           alignment: Alignment.center,
           padding: const EdgeInsets.symmetric(
             horizontal: AppSpacing.p16,

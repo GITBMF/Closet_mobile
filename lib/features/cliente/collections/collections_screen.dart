@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/closet_colors.dart';
+import '../../../core/theme/closet_layout.dart';
 import '../../../core/theme/closet_text_styles.dart';
 import '../../../core/widgets/closet_app_bar.dart';
 import '../../../core/widgets/closet_chip.dart';
@@ -209,76 +210,95 @@ class _CollectionsScreenState extends ConsumerState<CollectionsScreen> {
   @override
   Widget build(BuildContext context) {
     final catalogue = ref.watch(filteredArticlesProvider);
+    final marge = ClosetLayout.of(context).gouttiere;
 
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      appBar: const ClosetAppBar(),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.only(bottom: AppSpacing.p32),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const SizedBox(height: AppSpacing.p12),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 21),
-              child: Row(
-                children: [
-                  const Expanded(child: ClosetTitreEcran('Toutes les pièces')),
-                  _BoutonFiltres(
-                    actif: _filtresActifs,
-                    onTap: () => _ouvrirFiltres(context),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.only(bottom: AppSpacing.p32),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SizedBox(height: AppSpacing.p12),
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: marge),
+                child: const ClosetTitreEcran('Toutes les pièces'),
+              ),
+              const SizedBox(height: AppSpacing.p16),
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: marge),
+                child: _BarreRecherche(
+                  controller: _recherche,
+                  filtresActifs: _filtresActifs,
+                  onChanged: (v) =>
+                      ref.read(searchQueryProvider.notifier).setQuery(v),
+                  onEffacer: () {
+                    _recherche.clear();
+                    ref.read(searchQueryProvider.notifier).clear();
+                  },
+                  onFiltres: () => _ouvrirFiltres(context),
+                ),
+              ),
+              const SizedBox(height: AppSpacing.p16),
+              if (universCatalogue(ref).isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: AppSpacing.p8),
+                  child: _RangeeStyles(
+                    univers: universCatalogue(ref),
+                    choisi: ref.watch<String>(selectedUniverseProvider),
+                    onTap: (u) {
+                      final notifier = ref.read<UniverseNotifier>(
+                        selectedUniverseProvider.notifier,
+                      );
+                      notifier.setUniverse(
+                        u == ref.read<String>(selectedUniverseProvider)
+                            ? ''
+                            : u,
+                      );
+                    },
                   ),
-                  const SizedBox(width: AppSpacing.p8),
-                  _PiluleTri(
+                ),
+              Padding(
+                padding: EdgeInsets.fromLTRB(marge, 0, marge, AppSpacing.p8),
+                child: Align(
+                  alignment: Alignment.centerRight,
+                  child: _PiluleTri(
                     label: ref.watch<TriCatalogue>(triProvider).libelle,
+                    actif: true,
                     onTap: _choisirTri,
                   ),
-                ],
-              ),
-            ),
-            const SizedBox(height: AppSpacing.p16),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.p20),
-              child: _BarreRecherche(
-                controller: _recherche,
-                onChanged: (v) =>
-                    ref.read(searchQueryProvider.notifier).setQuery(v),
-                onEffacer: () {
-                  _recherche.clear();
-                  ref.read(searchQueryProvider.notifier).clear();
-                },
-              ),
-            ),
-            const SizedBox(height: AppSpacing.p24),
-            if (_filtresActifs) ...[
-              Padding(
-                padding: const EdgeInsets.fromLTRB(21, 0, 21, AppSpacing.p12),
-                child: _BarreFiltresActifs(
-                  filtres: _filtresPosees,
-                  onToutEffacer: _reinitialiserFiltres,
                 ),
               ),
+              if (_filtresActifs) ...[
+                Padding(
+                  padding: EdgeInsets.fromLTRB(marge, 0, marge, AppSpacing.p12),
+                  child: _BarreFiltresActifs(
+                    filtres: _filtresPosees,
+                    onToutEffacer: _reinitialiserFiltres,
+                  ),
+                ),
+              ],
+              catalogue.when(
+                data: (articles) => _Resultats(
+                  articles: articles,
+                  tri: ref.watch<TriCatalogue>(triProvider),
+                ),
+                loading: () => const SizedBox(
+                  height: 280,
+                  child: EtatEcran.chargement(),
+                ),
+                error: (e, _) => SizedBox(
+                  height: 280,
+                  child: EtatEcran.erreur(
+                    erreur: e,
+                    onRetry: () => ref.invalidate(filteredArticlesProvider),
+                  ),
+                ),
+              ),
+              const SizedBox(height: AppSpacing.p24),
             ],
-            catalogue.when(
-              data: (articles) => _Resultats(
-                articles: articles,
-                univers: ref.watch<String>(selectedUniverseProvider),
-                tri: ref.watch<TriCatalogue>(triProvider),
-              ),
-              loading: () => const SizedBox(
-                height: 280,
-                child: EtatEcran.chargement(),
-              ),
-              error: (e, _) => SizedBox(
-                height: 280,
-                child: EtatEcran.erreur(
-                  erreur: e,
-                  onRetry: () => ref.invalidate(filteredArticlesProvider),
-                ),
-              ),
-            ),
-            const SizedBox(height: AppSpacing.p24),
-          ],
+          ),
         ),
       ),
     );
@@ -291,39 +311,9 @@ class _CollectionsScreenState extends ConsumerState<CollectionsScreen> {
     final choix = await showModalBottomSheet<TriCatalogue>(
       context: context,
       backgroundColor: Colors.transparent,
-      builder: (context) {
-        final courant = ref.read<TriCatalogue>(triProvider);
-        return DecoratedBox(
-          decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.surface,
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-          ),
-          child: SafeArea(
-            top: false,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const SizedBox(height: AppSpacing.p20),
-                Text('Trier les pièces', style: ClosetTextStyles.titreBloc),
-                const SizedBox(height: AppSpacing.p12),
-                for (final t in TriCatalogue.values)
-                  ListTile(
-                    title: Text(t.libelle, style: ClosetTextStyles.libelle),
-                    trailing: Icon(
-                      t == courant
-                          ? Icons.radio_button_checked
-                          : Icons.radio_button_unchecked,
-                      size: 20,
-                      color:
-                          t == courant ? ClosetColors.vert : ClosetColors.ligne,
-                    ),
-                    onTap: () => Navigator.of(context).pop(t),
-                  ),
-              ],
-            ),
-          ),
-        );
-      },
+      builder: (context) => _FeuilleTri(
+        courant: ref.read<TriCatalogue>(triProvider),
+      ),
     );
     if (choix != null) ref.read(triProvider.notifier).setTri(choix);
   }
@@ -332,12 +322,10 @@ class _CollectionsScreenState extends ConsumerState<CollectionsScreen> {
 class _Resultats extends StatelessWidget {
   const _Resultats({
     required this.articles,
-    required this.univers,
     required this.tri,
   });
 
   final List<Article> articles;
-  final String univers;
   final TriCatalogue tri;
 
   @override
@@ -350,23 +338,20 @@ class _Resultats extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 21),
-          child: ClosetEnTeteSection(
-            titre: univers.isEmpty ? 'Toutes les pièces' : univers,
+          padding: EdgeInsets.symmetric(
+            horizontal: ClosetLayout.of(context).gouttiere,
           ),
-        ),
-        const SizedBox(height: AppSpacing.p4),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 21),
           child: ClosetSurtitre(
             articles.length == 1
-                ? '1 pièce. triée par ${tri.complement}'
-                : '${articles.length} pièces. triées par ${tri.complement}',
+                ? '1 pièce · ${tri.complement}'
+                : '${articles.length} pièces · ${tri.complement}',
           ),
         ),
         const SizedBox(height: AppSpacing.p16),
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 21),
+          padding: EdgeInsets.symmetric(
+            horizontal: ClosetLayout.of(context).gouttiere,
+          ),
           child: GridView.builder(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
@@ -394,11 +379,15 @@ class _BarreRecherche extends StatelessWidget {
     required this.controller,
     required this.onChanged,
     required this.onEffacer,
+    required this.onFiltres,
+    required this.filtresActifs,
   });
 
   final TextEditingController controller;
   final ValueChanged<String> onChanged;
   final VoidCallback onEffacer;
+  final VoidCallback onFiltres;
+  final bool filtresActifs;
 
   @override
   Widget build(BuildContext context) {
@@ -420,13 +409,29 @@ class _BarreRecherche extends StatelessWidget {
             size: 16,
             color: ClosetColors.chipTexteInactif,
           ),
-          suffixIcon: controller.text.isEmpty
-              ? null
-              : IconButton(
+          suffixIcon: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (controller.text.isNotEmpty)
+                IconButton(
                   icon: const Icon(Icons.close, size: 16),
                   color: ClosetColors.chipTexteInactif,
                   onPressed: onEffacer,
                 ),
+              IconButton(
+                tooltip: 'Filtrer',
+                icon: Icon(
+                  Icons.tune,
+                  size: 18,
+                  color: filtresActifs
+                      ? ClosetColors.vert
+                      : ClosetColors.chipTexteInactif,
+                ),
+                onPressed: onFiltres,
+              ),
+            ],
+          ),
+          suffixIconConstraints: const BoxConstraints(minWidth: 0, minHeight: 0),
           filled: true,
           fillColor: context.closetChamp,
           isDense: true,
@@ -448,53 +453,108 @@ class _BarreRecherche extends StatelessWidget {
       );
 }
 
-/// Bouton rond d'ouverture des filtres (42 de diamètre).
-class _BoutonFiltres extends StatelessWidget {
-  const _BoutonFiltres({required this.actif, required this.onTap});
+class _RangeeStyles extends StatelessWidget {
+  const _RangeeStyles({
+    required this.univers,
+    required this.choisi,
+    required this.onTap,
+  });
 
-  final bool actif;
-  final VoidCallback onTap;
+  final List<String> univers;
+  final String choisi;
+  final ValueChanged<String> onTap;
 
   @override
   Widget build(BuildContext context) {
-    return Semantics(
-      button: true,
-      label: 'Filtrer',
-      child: GestureDetector(
-        onTap: onTap,
-        child: Stack(
-          clipBehavior: Clip.none,
+    return SizedBox(
+      height: 38,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        padding: EdgeInsets.symmetric(
+            horizontal: ClosetLayout.of(context).gouttiere,
+          ),
+        itemCount: univers.length,
+        separatorBuilder: (_, _) => const SizedBox(width: AppSpacing.p12),
+        itemBuilder: (context, i) {
+          final u = univers[i];
+          return ClosetChip(
+            label: u,
+            isActive: u == choisi,
+            onTap: () => onTap(u),
+          );
+        },
+      ),
+    );
+  }
+}
+
+class _FeuilleTri extends StatefulWidget {
+  const _FeuilleTri({required this.courant});
+
+  final TriCatalogue courant;
+
+  @override
+  State<_FeuilleTri> createState() => _FeuilleTriState();
+}
+
+class _FeuilleTriState extends State<_FeuilleTri> {
+  late TriCatalogue _choix = widget.courant;
+
+  @override
+  Widget build(BuildContext context) {
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      child: SafeArea(
+        top: false,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            Container(
-              width: 42,
-              height: 42,
-              decoration: BoxDecoration(
-                color: ClosetColors.blanc,
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color: ClosetColors.fond300,
-                  width: AppStroke.fin,
+            const SizedBox(height: AppSpacing.p20),
+            Text('Trier les pièces', style: ClosetTextStyles.titreBloc),
+            const SizedBox(height: AppSpacing.p12),
+            for (final t in TriCatalogue.values)
+              ListTile(
+                title: Text(t.libelle, style: ClosetTextStyles.libelle),
+                trailing: Icon(
+                  t == _choix
+                      ? Icons.radio_button_checked
+                      : Icons.radio_button_unchecked,
+                  size: 20,
+                  color: t == _choix ? ClosetColors.vert : ClosetColors.ligne,
                 ),
+                onTap: () => setState(() => _choix = t),
               ),
-              child: const Icon(
-                Icons.tune,
-                size: 18,
-                color: ClosetColors.vert,
+            Padding(
+              padding: EdgeInsets.fromLTRB(
+                ClosetLayout.of(context).gouttiere,
+                8,
+                ClosetLayout.of(context).gouttiere,
+                16,
               ),
-            ),
-            if (actif)
-              Positioned(
-                top: 0,
-                right: 0,
-                child: Container(
-                  width: 10,
-                  height: 10,
-                  decoration: const BoxDecoration(
-                    color: ClosetColors.vert,
-                    shape: BoxShape.circle,
+              child: SizedBox(
+                width: double.infinity,
+                height: 44,
+                child: Material(
+                  color: ClosetColors.vert,
+                  borderRadius: BorderRadius.circular(AppRadius.cercle),
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(AppRadius.cercle),
+                    onTap: () => Navigator.of(context).pop(_choix),
+                    child: Center(
+                      child: Text(
+                        'Appliquer',
+                        style: ClosetTextStyles.bouton.copyWith(
+                          color: ClosetColors.blanc,
+                        ),
+                      ),
+                    ),
                   ),
                 ),
               ),
+            ),
           ],
         ),
       ),
@@ -502,12 +562,17 @@ class _BoutonFiltres extends StatelessWidget {
   }
 }
 
-/// Pilule de tri : 129 × 42, rayon 80.
+/// Pilule de tri : remplie quand un critère est actif.
 class _PiluleTri extends StatelessWidget {
-  const _PiluleTri({required this.label, required this.onTap});
+  const _PiluleTri({
+    required this.label,
+    required this.onTap,
+    this.actif = false,
+  });
 
   final String label;
   final VoidCallback onTap;
+  final bool actif;
 
   @override
   Widget build(BuildContext context) {
@@ -519,7 +584,7 @@ class _PiluleTri extends StatelessWidget {
           height: 42,
           padding: const EdgeInsets.symmetric(horizontal: 15),
           decoration: BoxDecoration(
-            color: ClosetColors.blanc,
+            color: actif ? ClosetColors.vert : ClosetColors.blanc,
             borderRadius: BorderRadius.circular(80),
             border: Border.all(
               color: ClosetColors.fond300,
@@ -529,16 +594,16 @@ class _PiluleTri extends StatelessWidget {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(
+              Icon(
                 Icons.swap_vert_rounded,
                 size: 16,
-                color: ClosetColors.vert,
+                color: actif ? ClosetColors.blanc : ClosetColors.vert,
               ),
               const SizedBox(width: 6),
               Text(
                 label,
                 style: ClosetTextStyles.corps.copyWith(
-                  color: ClosetColors.vert,
+                  color: actif ? ClosetColors.blanc : ClosetColors.vert,
                 ),
               ),
             ],

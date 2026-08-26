@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../data/api/api_exception.dart';
-import '../../data/models/article.dart';
-import '../../data/repositories/wishlist_repository.dart';
 import '../services/notification_service.dart';
 import 'closet_feedback.dart';
 
@@ -19,6 +17,24 @@ void toastSucces(WidgetRef ref, String titre, [String? message]) {
   ref
       .read<NotificationNotifier>(notificationProvider.notifier)
       .showSuccess(titre, message ?? titre);
+}
+
+/// Toast d'une action sur une pièce : le nom en titre, le résultat en corps.
+///
+/// Ex. titre « Levi's Sac », corps « Votre pièce « Levi's Sac » a été
+/// ajoutée à votre sélection. »
+void toastActionPiece(
+  WidgetRef ref, {
+  required String nom,
+  required String resultat,
+  bool succes = true,
+}) {
+  final phrase = 'Votre pièce « $nom » $resultat';
+  if (succes) {
+    toastSucces(ref, nom, phrase);
+  } else {
+    toastInfo(ref, nom, phrase);
+  }
 }
 
 /// Titre prédéfini + texte serveur s’il existe, sinon le complément local.

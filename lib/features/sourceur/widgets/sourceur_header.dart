@@ -3,7 +3,9 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/closet_colors.dart';
+import '../../../core/theme/closet_layout.dart';
 import '../../../core/theme/closet_text_styles.dart';
+import '../../../core/widgets/closet_header_button.dart';
 
 /// En-tête des écrans sourceur — maquettes `31:109`, `35:1895`, `32:1223`.
 ///
@@ -25,6 +27,7 @@ class SourceurHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final layout = ClosetLayout.of(context);
     return DecoratedBox(
       decoration: const BoxDecoration(
         border: Border(
@@ -35,10 +38,10 @@ class SourceurHeader extends StatelessWidget {
         ),
       ),
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(
-          AppSpacing.p20,
+        padding: EdgeInsets.fromLTRB(
+          layout.gouttiere,
           AppSpacing.p8,
-          AppSpacing.p20,
+          layout.gouttiere,
           AppSpacing.p12,
         ),
         child: Row(
@@ -49,7 +52,7 @@ class SourceurHeader extends StatelessWidget {
               label: 'Retour',
               onTap: onRetour ?? () => context.pop(),
             ),
-            const SizedBox(width: AppSpacing.p8),
+            SizedBox(width: layout.ecartBoutonsHeader),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -83,52 +86,26 @@ class SourceurHeader extends StatelessWidget {
   }
 }
 
-/// Bouton rond de 42, blanc cerclé d'or — récurrent dans l'espace sourceur.
+/// Bouton rond d'en-tête sourceur — même cible tactile que l'accueil.
 class SourceurBoutonRond extends StatelessWidget {
   const SourceurBoutonRond({
     super.key,
     required this.icone,
     required this.label,
     required this.onTap,
-    this.taille = 42,
   });
 
   final IconData icone;
   final String label;
   final VoidCallback onTap;
-  final double taille;
 
   @override
   Widget build(BuildContext context) {
-    return Semantics(
-      button: true,
+    return ClosetBoutonHeader(
+      icone: icone,
       label: label,
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: onTap,
-          customBorder: const CircleBorder(),
-          child: SizedBox(
-            width: AppSpacing.minTouchTarget,
-            height: AppSpacing.minTouchTarget,
-            child: Center(
-              child: Container(
-                width: taille,
-                height: taille,
-                decoration: BoxDecoration(
-                  color: ClosetColors.blanc,
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: ClosetColors.fond300,
-                    width: AppStroke.fin,
-                  ),
-                ),
-                child: Icon(icone, size: taille * 0.4, color: ClosetColors.vert),
-              ),
-            ),
-          ),
-        ),
-      ),
+      onTap: onTap,
+      fond: ClosetColors.blanc,
     );
   }
 }

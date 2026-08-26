@@ -62,7 +62,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
         }
       }
     } catch (_) {
-      user = null;
+      user = ref.read(currentUserProvider);
     }
     await minimum;
     if (!mounted) return;

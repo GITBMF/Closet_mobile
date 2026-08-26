@@ -14,19 +14,62 @@ class AuthRepository {
   final Ref _ref;
   final BffClient _client;
 
-  /// Restaure la session persistée : jeton + `GET /me`.
+  /// Restaure la session persistée jusqu'à déconnexion volontaire.
+  ///
+  /// Un jeton d'accès expiré est renouvelé. Une panne réseau ne déconnecte
+  /// pas : on reprend le profil déjà enregistré sur l'appareil.
   Future<ClosetUser?> restaurerSession() async {
     await _client.restaurerJeton();
-    final jeton = await AuthStorageService.getAccessToken();
-    if (jeton == null || jeton.isEmpty) return null;
+    if (!await AuthStorageService.aUneSession()) return null;
+
+    final cache = await _utilisateurPersiste();
+    if (cache != null) {
+      _ref.read(currentUserProvider.notifier).state = cache;
+    }
+
+    if (await AuthStorageService.accessTokenARafraichir()) {
+      await _client.rafraichirJeton();
+      if (!await AuthStorageService.aUneSession()) {
+        _ref.read(currentUserProvider.notifier).state = null;
+        return null;
+      }
+    }
+
     try {
       final data = await _client.getJson('/me');
       final user = ClosetUser.fromJson(data);
       await AuthStorageService.saveUser(user.toJson());
       _ref.read(currentUserProvider.notifier).state = user;
       return user;
-    } on ApiException {
-      await deconnecter(tousLesAppareils: false);
+    } on ApiException catch (e) {
+      if (e.kind == KindErreurApi.nonAutorise) {
+        final ok = await _client.rafraichirJeton();
+        if (ok) {
+          try {
+            final data = await _client.getJson('/me');
+            final user = ClosetUser.fromJson(data);
+            await AuthStorageService.saveUser(user.toJson());
+            _ref.read(currentUserProvider.notifier).state = user;
+            return user;
+          } on ApiException {
+            // Le refresh a réussi mais /me échoue encore : on garde le cache.
+          }
+        }
+        if (!await AuthStorageService.aUneSession()) {
+          await deconnecter(tousLesAppareils: false);
+          return null;
+        }
+      }
+      return cache;
+    }
+  }
+
+  Future<ClosetUser?> _utilisateurPersiste() async {
+    final json = await AuthStorageService.getUserJson();
+    if (json == null) return null;
+    try {
+      return ClosetUser.fromJson(json);
+    } catch (_) {
       return null;
     }
   }
@@ -157,7 +200,11 @@ class AuthRepository {
 
 final authRepositoryProvider = Provider<AuthRepository>((ref) {
   final client = ref.watch(bffClientProvider);
-  return AuthRepository(ref, client);
+  final repo = AuthRepository(ref, client);
+  client.onSessionInvalide = () {
+    ref.read(currentUserProvider.notifier).state = null;
+  };
+  return repo;
 });
 
 final currentUserProvider = StateProvider<ClosetUser?>((ref) => null);

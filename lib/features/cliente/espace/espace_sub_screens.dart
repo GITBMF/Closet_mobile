@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../../core/theme/closet_colors.dart';
+import '../../../core/theme/closet_layout.dart';
 import '../../../core/theme/closet_text_styles.dart';
 import '../../../core/widgets/closet_feedback.dart';
 import '../../../core/widgets/toasts.dart';
@@ -24,13 +25,15 @@ class EspaceSubAppBar extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   Widget build(BuildContext context) {
+    final layout = ClosetLayout.of(context);
+    final largeurLeading = layout.gouttiere + layout.cibleTactile;
     return AppBar(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       elevation: 0,
       scrolledUnderElevation: 0,
-      toolbarHeight: 56,
+      toolbarHeight: ClosetLayout.hauteurBarre,
       leading: Padding(
-        padding: const EdgeInsets.only(left: 16),
+        padding: EdgeInsets.only(left: layout.gouttiere),
         child: Center(
           child: EspaceBoutonRond(
             icone: Icons.arrow_back,
@@ -39,9 +42,11 @@ class EspaceSubAppBar extends StatelessWidget implements PreferredSizeWidget {
           ),
         ),
       ),
-      leadingWidth: 72,
+      leadingWidth: largeurLeading,
       title: Text(
         title,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
         style: italicTitle
             ? GoogleFonts.ebGaramond(
                 fontSize: 24,
@@ -55,7 +60,7 @@ class EspaceSubAppBar extends StatelessWidget implements PreferredSizeWidget {
       actions: [
         if (onSettingsTap != null)
           Padding(
-            padding: const EdgeInsets.only(right: 16),
+            padding: EdgeInsets.only(right: layout.gouttiere),
             child: Center(
               child: EspaceBoutonRond(
                 icone: Icons.tune,
@@ -76,7 +81,8 @@ class EspaceSubAppBar extends StatelessWidget implements PreferredSizeWidget {
   }
 
   @override
-  Size get preferredSize => const Size.fromHeight(57);
+  Size get preferredSize =>
+      const Size.fromHeight(ClosetLayout.hauteurBarre + 1);
 }
 
 // -- 1. Mes Moyens de Paiement Screen ---------------------------------------

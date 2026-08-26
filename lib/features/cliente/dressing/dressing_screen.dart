@@ -1,20 +1,19 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/closet_colors.dart';
+import '../../../core/theme/closet_layout.dart';
 import '../../../core/theme/closet_text_styles.dart';
 import '../../../core/widgets/closet_app_bar.dart';
 import '../../../core/widgets/closet_chip.dart';
 import '../../../core/widgets/closet_feedback.dart';
-import '../../../core/widgets/closet_sections.dart';
 import '../../../core/widgets/etat_ecran.dart';
 import '../../../core/widgets/piece_card.dart';
-import '../../../core/widgets/toasts.dart';
 import '../../../data/models/article.dart';
 import '../../../data/repositories/catalog_repository.dart';
-import '../../../data/repositories/wishlist_repository.dart';
 import '../collections/collections_screen.dart';
 
 /// Contenu de l'accueil, branché sur `GET /pieces` + `GET /showcasing/home`.
@@ -24,8 +23,8 @@ final dressingDataProvider = FutureProvider<AccueilDressing>((ref) {
 
 /// Accueil « dressing » — transcription de la maquette Figma `11:30` / `11:250`.
 ///
-/// Carte « pièce de la semaine » en arche, visuel à la une, puis deux grilles
-/// de deux colonnes séparées par des titres Cormorant et des liens dorés.
+/// Cadre « pièce de la semaine » (photo + informations), visuel à la une
+/// distinct s'il existe, puis grilles de deux colonnes.
 class DressingScreen extends ConsumerWidget {
   const DressingScreen({super.key});
 
@@ -60,20 +59,25 @@ class _CorpsAccueil extends ConsumerWidget {
 
   final AccueilDressing accueil;
 
-  /// Marge latérale de l'écran dans la maquette.
-  static const double _marge = 20;
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final featured = accueil.pieceDeLaSemaine;
     final heroBrut = accueil.hero ?? featured;
-    // Une seule mise en avant si le back renvoie la même pièce deux fois.
-    final hero = featured != null && heroBrut?.id == featured.id
+    final hero = featured != null &&
+            (heroBrut?.id == featured.id ||
+                _memeVisuel(featured, heroBrut))
         ? null
         : heroBrut;
-    final nouveautes = accueil.nouveautes.take(2).toList();
-    final coupsDeCoeur = accueil.coupsDeCoeur.take(2).toList();
+    final vus = <String>{
+      if (featured != null) featured.id,
+      if (hero != null) hero.id,
+    };
+    final fil = <Article>[
+      ...accueil.nouveautes,
+      ...accueil.coupsDeCoeur,
+    ].where((a) => vus.add(a.id)).toList();
     final univers = accueil.univers;
+    final marge = ClosetLayout.of(context).gouttiere;
 
     void ouvrirUnivers(String categorie) {
       ref
@@ -88,18 +92,19 @@ class _CorpsAccueil extends ConsumerWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const SizedBox(height: 23),
-          if (featured != null)
+          if (featured != null) ...[
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: _marge),
+              padding: EdgeInsets.symmetric(horizontal: marge),
               child: _CartePieceDeLaSemaine(
                 article: featured,
                 onTap: () => context.push('/product/${featured.id}'),
               ),
             ),
+          ],
           if (hero != null) ...[
             const SizedBox(height: AppSpacing.p8),
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 19),
+              padding: EdgeInsets.symmetric(horizontal: marge),
               child: _CarteALaUne(
                 article: hero,
                 onTap: () => context.push('/product/${hero.id}'),
@@ -107,39 +112,12 @@ class _CorpsAccueil extends ConsumerWidget {
             ),
           ],
           if (univers.isNotEmpty) ...[
-            const SizedBox(height: 33),
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 19),
-              child: ClosetSurtitre('explorer par univers'),
-            ),
-            const SizedBox(height: AppSpacing.p16),
+            const SizedBox(height: 24),
             _RangeeUnivers(univers: univers, onTap: ouvrirUnivers),
           ],
-          if (nouveautes.isNotEmpty) ...[
+          if (fil.isNotEmpty) ...[
             const SizedBox(height: AppSpacing.p20),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 21),
-              child: ClosetEnTeteSection(
-                titre: 'Nouveauté du dressing',
-                lien: 'tout découvrir',
-                onLien: () => context.go('/collections'),
-              ),
-            ),
-            const SizedBox(height: AppSpacing.p16),
-            _GrilleArticles(articles: nouveautes, marge: 21),
-          ],
-          if (coupsDeCoeur.isNotEmpty) ...[
-            const SizedBox(height: AppSpacing.p24),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 21),
-              child: ClosetEnTeteSection(
-                titre: 'Coup de coeur Clos ET',
-                lien: 'voir',
-                onLien: () => context.go('/collections'),
-              ),
-            ),
-            const SizedBox(height: AppSpacing.p16),
-            _GrilleArticles(articles: coupsDeCoeur, marge: 21),
+            _GrilleArticles(articles: fil, marge: marge),
           ],
           const SizedBox(height: AppSpacing.p24),
         ],
@@ -148,8 +126,24 @@ class _CorpsAccueil extends ConsumerWidget {
   }
 }
 
-/// Carte « pièce de la semaine » : 350 × 120, vert profond, coins supérieurs
-/// très arrondis (102 / 130) qui lui donnent sa silhouette en arche.
+/// Photos vêtements locales, utilisées si le catalogue n'a pas d'image.
+const _visuelsHabits = [
+  'assets/onboarding_1.jpg',
+  'assets/onboarding_2.jpg',
+  'assets/onboarding_3.jpg',
+];
+
+String _visuelHabitPour(Article article) =>
+    _visuelsHabits[article.id.hashCode.abs() % _visuelsHabits.length];
+
+bool _memeVisuel(Article a, Article? b) {
+  if (b == null) return false;
+  final ua = a.imageUrls.isEmpty ? _visuelHabitPour(a) : a.imageUrls.first;
+  final ub = b.imageUrls.isEmpty ? _visuelHabitPour(b) : b.imageUrls.first;
+  return ua == ub;
+}
+
+/// Cadre unique : photo de la pièce et informations, sans doublon.
 class _CartePieceDeLaSemaine extends StatelessWidget {
   const _CartePieceDeLaSemaine({required this.article, required this.onTap});
 
@@ -158,144 +152,147 @@ class _CartePieceDeLaSemaine extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      constraints: const BoxConstraints(minHeight: 120),
-      width: double.infinity,
-      decoration: const BoxDecoration(
+    return Semantics(
+      button: true,
+      label:
+          'Pièce de la semaine, ${article.title}, ${formatPrixFcfa(article.price)}',
+      child: Material(
         color: ClosetColors.vert,
-        borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(102),
-          topRight: Radius.circular(130),
-          bottomLeft: Radius.circular(AppRadius.carte),
-          bottomRight: Radius.circular(AppRadius.carte),
+        elevation: 0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppRadius.bloc),
+          side: BorderSide(
+            color: ClosetColors.fond300.withValues(alpha: 0.55),
+            width: AppStroke.fin,
+          ),
         ),
-      ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text(
-            'pièce de la semaine'.toUpperCase(),
-            style: ClosetTextStyles.surtitre.copyWith(
-              color: ClosetColors.fond400,
-            ),
-          ),
-          const SizedBox(height: AppSpacing.p8),
-          Text(
-            article.title,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: ClosetTextStyles.accroche.copyWith(
-              color: ClosetColors.blanc,
-            ),
-          ),
-          const SizedBox(height: AppSpacing.p4),
-          Text(
-            '${article.brand}. ${article.material}. T${article.size}.',
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: ClosetTextStyles.attribut.copyWith(
-              letterSpacing: 0,
-              color: ClosetColors.fond200,
-            ),
-          ),
-          const SizedBox(height: AppSpacing.p8),
-          SizedBox(
-            width: 236,
-            height: 34,
-            child: Material(
-              color: ClosetColors.fond300,
-              borderRadius: BorderRadius.circular(AppRadius.cercle),
-              child: InkWell(
-                borderRadius: BorderRadius.circular(AppRadius.cercle),
-                onTap: onTap,
-                child: Center(
-                  child: Text(
-                    'Découvrir - ${formatPrixFcfa(article.price)}',
-                    style: ClosetTextStyles.bouton.copyWith(
-                      color: ClosetColors.neutre1000,
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: onTap,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              SizedBox(
+                height: ClosetLayout.of(context).hauteurPieceSemaine,
+                width: double.infinity,
+                child: _PhotoPiece(article: article),
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(
+                  AppSpacing.p20,
+                  AppSpacing.p16,
+                  AppSpacing.p20,
+                  AppSpacing.p16,
+                ),
+                child: Column(
+                  children: [
+                    Text(
+                      'Pièce de la semaine',
+                      style: ClosetTextStyles.surtitre.copyWith(
+                        color: ClosetColors.fond300,
+                      ),
                     ),
-                  ),
+                    const SizedBox(height: AppSpacing.p8),
+                    Text(
+                      article.title,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      textAlign: TextAlign.center,
+                      style: ClosetTextStyles.accroche.copyWith(
+                        color: ClosetColors.blanc,
+                      ),
+                    ),
+                    const SizedBox(height: AppSpacing.p8),
+                    Text(
+                      formatPrixFcfa(article.price),
+                      style: ClosetTextStyles.prixGrand.copyWith(
+                        color: ClosetColors.fond300,
+                      ),
+                    ),
+                    const SizedBox(height: AppSpacing.p12),
+                    SizedBox(
+                      width: 236,
+                      height: 40,
+                      child: DecoratedBox(
+                        decoration: BoxDecoration(
+                          color: ClosetColors.fond300,
+                          borderRadius: BorderRadius.circular(AppRadius.cercle),
+                        ),
+                        child: Center(
+                          child: Text(
+                            'Découvrir',
+                            style: ClosetTextStyles.bouton.copyWith(
+                              color: ClosetColors.neutre1000,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
-            ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
 }
 
-/// Visuel à la une : carte de 350 × 184 dont l'image occupe 326 × 160.
-class _CarteALaUne extends ConsumerWidget {
+/// Photo de la pièce, pleine largeur — utilisée seulement si le hero
+/// est une autre pièce que celle de la semaine.
+class _CarteALaUne extends StatelessWidget {
   const _CarteALaUne({required this.article, required this.onTap});
 
   final Article article;
   final VoidCallback onTap;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final favorite = ref
-        .watch(wishlistListProvider)
-        .any((a) => a.id == article.id);
-
+  Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
-      child: Container(
+      child: SizedBox(
+        width: double.infinity,
         height: 184,
-        padding: const EdgeInsets.all(AppSpacing.p12),
-        decoration: BoxDecoration(
-          color: ClosetColors.carteFond,
-          border: Border.all(
-            color: ClosetColors.carteBordure,
-            width: AppStroke.fin,
-          ),
+        child: ClipRRect(
           borderRadius: BorderRadius.circular(AppRadius.carte),
+          child: _PhotoPiece(article: article),
         ),
-        child: Stack(
-          fit: StackFit.expand,
-          children: [
-            ClipRRect(
-              borderRadius: BorderRadius.circular(AppRadius.carte),
-              child: article.imageUrls.isEmpty
-                  ? const ColoredBox(color: ClosetColors.gabaritImageClair)
-                  : Image.network(
-                      article.imageUrls.first,
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, _, _) => const ColoredBox(
-                        color: ClosetColors.gabaritImageClair,
-                      ),
-                    ),
-            ),
-            Positioned(
-              top: AppSpacing.p12,
-              left: AppSpacing.p8,
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppSpacing.p12,
-                  vertical: AppSpacing.p4,
-                ),
-                decoration: BoxDecoration(
-                  color: ClosetColors.emeraude100,
-                  borderRadius: BorderRadius.circular(AppRadius.vignette),
-                ),
-                child: Text(
-                  article.condition,
-                  style: ClosetTextStyles.attribut.copyWith(
-                    color: ClosetColors.emeraude500,
-                  ),
-                ),
-              ),
-            ),
-            Positioned(
-              top: AppSpacing.p12,
-              right: AppSpacing.p8,
-              child: BoutonCoeur(
-                actif: favorite,
-                onTap: () => basculerFavori(ref, article),
-              ),
-            ),
-          ],
-        ),
+      ),
+    );
+  }
+}
+
+class _PhotoPiece extends StatelessWidget {
+  const _PhotoPiece({required this.article});
+
+  final Article article;
+
+  @override
+  Widget build(BuildContext context) {
+    final local = _visuelHabitPour(article);
+    if (article.imageUrls.isEmpty) {
+      return Image.asset(
+        local,
+        fit: BoxFit.cover,
+        width: double.infinity,
+        height: double.infinity,
+        errorBuilder: (_, _, _) =>
+            const ColoredBox(color: ClosetColors.gabaritImageClair),
+      );
+    }
+    return CachedNetworkImage(
+      imageUrl: article.imageUrls.first,
+      fit: BoxFit.cover,
+      width: double.infinity,
+      height: double.infinity,
+      placeholder: (context, url) =>
+          const ColoredBox(color: ClosetColors.gabaritImageClair),
+      errorWidget: (context, url, error) => Image.asset(
+        local,
+        fit: BoxFit.cover,
+        width: double.infinity,
+        height: double.infinity,
       ),
     );
   }
@@ -309,32 +306,31 @@ class _RangeeUnivers extends StatelessWidget {
   const _RangeeUnivers({
     required this.univers,
     required this.onTap,
-    this.premiere = true,
   });
 
   final List<String> univers;
   final ValueChanged<String> onTap;
-  final bool premiere;
 
   @override
   Widget build(BuildContext context) {
-    final extra = premiere ? 1 : 0;
     return SizedBox(
-      height: 30,
+      height: 38,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 20),
-        itemCount: univers.length + extra,
+        padding: EdgeInsets.symmetric(
+          horizontal: ClosetLayout.of(context).gouttiere,
+        ),
+        itemCount: univers.length + 1,
         separatorBuilder: (_, _) => const SizedBox(width: AppSpacing.p12),
         itemBuilder: (context, i) {
-          if (premiere && i == 0) {
+          if (i == 0) {
             return ClosetChip(
               label: 'Tout l’univers',
               isActive: true,
               onTap: () => context.go('/collections'),
             );
           }
-          final categorie = univers[i - extra];
+          final categorie = univers[i - 1];
           return ClosetChip(
             label: categorie,
             onTap: () => onTap(categorie),

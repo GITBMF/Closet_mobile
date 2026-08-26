@@ -8,6 +8,7 @@ class Article {
   final String size;
   final String material;
   final String condition;
+  final String color;
   final double price;
   final List<String> imageUrls;
   final bool isFeatured;
@@ -26,6 +27,7 @@ class Article {
     required this.size,
     required this.material,
     required this.condition,
+    this.color = '',
     required this.price,
     required this.imageUrls,
     this.isFeatured = false,
@@ -72,6 +74,10 @@ class Article {
       size: chaineDe(json['size_label'], chaineDe(json['size'])),
       material: chaineDe(json['material']),
       condition: _libelleEtat(conditionApi),
+      color: chaineDe(
+        json['color'],
+        chaineDe(json['colour'], chaineDe(json['couleur'])),
+      ),
       price: montantDe(json['price']),
       imageUrls: urls,
       isFeatured: booleenDe(json['isFeatured']),
@@ -109,6 +115,7 @@ class Article {
         'size': size,
         'material': material,
         'condition': condition,
+        'color': color,
         'price': price,
         'imageUrls': imageUrls,
         'isFeatured': isFeatured,
@@ -128,6 +135,7 @@ class Article {
     String? size,
     String? material,
     String? condition,
+    String? color,
     double? price,
     List<String>? imageUrls,
     bool? isFeatured,
@@ -146,6 +154,7 @@ class Article {
       size: size ?? this.size,
       material: material ?? this.material,
       condition: condition ?? this.condition,
+      color: color ?? this.color,
       price: price ?? this.price,
       imageUrls: imageUrls ?? this.imageUrls,
       isFeatured: isFeatured ?? this.isFeatured,
@@ -156,6 +165,29 @@ class Article {
       houseId: houseId ?? this.houseId,
       universeId: universeId ?? this.universeId,
     );
+  }
+
+  /// Notation visuelle de l'état, à gauche du nom (sans badge sur la photo).
+  int get etoilesEtat => switch (condition) {
+        'Neuf' || 'Excellent' => 5,
+        'Très bon état' => 4,
+        'Bon état' => 3,
+        _ => condition.trim().isEmpty ? 0 : 3,
+      };
+
+  /// Conseil d'entretien dérivé de la matière renvoyée par le catalogue.
+  String get conseilsLavage {
+    final m = material.toLowerCase();
+    if (m.contains('soie') || m.contains('silk')) {
+      return 'Nettoyage à sec recommandé';
+    }
+    if (m.contains('laine') || m.contains('wool') || m.contains('cachemire')) {
+      return 'Lavage à la main, à froid';
+    }
+    if (m.contains('cuir') || m.contains('leather')) {
+      return 'Entretien cuir, pas de lavage en machine';
+    }
+    return 'Lavage délicat. Suivre l’étiquette d’entretien.';
   }
 }
 

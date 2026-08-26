@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../theme/app_spacing.dart';
 import '../theme/closet_colors.dart';
+import '../theme/closet_layout.dart';
 import '../theme/closet_text_styles.dart';
 
 /// Une entrée de la barre de navigation.
@@ -121,20 +122,14 @@ class ClosetBottomNav extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Maquette `13:1182` : pilule flottante 58 px, r100, fond `#1C382D`,
-    // posée sur le crème de l'écran — pas un bandeau vert pleine largeur.
-    // `heightFactor: 1` empêche le Scaffold d'étirer la barre au milieu.
+    final layout = ClosetLayout.of(context);
+    final ecartOnglets = layout.compact ? AppSpacing.p8 : AppSpacing.p20;
     return Material(
       color: Theme.of(context).scaffoldBackgroundColor,
       child: SafeArea(
         top: false,
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(
-            AppSpacing.p8,
-            AppSpacing.p8,
-            AppSpacing.p8,
-            AppSpacing.p8,
-          ),
+          padding: const EdgeInsets.all(AppSpacing.p8),
           child: Align(
             alignment: Alignment.bottomCenter,
             heightFactor: 1,
@@ -150,13 +145,14 @@ class ClosetBottomNav extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     for (var i = 0; i < items.length; i++) ...[
-                      if (i > 0) const SizedBox(width: AppSpacing.p20),
+                      if (i > 0) SizedBox(width: ecartOnglets),
                       _Onglet(
                         key: items[i].cle,
                         item: items[i],
                         actif: i == indexActif,
                         compteur: compteurs[i],
                         onTap: onTap == null ? null : () => onTap!(i),
+                        compact: layout.compact,
                       ),
                     ],
                   ],
@@ -177,12 +173,14 @@ class _Onglet extends StatelessWidget {
     required this.actif,
     required this.compteur,
     required this.onTap,
+    this.compact = false,
   });
 
   final ClosetNavItem item;
   final bool actif;
   final int? compteur;
   final VoidCallback? onTap;
+  final bool compact;
 
   /// Taille des icônes de la maquette : 20 px dans un cadre de 42.
   static const _tailleIcone = 20.0;
@@ -237,9 +235,9 @@ class _Onglet extends StatelessWidget {
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 220),
           curve: Curves.easeOutCubic,
-          // Padding 11 autour d'une icône de 20 : le cadre fait 42, comme la
-          // maquette. C'est aussi ce qui donne sa largeur à la pilule active.
-          padding: const EdgeInsets.all(AppSpacing.gouttiere),
+          padding: EdgeInsets.all(
+            compact ? AppSpacing.p8 : AppSpacing.gouttiere,
+          ),
           decoration: BoxDecoration(
             color: actif ? ClosetColors.navigationActifFond : Colors.transparent,
             borderRadius: BorderRadius.circular(AppRadius.carteProduit),

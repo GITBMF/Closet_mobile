@@ -45,16 +45,9 @@ class SourceurAdhesionScreen extends ConsumerWidget {
                 if (context.canPop()) {
                   context.pop();
                 } else {
-                  context.go('/espace');
+                  context.go('/home');
                 }
               },
-              actions: [
-                SourceurBoutonRond(
-                  icone: Icons.notifications_none_rounded,
-                  label: 'Notifications',
-                  onTap: () => context.push('/espace/alertes'),
-                ),
-              ],
             ),
             Expanded(
               child: SingleChildScrollView(
@@ -133,6 +126,16 @@ class SourceurAdhesionScreen extends ConsumerWidget {
                       ),
                       const SizedBox(height: AppSpacing.p16),
                     ],
+                    Center(
+                      child: SizedBox(
+                        width: 312,
+                        height: 44,
+                        child: ClosetOutlineButton(
+                          label: 'Retour à l’accueil',
+                          onPressed: () => context.go('/home'),
+                        ),
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -162,7 +165,7 @@ class _AucuneAdhesion extends StatelessWidget {
                 if (context.canPop()) {
                   context.pop();
                 } else {
-                  context.go('/espace');
+                  context.go('/home');
                 }
               },
             ),

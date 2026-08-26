@@ -1,5 +1,7 @@
 // Formats partagés des formulaires ClosET (e-mail, mot de passe, téléphone).
 
+import 'package:flutter/services.dart';
+
 /// Motif e-mail classique : local@domaine.tld, TLD d’au moins 2 lettres.
 final RegExp motifEmail = RegExp(
   r"^[A-Za-z0-9.!#$%&'*+/=?^_`{|}~-]+@"
@@ -78,4 +80,44 @@ String? validerIdentifiantConnexion(String? valeur) {
     return 'La connexion se fait avec l’e-mail du compte, pas le téléphone.';
   }
   return 'Utilisez l’e-mail du compte (nom@domaine.com).';
+}
+
+/// Première lettre de chaque mot en majuscule (prénom).
+class FormateurPrenom extends TextInputFormatter {
+  const FormateurPrenom();
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    if (newValue.text.isEmpty) return newValue;
+    final formate = newValue.text.splitMapJoin(
+      RegExp(r'(\s+)'),
+      onNonMatch: (mot) {
+        if (mot.isEmpty) return mot;
+        return mot[0].toUpperCase() +
+            (mot.length > 1 ? mot.substring(1).toLowerCase() : '');
+      },
+    );
+    return TextEditingValue(
+      text: formate,
+      selection: TextSelection.collapsed(offset: formate.length),
+    );
+  }
+}
+
+/// Nom de famille entièrement en majuscules.
+class FormateurNom extends TextInputFormatter {
+  const FormateurNom();
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    final formate = newValue.text.toUpperCase();
+    return TextEditingValue(
+      text: formate,
+      selection: TextSelection.collapsed(offset: formate.length),
+    );
+  }
 }

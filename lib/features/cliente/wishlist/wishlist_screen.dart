@@ -31,8 +31,8 @@ class WishlistScreen extends ConsumerWidget {
 
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      appBar: const ClosetAppBar(),
-      body: Column(
+      body: SafeArea(
+        child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const SizedBox(height: AppSpacing.p12),
@@ -77,13 +77,28 @@ class WishlistScreen extends ConsumerWidget {
                                 onRetirer: () =>
                                     basculerFavori(ref, article),
                                 onAjouter: () {
-                                  ref
-                                      .read(cartProvider.notifier)
-                                      .addArticle(article);
-                                  toastSucces(
-                                    ref,
-                                    'Ajoutée à votre sélection.',
-                                  );
+                                  final cart = ref.read(cartProvider.notifier);
+                                  final deja = ref
+                                      .read(cartListProvider)
+                                      .any((a) => a.id == article.id);
+                                  if (deja) {
+                                    cart.removeArticle(article.id);
+                                    toastActionPiece(
+                                      ref,
+                                      nom: article.title,
+                                      resultat:
+                                          'a été retirée de votre sélection.',
+                                      succes: false,
+                                    );
+                                  } else {
+                                    cart.addArticle(article);
+                                    toastActionPiece(
+                                      ref,
+                                      nom: article.title,
+                                      resultat:
+                                          'a été ajoutée à votre sélection.',
+                                    );
+                                  }
                                 },
                               );
                             },
@@ -91,6 +106,7 @@ class WishlistScreen extends ConsumerWidget {
                   ),
           ),
         ],
+      ),
       ),
     );
   }
@@ -243,12 +259,12 @@ class _BoutonAjouter extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final actif = !indisponible && !dejaAjoute;
+    final actif = !indisponible;
     return SizedBox(
       width: 116,
       height: 33,
       child: Material(
-        color: actif ? ClosetColors.fond300 : ClosetColors.doreDesactive,
+        color: indisponible ? ClosetColors.doreDesactive : ClosetColors.fond300,
         borderRadius: BorderRadius.circular(AppRadius.cercle),
         child: InkWell(
           borderRadius: BorderRadius.circular(AppRadius.cercle),
@@ -258,8 +274,8 @@ class _BoutonAjouter extends StatelessWidget {
               indisponible
                   ? 'Indisponible'
                   : dejaAjoute
-                      ? 'Dans ma sélection'
-                      : 'Ajouter au panier',
+                      ? 'Retirer'
+                      : 'Ajouter',
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: ClosetTextStyles.attribut.copyWith(

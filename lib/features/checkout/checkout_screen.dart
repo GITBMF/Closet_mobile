@@ -22,6 +22,7 @@ import 'brouillon_commande.dart';
 import 'montants.dart';
 import 'moyens_paiement.dart';
 import 'widgets/checkout_widgets.dart';
+import 'widgets/code_privilege.dart';
 
 /// Finalisation de la sélection — transcription de la maquette `56:11462`.
 ///
@@ -42,7 +43,9 @@ class CheckoutScreen extends ConsumerStatefulWidget {
 class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
   final _formKey = GlobalKey<FormState>();
   final _nom = TextEditingController();
+  final _codePrivilege = TextEditingController();
   late final TelephoneController _telephone;
+  int _etape = 0;
 
   @override
   void initState() {
@@ -66,6 +69,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
   void dispose() {
     _nom.dispose();
     _telephone.dispose();
+    _codePrivilege.dispose();
     super.dispose();
   }
 
@@ -90,7 +94,11 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
       telephone: _telephone.e164,
     );
     _brouillon.validerCoordonnees();
-    _signaler('Informations de livraison enregistrées.');
+    setState(() => _etape = 1);
+  }
+
+  void _retourLivraison() {
+    setState(() => _etape = 0);
   }
 
   Future<void> _choisirVille() async {
@@ -241,12 +249,18 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
         child: Column(
           children: [
             SourceurHeader(
-              titre: 'Ma sélection',
+              titre: _etape == 0 ? 'Livraison' : 'Paiement',
               surtitre: 'Finaliser ma commande',
-              onRetour: () => context.pop(),
+              onRetour: () {
+                if (_etape == 1) {
+                  _retourLivraison();
+                } else {
+                  context.pop();
+                }
+              },
               actions: [
                 Text(
-                  'Étape 1/3',
+                  'Étape ${_etape + 1}/2',
                   style: ClosetTextStyles.actionPetite.copyWith(
                     letterSpacing: -0.20,
                     color: ClosetColors.fond300,
@@ -265,80 +279,66 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                     AppSpacing.p24,
                   ),
                   children: [
-                    const FriseTunnel(etapeCourante: 1),
-                    const SizedBox(height: AppSpacing.p32),
-                    const ClosetEnTeteSection(titre: 'Détails de livraison'),
-                    const SizedBox(height: AppSpacing.p4),
-                    const ClosetSurtitre('Veuillez entrer vos informations'),
-                    const SizedBox(height: AppSpacing.p20),
-                    ChampCheckout(
-                      label: 'Nom complet',
-                      hint: 'Marie Dupont',
-                      controller: _nom,
-                      textInputAction: TextInputAction.next,
-                      validator: (v) => (v == null || v.trim().length < 2)
-                          ? 'Indiquez votre nom complet.'
-                          : null,
-                    ),
-                    const SizedBox(height: AppSpacing.p20),
-                    ChampTelephone(
-                      label: 'Téléphone (WhatsApp)',
-                      controller: _telephone,
-                      hint: '6 90 12 34 56',
-                      style: StyleChampTelephone.checkout,
-                      textInputAction: TextInputAction.done,
-                      validator: (v) => validerTelephone(
-                        v,
-                        obligatoire: true,
-                        libelle: 'numéro WhatsApp',
-                      ),
-                    ),
-                    const SizedBox(height: AppSpacing.p8),
-                    Text(
-                      'Nous vous écrirons sur WhatsApp pour suivre votre '
-                      'pièce.',
-                      style: ClosetTextStyles.meta.copyWith(
-                        color: ClosetColors.taupe,
-                      ),
-                    ),
-                    const SizedBox(height: AppSpacing.p20),
-                    _BlocAdresse(
-                      brouillon: brouillon,
-                      onVille: _choisirVille,
-                      onRegion: _choisirRegion,
-                      onDepartement: _choisirDepartement,
-                      onQuartier: _brouillon.majQuartier,
-                      onMode: _brouillon.choisirMode,
-                    ),
+                    FriseTunnel(etapeCourante: _etape == 0 ? 1 : 2),
                     const SizedBox(height: AppSpacing.p24),
-                    BoutonSecondaireCheckout(
-                      label: 'Valider les informations',
-                      valide: brouillon.coordonneesValidees,
-                      onTap: _validerCoordonnees,
-                    ),
-                    const SizedBox(height: AppSpacing.p32),
-                    const ClosetEnTeteSection(titre: 'Méthode de paiement'),
-                    const SizedBox(height: AppSpacing.p4),
-                    const ClosetSurtitre('Veuillez choisir la méthode'),
-                    const SizedBox(height: AppSpacing.p16),
-                    for (final m in moyensPaiement)
-                      _LignePaiement(
-                        moyen: m,
-                        choisi: m.id == brouillon.moyen?.id,
-                        onTap: () => _brouillon.choisirMoyen(m),
-                        onSaisie: _brouillon.majPaiement,
+                    if (_etape == 0) ...[
+                      const ClosetEnTeteSection(titre: 'Détails de livraison'),
+                      const SizedBox(height: AppSpacing.p8),
+                      Text(
+                        'Livraison à domicile disponible sous 24h à 48h '
+                        'après la commande *',
+                        style: ClosetTextStyles.meta.copyWith(
+                          color: ClosetColors.taupe,
+                        ),
                       ),
-                    const SizedBox(height: AppSpacing.p32),
-                    const RecapMontants(),
-                    const SizedBox(height: AppSpacing.p12),
-                    Text(
-                      'Paiement chiffré. Votre pièce est réservée pendant '
-                      '15 minutes.',
-                      textAlign: TextAlign.center,
-                      style: ClosetTextStyles.meta.copyWith(
-                        color: ClosetColors.taupe,
+                      const SizedBox(height: AppSpacing.p20),
+                      ChampCheckout(
+                        label: 'Nom complet',
+                        hint: 'Marie Dupont',
+                        controller: _nom,
+                        textInputAction: TextInputAction.next,
+                        textCapitalization: TextCapitalization.words,
+                        validator: (v) => (v == null || v.trim().length < 2)
+                            ? 'Indiquez votre nom complet.'
+                            : null,
                       ),
-                    ),
+                      const SizedBox(height: AppSpacing.p20),
+                      ChampTelephone(
+                        label: 'Téléphone (WhatsApp)',
+                        controller: _telephone,
+                        hint: '6 90 12 34 56',
+                        style: StyleChampTelephone.checkout,
+                        textInputAction: TextInputAction.done,
+                        validator: (v) => validerTelephone(
+                          v,
+                          obligatoire: true,
+                          libelle: 'numéro WhatsApp',
+                        ),
+                      ),
+                      const SizedBox(height: AppSpacing.p20),
+                      _BlocAdresse(
+                        brouillon: brouillon,
+                        onVille: _choisirVille,
+                        onRegion: _choisirRegion,
+                        onDepartement: _choisirDepartement,
+                        onQuartier: _brouillon.majQuartier,
+                        onMode: _brouillon.choisirMode,
+                      ),
+                    ] else ...[
+                      const ClosetEnTeteSection(titre: 'Méthode de paiement'),
+                      const SizedBox(height: AppSpacing.p16),
+                      for (final m in moyensPaiement)
+                        _LignePaiement(
+                          moyen: m,
+                          choisi: m.id == brouillon.moyen?.id,
+                          onTap: () => _brouillon.choisirMoyen(m),
+                          onSaisie: _brouillon.majPaiement,
+                        ),
+                      const SizedBox(height: AppSpacing.p24),
+                      ChampCodePrivilege(controller: _codePrivilege),
+                      const SizedBox(height: AppSpacing.p24),
+                      const RecapMontants(),
+                    ],
                   ],
                 ),
               ),
@@ -352,12 +352,14 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                   borderRadius: BorderRadius.circular(AppRadius.cercle),
                   child: InkWell(
                     borderRadius: BorderRadius.circular(AppRadius.cercle),
-                    onTap: _poursuivre,
+                    onTap: _etape == 0 ? _validerCoordonnees : _poursuivre,
                     child: Center(
                       child: Text(
-                        total == null
-                            ? 'Poursuivre — Paiement'
-                            : 'Poursuivre — Paiement ${formatPrixFcfa(total)}',
+                        _etape == 0
+                            ? 'Suivant'
+                            : total == null
+                                ? 'Poursuivre — Paiement'
+                                : 'Poursuivre — Paiement ${formatPrixFcfa(total)}',
                         style: ClosetTextStyles.bouton.copyWith(
                           fontWeight: FontWeight.w600,
                           color: ClosetColors.blanc,

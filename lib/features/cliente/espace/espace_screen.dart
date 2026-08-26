@@ -6,6 +6,7 @@ import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/closet_colors.dart';
 import '../../../core/theme/closet_text_styles.dart';
 import '../../../core/theme/theme_provider.dart';
+import '../../../core/widgets/closet_header_button.dart';
 import '../../../core/widgets/closet_sections.dart';
 import '../../../data/models/user.dart';
 import '../../../data/repositories/auth_repository.dart';
@@ -123,25 +124,11 @@ class EspaceBoutonRond extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Semantics(
-      button: true,
+    return ClosetBoutonHeader(
+      icone: icone,
       label: label,
-      child: GestureDetector(
-        onTap: onTap,
-        child: Container(
-          width: 42,
-          height: 42,
-          decoration: BoxDecoration(
-            color: ClosetColors.blanc,
-            shape: BoxShape.circle,
-            border: Border.all(
-              color: ClosetColors.fond300,
-              width: AppStroke.fin,
-            ),
-          ),
-          child: Icon(icone, size: 18, color: ClosetColors.vert),
-        ),
-      ),
+      onTap: onTap,
+      fond: ClosetColors.blanc,
     );
   }
 }

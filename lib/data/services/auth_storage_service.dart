@@ -7,6 +7,7 @@ class AuthStorageService {
   static const _refreshTokenKey = 'closet_refresh_token_v1';
   static const _tokenTypeKey = 'closet_token_type_v1';
   static const _expiresInKey = 'closet_expires_in_v1';
+  static const _expiresAtKey = 'closet_expires_at_v1';
   static const _userJsonKey = 'closet_user_json_v1';
 
   static Future<SharedPreferences> _prefs() async {
@@ -21,9 +22,17 @@ class AuthStorageService {
   }) async {
     final prefs = await _prefs();
     await prefs.setString(_accessTokenKey, accessToken);
-    await prefs.setString(_refreshTokenKey, refreshToken);
+    if (refreshToken.isNotEmpty) {
+      await prefs.setString(_refreshTokenKey, refreshToken);
+    }
     await prefs.setString(_tokenTypeKey, tokenType);
     await prefs.setInt(_expiresInKey, expiresIn);
+    if (expiresIn > 0) {
+      final expireA = DateTime.now()
+          .add(Duration(seconds: expiresIn))
+          .millisecondsSinceEpoch;
+      await prefs.setInt(_expiresAtKey, expireA);
+    }
   }
 
   static Future<void> saveUser(Map<String, dynamic> userJson) async {
@@ -51,6 +60,26 @@ class AuthStorageService {
     return prefs.getInt(_expiresInKey);
   }
 
+  /// Vrai s'il reste un jeton (accès ou refresh) sur l'appareil.
+  static Future<bool> aUneSession() async {
+    final access = await getAccessToken();
+    final refresh = await getRefreshToken();
+    return (access != null && access.isNotEmpty) ||
+        (refresh != null && refresh.isNotEmpty);
+  }
+
+  /// Vrai si le jeton d'accès est absent, périmé, ou expire dans moins de 30 s.
+  static Future<bool> accessTokenARafraichir() async {
+    final access = await getAccessToken();
+    if (access == null || access.isEmpty) return true;
+    final prefs = await _prefs();
+    final expireA = prefs.getInt(_expiresAtKey) ?? 0;
+    if (expireA <= 0) return false;
+    final limite = DateTime.fromMillisecondsSinceEpoch(expireA)
+        .subtract(const Duration(seconds: 30));
+    return DateTime.now().isAfter(limite);
+  }
+
   static Future<Map<String, dynamic>?> getUserJson() async {
     final prefs = await _prefs();
     final raw = prefs.getString(_userJsonKey);
@@ -68,6 +97,7 @@ class AuthStorageService {
     await prefs.remove(_refreshTokenKey);
     await prefs.remove(_tokenTypeKey);
     await prefs.remove(_expiresInKey);
+    await prefs.remove(_expiresAtKey);
     await prefs.remove(_userJsonKey);
   }
 }

@@ -29,7 +29,7 @@ class BffClient {
     _dio.interceptors.add(
       InterceptorsWrapper(
         onError: (erreur, handler) async {
-          if (erreur.response?.statusCode == 401 && !_rafraichissementEnCours) {
+          if (_doitTenterRafraichissement(erreur)) {
             final rejoue = await _tenterRafraichissement(erreur.requestOptions);
             if (rejoue != null) {
               return handler.resolve(rejoue);
@@ -42,7 +42,10 @@ class BffClient {
   }
 
   late final Dio _dio;
-  bool _rafraichissementEnCours = false;
+  Future<bool>? _promesseRafraichissement;
+
+  /// Appelé uniquement quand le refresh token est réellement rejeté (401/403).
+  void Function()? onSessionInvalide;
 
   Dio get dio => _dio;
 
@@ -122,21 +125,72 @@ class BffClient {
     }
   }
 
+  bool _doitTenterRafraichissement(DioException erreur) {
+    if (erreur.response?.statusCode != 401) return false;
+    if (erreur.requestOptions.extra['skipAuthRefresh'] == true) return false;
+    final chemin = erreur.requestOptions.path;
+    if (chemin.contains('/auth/login') ||
+        chemin.contains('/auth/register') ||
+        chemin.contains('/auth/refresh') ||
+        chemin.contains('/auth/logout')) {
+      return false;
+    }
+    return true;
+  }
+
   Future<Response<dynamic>?> _tenterRafraichissement(
     RequestOptions requete,
   ) async {
-    final refresh = await AuthStorageService.getRefreshToken();
-    if (refresh == null || refresh.isEmpty) return null;
+    final ok = await rafraichirJeton();
+    if (!ok) return null;
+    requete.headers['Authorization'] = _dio.options.headers['Authorization'];
+    requete.extra['skipAuthRefresh'] = true;
+    return _dio.fetch<dynamic>(requete);
+  }
 
-    _rafraichissementEnCours = true;
+  /// Renouvelle l'accès à partir du refresh token persisté.
+  ///
+  /// Ne purge la session que si le serveur refuse le refresh (401/403).
+  /// Un timeout réseau laisse les jetons en place.
+  Future<bool> rafraichirJeton() async {
+    if (_promesseRafraichissement != null) {
+      return _promesseRafraichissement!;
+    }
+    final travail = _executerRafraichissement();
+    _promesseRafraichissement = travail;
     try {
-      final reponse = await _dio.post<Map<String, dynamic>>(
+      return await travail;
+    } finally {
+      _promesseRafraichissement = null;
+    }
+  }
+
+  Future<bool> _executerRafraichissement() async {
+    final refresh = await AuthStorageService.getRefreshToken();
+    if (refresh == null || refresh.isEmpty) return false;
+
+    try {
+      // Client dédié : pas d'intercepteur, pas de Bearer expiré.
+      final dioRefresh = Dio(
+        BaseOptions(
+          baseUrl: _dio.options.baseUrl,
+          connectTimeout: _dio.options.connectTimeout,
+          receiveTimeout: _dio.options.receiveTimeout,
+          sendTimeout: _dio.options.sendTimeout,
+          headers: const {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+          },
+        ),
+      );
+      final reponse = await dioRefresh.post<Map<String, dynamic>>(
         '/auth/refresh',
         data: {'refresh_token': refresh},
+        options: Options(extra: {'skipAuthRefresh': true}),
       );
       final data = reponse.data ?? <String, dynamic>{};
       final access = chaineDe(data['access_token']);
-      if (access.isEmpty) return null;
+      if (access.isEmpty) return false;
 
       await AuthStorageService.saveAuthTokens(
         accessToken: access,
@@ -145,15 +199,17 @@ class BffClient {
         expiresIn: entierDe(data['expires_in']),
       );
       setAccessToken(access);
-
-      requete.headers['Authorization'] = 'Bearer $access';
-      return await _dio.fetch<dynamic>(requete);
+      return true;
+    } on DioException catch (e) {
+      final status = e.response?.statusCode;
+      if (status == 401 || status == 403) {
+        await AuthStorageService.clearAuthData();
+        clearAccessToken();
+        onSessionInvalide?.call();
+      }
+      return false;
     } catch (_) {
-      await AuthStorageService.clearAuthData();
-      clearAccessToken();
-      return null;
-    } finally {
-      _rafraichissementEnCours = false;
+      return false;
     }
   }
 }

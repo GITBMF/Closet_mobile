@@ -119,28 +119,25 @@ Future<void> basculerFavori(WidgetRef ref, Article article) async {
     toastInfo(
       ref,
       'Connexion requise',
-      'Connectez-vous pour ajouter cette pièce à vos favoris.',
+      'Veuillez vous connecter à votre compte pour continuer.',
     );
     return;
   }
   try {
     final deja = ref.read(wishlistProvider.notifier).isWishlisted(article.id);
-    final message =
-        await ref.read(wishlistProvider.notifier).toggleWishlist(article);
+    await ref.read(wishlistProvider.notifier).toggleWishlist(article);
     if (deja) {
-      toastMelange(
+      toastActionPiece(
         ref,
-        titre: 'Retiré des favoris',
-        local: article.title,
-        backend: message,
+        nom: article.title,
+        resultat: 'a été retirée de vos favoris.',
+        succes: false,
       );
     } else {
-      toastMelange(
+      toastActionPiece(
         ref,
-        titre: 'Ajouté aux favoris',
-        local: article.title,
-        backend: message,
-        succes: true,
+        nom: article.title,
+        resultat: 'a été ajoutée à vos favoris.',
       );
     }
   } catch (e) {

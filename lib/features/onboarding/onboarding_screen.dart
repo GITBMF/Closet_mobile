@@ -159,9 +159,7 @@ class _Slide extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           ClipRRect(
-            borderRadius: const BorderRadius.vertical(
-              top: Radius.circular(159),
-            ),
+            borderRadius: BorderRadius.circular(AppRadius.carte),
             child: Image.asset(
               slide.image,
               width: 271,
@@ -200,10 +198,10 @@ class _Slide extends StatelessWidget {
           Text(
             slide.corps,
             textAlign: TextAlign.center,
-            style: ClosetTextStyles.nomProduit.copyWith(
+            style: ClosetTextStyles.citation.copyWith(
               fontSize: 13,
               fontWeight: FontWeight.w500,
-              letterSpacing: 1.04,
+              letterSpacing: 0.2,
               height: 15.7 / 13,
               color: ClosetColors.blanc,
             ),
