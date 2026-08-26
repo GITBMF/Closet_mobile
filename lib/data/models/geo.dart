@@ -95,7 +95,7 @@ class Ville {
         nom: json['name'] as String,
         regionId: json['region_id'] as int,
         delaiAnnonce: json['delivery_eta'] as String? ??
-            'Livraison à domicile 24h-48h',
+            'Livraison à domicile disponible sous 24h à 48h après la commande *',
         aDevis: json['quote_required'] as bool? ?? false,
       );
 

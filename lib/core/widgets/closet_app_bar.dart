@@ -4,52 +4,49 @@ import 'package:go_router/go_router.dart';
 
 import '../../core/theme/app_spacing.dart';
 import '../../core/theme/closet_colors.dart';
+import '../../core/theme/closet_layout.dart';
 import '../../core/theme/closet_text_styles.dart';
 import '../../data/models/article.dart';
 import '../../data/models/user.dart';
 import '../../data/repositories/auth_repository.dart';
 import '../../data/repositories/cart_repository.dart';
 import '../../data/repositories/wishlist_repository.dart';
+import 'closet_header_button.dart';
 import 'piece_card.dart';
-import 'toasts.dart';
 
 /// En-tête principal — transcription de la maquette `11:30`.
 ///
-/// À gauche « Bienvenue, » (EB Garamond) puis le nom de la cliente
-/// (Cormorant, doré encre). À droite deux boutons ronds de 42, fond clair
-/// cerclé d'or : sélection et notifications. Un filet doré ferme l'en-tête.
+/// À gauche « Bienvenue, » puis le nom. À droite les raccourcis sélection
+/// et notifications. Les boutons cèdent la place au texte (ellipsis) et
+/// restent hors encoche grâce à [SafeArea] ; le Scaffold ajoute déjà
+/// l'inset statut à [preferredSize], on ne le recompte pas.
 class ClosetAppBar extends ConsumerWidget implements PreferredSizeWidget {
   const ClosetAppBar({
     super.key,
     this.title,
     this.subtitle,
     this.showBackButton = false,
+    this.showShortcuts = true,
     this.actions,
   });
 
   final String? title;
   final String? subtitle;
   final bool showBackButton;
+
+  /// Raccourcis Sélection / Notifications — réservés à l'accueil.
+  final bool showShortcuts;
   final List<Widget>? actions;
 
-  static const double _hauteurBarre = 62;
-
-  /// Hauteur de la barre + inset statut, pour que Scaffold réserve assez
-  /// d'espace et que les boutons restent sous la barre système (tappables).
-  static double get _insetStatut {
-    final vues = WidgetsBinding.instance.platformDispatcher.views;
-    if (vues.isEmpty) return 0;
-    final vue = vues.first;
-    return vue.padding.top / vue.devicePixelRatio;
-  }
-
   @override
-  Size get preferredSize => Size.fromHeight(_hauteurBarre + _insetStatut);
+  Size get preferredSize =>
+      const Size.fromHeight(ClosetLayout.hauteurBarre);
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final cartCount = ref.watch(cartCountProvider);
     final user = ref.watch(currentUserProvider);
+    final layout = ClosetLayout.of(context);
 
     return Material(
       color: context.closetFond,
@@ -65,50 +62,62 @@ class ClosetAppBar extends ConsumerWidget implements PreferredSizeWidget {
         child: SafeArea(
           bottom: false,
           child: SizedBox(
-            height: _hauteurBarre,
+            height: ClosetLayout.hauteurBarre,
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.p20),
+              padding: EdgeInsets.symmetric(horizontal: layout.gouttiere),
               child: Row(
                 children: [
                   if (showBackButton) ...[
-                    _BoutonRond(
+                    ClosetBoutonHeader(
                       icone: Icons.arrow_back_ios_new,
                       label: 'Retour',
                       onTap: () => context.pop(),
                     ),
-                    const SizedBox(width: AppSpacing.p8),
+                    SizedBox(width: layout.ecartBoutonsHeader),
                   ],
                   Expanded(
                     child: GestureDetector(
                       behavior: HitTestBehavior.opaque,
                       onTap: user == null ? () => context.push('/auth') : null,
-                      child: _Salutation(
-                        title: title,
-                        subtitle: subtitle,
-                        user: user,
+                      child: Align(
+                        alignment: Alignment.centerLeft,
+                        child: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          alignment: Alignment.centerLeft,
+                          child: _Salutation(
+                            title: title,
+                            subtitle: subtitle,
+                            user: user,
+                          ),
+                        ),
                       ),
                     ),
                   ),
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: actions ??
-                        [
-                          _BoutonRond(
-                            icone: Icons.shopping_basket_outlined,
-                            label: cartCount > 0
-                                ? 'Sélection, $cartCount pièces'
-                                : 'Ma sélection',
-                            pastille: cartCount > 0 ? cartCount : null,
-                            onTap: () => context.go('/selection'),
-                          ),
-                          const SizedBox(width: AppSpacing.gapListe),
-                          _BoutonRond(
-                            icone: Icons.notifications_none_rounded,
-                            label: 'Notifications',
-                            onTap: () => context.push('/espace/alertes'),
-                          ),
-                        ],
-                  ),
+                  if (actions != null)
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: actions!,
+                    )
+                  else if (showShortcuts)
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        ClosetBoutonHeader(
+                          icone: Icons.shopping_basket_outlined,
+                          label: cartCount > 0
+                              ? 'Sélection, $cartCount pièces'
+                              : 'Ma sélection',
+                          pastille: cartCount > 0 ? cartCount : null,
+                          onTap: () => context.go('/selection'),
+                        ),
+                        SizedBox(width: layout.ecartBoutonsHeader),
+                        ClosetBoutonHeader(
+                          icone: Icons.notifications_none_rounded,
+                          label: 'Notifications',
+                          onTap: () => context.push('/espace/alertes'),
+                        ),
+                      ],
+                    ),
                 ],
               ),
             ),
@@ -169,81 +178,6 @@ class _Salutation extends StatelessWidget {
   }
 }
 
-/// Bouton rond de l'en-tête : 42 de diamètre, fond `#F3F3F3`, cerclé d'or.
-class _BoutonRond extends StatelessWidget {
-  const _BoutonRond({
-    required this.icone,
-    required this.label,
-    required this.onTap,
-    this.pastille,
-  });
-
-  final IconData icone;
-  final String label;
-  final VoidCallback onTap;
-  final int? pastille;
-
-  @override
-  Widget build(BuildContext context) {
-    return Semantics(
-      button: true,
-      label: label,
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: onTap,
-          customBorder: const CircleBorder(),
-          child: SizedBox(
-            width: AppSpacing.minTouchTarget,
-            height: AppSpacing.minTouchTarget,
-            child: Center(
-              child: Stack(
-                clipBehavior: Clip.none,
-                children: [
-                  Container(
-                    width: 42,
-                    height: 42,
-                    decoration: BoxDecoration(
-                      color: ClosetColors.carteFond,
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: ClosetColors.fond300,
-                        width: AppStroke.fin,
-                      ),
-                    ),
-                    child: Icon(icone, size: 20, color: ClosetColors.vert),
-                  ),
-                  if (pastille != null)
-                    Positioned(
-                      top: -2,
-                      right: -2,
-                      child: IgnorePointer(
-                        child: Container(
-                          padding: const EdgeInsets.all(AppSpacing.p4),
-                          decoration: const BoxDecoration(
-                            color: ClosetColors.vert,
-                            shape: BoxShape.circle,
-                          ),
-                          child: Text(
-                            '$pastille',
-                            style: ClosetTextStyles.micro.copyWith(
-                              color: ClosetColors.creme,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
 /// Carte article branchée sur la wishlist.
 ///
 /// L'habillage est entièrement délégué à [PieceCard] : il n'existe qu'une
@@ -277,7 +211,7 @@ class _ArticleCardState extends ConsumerState<ArticleCard> {
         if (article.material.isNotEmpty) article.material,
       ].join('. '),
       imageUrl: article.imageUrls.isEmpty ? null : article.imageUrls.first,
-      statusBadgeText: article.condition,
+      etoiles: article.etoilesEtat,
       isFavorite: isWishlisted,
       isSold: article.isSoldOut,
       onTap: widget.onTap,

@@ -21,7 +21,7 @@ class PieceCard extends StatelessWidget {
     this.attribut,
     this.imageUrl,
     this.isImageArche = false,
-    this.statusBadgeText,
+    this.etoiles = 0,
     this.isFavorite = false,
     this.isSold = false,
     this.onFavoriteTap,
@@ -40,7 +40,8 @@ class PieceCard extends StatelessWidget {
   /// Image en arche (coins supérieurs très arrondis).
   final bool isImageArche;
 
-  final String? statusBadgeText;
+  /// Étoiles d'état, à gauche du nom. 0 = masquées.
+  final int etoiles;
   final bool isFavorite;
   final bool isSold;
   final VoidCallback? onFavoriteTap;
@@ -61,7 +62,7 @@ class PieceCard extends StatelessWidget {
   /// La maquette dessine 169 × 249, mais ses tailles de police sont serrées :
   /// on prévoit un peu de hauteur en plus pour absorber un nom sur deux
   /// lignes ou un réglage d'accessibilité qui agrandit le texte.
-  static const double ratioCarteGrille = 169 / 268;
+  static const double ratioCarteGrille = 169 / 286;
 
   @override
   Widget build(BuildContext context) {
@@ -90,9 +91,6 @@ class PieceCard extends StatelessWidget {
                   imageUrl: imageUrl,
                   arche: isImageArche,
                   isSold: isSold,
-                  statusBadgeText: statusBadgeText,
-                  isFavorite: isFavorite,
-                  onFavoriteTap: onFavoriteTap,
                 ),
               ),
               const SizedBox(height: 11),
@@ -105,18 +103,44 @@ class PieceCard extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 3),
-              Text(
-                nom,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: ClosetTextStyles.nomProduit,
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (etoiles > 0) ...[
+                    EtoilesEtat(etoiles),
+                    const SizedBox(width: 4),
+                  ],
+                  Expanded(
+                    child: Text(
+                      nom,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: ClosetTextStyles.nomProduit,
+                    ),
+                  ),
+                ],
               ),
               const SizedBox(height: 3),
-              Text(
-                isSold ? 'Indisponible' : prix,
-                style: ClosetTextStyles.prix.copyWith(
-                  color: isSold ? ClosetColors.taupe : ClosetColors.emeraude400,
-                ),
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      isSold ? 'Indisponible' : prix,
+                      style: ClosetTextStyles.prix.copyWith(
+                        color: isSold
+                            ? ClosetColors.taupe
+                            : ClosetColors.emeraude400,
+                      ),
+                    ),
+                  ),
+                  if (onFavoriteTap != null && !isSold)
+                    BoutonCoeur(
+                      actif: isFavorite,
+                      onTap: onFavoriteTap,
+                      taille: 16,
+                      compact: true,
+                    ),
+                ],
               ),
               if (attribut != null) ...[
                 const SizedBox(height: AppSpacing.p4),
@@ -142,17 +166,11 @@ class _Visuel extends StatelessWidget {
     required this.imageUrl,
     required this.arche,
     required this.isSold,
-    required this.statusBadgeText,
-    required this.isFavorite,
-    required this.onFavoriteTap,
   });
 
   final String? imageUrl;
   final bool arche;
   final bool isSold;
-  final String? statusBadgeText;
-  final bool isFavorite;
-  final VoidCallback? onFavoriteTap;
 
   @override
   Widget build(BuildContext context) {
@@ -185,36 +203,6 @@ class _Visuel extends StatelessWidget {
                   fadeInDuration: const Duration(milliseconds: 250),
                 ),
         ),
-        if (statusBadgeText != null && !isSold)
-          Positioned(
-            top: AppSpacing.p12,
-            left: AppSpacing.p4,
-            child: Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppSpacing.p8,
-                vertical: 2,
-              ),
-              decoration: BoxDecoration(
-                color: ClosetColors.emeraude100,
-                borderRadius: BorderRadius.circular(AppRadius.vignette),
-              ),
-              child: Text(
-                statusBadgeText!,
-                style: ClosetTextStyles.attribut.copyWith(
-                  color: ClosetColors.emeraude500,
-                ),
-              ),
-            ),
-          ),
-        if (!isSold)
-          Positioned(
-            top: AppSpacing.p12,
-            right: AppSpacing.p4,
-            child: BoutonCoeur(
-              actif: isFavorite,
-              onTap: onFavoriteTap,
-            ),
-          ),
         if (isSold)
           Positioned(
             bottom: 0,
@@ -239,6 +227,33 @@ class _Visuel extends StatelessWidget {
   }
 }
 
+/// Petites étoiles d'état, à gauche du nom de l'article.
+class EtoilesEtat extends StatelessWidget {
+  const EtoilesEtat(this.nombre, {super.key, this.taille = 9});
+
+  final int nombre;
+  final double taille;
+
+  @override
+  Widget build(BuildContext context) {
+    final n = nombre.clamp(0, 5);
+    return Padding(
+      padding: const EdgeInsets.only(top: 2),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          for (var i = 0; i < 5; i++)
+            Icon(
+              i < n ? Icons.star_rounded : Icons.star_outline_rounded,
+              size: taille,
+              color: ClosetColors.fond300,
+            ),
+        ],
+      ),
+    );
+  }
+}
+
 /// Bouton cœur de la maquette : disque clair cerclé d'or (`11:30` — Like
 /// Button). Réutilisé sur la carte produit et sur la carte à la une.
 class BoutonCoeur extends StatefulWidget {
@@ -247,11 +262,13 @@ class BoutonCoeur extends StatefulWidget {
     required this.actif,
     this.onTap,
     this.taille = 19,
+    this.compact = false,
   });
 
   final bool actif;
   final VoidCallback? onTap;
   final double taille;
+  final bool compact;
 
   @override
   State<BoutonCoeur> createState() => _BoutonCoeurState();
@@ -300,14 +317,14 @@ class _BoutonCoeurState extends State<BoutonCoeur>
     return Semantics(
       button: true,
       label: widget.actif
-          ? 'Retirer de la wishlist'
-          : 'Ajouter à la wishlist',
+          ? 'Retirer des favoris'
+          : 'Ajouter aux favoris',
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
         onTap: _taper,
         child: SizedBox(
-          width: 44,
-          height: 44,
+          width: widget.compact ? 28 : 44,
+          height: widget.compact ? 28 : 44,
           child: Center(
             child: ScaleTransition(
               scale: _echelle,

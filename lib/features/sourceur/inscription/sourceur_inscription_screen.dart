@@ -321,21 +321,29 @@ class _SourceurInscriptionScreenState
           decoration: BoxDecoration(
             color: Theme.of(context).colorScheme.surface,
             borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: Theme.of(context).dividerColor.withValues(alpha: 0.15)),
+            border: Border.all(
+              color: Theme.of(context).dividerColor.withValues(alpha: 0.15),
+            ),
           ),
-          child: Row(
+          child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Icon(Icons.check_circle_outline,
-                  size: 18, color: ClosetColors.vert),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Text(
-                  'En rejoignant le cercle, vous acceptez la charte '
-                  "d'authenticité ClosET et une commission de 25% "
-                  'sur les ventes.',
-                  style: ClosetTextStyles.corps,
-                ),
+              Text(
+                'Conditions d’adhésion',
+                style: ClosetTextStyles.titreBloc,
+              ),
+              const SizedBox(height: 10),
+              Text(
+                'En rejoignant le cercle ClosET, vous acceptez :\n'
+                '• une commission de 25% prélevée par ClosET sur chaque vente '
+                'en dépôt-vente ;\n'
+                '• l’authentification de chaque pièce avant mise en ligne ;\n'
+                '• le respect de la charte d’authenticité et des délais de '
+                'remise des pièces ;\n'
+                '• le règlement de vos ventes selon le moyen choisi '
+                '(Mobile Money ou virement).\n\n'
+                'Ces règles s’appliquent dès validation de votre adhésion.',
+                style: ClosetTextStyles.corps,
               ),
             ],
           ),

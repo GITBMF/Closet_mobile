@@ -6,7 +6,6 @@ import '../../../core/theme/closet_colors.dart';
 import '../../../core/theme/closet_text_styles.dart';
 import '../widgets/sourceur_header.dart';
 import '../widgets/sourceur_programme_visuel.dart';
-import '../widgets/sourceur_programme_visuel.dart';
 
 /// Devenir Sourceur — transcription de la maquette `26:1771`.
 ///

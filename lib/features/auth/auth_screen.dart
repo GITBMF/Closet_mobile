@@ -158,7 +158,9 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
       await dialogueSucces(
         context,
         titre: isLogin ? 'Connexion réussie' : 'Compte créé',
-        message: 'Bon retour, ${user.firstName} !',
+        message: isLogin
+            ? 'Bon retour, ${user.firstName} !'
+            : 'Bienvenue, ${user.firstName} !',
       );
       if (!mounted) return;
       if (context.canPop()) {
@@ -225,6 +227,8 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
                           hint: 'Marie',
                           controller: _nameController,
                           textInputAction: TextInputAction.next,
+                          textCapitalization: TextCapitalization.words,
+                          formatters: const [FormateurPrenom()],
                           validator: (v) => (v == null || v.trim().isEmpty)
                               ? 'Veuillez renseigner votre prénom.'
                               : null,
@@ -232,9 +236,11 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
                         const SizedBox(height: AppSpacing.p16),
                         _ChampAuth(
                           label: 'Nom',
-                          hint: 'Dupont',
+                          hint: 'DUPONT',
                           controller: _lastNameController,
                           textInputAction: TextInputAction.next,
+                          textCapitalization: TextCapitalization.characters,
+                          formatters: const [FormateurNom()],
                           validator: (v) => (v == null || v.trim().isEmpty)
                               ? 'Veuillez renseigner votre nom.'
                               : null,
@@ -493,6 +499,8 @@ class _ChampAuth extends StatelessWidget {
     this.autocorrect = true,
     this.sansEspaces = false,
     this.validator,
+    this.textCapitalization = TextCapitalization.none,
+    this.formatters = const [],
   });
 
   final String label;
@@ -506,6 +514,8 @@ class _ChampAuth extends StatelessWidget {
   final bool autocorrect;
   final bool sansEspaces;
   final FormFieldValidator<String>? validator;
+  final TextCapitalization textCapitalization;
+  final List<TextInputFormatter> formatters;
 
   @override
   Widget build(BuildContext context) {
@@ -527,9 +537,11 @@ class _ChampAuth extends StatelessWidget {
           onFieldSubmitted: onSubmitted,
           autocorrect: autocorrect,
           enableSuggestions: autocorrect,
+          textCapitalization: textCapitalization,
           validator: validator,
           inputFormatters: [
             if (sansEspaces) FilteringTextInputFormatter.deny(RegExp(r'\s')),
+            ...formatters,
           ],
           style: ClosetTextStyles.saisie.copyWith(color: context.closetEncre),
           cursorColor: ClosetColors.vert,

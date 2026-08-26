@@ -3,19 +3,9 @@ import 'package:google_fonts/google_fonts.dart';
 
 import 'closet_colors.dart';
 
-/// Typographies CLOSET — transcription fidèle de la maquette Figma
-/// (`VmP4xqjT7R9FVcPT3tQsWg`, version du 2026-08-06), 3 297 calques analysés.
-///
-/// Familles de la charte, conservées telles quelles :
-/// - **Boldonse** — très grands titres décoratifs (marque)
-/// - **EB Garamond** — titres d'écran, montants, chiffres
-/// - **Cormorant / Cormorant Garamond** — titres produits, citations, corps serif
+/// Typographies CLOSET — deux familles seulement :
+/// - **EB Garamond** — titres, noms de pièces, montants, citations
 /// - **Lato** — interface : navigation, boutons, labels, corps courant
-///
-/// La maquette contient aussi Roboto, Inter, Manrope, Plus Jakarta Sans et
-/// SF Pro Display (325 occurrences, 10 %). Ce sont les polices par défaut de
-/// Figma et d'iOS, présentes sur les calques non stylés — pas un choix de
-/// design. Elles sont mappées sur Lato.
 class ClosetTextStyles {
   ClosetTextStyles._();
 
@@ -42,8 +32,8 @@ class ClosetTextStyles {
     height: 28.7 / 22,
   );
 
-  /// Titre de section — Cormorant 600 / 22 pt
-  static TextStyle titreSection = GoogleFonts.cormorant(
+  /// Titre de section — EB Garamond 600 / 22 pt
+  static TextStyle titreSection = GoogleFonts.ebGaramond(
     fontSize: _s(22),
     fontWeight: FontWeight.w600,
     letterSpacing: 0.44,
@@ -64,32 +54,32 @@ class ClosetTextStyles {
     fontWeight: FontWeight.w700,
   );
 
-  /// Accroche produit — Cormorant 600 / 18 pt
-  static TextStyle accroche = GoogleFonts.cormorant(
+  /// Accroche produit — EB Garamond 600 / 18 pt
+  static TextStyle accroche = GoogleFonts.ebGaramond(
     fontSize: _s(18),
     fontWeight: FontWeight.w600,
     letterSpacing: 0.36,
     height: 21.8 / 18,
   );
 
-  /// Titre de bloc — Cormorant 600 / 15 pt
-  static TextStyle titreBloc = GoogleFonts.cormorant(
+  /// Titre de bloc — EB Garamond 600 / 15 pt
+  static TextStyle titreBloc = GoogleFonts.ebGaramond(
     fontSize: _s(15),
     fontWeight: FontWeight.w600,
     letterSpacing: -0.3,
     height: 18.2 / 15,
   );
 
-  /// Nom de produit — Cormorant Garamond 700 / 12 pt
-  static TextStyle nomProduit = GoogleFonts.cormorantGaramond(
+  /// Nom de produit — EB Garamond 700 / 12 pt
+  static TextStyle nomProduit = GoogleFonts.ebGaramond(
     fontSize: _s(12),
     fontWeight: FontWeight.w700,
     letterSpacing: -0.24,
     height: 14.5 / 12,
   );
 
-  /// Citation / description serif — Cormorant 500 / 16 pt
-  static TextStyle citation = GoogleFonts.cormorant(
+  /// Citation / description serif — EB Garamond 500 / 16 pt
+  static TextStyle citation = GoogleFonts.ebGaramond(
     fontSize: _s(16),
     fontWeight: FontWeight.w500,
     height: 19.2 / 16,
@@ -223,10 +213,10 @@ class ClosetTextStyles {
 
   // ── Éléments d'interface ──────────────────────────────────────────────
 
-  /// Grand titre décoratif de marque — Boldonse
-  static const TextStyle display = TextStyle(
-    fontFamily: 'Boldonse',
+  /// Grand titre décoratif de marque — EB Garamond
+  static TextStyle display = GoogleFonts.ebGaramond(
     fontSize: 22,
+    fontWeight: FontWeight.w600,
   );
 
   /// Libellé de bouton — Lato 500 / 12 pt (CTA « Découvrir » de `11:30`).

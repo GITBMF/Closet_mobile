@@ -5,9 +5,12 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/closet_colors.dart';
+import '../../../core/theme/closet_layout.dart';
 import '../../../core/theme/closet_text_styles.dart';
 import '../../../core/widgets/closet_app_bar.dart';
+import '../../../core/widgets/closet_header_button.dart';
 import '../../../core/widgets/etat_ecran.dart';
+import '../../../core/widgets/piece_card.dart';
 import '../../../core/widgets/toasts.dart';
 import '../../../data/models/article.dart';
 import '../../../data/repositories/cart_repository.dart';
@@ -108,12 +111,15 @@ class _Corps extends ConsumerWidget {
 
   List<({String label, String valeur})> get _caracteristiques {
     return [
+      if (article.color.trim().isNotEmpty)
+        (label: 'Couleur du vêtement', valeur: article.color),
       if (article.condition.trim().isNotEmpty)
-        (label: 'État de la pièce', valeur: article.condition),
+        (label: 'État', valeur: article.condition),
       if (article.size.trim().isNotEmpty)
         (label: 'Taille et coupe', valeur: article.size),
       if (article.material.trim().isNotEmpty)
         (label: 'Matière', valeur: article.material),
+      (label: 'Conseils de lavage', valeur: article.conseilsLavage),
       if (article.universe.trim().isNotEmpty)
         (label: 'Univers', valeur: article.universe),
     ];
@@ -121,8 +127,6 @@ class _Corps extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final enWishlist =
-        ref.watch(wishlistListProvider).any((a) => a.id == article.id);
     final recit = _recit(article);
     final lignes = _caracteristiques;
 
@@ -134,7 +138,9 @@ class _Corps extends ConsumerWidget {
             controller: pageController,
             indexCourant: imageCourante,
             onChange: onImageChangee,
-            enWishlist: enWishlist,
+            enWishlist: ref
+                .watch(wishlistListProvider)
+                .any((a) => a.id == article.id),
             onWishlist: () => basculerFavori(ref, article),
           ),
         ),
@@ -144,23 +150,6 @@ class _Corps extends ConsumerWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        article.brand.toUpperCase(),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: ClosetTextStyles.attribut.copyWith(
-                          color: ClosetColors.fond400,
-                        ),
-                      ),
-                    ),
-                    if (article.condition.trim().isNotEmpty)
-                      _BadgeMenthe(article.condition),
-                  ],
-                ),
-                const SizedBox(height: AppSpacing.p12),
                 Text(
                   article.title,
                   style: ClosetTextStyles.nomProduit.copyWith(
@@ -168,10 +157,14 @@ class _Corps extends ConsumerWidget {
                     letterSpacing: -0.44,
                   ),
                 ),
-                const SizedBox(height: AppSpacing.p16),
+                const SizedBox(height: AppSpacing.p12),
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
+                    if (article.etoilesEtat > 0) ...[
+                      EtoilesEtat(article.etoilesEtat, taille: 14),
+                      const SizedBox(width: AppSpacing.p8),
+                    ],
                     Expanded(
                       child: Text(
                         formatPrixFcfa(article.price),
@@ -180,7 +173,6 @@ class _Corps extends ConsumerWidget {
                         ),
                       ),
                     ),
-                    const _BadgePieceUnique(),
                   ],
                 ),
                 if (lignes.isNotEmpty) ...[
@@ -196,7 +188,7 @@ class _Corps extends ConsumerWidget {
                 ],
                 if (recit != null) ...[
                   const SizedBox(height: AppSpacing.p20),
-                  _CarteRecit(description: recit),
+                  Text(recit, style: ClosetTextStyles.citation),
                 ],
                 const SizedBox(height: 140),
               ],
@@ -228,10 +220,11 @@ class _Carrousel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final images = article.imageUrls;
-    final hautSafe = MediaQuery.paddingOf(context).top;
+    final layout = ClosetLayout.of(context);
+    final padding = MediaQuery.paddingOf(context);
 
     return SizedBox(
-      height: 493,
+      height: layout.hauteurHeroProduit,
       child: Stack(
         children: [
           Positioned.fill(
@@ -252,24 +245,19 @@ class _Carrousel extends StatelessWidget {
                   ),
           ),
           Positioned(
-            top: hautSafe + AppSpacing.p12,
-            left: AppSpacing.p32,
-            right: AppSpacing.p20,
+            top: padding.top + AppSpacing.p8,
+            left: padding.left + layout.gouttiere,
+            right: padding.right + layout.gouttiere,
             child: Row(
               children: [
-                _BoutonRondFlottant(
+                ClosetBoutonHeader(
                   icone: Icons.arrow_back_ios_new,
                   label: 'Retour',
                   onTap: () => context.pop(),
+                  fond: ClosetColors.blanc,
                 ),
                 const Spacer(),
-                _BoutonRondFlottant(
-                  icone: Icons.shopping_basket_outlined,
-                  label: 'Ma sélection',
-                  onTap: () => context.go('/selection'),
-                ),
-                const SizedBox(width: AppSpacing.gapListe),
-                _BoutonRondFlottant(
+                ClosetBoutonHeader(
                   icone: enWishlist ? Icons.favorite : Icons.favorite_border,
                   label: enWishlist
                       ? 'Retirer de la wishlist'
@@ -277,6 +265,7 @@ class _Carrousel extends StatelessWidget {
                   couleurIcone:
                       enWishlist ? ClosetColors.erreurCouture : null,
                   onTap: onWishlist,
+                  fond: ClosetColors.blanc,
                 ),
               ],
             ),
@@ -304,108 +293,6 @@ class _Carrousel extends StatelessWidget {
                 ],
               ),
             ),
-        ],
-      ),
-    );
-  }
-}
-
-class _BoutonRondFlottant extends StatelessWidget {
-  const _BoutonRondFlottant({
-    required this.icone,
-    required this.label,
-    required this.onTap,
-    this.couleurIcone,
-  });
-
-  final IconData icone;
-  final String label;
-  final VoidCallback onTap;
-  final Color? couleurIcone;
-
-  @override
-  Widget build(BuildContext context) {
-    return Semantics(
-      button: true,
-      label: label,
-      child: GestureDetector(
-        onTap: onTap,
-        child: Container(
-          width: 42,
-          height: 42,
-          decoration: BoxDecoration(
-            color: ClosetColors.blanc,
-            shape: BoxShape.circle,
-            border: Border.all(
-              color: ClosetColors.fond300,
-              width: AppStroke.fin,
-            ),
-          ),
-          child: Icon(
-            icone,
-            size: 16,
-            color: couleurIcone ?? ClosetColors.vert,
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _BadgeMenthe extends StatelessWidget {
-  const _BadgeMenthe(this.texte);
-
-  final String texte;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.p12,
-        vertical: AppSpacing.p4,
-      ),
-      decoration: BoxDecoration(
-        color: ClosetColors.emeraude100,
-        borderRadius: BorderRadius.circular(AppRadius.vignette),
-      ),
-      child: Text(
-        texte,
-        style: ClosetTextStyles.attribut.copyWith(
-          color: ClosetColors.emeraude500,
-        ),
-      ),
-    );
-  }
-}
-
-class _BadgePieceUnique extends StatelessWidget {
-  const _BadgePieceUnique();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      height: 30,
-      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.p8),
-      decoration: BoxDecoration(
-        color: ClosetColors.emeraude100,
-        borderRadius: BorderRadius.circular(AppRadius.bouton),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            width: 8,
-            height: 8,
-            decoration: const BoxDecoration(
-              color: ClosetColors.vert,
-              shape: BoxShape.circle,
-            ),
-          ),
-          const SizedBox(width: AppSpacing.gapChip),
-          Text(
-            'Pièce unique',
-            style: ClosetTextStyles.corps.copyWith(color: ClosetColors.vert),
-          ),
         ],
       ),
     );
@@ -462,41 +349,6 @@ class _LigneCaracteristique extends StatelessWidget {
   }
 }
 
-class _CarteRecit extends StatelessWidget {
-  const _CarteRecit({required this.description});
-
-  final String description;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(AppSpacing.p16),
-      decoration: BoxDecoration(
-        color: context.closetCarte,
-        border: Border.all(color: ClosetColors.fond300, width: AppStroke.fin),
-        borderRadius: BorderRadius.circular(AppRadius.carte),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'À propos de cette pièce',
-            style: ClosetTextStyles.corps.copyWith(color: ClosetColors.taupe),
-          ),
-          const SizedBox(height: AppSpacing.p20),
-          Text(description, style: ClosetTextStyles.citation),
-          const SizedBox(height: AppSpacing.p20),
-          Text(
-            'Livrée avec packaging ClosET exclusif',
-            style: ClosetTextStyles.corps.copyWith(color: ClosetColors.taupe),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
 class _BarreAjout extends ConsumerWidget {
   const _BarreAjout({required this.article});
 
@@ -504,88 +356,66 @@ class _BarreAjout extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final dejaDansPanier =
+    final dejaDansSelection =
         ref.watch(cartListProvider).any((a) => a.id == article.id);
     final indisponible = article.isSoldOut;
 
+    final layout = ClosetLayout.of(context);
     return Material(
       color: Colors.transparent,
       child: SafeArea(
         top: false,
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(19, 0, 19, AppSpacing.p12),
-          child: Container(
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppSpacing.p20,
-              vertical: AppSpacing.p12,
-            ),
-            decoration: BoxDecoration(
-              color: ClosetColors.vert,
-              borderRadius: BorderRadius.circular(AppRadius.carte),
-            ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'À ajouter',
-                        style: ClosetTextStyles.corpsMedium.copyWith(
-                          fontWeight: FontWeight.w600,
-                          color: ClosetColors.neutre300,
-                        ),
-                      ),
-                      const SizedBox(height: AppSpacing.p4),
-                      Text(
-                        formatPrixFcfa(article.price),
-                        style: ClosetTextStyles.prixGrand.copyWith(
-                          color: ClosetColors.blanc,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(width: AppSpacing.p8),
-                SizedBox(
-                  width: 170,
-                  height: 44,
-                  child: Material(
-                    color: indisponible
-                        ? ClosetColors.doreDesactive
-                        : ClosetColors.fond300,
-                    borderRadius: BorderRadius.circular(AppRadius.cercle),
-                    child: InkWell(
-                      borderRadius: BorderRadius.circular(AppRadius.cercle),
-                      onTap: indisponible
-                          ? null
-                          : () {
-                              ref
-                                  .read(cartProvider.notifier)
-                                  .addArticle(article);
-                              toastSucces(
-                                ref,
-                                'Ajoutée à votre sélection.',
-                              );
-                            },
-                      child: Center(
-                        child: Text(
-                          indisponible
-                              ? 'Indisponible'
-                              : dejaDansPanier
-                                  ? 'Déjà dans ma sélection'
-                                  : 'Ajouter à mon dressing',
-                          textAlign: TextAlign.center,
-                          style: ClosetTextStyles.actionPetite.copyWith(
-                            color: ClosetColors.neutre1000,
-                          ),
-                        ),
-                      ),
+          padding: EdgeInsets.fromLTRB(
+            layout.gouttiere,
+            0,
+            layout.gouttiere,
+            AppSpacing.p12,
+          ),
+          child: SizedBox(
+            height: layout.cibleTactile,
+            width: double.infinity,
+            child: Material(
+              color: indisponible
+                  ? ClosetColors.doreDesactive
+                  : ClosetColors.vert,
+              borderRadius: BorderRadius.circular(AppRadius.cercle),
+              child: InkWell(
+                borderRadius: BorderRadius.circular(AppRadius.cercle),
+                onTap: indisponible
+                    ? null
+                    : () {
+                        final cart = ref.read(cartProvider.notifier);
+                        if (dejaDansSelection) {
+                          cart.removeArticle(article.id);
+                          toastActionPiece(
+                            ref,
+                            nom: article.title,
+                            resultat: 'a été retirée de votre sélection.',
+                            succes: false,
+                          );
+                        } else {
+                          cart.addArticle(article);
+                          toastActionPiece(
+                            ref,
+                            nom: article.title,
+                            resultat: 'a été ajoutée à votre sélection.',
+                          );
+                        }
+                      },
+                child: Center(
+                  child: Text(
+                    indisponible
+                        ? 'Indisponible'
+                        : dejaDansSelection
+                            ? 'Retirer de ma sélection'
+                            : 'Ajouter à ma sélection',
+                    style: ClosetTextStyles.bouton.copyWith(
+                      color: ClosetColors.blanc,
                     ),
                   ),
                 ),
-              ],
+              ),
             ),
           ),
         ),
