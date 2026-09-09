@@ -43,8 +43,11 @@ class ClosetUser {
 
   String get nomComplet => '$firstName $lastName'.trim();
 
-  bool get estSourceur =>
-      role == 'sourcer' || role == 'admin';
+  /// Rôle JWT `sourcer` / `admin` (casse et variante FR `sourceur` ignorées).
+  bool get estSourceur {
+    final r = role.trim().toLowerCase();
+    return r == 'sourcer' || r == 'sourceur' || r == 'admin';
+  }
 
   factory ClosetUser.fromJson(Map<String, dynamic> json) {
     final fullName = _texte(json['full_name'] ?? json['fullName']);
@@ -70,7 +73,7 @@ class ClosetUser {
       email: _texte(json['email']),
       phone: _texte(json['phone'] ?? json['telephone']),
       city: _texte(json['city']),
-      role: _texte(json['role'], 'customer'),
+      role: _roleDepuis(json),
       token: _texteOuNul(json['token'] ?? json['access_token']),
     );
   }
@@ -100,6 +103,30 @@ String _texte(dynamic valeur, [String defaut = '']) {
   if (valeur == null) return defaut;
   final texte = valeur.toString().trim();
   return texte.isEmpty ? defaut : texte;
+}
+
+/// Lit `role`, un objet `{ name }` ou le premier élément de `roles`.
+String _roleDepuis(Map<String, dynamic> json) {
+  final brut = json['role'] ?? json['user_role'];
+  final depuisChamp = _texteRole(brut);
+  if (depuisChamp.isNotEmpty) return depuisChamp;
+
+  final roles = json['roles'];
+  if (roles is List && roles.isNotEmpty) {
+    final premier = _texteRole(roles.first);
+    if (premier.isNotEmpty) return premier;
+  }
+  return 'customer';
+}
+
+String _texteRole(dynamic valeur) {
+  if (valeur == null) return '';
+  if (valeur is Map) {
+    return _texte(
+      valeur['name'] ?? valeur['value'] ?? valeur['slug'] ?? valeur['role'],
+    ).toLowerCase();
+  }
+  return _texte(valeur).toLowerCase();
 }
 
 String? _texteOuNul(dynamic valeur) {

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/l10n/closet_l10n.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/closet_colors.dart';
 import '../../../core/theme/closet_text_styles.dart';
@@ -10,6 +11,7 @@ import '../../../core/widgets/closet_app_bar.dart';
 import '../../../core/widgets/closet_buttons.dart';
 import '../../../core/widgets/closet_feedback.dart';
 import '../../../core/widgets/etat_ecran.dart';
+import '../../../core/widgets/toasts.dart';
 import '../../../data/repositories/sourceur_repository.dart';
 import '../../checkout/widgets/checkout_widgets.dart';
 import '../retrait/methode_retrait_sheet.dart';
@@ -19,11 +21,11 @@ import '../widgets/sourceur_header.dart';
 enum FiltreRetrait { tous, approuve, enCours, refuse }
 
 extension on FiltreRetrait {
-  String get libelle => switch (this) {
-        FiltreRetrait.tous => 'Tous les mouvements',
-        FiltreRetrait.approuve => 'Retraits approuvés',
-        FiltreRetrait.enCours => 'Retraits en cours',
-        FiltreRetrait.refuse => 'Retraits refusés',
+  String libellePour(ClosetL10n l10n) => switch (this) {
+        FiltreRetrait.tous => l10n.tousMouvements,
+        FiltreRetrait.approuve => l10n.retraitsApprouves,
+        FiltreRetrait.enCours => l10n.retraitsEnCours,
+        FiltreRetrait.refuse => l10n.retraitsRefuses,
       };
 
   bool accepte(RetraitSourceur r) => switch (this) {
@@ -52,24 +54,36 @@ class SourceurRevenusScreen extends ConsumerWidget {
     final revenus = ref.watch(revenusSourceurProvider);
     final filtre = ref.watch(filtreRetraitProvider);
 
+    ref.listen(revenusSourceurProvider, (precedent, suivant) {
+      signaleTransitionAsync(
+        ref: ref,
+        context: context,
+        precedent: precedent,
+        suivant: suivant,
+        titre: 'Historique',
+        messageVide: 'Aucune donnée.',
+        estVide: (r) => r.retraits.isEmpty,
+      );
+    });
+
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
         child: Column(
           children: [
             SourceurHeader(
-              titre: 'Historique',
-              onRetour: () => context.go('/sourceur/espace'),
+              titre: ClosetL10n.of(context).mesGains,
+              afficherRetour: false,
               actions: [
                 SourceurBoutonRond(
-                  icone: Icons.tune,
-                  label: 'Filtrer',
-                  onTap: () => _choisirFiltre(context, ref, filtre),
+                  icone: Icons.person_outline,
+                  label: ClosetL10n.of(context).mesInformations,
+                  onTap: () => context.go('/espace/infos'),
                 ),
                 const SizedBox(width: AppSpacing.gapListe),
                 SourceurBoutonRond(
                   icone: Icons.notifications_none_rounded,
-                  label: 'Notifications',
+                  label: ClosetL10n.of(context).notifications,
                   onTap: () => context.push('/espace/alertes'),
                 ),
               ],
@@ -91,7 +105,7 @@ class SourceurRevenusScreen extends ConsumerWidget {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            'Transactions',
+                            ClosetL10n.of(context).t('Transactions', 'Transactions'),
                             style: ClosetTextStyles.corpsMedium.copyWith(
                               letterSpacing: -0.24,
                               color: ClosetColors.vert,
@@ -99,15 +113,18 @@ class SourceurRevenusScreen extends ConsumerWidget {
                           ),
                           _PastilleFiltre(
                             libelle: filtre == FiltreRetrait.tous
-                                ? 'Voir tout'
-                                : filtre.libelle,
+                                ? ClosetL10n.of(context).t('Voir tout', 'See all')
+                                : filtre.libellePour(ClosetL10n.of(context)),
                             onTap: () => _choisirFiltre(context, ref, filtre),
                           ),
                         ],
                       ),
                       const SizedBox(height: AppSpacing.p20),
                       if (lignes.isEmpty)
-                        const ClosetListeVide()
+                        const ClosetListeVide(
+                          titre: 'Aucune donnée',
+                          message: 'Aucun retrait n’a encore été versé.',
+                        )
                       else
                         for (final retrait in lignes) ...[
                           _LigneTransaction(retrait: retrait),
@@ -143,11 +160,12 @@ class SourceurRevenusScreen extends ConsumerWidget {
     WidgetRef ref,
     FiltreRetrait courant,
   ) async {
+    final l10n = ClosetL10n.of(context);
     final choix = await afficherSelecteur<FiltreRetrait>(
       context: context,
-      titre: 'Filtrer les mouvements',
+      titre: l10n.t('Filtrer les mouvements', 'Filter movements'),
       options: FiltreRetrait.values,
-      libelle: (f) => f.libelle,
+      libelle: (f) => f.libellePour(l10n),
       selection: courant,
     );
     if (choix != null) {

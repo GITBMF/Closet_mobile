@@ -7,7 +7,9 @@ import '../../../core/theme/closet_colors.dart';
 import '../../../core/theme/closet_text_styles.dart';
 import '../../../core/widgets/closet_frise.dart';
 import '../../../core/widgets/etat_ecran.dart';
+import '../../../core/widgets/toasts.dart';
 import '../../../data/repositories/sourceur_repository.dart';
+import '../sourceur_layout.dart';
 import '../widgets/sourceur_header.dart';
 
 /// Suivi d'une pièce confiée — transcription des maquettes `34:1710`
@@ -23,7 +25,17 @@ class SuiviPieceScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final pieces = ref.watch(mesPiecesProvider);
+    final piece = ref.watch(pieceSourceurProvider(pieceId));
+
+    ref.listen(pieceSourceurProvider(pieceId), (precedent, suivant) {
+      signaleTransitionAsync(
+        ref: ref,
+        context: context,
+        precedent: precedent,
+        suivant: suivant,
+        titre: 'Suivi de pièce',
+      );
+    });
 
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
@@ -35,26 +47,13 @@ class SuiviPieceScreen extends ConsumerWidget {
               onRetour: () => context.pop(),
             ),
             Expanded(
-              child: pieces.when(
-                data: (liste) {
-                  PieceDeposee? piece;
-                  for (final p in liste) {
-                    if (p.id == pieceId) piece = p;
-                  }
-                  if (piece == null) {
-                    return EtatEcran.vide(
-                      titre: 'Pièce introuvable',
-                      message: 'Ce dépôt n’apparaît plus dans votre atelier.',
-                      action: () => context.pop(),
-                      libelleAction: 'Retour',
-                    );
-                  }
-                  return _Corps(piece: piece);
-                },
+              child: piece.when(
+                data: (p) => _Corps(piece: p),
                 loading: () => const EtatEcran.chargement(),
                 error: (e, _) => EtatEcran.erreur(
                   erreur: e,
-                  onRetry: () => ref.invalidate(mesPiecesProvider),
+                  onRetry: () =>
+                      ref.invalidate(pieceSourceurProvider(pieceId)),
                 ),
               ),
             ),
@@ -73,6 +72,13 @@ class _Corps extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final refusee = piece.statut == StatutPiece.refusee;
+    final details = [
+      if (piece.taille != null) 'Taille ${piece.taille}',
+      if (piece.etat != null) libelleCondition(piece.etat),
+      if (piece.methodeCollecte != null)
+        libelleMethodeCollecte(piece.methodeCollecte),
+      if (piece.prix > 0) '${piece.prix.round()} FCFA',
+    ];
 
     return ListView(
       padding: const EdgeInsets.fromLTRB(
@@ -99,14 +105,23 @@ class _Corps extends StatelessWidget {
         ),
         const SizedBox(height: AppSpacing.p8),
         Text(
-          'Informations reçues',
+          details.isEmpty ? 'Informations reçues' : details.join(' · '),
           style: ClosetTextStyles.corps.copyWith(
             color: ClosetColors.neutre900,
           ),
         ),
+        if (piece.raisonRefus != null && piece.raisonRefus!.isNotEmpty) ...[
+          const SizedBox(height: AppSpacing.p8),
+          Text(
+            piece.raisonRefus!,
+            style: ClosetTextStyles.corps.copyWith(
+              color: ClosetColors.refusTexte,
+            ),
+          ),
+        ],
         const SizedBox(height: AppSpacing.p32),
         Text(
-          'Evolution & analyse de votre pièce'.toUpperCase(),
+          'Évolution et analyse de votre pièce'.toUpperCase(),
           style: ClosetTextStyles.corps.copyWith(
             letterSpacing: 0.96,
             color: ClosetColors.fond500,
@@ -124,7 +139,8 @@ class _Corps extends StatelessWidget {
               borderRadius: BorderRadius.circular(AppRadius.cercle),
               child: InkWell(
                 borderRadius: BorderRadius.circular(AppRadius.cercle),
-                onTap: () => context.go('/sourceur/espace'),
+                onTap: () =>
+                    allerOngletSourceur(context, OngletSourceur.espace),
                 child: Center(
                   child: Text(
                     'Retour dans Mon Espace',
@@ -141,7 +157,8 @@ class _Corps extends StatelessWidget {
           const SizedBox(height: AppSpacing.p16),
           Center(
             child: TextButton(
-              onPressed: () => context.go('/sourceur/nouvelle'),
+              onPressed: () =>
+                  allerOngletSourceur(context, OngletSourceur.confier),
               child: Text(
                 'Soumettre une nouvelle pièce',
                 style: ClosetTextStyles.bouton.copyWith(
@@ -156,10 +173,18 @@ class _Corps extends StatelessWidget {
   }
 
   /// Trois étapes communes, puis deux étapes qui dépendent de la décision.
+  /// Aligné sur `SubmissionStatus` : submitted → in_review → accepted/refused
+  /// → catalogued.
   static List<EtapeFrise> _etapes(PieceDeposee piece, bool refusee) {
-    final analysee = piece.statut != StatutPiece.enRevue;
-    final publiee = piece.statut == StatutPiece.publiee ||
-        piece.statut == StatutPiece.vendue;
+    final statut = piece.statutApi;
+    final analysee = statut == 'in_review' ||
+        statut == 'accepted' ||
+        statut == 'catalogued' ||
+        statut == 'refused';
+    final decidee = statut == 'accepted' ||
+        statut == 'catalogued' ||
+        statut == 'refused';
+    final publiee = statut == 'catalogued' || piece.statut == StatutPiece.vendue;
 
     return [
       const EtapeFrise(
@@ -167,17 +192,17 @@ class _Corps extends StatelessWidget {
         detail: 'Votre pièce nous est parvenue',
         atteinte: true,
       ),
-      const EtapeFrise(
+      EtapeFrise(
         titre: 'En cours d’analyse',
         detail: 'Nous vérifions l’état de votre pièce conformément aux '
             'normes de ClosET',
-        atteinte: true,
+        atteinte: analysee,
       ),
       EtapeFrise(
         titre: 'Décision de ClosET',
         detail: 'Acceptation ou refus de la pièce conformément aux normes '
             'de ClosET',
-        atteinte: analysee,
+        atteinte: decidee,
       ),
       if (refusee) ...[
         const EtapeFrise(
@@ -194,7 +219,7 @@ class _Corps extends StatelessWidget {
           titre: 'Article Accepté',
           detail: 'La pièce correspond parfaitement aux normes actuelles '
               'de ClosET.',
-          atteinte: analysee,
+          atteinte: decidee && !refusee,
         ),
         EtapeFrise(
           titre: 'Article Mis en Vente',

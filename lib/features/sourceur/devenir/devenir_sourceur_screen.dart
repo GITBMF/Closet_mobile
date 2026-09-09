@@ -19,7 +19,13 @@ class DevenirSourceurScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) {
+        if (didPop) return;
+        sourceurRetour(context);
+      },
+      child: Scaffold(
       backgroundColor: ClosetColors.vert,
       body: Stack(
         children: [
@@ -37,16 +43,18 @@ class DevenirSourceurScreen extends StatelessWidget {
             ),
           ),
           Positioned.fill(
-            child: DecoratedBox(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    ClosetColors.vert.withValues(alpha: 0.35),
-                    ClosetColors.vert,
-                  ],
-                  stops: const [0.0, 0.42],
+            child: IgnorePointer(
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      ClosetColors.vert.withValues(alpha: 0.35),
+                      ClosetColors.vert,
+                    ],
+                    stops: const [0.0, 0.42],
+                  ),
                 ),
               ),
             ),
@@ -64,7 +72,7 @@ class DevenirSourceurScreen extends StatelessWidget {
                       SourceurBoutonRond(
                         icone: Icons.arrow_back_ios_new,
                         label: 'Retour',
-                        onTap: () => context.pop(),
+                        onTap: () => sourceurRetour(context),
                       ),
                       Expanded(
                         child: Text(
@@ -181,6 +189,7 @@ class DevenirSourceurScreen extends StatelessWidget {
           ),
         ],
       ),
+    ),
     );
   }
 }

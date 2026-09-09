@@ -62,10 +62,13 @@ class _IdentificationSourceurScreenState
           .read(authRepositoryProvider)
           .logIn(email: identifiant, password: motDePasse);
       if (!mounted) return;
-      await ref.read(sourceurRepositoryProvider).chargerProfil();
+      final user = ref.read(currentUserProvider);
+      await ref
+          .read(sourceurRepositoryProvider)
+          .chargerProfil(compte: user);
       if (!mounted) return;
       final repo = ref.read(sourceurRepositoryProvider);
-      if (!repo.estInscrit) {
+      if (!repo.accesAutorisePour(user)) {
         if (!mounted) return;
         setState(() => _enCours = false);
         await dialogueErreur(
@@ -112,11 +115,11 @@ class _IdentificationSourceurScreenState
                 ),
                 child: Row(
                   children: [
-                    SourceurBoutonRond(
-                      icone: Icons.arrow_back_ios_new,
-                      label: 'Retour',
-                      onTap: () => context.pop(),
-                    ),
+                      SourceurBoutonRond(
+                        icone: Icons.arrow_back_ios_new,
+                        label: 'Retour',
+                        onTap: () => sourceurRetour(context),
+                      ),
                     Expanded(
                       child: Text(
                         'Espace Sourceur ClosET',

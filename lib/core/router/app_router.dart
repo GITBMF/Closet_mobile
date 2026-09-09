@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../data/repositories/auth_repository.dart';
 import '../../data/repositories/sourceur_repository.dart';
 import '../../data/repositories/transaction_repository.dart';
 import '../../features/auth/auth_screen.dart';
@@ -38,7 +39,20 @@ import '../../features/transaction/transaction_flow_screen.dart';
 import '../../features/transaction/transaction_models.dart';
 
 final appRouterProvider = Provider<GoRouter>((ref) {
-  final rootNavigatorKey = GlobalKey<NavigatorState>();
+  final rootNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'root');
+
+  // Une clé par branche : deux shells indexés sans clés distinctes
+  // produisent le crash « GlobalKey used multiple times » et gèlent le footer.
+  final navSrcPieces = GlobalKey<NavigatorState>(debugLabel: 'srcPieces');
+  final navSrcNouvelle = GlobalKey<NavigatorState>(debugLabel: 'srcNouvelle');
+  final navSrcRevenus = GlobalKey<NavigatorState>(debugLabel: 'srcRevenus');
+  final navSrcEspace = GlobalKey<NavigatorState>(debugLabel: 'srcEspace');
+  final navCliHome = GlobalKey<NavigatorState>(debugLabel: 'cliHome');
+  final navCliCollections =
+      GlobalKey<NavigatorState>(debugLabel: 'cliCollections');
+  final navCliWishlist = GlobalKey<NavigatorState>(debugLabel: 'cliWishlist');
+  final navCliSelection = GlobalKey<NavigatorState>(debugLabel: 'cliSelection');
+  final navCliEspace = GlobalKey<NavigatorState>(debugLabel: 'cliEspace');
 
   final router = GoRouter(
     navigatorKey: rootNavigatorKey,
@@ -76,7 +90,13 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           loc.startsWith('/sourceur') &&
           !parcoursAdhesion.contains(loc) &&
           !sourceurPublic.contains(loc)) {
+        final user = ref.read(currentUserProvider);
         final sourceurRepo = ref.read(sourceurRepositoryProvider);
+        // Un compte déjà marqué sourceur / admin entre, même sans fiche
+        // `GET /sourcing/me` (souvent 404/403 si l'admin a créé le user).
+        if (user?.estSourceur == true) {
+          return null;
+        }
         if (!sourceurRepo.estInscrit) {
           return '/sourceur/inscription';
         }
@@ -229,21 +249,14 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       // ── Sourceur Shell with bottom nav ───────────────────────────────
       StatefulShellRoute.indexedStack(
         parentNavigatorKey: rootNavigatorKey,
+        restorationScopeId: 'shell-sourceur',
         builder: (context, state, navigationShell) {
           return SourceurLayout(navigationShell: navigationShell);
         },
         branches: [
-          // 0 — ESPACE (`31:109`), accueil de l'espace sourceuse
+          // 0 — DÉPÔTS (`35:1895`)
           StatefulShellBranch(
-            routes: [
-              GoRoute(
-                path: '/sourceur/espace',
-                builder: (context, state) => const SourceurEspaceScreen(),
-              ),
-            ],
-          ),
-          // 1 — DÉPÔTS
-          StatefulShellBranch(
+            navigatorKey: navSrcPieces,
             routes: [
               GoRoute(
                 path: '/sourceur/pieces',
@@ -251,8 +264,9 @@ final appRouterProvider = Provider<GoRouter>((ref) {
               ),
             ],
           ),
-          // 2 — CONFIER
+          // 1 — CONFIER (`33:1389`)
           StatefulShellBranch(
+            navigatorKey: navSrcNouvelle,
             routes: [
               GoRoute(
                 path: '/sourceur/nouvelle',
@@ -260,12 +274,23 @@ final appRouterProvider = Provider<GoRouter>((ref) {
               ),
             ],
           ),
-          // 3 — GAINS
+          // 2 — GAINS (`32:1223`)
           StatefulShellBranch(
+            navigatorKey: navSrcRevenus,
             routes: [
               GoRoute(
                 path: '/sourceur/revenus',
                 builder: (context, state) => const SourceurRevenusScreen(),
+              ),
+            ],
+          ),
+          // 3 — ESPACE (`31:109`), hub — dernier onglet, comme côté cliente
+          StatefulShellBranch(
+            navigatorKey: navSrcEspace,
+            routes: [
+              GoRoute(
+                path: '/sourceur/espace',
+                builder: (context, state) => const SourceurEspaceScreen(),
               ),
             ],
           ),
@@ -343,12 +368,14 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       // ── Shell with bottom nav ───────────────────────────────────────
       StatefulShellRoute.indexedStack(
         parentNavigatorKey: rootNavigatorKey,
+        restorationScopeId: 'shell-cliente',
         builder: (context, state, navigationShell) {
           return MainLayout(navigationShell: navigationShell);
         },
         branches: [
           // 0 — DRESSING
           StatefulShellBranch(
+            navigatorKey: navCliHome,
             routes: [
               GoRoute(
                 path: '/home',
@@ -358,6 +385,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           ),
           // 1 — COLLECTIONS
           StatefulShellBranch(
+            navigatorKey: navCliCollections,
             routes: [
               GoRoute(
                 path: '/collections',
@@ -367,6 +395,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           ),
           // 2 — WISHLIST
           StatefulShellBranch(
+            navigatorKey: navCliWishlist,
             routes: [
               GoRoute(
                 path: '/wishlist',
@@ -376,6 +405,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           ),
           // 3 — SÉLECTION
           StatefulShellBranch(
+            navigatorKey: navCliSelection,
             routes: [
               GoRoute(
                 path: '/selection',
@@ -385,6 +415,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           ),
           // 4 — ESPACE
           StatefulShellBranch(
+            navigatorKey: navCliEspace,
             routes: [
               GoRoute(
                 path: '/espace',

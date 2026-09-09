@@ -18,6 +18,8 @@ class Article {
   final String? story;
   final String? houseId;
   final String? universeId;
+  final String sourceurNom;
+  final String? sourceurId;
 
   Article({
     required this.id,
@@ -37,6 +39,8 @@ class Article {
     this.story,
     this.houseId,
     this.universeId,
+    this.sourceurNom = '',
+    this.sourceurId,
   });
 
   factory Article.fromJson(Map<String, dynamic> json) {
@@ -65,6 +69,17 @@ class Article {
     final titre = chaineDe(json['title']);
     final marque = nomMaison ??
         chaineDe(json['brand'], chaineDe(json['house']));
+    final sourceur = objetDe(json['sourcer'] ?? json['sourceur']);
+    final nomSourceur = chaineDe(
+      json['sourcer_name'],
+      chaineDe(
+        json['sourceur_name'],
+        chaineDe(
+          sourceur['display_name'],
+          chaineDe(sourceur['name'], chaineDe(json['display_name'])),
+        ),
+      ),
+    );
 
     return Article(
       id: chaineDe(json['id']),
@@ -76,7 +91,10 @@ class Article {
       condition: _libelleEtat(conditionApi),
       color: chaineDe(
         json['color'],
-        chaineDe(json['colour'], chaineDe(json['couleur'])),
+        chaineDe(
+          json['colour'],
+          chaineDe(json['couleur'], chaineDe(json['color_label'])),
+        ),
       ),
       price: montantDe(json['price']),
       imageUrls: urls,
@@ -87,6 +105,13 @@ class Article {
       story: json['story'] as String?,
       houseId: json['house_id'] as String?,
       universeId: json['universe_id'] as String?,
+      sourceurNom: nomSourceur,
+      sourceurId: chaineDe(
+        json['sourcer_id'],
+        chaineDe(sourceur['id']),
+      ).isEmpty
+          ? null
+          : chaineDe(json['sourcer_id'], chaineDe(sourceur['id'])),
     );
   }
 
@@ -95,6 +120,44 @@ class Article {
   static String _marqueDepuisTitre(String titre) {
     final mot = titre.trim().split(RegExp(r'\s+')).firstOrNull ?? '';
     return mot;
+  }
+
+  /// Dernier mot du titre (« Uniqlo Robe » → « Robe ») — tient lieu
+  /// d'univers tant que `GET /universes` / `universe_id` sont vides.
+  static String? typeDepuisTitre(String titre) {
+    final mots = titre.trim().split(RegExp(r'\s+'));
+    if (mots.length < 2) return null;
+    final mot = mots.last;
+    if (mot.length < 3) return null;
+    return '${mot[0].toUpperCase()}${mot.substring(1)}';
+  }
+
+  /// `size_label` du backend (ex. « M », « T.38 ») vs puce XS–XL.
+  bool correspondTaille(String taille) {
+    final brut = size.trim().toUpperCase();
+    final t = taille.trim().toUpperCase();
+    if (brut.isEmpty || t.isEmpty) return false;
+    if (brut == t) return true;
+    return RegExp(
+      '(?:^|[^A-Z0-9])${RegExp.escape(t)}(?:[^A-Z0-9]|\$)',
+    ).hasMatch(brut);
+  }
+
+  bool correspondEtat(String etat) =>
+      condition.toLowerCase() == etat.trim().toLowerCase();
+
+  bool correspondMaison(String nom) =>
+      brand.toLowerCase() == nom.trim().toLowerCase();
+
+  /// Nom d'univers API, ou type lu dans le titre si `universe_id` est nul.
+  bool correspondUnivers(String nom) {
+    if (nom.isEmpty) return true;
+    if (universe.toLowerCase() == nom.toLowerCase()) return true;
+    final cible = RegExp.escape(nom);
+    return RegExp(
+      '(?:^|[\\s\\-])$cible(?:s)?(?:\$|[\\s\\-])',
+      caseSensitive: false,
+    ).hasMatch(title);
   }
 
   static String _libelleEtat(String brut) {
@@ -125,6 +188,8 @@ class Article {
         'story': story,
         'house_id': houseId,
         'universe_id': universeId,
+        'sourcer_name': sourceurNom,
+        'sourcer_id': sourceurId,
       };
 
   Article copyWith({
@@ -145,6 +210,8 @@ class Article {
     String? story,
     String? houseId,
     String? universeId,
+    String? sourceurNom,
+    String? sourceurId,
   }) {
     return Article(
       id: id ?? this.id,
@@ -164,7 +231,21 @@ class Article {
       story: story ?? this.story,
       houseId: houseId ?? this.houseId,
       universeId: universeId ?? this.universeId,
+      sourceurNom: sourceurNom ?? this.sourceurNom,
+      sourceurId: sourceurId ?? this.sourceurId,
     );
+  }
+
+  /// Catégorie seule (« Chemise »), sans la marque du titre.
+  String get libelleCategorie {
+    if (universe.trim().isNotEmpty) return universe.trim();
+    return typeDepuisTitre(title) ?? title;
+  }
+
+  /// Nom cliquable vers le catalogue du sourceur, ou la maison à défaut.
+  String get libelleSourceur {
+    if (sourceurNom.trim().isNotEmpty) return sourceurNom.trim();
+    return brand.trim();
   }
 
   /// Notation visuelle de l'état, à gauche du nom (sans badge sur la photo).
@@ -190,6 +271,12 @@ class Article {
     return 'Lavage délicat. Suivre l’étiquette d’entretien.';
   }
 }
+
+final _uuid = RegExp(
+  r'^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$',
+);
+
+bool estIdentifiantApi(String? id) => id != null && _uuid.hasMatch(id);
 
 class Maison {
   const Maison({required this.id, required this.nom});

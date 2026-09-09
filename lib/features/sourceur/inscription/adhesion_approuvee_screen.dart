@@ -42,8 +42,8 @@ class AdhesionApprouveeScreen extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 42),
               child: Text(
-                'Votre pièce sera préparée avec soin et expédiée très\n'
-                'prochainement',
+                'Votre espace de dépôt est désormais ouvert.\n'
+                'Vous pouvez confier votre première pièce.',
                 textAlign: TextAlign.center,
                 style: ClosetTextStyles.labelChamp.copyWith(
                   fontWeight: FontWeight.w500,

@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/l10n/closet_l10n.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/closet_colors.dart';
 import '../../../core/theme/closet_text_styles.dart';
@@ -11,6 +12,7 @@ import '../../../core/validation/formats.dart';
 import '../../../core/validation/indicateurs_pays.dart';
 import '../../../core/widgets/aide_mot_de_passe.dart';
 import '../../../core/widgets/champ_telephone.dart';
+import '../../../core/widgets/closet_feedback.dart';
 import '../../../core/widgets/google_g_icon.dart';
 import '../../../core/widgets/toasts.dart';
 import '../../../data/repositories/auth_repository.dart';
@@ -27,6 +29,23 @@ import 'mot_de_passe_oublie_dialog.dart';
 final isAuthenticatedProvider = Provider<bool>(
   (ref) => ref.watch(currentUserProvider) != null,
 );
+
+/// Si la session est ouverte, continue. Sinon affiche la demande de connexion.
+Future<bool> exigerConnexion(
+  BuildContext context,
+  WidgetRef ref, {
+  String? message,
+}) async {
+  if (ref.read(isAuthenticatedProvider)) return true;
+  final aller = await ClosetDialogue.connexionRequise(
+    context,
+    message: message,
+  );
+  if (aller && context.mounted) {
+    await context.push('/auth');
+  }
+  return false;
+}
 
 // ─── Auth Screen (Login / Register) ─────────────────────────────────────────
 
@@ -88,18 +107,19 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
   Future<void> _submit() async {
     if (!(_formKey.currentState?.validate() ?? false)) return;
 
+    final l10n = ClosetL10n.of(context);
     final email = _emailController.text.trim();
     final password = _passwordController.text;
     final isLogin = ref.read(authModeProvider) == AuthMode.login;
 
-    final erreurEmail = validerEmail(email);
+    final erreurEmail = validerEmail(email, l10n: l10n);
     if (erreurEmail != null) {
-      toastInfo(ref, 'E-mail invalide', erreurEmail);
+      toastInfo(ref, l10n.emailInvalideTitre, erreurEmail);
       return;
     }
-    final erreurMdp = validerMotDePasse(password, connexion: isLogin);
+    final erreurMdp = validerMotDePasse(password, connexion: isLogin, l10n: l10n);
     if (erreurMdp != null) {
-      toastInfo(ref, 'Mot de passe', erreurMdp);
+      toastInfo(ref, l10n.motDePasse, erreurMdp);
       return;
     }
 
@@ -113,24 +133,24 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
       if (firstName.isEmpty || lastName.isEmpty) {
         toastInfo(
           ref,
-          'Champs manquants',
-          'Veuillez renseigner votre nom et prénom.',
+          l10n.champsManquants,
+          l10n.renseignerNomPrenom,
         );
         return;
       }
       final nomComplet =
           '$firstName $lastName'.replaceAll(RegExp(r'\s+'), ' ').trim();
       if (nomComplet.length < 2) {
-        toastInfo(ref, 'Nom incomplet', 'Le nom doit contenir au moins 2 caractères.');
+        toastInfo(ref, l10n.nomIncomplet, l10n.nomMinCaracteres);
         return;
       }
       if (nomComplet.length > 150) {
-        toastInfo(ref, 'Nom trop long', '150 caractères maximum.');
+        toastInfo(ref, l10n.nomTropLong, l10n.max150);
         return;
       }
       final erreurTel = validerTelephone(phone, obligatoire: true);
       if (erreurTel != null) {
-        toastInfo(ref, 'Téléphone', erreurTel);
+        toastInfo(ref, l10n.telephone, erreurTel);
         return;
       }
     }
@@ -150,20 +170,24 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
             );
 
       try {
-        await ref.read(sourceurRepositoryProvider).chargerProfil();
+        await ref
+            .read(sourceurRepositoryProvider)
+            .chargerProfil(compte: user);
       } catch (_) {}
 
       if (!mounted) return;
       setState(() => _isLoading = false);
       await dialogueSucces(
         context,
-        titre: isLogin ? 'Connexion réussie' : 'Compte créé',
+        titre: isLogin ? l10n.connexionReussie : l10n.compteCree,
         message: isLogin
-            ? 'Bon retour, ${user.firstName} !'
-            : 'Bienvenue, ${user.firstName} !',
+            ? l10n.bonRetour(user.firstName)
+            : l10n.bienvenuePrenom(user.firstName),
       );
       if (!mounted) return;
-      if (context.canPop()) {
+      if (user.estSourceur) {
+        context.go('/sourceur/espace');
+      } else if (context.canPop()) {
         context.pop();
       } else {
         context.go('/home');
@@ -174,7 +198,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
         await dialogueErreur(
           context,
           e,
-          titre: isLogin ? 'Connexion impossible' : 'Inscription impossible',
+          titre: isLogin ? l10n.connexionImpossible : l10n.inscriptionImpossible,
         );
       }
     } finally {
@@ -188,6 +212,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
   Widget build(BuildContext context) {
     final mode = ref.watch(authModeProvider);
     final isLogin = mode == AuthMode.login;
+    final l10n = ClosetL10n.of(context);
 
     return Scaffold(
       backgroundColor: ClosetColors.vert,
@@ -205,8 +230,8 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
                   padding: const EdgeInsets.symmetric(horizontal: 24),
                   child: Text(
                     isLogin
-                        ? 'Bienvenue dans votre dressing !'
-                        : 'Rejoignez le cercle',
+                        ? l10n.authTitreConnexion
+                        : l10n.authTitreInscription,
                     style: ClosetTextStyles.titreEcran.copyWith(
                       letterSpacing: 0.44,
                       color: ClosetColors.neutre200,
@@ -223,61 +248,61 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
                     children: [
                       if (!isLogin) ...[
                         _ChampAuth(
-                          label: 'Prénom',
+                          label: l10n.prenom,
                           hint: 'Marie',
                           controller: _nameController,
                           textInputAction: TextInputAction.next,
                           textCapitalization: TextCapitalization.words,
                           formatters: const [FormateurPrenom()],
                           validator: (v) => (v == null || v.trim().isEmpty)
-                              ? 'Veuillez renseigner votre prénom.'
+                              ? l10n.renseignerPrenom
                               : null,
                         ),
                         const SizedBox(height: AppSpacing.p16),
                         _ChampAuth(
-                          label: 'Nom',
+                          label: l10n.nom,
                           hint: 'DUPONT',
                           controller: _lastNameController,
                           textInputAction: TextInputAction.next,
                           textCapitalization: TextCapitalization.characters,
                           formatters: const [FormateurNom()],
                           validator: (v) => (v == null || v.trim().isEmpty)
-                              ? 'Veuillez renseigner votre nom.'
+                              ? l10n.renseignerNom
                               : null,
                         ),
                         const SizedBox(height: AppSpacing.p16),
                         ChampTelephone(
-                          label: 'Téléphone',
+                          label: l10n.telephone,
                           controller: _phone,
                           hint: '6 90 12 34 56',
                           style: StyleChampTelephone.auth,
                           validerAvecLeFormulaire: false,
                           textInputAction: TextInputAction.next,
-                          validator: _validerTelephone,
+                          validator: (v) => _validerTelephone(v, l10n),
                         ),
                         const SizedBox(height: AppSpacing.p16),
                       ],
                       _ChampAuth(
-                        label: 'Email',
+                        label: l10n.email,
                         hint: 'Example@email.com',
                         controller: _emailController,
                         keyboardType: TextInputType.emailAddress,
                         textInputAction: TextInputAction.next,
                         autocorrect: false,
                         sansEspaces: true,
-                        validator: _validerEmail,
+                        validator: (v) => _validerEmail(v, l10n),
                       ),
                       const SizedBox(height: AppSpacing.p16),
                       _ChampAuth(
-                        label: 'Mot de passe',
-                        hint: 'Au moins 8 caractères',
+                        label: l10n.motDePasse,
+                        hint: l10n.hintMotDePasse,
                         controller: _passwordController,
                         obscure: _obscurePassword,
                         textInputAction: TextInputAction.done,
                         onSubmitted: (_) => _submit(),
                         validator: isLogin
-                            ? _validerMotDePasseConnexion
-                            : _validerMotDePasseInscription,
+                            ? (v) => _validerMotDePasseConnexion(v, l10n)
+                            : (v) => _validerMotDePasseInscription(v, l10n),
                         suffix: IconButton(
                           icon: Icon(
                             _obscurePassword
@@ -294,7 +319,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
                       const SizedBox(height: AppSpacing.p8),
                       if (isLogin)
                         Text(
-                          '8 caractères minimum, dont un chiffre.',
+                          l10n.hintMdpRegle,
                           style: ClosetTextStyles.meta.copyWith(
                             fontWeight: FontWeight.w300,
                             color: ClosetColors.beige,
@@ -310,7 +335,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
                         ),
                       const SizedBox(height: AppSpacing.p24),
                       _BoutonDore(
-                        label: isLogin ? 'SE CONNECTER' : 'CRÉER MON COMPTE',
+                        label: isLogin ? l10n.boutonSeConnecter : l10n.boutonCreerCompte,
                         enCours: _isLoading,
                         onPressed: _isLoading ? null : _submit,
                       ),
@@ -323,7 +348,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
                               emailInitial: _emailController.text,
                             ),
                             child: Text(
-                              'Mot de passe oublié',
+                              l10n.motDePasseOublie,
                               style: ClosetTextStyles.corps.copyWith(
                                 color: ClosetColors.beige,
                               ),
@@ -337,13 +362,13 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
                         child: SizedBox(
                           width: 312,
                           child: _BoutonDore(
-                            label: 'CONTINUER avec Google',
+                            label: l10n.continuerGoogle,
                             icone: const GoogleGIcon(taille: 18),
                             onPressed: () {
                               toastInfo(
                                 ref,
-                                'Indisponible',
-                                'La connexion Google n’est pas proposée par le serveur pour le moment.',
+                                l10n.googleIndisponibleTitre,
+                                l10n.googleIndisponible,
                               );
                             },
                           ),
@@ -358,16 +383,16 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
                           child: Text.rich(
                             TextSpan(
                               text: isLogin
-                                  ? 'Pas encore membre ? '
-                                  : 'Déjà membre ? ',
+                                  ? l10n.pasEncoreMembre
+                                  : l10n.dejaMembre,
                               style: ClosetTextStyles.corps.copyWith(
                                 color: ClosetColors.beige,
                               ),
                               children: [
                                 TextSpan(
                                   text: isLogin
-                                      ? 'Rejoindre le cercle'
-                                      : 'Se connecter',
+                                      ? l10n.rejoindreLeCercle
+                                      : l10n.seConnecter,
                                   style: ClosetTextStyles.corps.copyWith(
                                     color: ClosetColors.fond300,
                                     fontWeight: FontWeight.w600,
@@ -385,7 +410,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               Text(
-                                'Continuer en invitée',
+                                l10n.continuerInvitee,
                                 style: ClosetTextStyles.detail.copyWith(
                                   color: ClosetColors.fond400,
                                 ),
@@ -412,35 +437,35 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
     );
   }
 
-  static String? _validerEmail(String? v) {
+  static String? _validerEmail(String? v, ClosetL10n l10n) {
     final valeur = v?.trim() ?? '';
-    if (valeur.isEmpty) return 'Veuillez renseigner votre email.';
+    if (valeur.isEmpty) return l10n.renseignerEmail;
     if (!RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$').hasMatch(valeur)) {
-      return 'Cet email semble incorrect.';
+      return l10n.emailIncorrect;
     }
     return null;
   }
 
-  static String? _validerMotDePasseConnexion(String? v) {
-    if ((v ?? '').isEmpty) return 'Veuillez renseigner votre mot de passe.';
+  static String? _validerMotDePasseConnexion(String? v, ClosetL10n l10n) {
+    if ((v ?? '').isEmpty) return l10n.renseignerMdp;
     return null;
   }
 
-  static String? _validerMotDePasseInscription(String? v) {
+  static String? _validerMotDePasseInscription(String? v, ClosetL10n l10n) {
     final valeur = v ?? '';
-    if (valeur.isEmpty) return 'Veuillez renseigner votre mot de passe.';
-    if (valeur.length < 8) return '8 caractères minimum.';
+    if (valeur.isEmpty) return l10n.renseignerMdp;
+    if (valeur.length < 8) return l10n.min8Caracteres;
     if (!RegExp(r'\d').hasMatch(valeur)) {
-      return 'Ajoutez au moins un chiffre.';
+      return l10n.ajouterChiffre;
     }
     return null;
   }
 
-  static String? _validerTelephone(String? v) {
+  static String? _validerTelephone(String? v, ClosetL10n l10n) {
     final valeur = (v ?? '').replaceAll(RegExp(r'[\s.\-]'), '');
-    if (valeur.isEmpty) return 'Veuillez renseigner votre numéro.';
+    if (valeur.isEmpty) return l10n.renseignerNumero;
     if (!RegExp(r'^\+?\d{8,15}$').hasMatch(valeur)) {
-      return 'Ce numéro semble incorrect.';
+      return l10n.numeroIncorrect;
     }
     return null;
   }
@@ -660,7 +685,7 @@ class _SeparateurOu extends StatelessWidget {
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: AppSpacing.p16),
           child: Text(
-            'Ou se connecter',
+            ClosetL10n.of(context).ouSeConnecter,
             style: ClosetTextStyles.corps.copyWith(
               color: ClosetColors.fond300,
             ),

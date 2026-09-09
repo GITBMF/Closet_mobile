@@ -21,7 +21,6 @@ class BffClient {
             receiveTimeout: const Duration(seconds: 45),
             sendTimeout: const Duration(seconds: 45),
             headers: const {
-              'Content-Type': 'application/json',
               'Accept': 'application/json',
             },
           ),
@@ -83,14 +82,44 @@ class BffClient {
     String chemin, {
     Object? data,
   }) async {
-    return objetDe(await _executer(() => _dio.post<dynamic>(chemin, data: data)));
+    return objetDe(await _executer(() => _dio.post<dynamic>(
+          chemin,
+          data: data,
+          options: Options(contentType: Headers.jsonContentType),
+        )));
+  }
+
+  /// Envoi d'un fichier (`multipart/form-data`), sans forcer `application/json`.
+  Future<Map<String, dynamic>> postFichier(
+    String chemin, {
+    required String champ,
+    required String cheminFichier,
+    String? nomFichier,
+    Map<String, dynamic> champs = const {},
+  }) async {
+    final form = FormData.fromMap({
+      ...champs,
+      champ: await MultipartFile.fromFile(
+        cheminFichier,
+        filename: nomFichier,
+      ),
+    });
+    return objetDe(await _executer(() => _dio.post<dynamic>(
+          chemin,
+          data: form,
+          options: Options(contentType: Headers.multipartFormDataContentType),
+        )));
   }
 
   Future<Map<String, dynamic>> patchJson(
     String chemin, {
     Object? data,
   }) async {
-    return objetDe(await _executer(() => _dio.patch<dynamic>(chemin, data: data)));
+    return objetDe(await _executer(() => _dio.patch<dynamic>(
+          chemin,
+          data: data,
+          options: Options(contentType: Headers.jsonContentType),
+        )));
   }
 
   /// `POST` qui répond 204 sans corps (ex. `POST /wishlist/{id}`).
@@ -113,6 +142,7 @@ class BffClient {
 
   static final _reponseVide = Options(
     responseType: ResponseType.plain,
+    contentType: Headers.jsonContentType,
     validateStatus: (statut) => statut != null && statut >= 200 && statut < 300,
   );
 

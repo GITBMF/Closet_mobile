@@ -86,7 +86,7 @@ class _ModifierProfilScreenState
         child: Column(
           children: [
             _EnTeteRetour(
-              titre: 'Modifier mon profil',
+              titre: '',
               onRetour: () => context.pop(),
             ),
             Expanded(

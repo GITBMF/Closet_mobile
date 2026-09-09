@@ -9,6 +9,7 @@ import '../../../core/widgets/closet_buttons.dart';
 import '../../../core/widgets/closet_chip.dart';
 import '../../../core/widgets/toasts.dart';
 import '../../../data/repositories/sourceur_repository.dart';
+import '../widgets/sourceur_header.dart';
 import 'widgets/labeled_field.dart';
 import 'widgets/sourceur_hero_card.dart';
 import 'widgets/step_indicator.dart';
@@ -83,6 +84,14 @@ class _SourceurInscriptionScreenState
     );
   }
 
+  void _retour() {
+    if (_etape > 0) {
+      _changerEtape(-1);
+      return;
+    }
+    sourceurRetour(context, repli: '/sourceur/devenir');
+  }
+
   Future<void> _rejoindreLeCercle() async {
     setState(() => _isLoading = true);
     try {
@@ -97,6 +106,9 @@ class _SourceurInscriptionScreenState
         numeroPaiement: _numero.e164.isNotEmpty
             ? _numero.e164
             : _numero.national.text.trim(),
+        typeCollaboration: _typeCollaboration.contains('directe')
+            ? 'direct_sale'
+            : 'consignment',
       ));
       if (!mounted) return;
       setState(() => _isLoading = false);
@@ -119,7 +131,13 @@ class _SourceurInscriptionScreenState
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return Scaffold(
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) {
+        if (didPop) return;
+        _retour();
+      },
+      child: Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
       body: SafeArea(
         child: Column(
@@ -165,33 +183,30 @@ class _SourceurInscriptionScreenState
           ],
         ),
       ),
+    ),
     );
   }
 
   Widget _buildTopBar(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     return Container(
-      padding: const EdgeInsets.fromLTRB(20, 16, 20, 12),
+      padding: const EdgeInsets.fromLTRB(12, 8, 20, 12),
       decoration: BoxDecoration(
         color: Theme.of(context).scaffoldBackgroundColor,
         border: Border(bottom: BorderSide(color: cs.onSurface.withValues(alpha: 0.1))),
       ),
       child: Row(
         children: [
-          GestureDetector(
-            onTap: () => context.pop(),
-            child: Container(
-              width: 32,
-              height: 32,
-              decoration: BoxDecoration(
-                color: cs.surface,
-                shape: BoxShape.circle,
-              ),
-              child: Icon(Icons.arrow_back_ios_new,
-                  size: 13, color: cs.onSurface),
+          IconButton(
+            tooltip: 'Retour',
+            onPressed: _retour,
+            icon: Icon(
+              Icons.arrow_back_ios_new,
+              size: 16,
+              color: cs.onSurface,
             ),
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: 4),
           Text('Devenir Sourceur',
               style: ClosetTextStyles.titreEcran.copyWith(
                   fontSize: 16, color: cs.onSurface)),

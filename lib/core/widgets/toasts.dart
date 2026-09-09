@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../data/api/api_exception.dart';
+import '../l10n/closet_l10n.dart';
 import '../services/notification_service.dart';
 import 'closet_feedback.dart';
 
@@ -20,16 +21,14 @@ void toastSucces(WidgetRef ref, String titre, [String? message]) {
 }
 
 /// Toast d'une action sur une pièce : le nom en titre, le résultat en corps.
-///
-/// Ex. titre « Levi's Sac », corps « Votre pièce « Levi's Sac » a été
-/// ajoutée à votre sélection. »
 void toastActionPiece(
   WidgetRef ref, {
   required String nom,
   required String resultat,
   bool succes = true,
 }) {
-  final phrase = 'Votre pièce « $nom » $resultat';
+  final l10n = ref.read(l10nProvider);
+  final phrase = l10n.toastPiece(nom, resultat);
   if (succes) {
     toastSucces(ref, nom, phrase);
   } else {
@@ -54,14 +53,42 @@ void toastMelange(
   }
 }
 
-void toastErreur(WidgetRef ref, Object erreur, {String titre = 'Erreur'}) {
-  final texte = messageMelange(
-    local: titre,
-    backend: messageErreur(erreur),
+void toastErreur(WidgetRef ref, Object erreur, {String? titre}) {
+  final l10n = ref.read(l10nProvider);
+  final texte = l10n.messageDepuisErreur(erreur);
+  ref.read<NotificationNotifier>(notificationProvider.notifier).showError(
+        titre ?? l10n.erreurTitre,
+        texte.isEmpty ? l10n.erreurGenerique : texte,
+      );
+}
+
+/// Toast à la transition d'un [AsyncValue] : erreur backend, ou liste vide.
+///
+/// [context] permet d'ignorer les onglets hors écran (IndexedStack).
+void signaleTransitionAsync<T>({
+  required WidgetRef ref,
+  required BuildContext context,
+  required AsyncValue<T>? precedent,
+  required AsyncValue<T> suivant,
+  required String titre,
+  String? messageVide,
+  bool Function(T data)? estVide,
+}) {
+  if (!context.mounted) return;
+  if (!TickerMode.valuesOf(context).enabled) return;
+  suivant.whenOrNull(
+    error: (e, _) {
+      if (precedent?.hasError == true) return;
+      toastErreur(ref, e, titre: titre);
+    },
+    data: (d) {
+      if (messageVide == null || estVide == null || !estVide(d)) return;
+      final dejaVide =
+          precedent?.asData != null && estVide(precedent!.asData!.value);
+      if (dejaVide) return;
+      toastInfo(ref, titre, messageVide);
+    },
   );
-  ref
-      .read<NotificationNotifier>(notificationProvider.notifier)
-      .showError(titre, texte);
 }
 
 /// Fenêtre de succès — à utiliser pour une action aboutie (dépôt, auth…).
@@ -80,16 +107,17 @@ Future<void> dialogueSucces(
   );
 }
 
-/// Fenêtre d'erreur : titre local, corps = message serveur ou le titre.
+/// Fenêtre d'erreur : titre local, corps compréhensible (jamais de jargon HTTP).
 Future<void> dialogueErreur(
   BuildContext context,
   Object erreur, {
-  String titre = 'Une erreur est survenue',
+  String? titre,
 }) {
+  final l10n = ClosetL10n.of(context);
   return ClosetDialogue.resultat(
     context,
     succes: false,
-    titre: titre,
-    message: messageMelange(local: titre, backend: messageErreur(erreur)),
+    titre: titre ?? l10n.erreurTitre,
+    message: l10n.messageDepuisErreur(erreur),
   );
 }

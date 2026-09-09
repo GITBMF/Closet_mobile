@@ -299,29 +299,21 @@ void main() {
 
   group('Écarts connus du parcours', () {
     testWidgets(
-      'ÉCART — le type de collaboration choisi n\'atteint pas le dépôt',
+      'transmet le type de collaboration choisi',
       (tester) async {
         await monter(tester);
         await remplirAtelier(tester);
         await remplirUnivers(tester);
         await remplirPaiement(tester);
 
-        // On choisit explicitement la vente directe, à l'opposé du défaut.
         await taper(tester, find.text('Vente directe (achat immédiat)'));
         await taper(
           tester,
           find.widgetWithText(ClosetPrimaryButton, 'Rejoindre le cercle'),
         );
 
-        // SourceurInscriptionData n'a aucun champ pour porter ce choix :
-        // il est perdu entre l'écran et la couche données. Ce test verrouille
-        // le constat ; il devra être réécrit quand le champ sera ajouté.
         expect(repo.recu, isNotNull);
-        expect(
-          repo.recu.toString(),
-          isNot(contains('Vente directe')),
-          reason: 'le type de collaboration devrait être transmis',
-        );
+        expect(repo.recu!.typeCollaboration, 'direct_sale');
       },
     );
 

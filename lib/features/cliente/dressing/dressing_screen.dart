@@ -3,18 +3,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/l10n/closet_l10n.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/closet_colors.dart';
 import '../../../core/theme/closet_layout.dart';
 import '../../../core/theme/closet_text_styles.dart';
 import '../../../core/widgets/closet_app_bar.dart';
-import '../../../core/widgets/closet_chip.dart';
 import '../../../core/widgets/closet_feedback.dart';
 import '../../../core/widgets/etat_ecran.dart';
 import '../../../core/widgets/piece_card.dart';
+import '../../../core/widgets/toasts.dart';
 import '../../../data/models/article.dart';
 import '../../../data/repositories/catalog_repository.dart';
-import '../collections/collections_screen.dart';
 
 /// Contenu de l'accueil, branché sur `GET /pieces` + `GET /showcasing/home`.
 final dressingDataProvider = FutureProvider<AccueilDressing>((ref) {
@@ -32,14 +32,28 @@ class DressingScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final asyncData = ref.watch(dressingDataProvider);
 
+    final l10n = ClosetL10n.of(context);
+
+    ref.listen(dressingDataProvider, (precedent, suivant) {
+      signaleTransitionAsync(
+        ref: ref,
+        context: context,
+        precedent: precedent,
+        suivant: suivant,
+        titre: l10n.navDressing,
+        messageVide: l10n.dressingVide,
+        estVide: (data) => data.estVide,
+      );
+    });
+
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: const ClosetAppBar(),
       body: asyncData.when(
         data: (data) {
           if (data.estVide) {
-            return const ClosetListeVide(
-              message: 'Le dressing n’a renvoyé aucune pièce.',
+            return ClosetListeVide(
+              message: l10n.dressingVide,
             );
           }
           return _CorpsAccueil(accueil: data);
@@ -54,13 +68,13 @@ class DressingScreen extends ConsumerWidget {
   }
 }
 
-class _CorpsAccueil extends ConsumerWidget {
+class _CorpsAccueil extends StatelessWidget {
   const _CorpsAccueil({required this.accueil});
 
   final AccueilDressing accueil;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final featured = accueil.pieceDeLaSemaine;
     final heroBrut = accueil.hero ?? featured;
     final hero = featured != null &&
@@ -76,15 +90,7 @@ class _CorpsAccueil extends ConsumerWidget {
       ...accueil.nouveautes,
       ...accueil.coupsDeCoeur,
     ].where((a) => vus.add(a.id)).toList();
-    final univers = accueil.univers;
     final marge = ClosetLayout.of(context).gouttiere;
-
-    void ouvrirUnivers(String categorie) {
-      ref
-          .read<UniverseNotifier>(selectedUniverseProvider.notifier)
-          .setUniverse(categorie);
-      context.go('/collections');
-    }
 
     return SingleChildScrollView(
       padding: const EdgeInsets.only(bottom: AppSpacing.p32),
@@ -110,10 +116,6 @@ class _CorpsAccueil extends ConsumerWidget {
                 onTap: () => context.push('/product/${hero.id}'),
               ),
             ),
-          ],
-          if (univers.isNotEmpty) ...[
-            const SizedBox(height: 24),
-            _RangeeUnivers(univers: univers, onTap: ouvrirUnivers),
           ],
           if (fil.isNotEmpty) ...[
             const SizedBox(height: AppSpacing.p20),
@@ -152,10 +154,13 @@ class _CartePieceDeLaSemaine extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = ClosetL10n.of(context);
     return Semantics(
       button: true,
-      label:
-          'Pièce de la semaine, ${article.title}, ${formatPrixFcfa(article.price)}',
+      label: l10n.pieceSemaineSemantics(
+        article.title,
+        formatPrixFcfa(article.price),
+      ),
       child: Material(
         color: ClosetColors.vert,
         elevation: 0,
@@ -179,40 +184,41 @@ class _CartePieceDeLaSemaine extends StatelessWidget {
               ),
               Padding(
                 padding: const EdgeInsets.fromLTRB(
-                  AppSpacing.p20,
                   AppSpacing.p16,
-                  AppSpacing.p20,
+                  AppSpacing.p12,
                   AppSpacing.p16,
+                  AppSpacing.p12,
                 ),
                 child: Column(
                   children: [
                     Text(
-                      'Pièce de la semaine',
+                      l10n.pieceDeLaSemaine,
                       style: ClosetTextStyles.surtitre.copyWith(
                         color: ClosetColors.fond300,
                       ),
                     ),
                     const SizedBox(height: AppSpacing.p8),
                     Text(
-                      article.title,
-                      maxLines: 2,
+                      article.libelleCategorie,
+                      maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       textAlign: TextAlign.center,
                       style: ClosetTextStyles.accroche.copyWith(
                         color: ClosetColors.blanc,
+                        fontSize: 16,
                       ),
                     ),
-                    const SizedBox(height: AppSpacing.p8),
+                    const SizedBox(height: AppSpacing.p4),
                     Text(
                       formatPrixFcfa(article.price),
-                      style: ClosetTextStyles.prixGrand.copyWith(
+                      style: ClosetTextStyles.prix.copyWith(
                         color: ClosetColors.fond300,
                       ),
                     ),
-                    const SizedBox(height: AppSpacing.p12),
+                    const SizedBox(height: AppSpacing.p8),
                     SizedBox(
-                      width: 236,
-                      height: 40,
+                      width: 180,
+                      height: 34,
                       child: DecoratedBox(
                         decoration: BoxDecoration(
                           color: ClosetColors.fond300,
@@ -220,9 +226,10 @@ class _CartePieceDeLaSemaine extends StatelessWidget {
                         ),
                         child: Center(
                           child: Text(
-                            'Découvrir',
-                            style: ClosetTextStyles.bouton.copyWith(
+                            l10n.decouvrir,
+                            style: ClosetTextStyles.actionPetite.copyWith(
                               color: ClosetColors.neutre1000,
+                              fontWeight: FontWeight.w600,
                             ),
                           ),
                         ),
@@ -298,49 +305,6 @@ class _PhotoPiece extends StatelessWidget {
   }
 }
 
-
-
-/// Rangée horizontale de puces. « Tout l'univers » n'est ajouté que si
-/// [premiere] est vrai et que le backend a renvoyé des univers.
-class _RangeeUnivers extends StatelessWidget {
-  const _RangeeUnivers({
-    required this.univers,
-    required this.onTap,
-  });
-
-  final List<String> univers;
-  final ValueChanged<String> onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      height: 38,
-      child: ListView.separated(
-        scrollDirection: Axis.horizontal,
-        padding: EdgeInsets.symmetric(
-          horizontal: ClosetLayout.of(context).gouttiere,
-        ),
-        itemCount: univers.length + 1,
-        separatorBuilder: (_, _) => const SizedBox(width: AppSpacing.p12),
-        itemBuilder: (context, i) {
-          if (i == 0) {
-            return ClosetChip(
-              label: 'Tout l’univers',
-              isActive: true,
-              onTap: () => context.go('/collections'),
-            );
-          }
-          final categorie = univers[i - 1];
-          return ClosetChip(
-            label: categorie,
-            onTap: () => onTap(categorie),
-          );
-        },
-      ),
-    );
-  }
-}
-
 /// Grille de deux colonnes, cartes de 169 × 249 séparées de 12.
 class _GrilleArticles extends StatelessWidget {
   const _GrilleArticles({required this.articles, required this.marge});
@@ -366,6 +330,7 @@ class _GrilleArticles extends StatelessWidget {
           final article = articles[i];
           return ArticleCard(
             article: article,
+            categorieSeule: true,
             onTap: () => context.push('/product/${article.id}'),
           );
         },

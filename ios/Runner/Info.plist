@@ -47,6 +47,14 @@
 			</array>
 		</dict>
 	</dict>
+	<key>NSCameraUsageDescription</key>
+	<string>ClosET utilise la caméra pour photographier ou filmer une pièce confiée.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>ClosET utilise le micro uniquement si vous filmez une pièce.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>ClosET accède à vos photos et vidéos pour les joindre au dépôt.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>ClosET n’enregistre une photo que si vous la prenez depuis l’application.</string>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 	<key>UILaunchStoryboardName</key>

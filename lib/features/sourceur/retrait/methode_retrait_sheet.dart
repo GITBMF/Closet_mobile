@@ -77,6 +77,20 @@ class _MethodeRetraitSheetState
   String _choisi = moyensRetrait.first.id;
 
   @override
+  void initState() {
+    super.initState();
+    final profil = ref.read(sourceurRepositoryProvider).profile;
+    final enregistre = profil?.moyenPaiement.toLowerCase() ?? '';
+    if (enregistre.contains('mtn')) {
+      _choisi = 'mtn';
+    } else if (enregistre.contains('orange')) {
+      _choisi = 'orange';
+    } else if (enregistre.contains('visa') || enregistre.contains('carte')) {
+      _choisi = 'visa';
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     final revenus = ref.watch(revenusSourceurProvider);
     final pieces = ref.watch(mesPiecesProvider);
@@ -112,13 +126,13 @@ class _MethodeRetraitSheetState
               ),
               const SizedBox(height: AppSpacing.p20),
               Text(
-                'Methode de retrait de fonds',
+                'Méthode de retrait de fonds',
                 style: ClosetTextStyles.libelle.copyWith(fontSize: 18),
               ),
               const SizedBox(height: AppSpacing.p16),
               Text(
-                'pièces en vente : '
-                '${pieces.maybeWhen(data: _compteEnVente, orElse: () => '--')} '
+                'Pièces en vente : '
+                '${pieces.maybeWhen(data: _compteEnVente, orElse: () => '0')} '
                 'pièces',
                 style: ClosetTextStyles.actionPetite.copyWith(
                   letterSpacing: 0.30,
@@ -133,15 +147,15 @@ class _MethodeRetraitSheetState
               ),
               const SizedBox(height: AppSpacing.p12),
               Text(
-                'à reverser : '
-                '${revenus.maybeWhen(data: (r) => formatPrixFcfa(r.solde.toDouble()), orElse: () => '--')}',
+                'À reverser : '
+                '${revenus.maybeWhen(data: (r) => formatPrixFcfa(r.enAttente.toDouble()), orElse: () => '--')}',
                 style: ClosetTextStyles.actionPetite.copyWith(
                   letterSpacing: 0.30,
                   color: ClosetColors.fond300,
                 ),
               ),
               const SizedBox(height: AppSpacing.p16),
-              for (final moyen in moyensRetrait)
+              for (final moyen in _moyensAffiches())
                 _LigneMoyen(
                   moyen: moyen,
                   choisi: moyen.id == _choisi,
@@ -158,7 +172,7 @@ class _MethodeRetraitSheetState
                     onTap: () => _valider(context, revenus, user),
                     child: Center(
                       child: Text(
-                        'Valider la methode de retrait',
+                        'Valider la méthode de retrait',
                         style: ClosetTextStyles.bouton.copyWith(
                           fontWeight: FontWeight.w600,
                           color: ClosetColors.blanc,
@@ -175,6 +189,22 @@ class _MethodeRetraitSheetState
     );
   }
 
+  /// Moyens de la maquette, avec le numéro enregistré via `GET /sourcing/me`.
+  List<MoyenRetrait> _moyensAffiches() {
+    final profil = ref.watch(sourceurRepositoryProvider).profile;
+    final numero = profil?.numeroPaiement ?? '';
+    if (numero.isEmpty) return moyensRetrait;
+    return [
+      for (final moyen in moyensRetrait)
+        MoyenRetrait(
+          id: moyen.id,
+          libelle: moyen.libelle,
+          compte: moyen.id == _choisi ? numero : moyen.compte,
+          icone: moyen.icone,
+        ),
+    ];
+  }
+
   /// Ferme le panneau. Les retraits sont versés par ClosET : l'API mobile
   /// n'expose pas de déclenchement de virement.
   void _valider(
@@ -186,15 +216,13 @@ class _MethodeRetraitSheetState
     toastInfo(
       ref,
       'Retraits gérés par ClosET',
-      'Les virements sont émis une fois vos pièces vendues. '
-          'L’historique affiché correspond aux paiements réellement versés.',
+      'Les virements sont émis une fois vos pièces vendues.',
     );
   }
 
-  /// Nombre de pièces effectivement en vente, sur deux chiffres.
+  /// Nombre de pièces effectivement en vente.
   static String _compteEnVente(List<PieceDeposee> pieces) {
-    final enVente = pieces.where((p) => p.statut == StatutPiece.publiee).length;
-    return enVente.toString().padLeft(2, '0');
+    return pieces.where((p) => p.statut == StatutPiece.publiee).length.toString();
   }
 }
 

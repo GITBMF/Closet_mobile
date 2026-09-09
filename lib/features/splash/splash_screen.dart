@@ -56,7 +56,9 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
       user = await ref.read(authRepositoryProvider).restaurerSession();
       if (user != null) {
         try {
-          await ref.read(sourceurRepositoryProvider).chargerProfil();
+          await ref
+              .read(sourceurRepositoryProvider)
+              .chargerProfil(compte: user);
         } catch (_) {
           // Un échec sourcing ne doit pas bloquer l'entrée cliente.
         }

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../features/sourceur/widgets/sourceur_header.dart';
+import '../l10n/closet_l10n.dart';
 import '../theme/app_spacing.dart';
 import '../theme/closet_colors.dart';
 import '../theme/closet_text_styles.dart';
@@ -13,17 +14,22 @@ import 'closet_buttons.dart';
 class ClosetListeVide extends StatelessWidget {
   const ClosetListeVide({
     super.key,
-    this.message = 'Aucune donnée pour le moment.',
+    this.titre,
+    this.message,
     this.action,
     this.libelleAction,
   });
 
-  final String message;
+  final String? titre;
+  final String? message;
   final VoidCallback? action;
   final String? libelleAction;
 
   @override
   Widget build(BuildContext context) {
+    final l10n = ClosetL10n.of(context);
+    final titreAffiche = titre ?? l10n.listeVideTitre;
+    final messageAffiche = message ?? l10n.listeVideMessage;
     final contenu = Padding(
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.p32),
       child: Column(
@@ -36,13 +42,13 @@ class ClosetListeVide extends StatelessWidget {
           ),
           const SizedBox(height: AppSpacing.p20),
           Text(
-            'Liste vide',
+            titreAffiche,
             textAlign: TextAlign.center,
             style: ClosetTextStyles.titreSection,
           ),
           const SizedBox(height: AppSpacing.p12),
           Text(
-            message,
+            messageAffiche,
             textAlign: TextAlign.center,
             style: ClosetTextStyles.citation.copyWith(
               color: ClosetColors.taupe,
@@ -112,7 +118,7 @@ class ClosetPageHeader extends StatelessWidget {
           children: [
             SourceurBoutonRond(
               icone: Icons.arrow_back_ios_new,
-              label: 'Retour',
+              label: ClosetL10n.of(context).retour,
               onTap: onRetour ??
                   () {
                     if (context.canPop()) {
@@ -152,8 +158,9 @@ class ClosetDialogue {
 
   static Future<void> chargement(
     BuildContext context, {
-    String message = 'Chargement…',
+    String? message,
   }) {
+    final texte = message ?? ClosetL10n.of(context).chargementMessage;
     return showDialog<void>(
       context: context,
       barrierDismissible: false,
@@ -170,7 +177,7 @@ class ClosetDialogue {
               const CircularProgressIndicator(color: ClosetColors.dore),
               const SizedBox(height: AppSpacing.p20),
               Text(
-                message,
+                texte,
                 textAlign: TextAlign.center,
                 style: ClosetTextStyles.corps,
               ),
@@ -188,6 +195,7 @@ class ClosetDialogue {
     required String message,
     String libelle = 'OK',
   }) {
+    final ok = libelle == 'OK' ? ClosetL10n.of(context).ok : libelle;
     return showDialog<void>(
       context: context,
       builder: (context) => AlertDialog(
@@ -222,7 +230,7 @@ class ClosetDialogue {
           SizedBox(
             width: 200,
             child: ClosetPrimaryButton(
-              label: libelle,
+              label: ok,
               dore: succes,
               hauteur: 44,
               onPressed: () => Navigator.of(context).pop(),
@@ -231,6 +239,64 @@ class ClosetDialogue {
         ],
       ),
     );
+  }
+
+  /// Demande de connexion avant une sélection — l'invitée ne voit pas le panier.
+  static Future<bool> connexionRequise(
+    BuildContext context, {
+    String? message,
+  }) async {
+    final l10n = ClosetL10n.of(context);
+    final aller = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppRadius.carte),
+        ),
+        title: Column(
+          children: [
+            const Icon(
+              Icons.lock_outline_rounded,
+              size: 40,
+              color: ClosetColors.vert,
+            ),
+            const SizedBox(height: AppSpacing.p12),
+            Text(
+              l10n.connexionRequise,
+              textAlign: TextAlign.center,
+              style: ClosetTextStyles.titreSection,
+            ),
+          ],
+        ),
+        content: Text(
+          message ?? l10n.connexionRequiseSelection,
+          textAlign: TextAlign.center,
+          style: ClosetTextStyles.citation.copyWith(color: ClosetColors.taupe),
+        ),
+        actionsAlignment: MainAxisAlignment.center,
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: Text(
+              l10n.plusTard,
+              style: ClosetTextStyles.corps.copyWith(color: ClosetColors.taupe),
+            ),
+          ),
+          const SizedBox(width: AppSpacing.p8),
+          SizedBox(
+            width: 160,
+            child: ClosetPrimaryButton(
+              label: l10n.seConnecter,
+              dore: true,
+              hauteur: 44,
+              onPressed: () => Navigator.of(context).pop(true),
+            ),
+          ),
+        ],
+      ),
+    );
+    return aller == true;
   }
 
   static void fermer(BuildContext context) {
@@ -243,8 +309,9 @@ class ClosetDialogue {
   static Future<T?> executer<T>(
     BuildContext context, {
     required Future<T> Function() action,
-    String message = 'Chargement…',
+    String? message,
   }) async {
+    final texte = message ?? ClosetL10n.of(context).chargementMessage;
     final nav = Navigator.of(context, rootNavigator: true);
     unawaited(
       showDialog<void>(
@@ -263,7 +330,7 @@ class ClosetDialogue {
                 const CircularProgressIndicator(color: ClosetColors.dore),
                 const SizedBox(height: AppSpacing.p20),
                 Text(
-                  message,
+                  texte,
                   textAlign: TextAlign.center,
                   style: ClosetTextStyles.corps,
                 ),

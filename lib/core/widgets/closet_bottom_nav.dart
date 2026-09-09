@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../l10n/closet_l10n.dart';
 import '../theme/app_spacing.dart';
 import '../theme/closet_colors.dart';
 import '../theme/closet_layout.dart';
@@ -64,61 +65,64 @@ class ClosetBottomNav extends StatelessWidget {
   /// pastille sur ses cinq variantes.
   final Map<int, int> compteurs;
 
-  /// Entrées du parcours cliente, libellées comme la maquette — qui écrit bien
-  /// « Wishlist » et « Selection », sans accent.
-  static const itemsCliente = [
-    ClosetNavItem(
-      icone: Icons.home_outlined,
-      iconeActive: Icons.home,
-      label: 'Dressing',
-    ),
-    ClosetNavItem(
-      icone: Icons.grid_view_outlined,
-      iconeActive: Icons.grid_view,
-      label: 'Collections',
-    ),
-    ClosetNavItem(
-      icone: Icons.favorite_border,
-      iconeActive: Icons.favorite,
-      label: 'Wishlist',
-    ),
-    ClosetNavItem(
-      icone: Icons.shopping_bag_outlined,
-      iconeActive: Icons.shopping_bag,
-      label: 'Selection',
-    ),
-    ClosetNavItem(
-      icone: Icons.person_outline,
-      iconeActive: Icons.person,
-      label: 'Espace',
-    ),
-  ];
+  /// Entrées du parcours cliente.
+  static List<ClosetNavItem> itemsClientePour(ClosetL10n l10n) => [
+        ClosetNavItem(
+          icone: Icons.home_outlined,
+          iconeActive: Icons.home,
+          label: l10n.navDressing,
+        ),
+        ClosetNavItem(
+          icone: Icons.grid_view_outlined,
+          iconeActive: Icons.grid_view,
+          label: l10n.navCollections,
+        ),
+        ClosetNavItem(
+          icone: Icons.favorite_border,
+          iconeActive: Icons.favorite,
+          label: l10n.navWishlist,
+        ),
+        ClosetNavItem(
+          icone: Icons.shopping_bag_outlined,
+          iconeActive: Icons.shopping_bag,
+          label: l10n.navSelection,
+        ),
+        ClosetNavItem(
+          icone: Icons.person_outline,
+          iconeActive: Icons.person,
+          label: l10n.navEspace,
+        ),
+      ];
 
-  /// Entrées du parcours sourceur. La maquette ne décrit pas de barre pour cet
-  /// espace : la géométrie est reprise du composant cliente, seules les
-  /// entrées changent.
-  static const itemsSourceur = [
-    ClosetNavItem(
-      icone: Icons.storefront_outlined,
-      iconeActive: Icons.storefront,
-      label: 'Espace',
-    ),
-    ClosetNavItem(
-      icone: Icons.inventory_2_outlined,
-      iconeActive: Icons.inventory_2,
-      label: 'Dépôts',
-    ),
-    ClosetNavItem(
-      icone: Icons.add_circle_outline,
-      iconeActive: Icons.add_circle,
-      label: 'Confier',
-    ),
-    ClosetNavItem(
-      icone: Icons.account_balance_wallet_outlined,
-      iconeActive: Icons.account_balance_wallet,
-      label: 'Gains',
-    ),
-  ];
+  /// Entrées du parcours sourceur.
+  static List<ClosetNavItem> itemsSourceurPour(ClosetL10n l10n) => [
+        ClosetNavItem(
+          icone: Icons.inventory_2_outlined,
+          iconeActive: Icons.inventory_2,
+          label: l10n.navDepots,
+        ),
+        ClosetNavItem(
+          icone: Icons.add_circle_outline,
+          iconeActive: Icons.add_circle,
+          label: l10n.navConfier,
+        ),
+        ClosetNavItem(
+          icone: Icons.account_balance_wallet_outlined,
+          iconeActive: Icons.account_balance_wallet,
+          label: l10n.navGains,
+        ),
+        ClosetNavItem(
+          icone: Icons.person_outline,
+          iconeActive: Icons.person,
+          label: l10n.navEspace,
+        ),
+      ];
+
+  /// Compatibilité tests / appels historiques (français).
+  static List<ClosetNavItem> get itemsCliente =>
+      itemsClientePour(ClosetL10n.fr);
+  static List<ClosetNavItem> get itemsSourceur =>
+      itemsSourceurPour(ClosetL10n.fr);
 
   @override
   Widget build(BuildContext context) {
@@ -229,10 +233,13 @@ class _Onglet extends StatelessWidget {
       button: true,
       selected: actif,
       label: item.label,
-      child: InkWell(
-        onTap: onTap,
+      child: Material(
+        color: Colors.transparent,
         borderRadius: BorderRadius.circular(AppRadius.carteProduit),
-        child: AnimatedContainer(
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(AppRadius.carteProduit),
+          child: AnimatedContainer(
           duration: const Duration(milliseconds: 220),
           curve: Curves.easeOutCubic,
           padding: EdgeInsets.all(
@@ -263,6 +270,7 @@ class _Onglet extends StatelessWidget {
               ],
             ],
           ),
+        ),
         ),
       ),
     );

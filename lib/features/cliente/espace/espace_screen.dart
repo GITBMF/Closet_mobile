@@ -2,10 +2,13 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/l10n/closet_l10n.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/closet_colors.dart';
 import '../../../core/theme/closet_text_styles.dart';
+import '../../../core/theme/locale_provider.dart';
 import '../../../core/theme/theme_provider.dart';
+import '../../../core/widgets/choix_langue.dart';
 import '../../../core/widgets/closet_header_button.dart';
 import '../../../core/widgets/closet_sections.dart';
 import '../../../data/models/user.dart';
@@ -24,6 +27,8 @@ class EspaceScreen extends ConsumerWidget {
     final ClosetUser? user = ref.watch<ClosetUser?>(currentUserProvider);
     final sourceurRepo =
         ref.watch<SourceurRepository>(sourceurRepositoryProvider);
+    final partenaire = sourceurRepo.accesAutorisePour(user);
+    final l10n = ClosetL10n.of(context);
 
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
@@ -34,11 +39,11 @@ class EspaceScreen extends ConsumerWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: AppSpacing.p8),
-              const Padding(
-                padding: EdgeInsets.symmetric(
+              Padding(
+                padding: const EdgeInsets.symmetric(
                   horizontal: AppSpacing.p20,
                 ),
-                child: ClosetTitreEcran('Mon espace'),
+                child: ClosetTitreEcran(l10n.monEspace),
               ),
               const SizedBox(height: AppSpacing.p24),
               Padding(
@@ -56,11 +61,11 @@ class EspaceScreen extends ConsumerWidget {
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 19),
                 child: _CarteSourceur(
-                  dejaInscrit: sourceurRepo.estInscrit,
+                  dejaInscrit: partenaire,
                   onTap: () => context.push(
                     user == null
                         ? '/auth'
-                        : sourceurRepo.estInscrit
+                        : partenaire
                             ? '/sourceur/espace'
                             : '/sourceur/devenir',
                   ),
@@ -69,34 +74,30 @@ class EspaceScreen extends ConsumerWidget {
               const SizedBox(height: AppSpacing.p24),
               _EntreeEspace(
                 icone: Icons.receipt_long_outlined,
-                label: 'Mes commandes',
+                label: l10n.mesCommandes,
                 onTap: () => user == null
                     ? context.push('/auth')
                     : context.push('/espace/commandes'),
               ),
               _EntreeEspace(
-                icone: Icons.favorite_border,
-                label: 'Mes favoris',
-                onTap: () => context.go('/wishlist'),
-              ),
-              _EntreeEspace(
                 icone: Icons.person_outline,
-                label: 'Mes informations',
+                label: l10n.mesInformations,
                 onTap: () => context.push(
                   user == null ? '/auth' : '/espace/infos',
                 ),
               ),
               const _BasculeTheme(),
+              const _ChoixLangue(),
               if (user == null)
                 _EntreeEspace(
                   icone: Icons.login_rounded,
-                  label: 'Se connecter / S’inscrire',
+                  label: l10n.seConnecterInscrire,
                   onTap: () => context.push('/auth'),
                 )
               else
                 _EntreeEspace(
                   icone: Icons.logout_rounded,
-                  label: 'Logout',
+                  label: l10n.logout,
                   onTap: () => context.push('/espace/deconnexion'),
                 ),
             ],
@@ -149,8 +150,9 @@ class _EnTeteProfil extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = ClosetL10n.of(context);
     final nom = user == null
-        ? 'Invité'
+        ? l10n.invite
         : '${user!.firstName} ${user!.lastName.isEmpty ? '' : '${user!.lastName[0]}.'}'
             .trim();
 
@@ -201,8 +203,8 @@ class _EnTeteProfil extends StatelessWidget {
               const SizedBox(height: AppSpacing.p4),
               Text(
                 user == null
-                    ? 'Connectez-vous pour retrouver vos pièces'
-                    : 'Membre du dressing depuis mars 2026',
+                    ? l10n.connectezVousPieces
+                    : l10n.membreDressing,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: ClosetTextStyles.meta.copyWith(
@@ -215,7 +217,7 @@ class _EnTeteProfil extends StatelessWidget {
         ),
         Semantics(
           button: true,
-          label: 'Modifier mon profil',
+          label: ClosetL10n.of(context).modifierProfil,
           child: GestureDetector(
             onTap: onEditer,
             child: Container(
@@ -247,6 +249,7 @@ class _CarteSourceur extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = ClosetL10n.of(context);
     return Material(
       color: ClosetColors.vert,
       borderRadius: BorderRadius.circular(AppRadius.carte),
@@ -275,7 +278,7 @@ class _CarteSourceur extends StatelessWidget {
                           BorderRadius.circular(AppRadius.vignette),
                     ),
                     child: Text(
-                      'Nouveau',
+                      l10n.nouveau,
                       style: ClosetTextStyles.attribut.copyWith(
                         color: ClosetColors.emeraude500,
                       ),
@@ -284,8 +287,8 @@ class _CarteSourceur extends StatelessWidget {
                 const SizedBox(height: AppSpacing.p4),
                 Text(
                   dejaInscrit
-                      ? 'Mon espace Sourceur'
-                      : 'Devenir Sourceur Clos ET',
+                      ? l10n.monEspaceSourceur
+                      : l10n.devenirSourceur,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: ClosetTextStyles.prix.copyWith(
@@ -296,8 +299,7 @@ class _CarteSourceur extends StatelessWidget {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  'Confiez vos pièces d’exception et rejoignez notre cercle '
-                  'privé des meilleurs stylistes.',
+                  l10n.carteSourceurCorps,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: ClosetTextStyles.attribut.copyWith(
@@ -321,7 +323,7 @@ class _CarteSourceur extends StatelessWidget {
                 onTap: onTap,
                 child: Center(
                   child: Text(
-                    dejaInscrit ? 'Mon espace' : 'Rejoindre le cercle',
+                    dejaInscrit ? l10n.monEspaceCourt : l10n.rejoindreCercleCourt,
                     textAlign: TextAlign.center,
                     style: ClosetTextStyles.actionPetite.copyWith(
                       color: ClosetColors.neutre1000,
@@ -423,7 +425,10 @@ class _BasculeTheme extends ConsumerWidget {
           ),
           const SizedBox(width: AppSpacing.p16),
           Expanded(
-            child: Text('Thème sombre', style: ClosetTextStyles.libelle),
+            child: Text(
+              ClosetL10n.of(context).themeSombre,
+              style: ClosetTextStyles.libelle,
+            ),
           ),
           Switch(
             value: sombre,
@@ -434,6 +439,23 @@ class _BasculeTheme extends ConsumerWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+class _ChoixLangue extends ConsumerWidget {
+  const _ChoixLangue();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final locale = ref.watch(localeProvider);
+    final l10n = ClosetL10n.of(context);
+    final libelle = libelleLangueCourante(locale, l10n);
+
+    return _EntreeEspace(
+      icone: Icons.language_outlined,
+      label: '${l10n.langue} · $libelle',
+      onTap: () => afficherChoixLangue(context, ref),
     );
   }
 }

@@ -43,4 +43,34 @@ void main() {
     // l’état initial public, testé via ChangeNotifierProvider en intégration.
     expect(StatutPiece.enRevue, isNot(StatutPiece.publiee));
   });
+
+  group('condition et profil sourceur', () {
+    test('conditionApiDepuis envoie les valeurs PieceCondition', () {
+      expect(conditionApiDepuis('Neuf'), 'new');
+      expect(conditionApiDepuis('Très bon état'), 'very_good');
+      expect(conditionApiDepuis('Bon état'), 'good');
+      expect(conditionApiDepuis('new'), 'new');
+    });
+
+    test('libelleCondition réaffiche le français', () {
+      expect(libelleCondition('new'), 'Neuf');
+      expect(libelleCondition('very_good'), 'Très bon état');
+    });
+
+    test('le profil expose les libellés du backend', () {
+      const profil = SourceurProfile(
+        nomAtelier: 'Atelier Lin',
+        ville: '',
+        depuis: 'Mars 2026',
+        whatsapp: '699000000',
+        statutApi: 'approved',
+        moyenPaiement: 'orange_money',
+        numeroPaiement: '699000000',
+        typeCollaboration: 'consignment',
+      );
+      expect(profil.libelleStatut, 'Approuvé');
+      expect(profil.libelleCollaboration, 'Dépôt-vente');
+      expect(profil.libelleMoyenPaiement, 'Orange Money');
+    });
+  });
 }

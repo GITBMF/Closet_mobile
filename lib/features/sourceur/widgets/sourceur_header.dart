@@ -1,11 +1,24 @@
 ﻿import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/l10n/closet_l10n.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/closet_colors.dart';
 import '../../../core/theme/closet_layout.dart';
 import '../../../core/theme/closet_text_styles.dart';
 import '../../../core/widgets/closet_header_button.dart';
+
+/// Revient en arrière, ou rejoint [repli] si la pile de navigation est vide.
+///
+/// Les écrans sourceur sont souvent ouverts par `go` ou une redirection
+/// (`/sourceur/inscription`) : `pop()` seul ne fait alors rien.
+void sourceurRetour(BuildContext context, {String repli = '/espace'}) {
+  if (context.canPop()) {
+    context.pop();
+  } else {
+    context.go(repli);
+  }
+}
 
 /// En-tête des écrans sourceur — maquettes `31:109`, `35:1895`, `32:1223`.
 ///
@@ -15,19 +28,25 @@ class SourceurHeader extends StatelessWidget {
   const SourceurHeader({
     super.key,
     required this.titre,
-    this.surtitre = 'Espace sourceur',
+    this.surtitre,
     this.onRetour,
+    this.afficherRetour = true,
     this.actions = const [],
   });
 
   final String titre;
-  final String surtitre;
+  final String? surtitre;
   final VoidCallback? onRetour;
+
+  /// Les onglets sourceur (Dépôts, Confier, Gains, Espace) n'ont pas de
+  /// flèche : la barre du bas suffit à changer de section.
+  final bool afficherRetour;
   final List<Widget> actions;
 
   @override
   Widget build(BuildContext context) {
     final layout = ClosetLayout.of(context);
+    final l10n = ClosetL10n.of(context);
     return DecoratedBox(
       decoration: const BoxDecoration(
         border: Border(
@@ -47,19 +66,21 @@ class SourceurHeader extends StatelessWidget {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            SourceurBoutonRond(
-              icone: Icons.arrow_back_ios_new,
-              label: 'Retour',
-              onTap: onRetour ?? () => context.pop(),
-            ),
-            SizedBox(width: layout.ecartBoutonsHeader),
+            if (afficherRetour) ...[
+              SourceurBoutonRond(
+                icone: Icons.arrow_back_ios_new,
+                label: l10n.retour,
+                onTap: onRetour ?? () => sourceurRetour(context),
+              ),
+              SizedBox(width: layout.ecartBoutonsHeader),
+            ],
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    surtitre,
+                    surtitre ?? l10n.espaceSourceur,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: ClosetTextStyles.actionPetite.copyWith(

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/l10n/closet_l10n.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/closet_colors.dart';
 import '../../../core/theme/closet_text_styles.dart';
@@ -11,7 +12,9 @@ import '../../../core/widgets/closet_chip.dart';
 import '../../../core/widgets/closet_feedback.dart';
 import '../../../core/widgets/etat_ecran.dart';
 import '../../../core/widgets/status_badge.dart';
+import '../../../core/widgets/toasts.dart';
 import '../../../data/repositories/sourceur_repository.dart';
+import '../sourceur_layout.dart';
 import '../widgets/sourceur_header.dart';
 
 /// Filtres de la maquette `35:1895`.
@@ -41,8 +44,30 @@ class _SourceurPiecesScreenState
 
   @override
   Widget build(BuildContext context) {
+    final l10n = ClosetL10n.of(context);
     final pieces = ref.watch(mesPiecesProvider);
     final revenus = ref.watch(revenusSourceurProvider);
+
+    ref.listen(mesPiecesProvider, (precedent, suivant) {
+      signaleTransitionAsync(
+        ref: ref,
+        context: context,
+        precedent: precedent,
+        suivant: suivant,
+        titre: l10n.navDepots,
+        messageVide: l10n.aucuneDonnee,
+        estVide: (liste) => liste.isEmpty,
+      );
+    });
+    ref.listen(revenusSourceurProvider, (precedent, suivant) {
+      signaleTransitionAsync(
+        ref: ref,
+        context: context,
+        precedent: precedent,
+        suivant: suivant,
+        titre: l10n.navGains,
+      );
+    });
 
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
@@ -50,15 +75,8 @@ class _SourceurPiecesScreenState
         child: Column(
           children: [
             SourceurHeader(
-              titre: 'Mes dépôts',
-              onRetour: () => context.go('/sourceur/espace'),
-              actions: [
-                SourceurBoutonRond(
-                  icone: Icons.notifications_none_rounded,
-                  label: 'Notifications',
-                  onTap: () => context.push('/espace/alertes'),
-                ),
-              ],
+              titre: l10n.mesDepots,
+              afficherRetour: false,
             ),
             Expanded(
               child: pieces.when(
@@ -72,30 +90,9 @@ class _SourceurPiecesScreenState
                       AppSpacing.p32,
                     ),
                     children: [
-                      Row(
-                        children: [
-                          Expanded(
-                            child: _TuileSynthese(
-                              icone: Icons.account_balance_wallet_outlined,
-                              label: 'À reverser',
-                              valeur: revenus.maybeWhen(
-                                data: (r) => 'TOTAL : '
-                                    '${formatPrixFcfa(r.enAttente.toDouble())}',
-                                orElse: () => 'TOTAL : —',
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: AppSpacing.p20),
-                          Expanded(
-                            child: _TuileSynthese(
-                              icone: Icons.sell_outlined,
-                              label: 'Pièces en vente',
-                              valeur: 'TOTAL : '
-                                  '${liste.where((p) => p.statut == StatutPiece.publiee).length.toString().padLeft(2, '0')} '
-                                  'pièces',
-                            ),
-                          ),
-                        ],
+                      _TableauBord(
+                        pieces: liste,
+                        revenus: revenus,
                       ),
                       const SizedBox(height: AppSpacing.p16),
                       SizedBox(
@@ -104,7 +101,7 @@ class _SourceurPiecesScreenState
                           scrollDirection: Axis.horizontal,
                           children: [
                             ClosetChip(
-                              label: 'Toutes. ${liste.length}',
+                              label: l10n.toutes,
                               isActive: _filtre == _FiltreDepot.toutes,
                               onTap: () => setState(
                                 () => _filtre = _FiltreDepot.toutes,
@@ -112,7 +109,7 @@ class _SourceurPiecesScreenState
                             ),
                             const SizedBox(width: 11),
                             ClosetChip(
-                              label: 'En vente',
+                              label: l10n.enVente,
                               isActive: _filtre == _FiltreDepot.enVente,
                               onTap: () => setState(
                                 () => _filtre = _FiltreDepot.enVente,
@@ -120,7 +117,7 @@ class _SourceurPiecesScreenState
                             ),
                             const SizedBox(width: 11),
                             ClosetChip(
-                              label: 'En cours d’analyse',
+                              label: l10n.enCoursAnalyse,
                               isActive: _filtre == _FiltreDepot.enAnalyse,
                               onTap: () => setState(
                                 () => _filtre = _FiltreDepot.enAnalyse,
@@ -130,8 +127,20 @@ class _SourceurPiecesScreenState
                         ),
                       ),
                       const SizedBox(height: AppSpacing.p20),
-                      if (visibles.isEmpty)
-                        const ClosetListeVide()
+                      if (liste.isEmpty)
+                        ClosetListeVide(
+                          titre: l10n.aucuneDonnee,
+                          message: l10n.depotsVide,
+                          action: () => allerOngletSourceur(
+                            context,
+                            OngletSourceur.confier,
+                          ),
+                          libelleAction: l10n.confierUnePiece,
+                        )
+                      else if (visibles.isEmpty)
+                        ClosetListeVide(
+                          message: l10n.aucunePieceFiltre,
+                        )
                       else
                         for (final piece in visibles) ...[
                           _CarteDepot(
@@ -152,29 +161,6 @@ class _SourceurPiecesScreenState
                 ),
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(39, 0, 39, AppSpacing.p16),
-              child: SizedBox(
-                height: 44,
-                child: Material(
-                  color: ClosetColors.vert,
-                  borderRadius: BorderRadius.circular(AppRadius.cercle),
-                  child: InkWell(
-                    borderRadius: BorderRadius.circular(AppRadius.cercle),
-                    onTap: () => context.go('/sourceur/nouvelle'),
-                    child: Center(
-                      child: Text(
-                        '+ Confier une nouvelle pièce',
-                        style: ClosetTextStyles.bouton.copyWith(
-                          fontWeight: FontWeight.w600,
-                          color: ClosetColors.blanc,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ),
           ],
         ),
       ),
@@ -182,55 +168,53 @@ class _SourceurPiecesScreenState
   }
 }
 
-/// Tuile de synth�se : 165 � 101, vert profond, ic�ne blanche de 36.
-class _TuileSynthese extends StatelessWidget {
-  const _TuileSynthese({
-    required this.icone,
-    required this.label,
-    required this.valeur,
-  });
+/// Tableau de bord : vendues, en ligne, chiffre d'affaires.
+class _TableauBord extends StatelessWidget {
+  const _TableauBord({required this.pieces, required this.revenus});
 
-  final IconData icone;
-  final String label;
-  final String valeur;
+  final List<PieceDeposee> pieces;
+  final AsyncValue<RevenusSourceur> revenus;
 
   @override
   Widget build(BuildContext context) {
+    final l10n = ClosetL10n.of(context);
+    final vendues =
+        pieces.where((p) => p.statut == StatutPiece.vendue).length;
+    final enLigne =
+        pieces.where((p) => p.statut == StatutPiece.publiee).length;
+    final ca = revenus.maybeWhen(
+      data: (r) => formatPrixFcfa((r.brut + r.enAttente).toDouble()),
+      orElse: () => '—',
+    );
+
     return Container(
-      constraints: const BoxConstraints(minHeight: 101),
-      padding: const EdgeInsets.all(AppSpacing.p12),
+      width: double.infinity,
+      padding: const EdgeInsets.fromLTRB(16, 18, 16, 16),
       decoration: BoxDecoration(
         color: ClosetColors.vert,
         borderRadius: BorderRadius.circular(AppRadius.carte),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Row(
         children: [
-          Container(
-            width: 36,
-            height: 36,
-            decoration: BoxDecoration(
-              color: ClosetColors.blanc,
-              borderRadius: BorderRadius.circular(6),
-            ),
-            child: Icon(icone, size: 18, color: ClosetColors.vert),
-          ),
-          const SizedBox(height: AppSpacing.p12),
-          Text(
-            label,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: ClosetTextStyles.actionPetite.copyWith(
-              letterSpacing: 0.30,
-              color: ClosetColors.fond300,
+          Expanded(
+            child: _Kpi(
+              valeur: '$vendues',
+              label: l10n.vendues,
             ),
           ),
-          const SizedBox(height: 2),
-          Text(
-            valeur,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: ClosetTextStyles.corps.copyWith(color: ClosetColors.blanc),
+          Container(width: 1, height: 44, color: ClosetColors.emeraude300),
+          Expanded(
+            child: _Kpi(
+              valeur: '$enLigne',
+              label: l10n.enLigne,
+            ),
+          ),
+          Container(width: 1, height: 44, color: ClosetColors.emeraude300),
+          Expanded(
+            child: _Kpi(
+              valeur: ca,
+              label: l10n.chiffreAffaires,
+            ),
           ),
         ],
       ),
@@ -238,19 +222,65 @@ class _TuileSynthese extends StatelessWidget {
   }
 }
 
-/// Carte de pi�ce d�pos�e : 354 � 106, blanche cercl�e d'or, visuel 70 � 82.
+class _Kpi extends StatelessWidget {
+  const _Kpi({required this.valeur, required this.label});
+
+  final String valeur;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 8),
+      child: Column(
+        children: [
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(
+              valeur,
+              maxLines: 1,
+              style: ClosetTextStyles.titreBloc.copyWith(
+                color: ClosetColors.blanc,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            label,
+            textAlign: TextAlign.center,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: ClosetTextStyles.actionPetite.copyWith(
+              color: ClosetColors.fond300,
+              letterSpacing: 0.2,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Carte de pièce déposée : 354 × 106, blanche cerclée d'or, visuel 70 × 82.
 class _CarteDepot extends StatelessWidget {
   const _CarteDepot({required this.piece, required this.onTap});
 
   final PieceDeposee piece;
   final VoidCallback onTap;
 
-  /// Le badge suit les statuts de la maquette `36:2063`.
+  /// Le badge suit les statuts de la maquette `36:2063` et
+  /// `SubmissionStatus` (`submitted` / `in_review` / `accepted` /
+  /// `catalogued` / `refused`).
   StatusBadge get _badge => switch (piece.statut) {
-        StatutPiece.publiee => StatusBadge.miseEnVente(),
-        StatutPiece.enRevue => StatusBadge.enAnalyse(),
-        StatutPiece.vendue => StatusBadge.livree('Vendue'),
-        StatutPiece.refusee => StatusBadge.refusee(),
+        StatutPiece.vendue => StatusBadge.miseEnVente('Vendue'),
+        _ => switch (piece.statutApi) {
+            'catalogued' => StatusBadge.miseEnVente(),
+            'submitted' => StatusBadge.depotRecu(),
+            'refused' => StatusBadge.refusee(),
+            'accepted' => StatusBadge.miseEnVente('Acceptée'),
+            _ => StatusBadge.enAnalyse(),
+          },
       };
 
   @override
@@ -300,7 +330,7 @@ class _CarteDepot extends StatelessWidget {
                   ),
                   const SizedBox(height: AppSpacing.p4),
                   Text(
-                    '${piece.univers} � ${formatPrixFcfa(piece.prix)}',
+                    '${piece.univers.isEmpty ? piece.nom : piece.univers} · ${formatPrixFcfa(piece.prix)}',
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: ClosetTextStyles.actionPetite.copyWith(

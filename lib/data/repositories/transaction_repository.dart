@@ -34,8 +34,7 @@ class TransactionRepository {
 
   Future<RecuTransaction> _retirer() async {
     throw const TransactionRefusee(
-      'Les retraits sont versés par ClosET une fois vos pièces vendues. '
-      'Consultez l’historique : il reflète les virements réellement émis.',
+      'Les retraits sont versés par ClosET une fois vos pièces vendues.',
     );
   }
 
