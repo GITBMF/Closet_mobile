@@ -232,6 +232,32 @@ class ClosetL10n extends InheritedWidget {
 
   // ─── Toasts ─────────────────────────────────────────────────────────────────
   String toastPiece(String nom, String resultat) => '$nom $resultat';
+
+  // ─── Filtres / Recherche avancée ────────────────────────────────────────────
+  String get affinerRecherche => t('Affiner la recherche', 'Refine search');
+  String get toutReinitialiser => t('Tout réinitialiser', 'Reset all');
+  String get voirLesPieces => t('Voir les pièces', 'View items');
+  String get filtreUnivers => t('Univers', 'Universe');
+  String get filtreTaille => t('Taille', 'Size');
+  String get filtreEtat => t('État', 'Condition');
+  String get filtreMaison => t('Maison', 'House');
+  String get filtreBudget => t('Budget', 'Budget');
+
+  // ─── Validation formulaire (compléments) ────────────────────────────────────
+  String get ajouterChiffre =>
+      t('Ajoutez au moins un chiffre.', 'Add at least one digit.');
+  String get ajouterLettre =>
+      t('Ajoutez au moins une lettre.', 'Add at least one letter.');
+  String get mdpSansEspaces => t('Le mot de passe ne doit pas contenir d’espaces.',
+      'The password must not contain spaces.');
+  String get max128 => t('128 caractères maximum.', '128 characters maximum.');
+  String get renseignerNumero =>
+      t('Renseignez votre numéro.', 'Please enter your number.');
+  String get numeroIncorrect =>
+      t('Numéro de téléphone incorrect.', 'Incorrect phone number.');
+
+  // ─── Sourceur — surtitre d'en-tête ──────────────────────────────────────────
+  String get espaceSourceur => t('Espace Sourceur', 'Sourceur Space');
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

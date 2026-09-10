@@ -177,6 +177,7 @@ class _Corps extends StatelessWidget {
   /// → catalogued.
   static List<EtapeFrise> _etapes(PieceDeposee piece, bool refusee) {
     final statut = piece.statutApi;
+    final retournee = piece.statut == StatutPiece.retournee;
     final analysee = statut == 'in_review' ||
         statut == 'accepted' ||
         statut == 'catalogued' ||
@@ -210,9 +211,12 @@ class _Corps extends StatelessWidget {
           detail: 'La pièce ne correspond pas aux normes actuelles de ClosET.',
           echec: true,
         ),
-        const EtapeFrise(
+        EtapeFrise(
           titre: 'Retour de l’article',
-          detail: 'Vous recevrez votre pièce d’ici peu',
+          detail: retournee
+              ? 'Votre pièce vous a été retournée.'
+              : 'Vous recevrez votre pièce d’ici peu',
+          atteinte: retournee,
         ),
       ] else ...[
         EtapeFrise(

@@ -94,15 +94,19 @@ class PieceCard extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 11),
-              Text(
-                maison.toUpperCase(),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: ClosetTextStyles.microLegende.copyWith(
-                  color: ClosetColors.fond400,
+              // Maison vide = ligne entierement masquee (grille du dressing,
+              // ou seule la categorie doit apparaitre).
+              if (maison.trim().isNotEmpty) ...[
+                Text(
+                  maison.toUpperCase(),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: ClosetTextStyles.microLegende.copyWith(
+                    color: ClosetColors.fond400,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 3),
+                const SizedBox(height: 3),
+              ],
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [

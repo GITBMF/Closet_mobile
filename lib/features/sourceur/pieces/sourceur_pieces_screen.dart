@@ -274,6 +274,7 @@ class _CarteDepot extends StatelessWidget {
   /// `catalogued` / `refused`).
   StatusBadge get _badge => switch (piece.statut) {
         StatutPiece.vendue => StatusBadge.miseEnVente('Vendue'),
+        StatutPiece.retournee => StatusBadge.retournee(),
         _ => switch (piece.statutApi) {
             'catalogued' => StatusBadge.miseEnVente(),
             'submitted' => StatusBadge.depotRecu(),

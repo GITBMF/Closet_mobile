@@ -85,7 +85,7 @@ class FichierMedia {
       chemin.startsWith('http://') || chemin.startsWith('https://');
 }
 
-enum StatutPiece { enRevue, publiee, vendue, refusee }
+enum StatutPiece { enRevue, publiee, vendue, refusee, retournee }
 
 class RevenusSourceur {
   final int solde;

@@ -184,10 +184,19 @@ class _Salutation extends StatelessWidget {
 /// seule implémentation de carte produit dans l'app. Cette classe n'apporte
 /// que la liaison au modèle [Article] et le basculement de la wishlist.
 class ArticleCard extends ConsumerStatefulWidget {
-  const ArticleCard({super.key, required this.article, this.onTap});
+  const ArticleCard({
+    super.key,
+    required this.article,
+    this.onTap,
+    this.categorieSeule = false,
+  });
 
   final Article article;
   final VoidCallback? onTap;
+
+  /// Grille du dressing : masque la marque pour n'afficher que la catégorie
+  /// (« Chemise » et non « Levi's Chemise »).
+  final bool categorieSeule;
 
   @override
   ConsumerState<ArticleCard> createState() => _ArticleCardState();
@@ -203,7 +212,7 @@ class _ArticleCardState extends ConsumerState<ArticleCard> {
     final article = widget.article;
 
     return PieceCard(
-      maison: article.brand,
+      maison: widget.categorieSeule ? '' : article.brand,
       nom: article.title,
       prix: formatPrixFcfa(article.price),
       attribut: [
