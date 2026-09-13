@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/l10n/closet_l10n.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/closet_colors.dart';
 import '../../../core/theme/closet_layout.dart';
@@ -11,6 +12,7 @@ import '../../../core/widgets/closet_app_bar.dart';
 import '../../../core/widgets/closet_header_button.dart';
 import '../../../core/widgets/etat_ecran.dart';
 import '../../../core/widgets/piece_card.dart';
+import '../../../core/widgets/status_badge.dart';
 import '../../../core/widgets/toasts.dart';
 import '../../../data/models/article.dart';
 import '../../../data/repositories/cart_repository.dart';
@@ -72,6 +74,16 @@ class _ProductScreenState extends ConsumerState<ProductScreen> {
                 right: 0,
                 bottom: 0,
                 child: _BarreAjout(article: article),
+              ),
+              // Hors du carrousel : les boutons restent visibles pendant le
+              // défilement de la fiche (remarque AMINA — navigation ancrée).
+              Positioned(
+                top: MediaQuery.paddingOf(context).top + AppSpacing.p8,
+                left: MediaQuery.paddingOf(context).left +
+                    ClosetLayout.of(context).gouttiere,
+                right: MediaQuery.paddingOf(context).right +
+                    ClosetLayout.of(context).gouttiere,
+                child: _BoutonsFiche(article: article),
               ),
             ],
           );
@@ -138,10 +150,6 @@ class _Corps extends ConsumerWidget {
             controller: pageController,
             indexCourant: imageCourante,
             onChange: onImageChangee,
-            enWishlist: ref
-                .watch(wishlistListProvider)
-                .any((a) => a.id == article.id),
-            onWishlist: () => basculerFavori(ref, article),
           ),
         ),
         SliverToBoxAdapter(
@@ -150,21 +158,28 @@ class _Corps extends ConsumerWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  article.title,
-                  style: ClosetTextStyles.nomProduit.copyWith(
-                    fontSize: 22,
-                    letterSpacing: -0.44,
-                  ),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Expanded(
+                      child: Text(
+                        article.title,
+                        style: ClosetTextStyles.nomProduit.copyWith(
+                          fontSize: 22,
+                          letterSpacing: -0.44,
+                        ),
+                      ),
+                    ),
+                    if (article.etoilesEtat > 0) ...[
+                      const SizedBox(width: AppSpacing.p8),
+                      EtoilesEtat(article.etoilesEtat, taille: 14),
+                    ],
+                  ],
                 ),
                 const SizedBox(height: AppSpacing.p12),
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    if (article.etoilesEtat > 0) ...[
-                      EtoilesEtat(article.etoilesEtat, taille: 14),
-                      const SizedBox(width: AppSpacing.p8),
-                    ],
                     Expanded(
                       child: Text(
                         formatPrixFcfa(article.price),
@@ -173,8 +188,14 @@ class _Corps extends ConsumerWidget {
                         ),
                       ),
                     ),
+                    _StatutStock(epuise: article.isSoldOut),
                   ],
                 ),
+                if (article.sourceurId != null &&
+                    article.libelleSourceur.isNotEmpty) ...[
+                  const SizedBox(height: AppSpacing.p8),
+                  _LienSourceur(article: article),
+                ],
                 if (lignes.isNotEmpty) ...[
                   const SizedBox(height: AppSpacing.p24),
                   const _Filet(),
@@ -206,22 +227,17 @@ class _Carrousel extends StatelessWidget {
     required this.controller,
     required this.indexCourant,
     required this.onChange,
-    required this.enWishlist,
-    required this.onWishlist,
   });
 
   final Article article;
   final PageController controller;
   final int indexCourant;
   final ValueChanged<int> onChange;
-  final bool enWishlist;
-  final VoidCallback onWishlist;
 
   @override
   Widget build(BuildContext context) {
     final images = article.imageUrls;
     final layout = ClosetLayout.of(context);
-    final padding = MediaQuery.paddingOf(context);
 
     return SizedBox(
       height: layout.hauteurHeroProduit,
@@ -243,32 +259,6 @@ class _Carrousel extends StatelessWidget {
                           const ColoredBox(color: ClosetColors.gabaritImage),
                     ),
                   ),
-          ),
-          Positioned(
-            top: padding.top + AppSpacing.p8,
-            left: padding.left + layout.gouttiere,
-            right: padding.right + layout.gouttiere,
-            child: Row(
-              children: [
-                ClosetBoutonHeader(
-                  icone: Icons.arrow_back_ios_new,
-                  label: 'Retour',
-                  onTap: () => context.pop(),
-                  fond: ClosetColors.blanc,
-                ),
-                const Spacer(),
-                ClosetBoutonHeader(
-                  icone: enWishlist ? Icons.favorite : Icons.favorite_border,
-                  label: enWishlist
-                      ? 'Retirer de la wishlist'
-                      : 'Ajouter à la wishlist',
-                  couleurIcone:
-                      enWishlist ? ClosetColors.erreurCouture : null,
-                  onTap: onWishlist,
-                  fond: ClosetColors.blanc,
-                ),
-              ],
-            ),
           ),
           if (images.length > 1)
             Positioned(
@@ -420,6 +410,113 @@ class _BarreAjout extends ConsumerWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+/// Disponibilité de la pièce, affichée à droite du prix.
+///
+/// Réutilise [StatusBadge] et ses couleurs plutôt qu'un badge ad hoc, pour que
+/// la fiche produit parle le même langage visuel que les listes de commandes.
+class _StatutStock extends StatelessWidget {
+  const _StatutStock({required this.epuise});
+
+  final bool epuise;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = ClosetL10n.of(context);
+    return epuise
+        ? StatusBadge(
+            text: l10n.epuise,
+            backgroundColor: ClosetColors.refusFond,
+            textColor: ClosetColors.refusTexte,
+          )
+        : StatusBadge(
+            text: l10n.enStock,
+            backgroundColor: ClosetColors.emeraude100,
+            textColor: ClosetColors.emeraude500,
+          );
+  }
+}
+
+/// Retour et wishlist, épinglés en haut de la fiche produit.
+///
+/// Vit dans le [Stack] racine plutôt que dans le carrousel : les boutons
+/// restent ainsi accessibles quelle que soit la position de défilement.
+class _BoutonsFiche extends ConsumerWidget {
+  const _BoutonsFiche({required this.article});
+
+  final Article article;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final enWishlist =
+        ref.watch(wishlistListProvider).any((a) => a.id == article.id);
+
+    return Row(
+      children: [
+        ClosetBoutonHeader(
+          icone: Icons.arrow_back_ios_new,
+          label: 'Retour',
+          onTap: () => context.pop(),
+          sansDisque: true,
+        ),
+        const Spacer(),
+        ClosetBoutonHeader(
+          icone: enWishlist ? Icons.favorite : Icons.favorite_border,
+          label: enWishlist
+              ? 'Retirer de la wishlist'
+              : 'Ajouter à la wishlist',
+          couleurIcone: enWishlist ? ClosetColors.erreurCouture : null,
+          onTap: () => basculerFavori(ref, article),
+          sansDisque: true,
+        ),
+      ],
+    );
+  }
+}
+
+/// « Vendu par `<sourceur>` », cliquable vers l'ensemble de son catalogue.
+class _LienSourceur extends StatelessWidget {
+  const _LienSourceur({required this.article});
+
+  final Article article;
+
+  @override
+  Widget build(BuildContext context) {
+    final nom = article.libelleSourceur;
+
+    return Row(
+      children: [
+        Text(
+          'Vendu par ',
+          style: ClosetTextStyles.meta.copyWith(color: ClosetColors.taupe),
+        ),
+        Flexible(
+          child: Semantics(
+            button: true,
+            label: 'Voir le catalogue de $nom',
+            child: InkWell(
+              onTap: () => context.push(
+                '/catalogue-sourceur/${article.sourceurId}'
+                '?nom=${Uri.encodeComponent(nom)}',
+              ),
+              child: Text(
+                nom,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: ClosetTextStyles.meta.copyWith(
+                  color: ClosetColors.vert,
+                  fontWeight: FontWeight.w700,
+                  decoration: TextDecoration.underline,
+                  decorationColor: ClosetColors.vert,
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

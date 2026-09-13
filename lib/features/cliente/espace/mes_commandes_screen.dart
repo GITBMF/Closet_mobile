@@ -29,7 +29,7 @@ class MesCommandesScreen extends ConsumerWidget {
         child: Column(
           children: [
             ClosetPageHeader(
-              titre: 'Mes commandes',
+              titre: '',
               onRetour: () => context.pop(),
               action: SourceurBoutonRond(
                 icone: Icons.notifications_none_rounded,

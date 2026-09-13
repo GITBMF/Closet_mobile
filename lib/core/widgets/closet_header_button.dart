@@ -19,6 +19,7 @@ class ClosetBoutonHeader extends StatelessWidget {
     this.pastille,
     this.couleurIcone,
     this.fond,
+    this.sansDisque = false,
   });
 
   final IconData icone;
@@ -27,6 +28,12 @@ class ClosetBoutonHeader extends StatelessWidget {
   final int? pastille;
   final Color? couleurIcone;
   final Color? fond;
+
+  /// Icône nue, sans disque ni bordure — variante de la fiche produit, où les
+  /// boutons flottent au-dessus de la photo. Une ombre portée discrète garde
+  /// l'icône lisible aussi bien sur un visuel sombre que sur le fond clair de
+  /// la page. Les autres écrans conservent le disque.
+  final bool sansDisque;
 
   @override
   Widget build(BuildContext context) {
@@ -48,23 +55,33 @@ class ClosetBoutonHeader extends StatelessWidget {
               child: Stack(
                 clipBehavior: Clip.none,
                 children: [
-                  Container(
-                    width: disque,
-                    height: disque,
-                    decoration: BoxDecoration(
-                      color: fond ?? ClosetColors.carteFond,
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: ClosetColors.fond300,
-                        width: AppStroke.fin,
+                  if (sansDisque)
+                    Icon(
+                      icone,
+                      size: layout.iconeHeader + 4,
+                      color: couleurIcone ?? ClosetColors.vert,
+                      shadows: const [
+                        Shadow(blurRadius: 10, color: Colors.black38),
+                      ],
+                    )
+                  else
+                    Container(
+                      width: disque,
+                      height: disque,
+                      decoration: BoxDecoration(
+                        color: fond ?? ClosetColors.carteFond,
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: ClosetColors.fond300,
+                          width: AppStroke.fin,
+                        ),
+                      ),
+                      child: Icon(
+                        icone,
+                        size: layout.iconeHeader,
+                        color: couleurIcone ?? ClosetColors.vert,
                       ),
                     ),
-                    child: Icon(
-                      icone,
-                      size: layout.iconeHeader,
-                      color: couleurIcone ?? ClosetColors.vert,
-                    ),
-                  ),
                   if (pastille != null)
                     Positioned(
                       top: -2,

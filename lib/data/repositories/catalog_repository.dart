@@ -24,6 +24,18 @@ final maisonsProvider = FutureProvider<List<Maison>>((ref) async {
   return liste;
 });
 
+/// Catalogue en ligne d'un sourceur donné.
+///
+/// `/pieces` n'expose aucun filtre par sourceur : on récupère le catalogue
+/// puis on le restreint côté client. À remplacer par un paramètre serveur dès
+/// que l'API en propose un — ici, tout le catalogue transite pour n'en garder
+/// qu'une fraction.
+final catalogueSourceurProvider =
+    FutureProvider.family<List<Article>, String>((ref, sourceurId) async {
+  final pieces = await ref.watch(catalogRepositoryProvider).getCatalog();
+  return pieces.where((a) => a.sourceurId == sourceurId).toList();
+});
+
 final universProvider = FutureProvider<List<Univers>>((ref) {
   return ref.watch(catalogRepositoryProvider).getUnivers();
 });

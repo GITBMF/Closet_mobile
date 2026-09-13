@@ -8,7 +8,6 @@ import '../../../core/theme/closet_colors.dart';
 import '../../../core/theme/closet_text_styles.dart';
 import '../../../core/widgets/closet_app_bar.dart';
 import '../../../core/widgets/closet_feedback.dart';
-import '../../../core/widgets/closet_sections.dart';
 import '../../../core/widgets/toasts.dart';
 import '../../../data/models/article.dart';
 import '../../../data/repositories/cart_repository.dart';
@@ -44,11 +43,6 @@ class _SelectionScreenState extends ConsumerState<SelectionScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const SizedBox(height: AppSpacing.p12),
-                    const Padding(
-                      padding: EdgeInsets.symmetric(horizontal: AppSpacing.p20),
-                      child: ClosetTitreEcran('Ma sélection'),
-                    ),
                     const SizedBox(height: AppSpacing.p16),
                     const _BoutonFinaliser(),
                     const SizedBox(height: AppSpacing.p20),

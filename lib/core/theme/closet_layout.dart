@@ -46,5 +46,5 @@ class ClosetLayout {
       (size.height * 0.48).clamp(260.0, 493.0);
 
   /// Photo de la pièce de la semaine, un peu plus basse sur petit écran.
-  double get hauteurPieceSemaine => compact ? 220.0 : 280.0;
+  double get hauteurPieceSemaine => compact ? 170.0 : 215.0;
 }

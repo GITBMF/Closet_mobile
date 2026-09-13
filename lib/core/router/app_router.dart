@@ -19,6 +19,7 @@ import '../../features/cliente/espace/modifier_profil_screen.dart';
 import '../../features/cliente/espace/suivi_commande_screen.dart';
 import '../../features/cliente/product/product_screen.dart';
 import '../../features/cliente/selection/selection_screen.dart';
+import '../../features/cliente/sourceur/catalogue_sourceur_screen.dart';
 import '../../features/cliente/wishlist/wishlist_screen.dart';
 import '../../features/main_layout.dart';
 import '../../features/onboarding/onboarding_screen.dart';
@@ -182,6 +183,16 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             },
           );
         },
+      ),
+
+      // ── Catalogue d'un sourceur (outside shell) ─────────────────────
+      GoRoute(
+        parentNavigatorKey: rootNavigatorKey,
+        path: '/catalogue-sourceur/:id',
+        builder: (context, state) => CatalogueSourceurScreen(
+          sourceurId: state.pathParameters['id']!,
+          nom: state.uri.queryParameters['nom'] ?? '',
+        ),
       ),
 
       // ── Checkout (outside shell) ────────────────────────────────────
