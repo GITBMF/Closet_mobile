@@ -3,13 +3,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/widgets/toasts.dart';
+import 'confirmation_screen.dart';
 import 'pin_screen.dart';
 import 'recu_screen.dart';
 import 'traitement_screen.dart';
 import 'transaction_models.dart';
 
 /// Étapes du tunnel, dans l'ordre de la maquette.
-enum _EtapeTunnel { pin, traitement, succes, recu }
+enum _EtapeTunnel { pin, confirmation, traitement, succes, recu }
 
 /// Exécute réellement l'opération et renvoie le reçu émis par le serveur.
 ///
@@ -30,6 +31,9 @@ typedef ExecuteurTransaction = Future<RecuTransaction> Function(
 /// l'opération partie au backend, revenir en arrière n'a plus de sens.
 /// `PopScope` bloque donc le retour dès l'étape traitement, ce qu'un
 /// empilement de routes séparées aurait laissé passer.
+///
+/// Le tunnel s'ouvre en revanche sur un récapitulatif quittable : l'opération
+/// ne part qu'au geste explicite de l'utilisateur, jamais au montage.
 ///
 /// Le nombre d'étapes dépend de l'opération : quatre pour un retrait, qui
 /// commence par un code PIN, trois pour un paiement, qui n'en a pas
@@ -60,12 +64,16 @@ class _TransactionFlowScreenState extends ConsumerState<TransactionFlowScreen> {
 
   RecuTransaction? _recu;
 
-  /// Un paiement acheteuse n'a pas d'écran PIN : le tunnel démarre directement
-  /// sur le traitement.
-  _EtapeTunnel get _etapeInitiale =>
-      widget.demande.type.exigePin ? _EtapeTunnel.pin : _EtapeTunnel.traitement;
+  /// Sans écran PIN, le tunnel s'ouvre sur le récapitulatif : l'opération ne
+  /// doit jamais partir sans un geste explicite.
+  _EtapeTunnel get _etapeInitiale => widget.demande.type.exigePin
+      ? _EtapeTunnel.pin
+      : _EtapeTunnel.confirmation;
 
-  bool get _retourAutorise => _etape == _EtapeTunnel.pin;
+  /// Seules les étapes antérieures à l'engagement se quittent. Passé la
+  /// confirmation, l'opération est chez le fournisseur de paiement.
+  bool get _retourAutorise =>
+      _etape == _EtapeTunnel.pin || _etape == _EtapeTunnel.confirmation;
 
   void _validerPin(String pin) {
     setState(() {
@@ -73,6 +81,12 @@ class _TransactionFlowScreenState extends ConsumerState<TransactionFlowScreen> {
       _etape = _EtapeTunnel.traitement;
     });
   }
+
+  /// Engage l'opération. Point de non-retour du tunnel.
+  void _confirmer() => setState(() => _etape = _EtapeTunnel.traitement);
+
+  /// Renonce avant tout engagement et rend la main à l'écran appelant.
+  void _annuler() => context.pop();
 
   Future<void> _executer() async {
     final pin = _pin;
@@ -123,6 +137,11 @@ class _TransactionFlowScreenState extends ConsumerState<TransactionFlowScreen> {
         _EtapeTunnel.pin => PinScreen(
             demande: widget.demande,
             onValide: _validerPin,
+          ),
+        _EtapeTunnel.confirmation => ConfirmationScreen(
+            demande: widget.demande,
+            onConfirmer: _confirmer,
+            onAnnuler: _annuler,
           ),
         _EtapeTunnel.traitement => TraitementScreen(
             type: widget.demande.type,

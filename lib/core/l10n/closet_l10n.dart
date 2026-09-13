@@ -17,10 +17,10 @@ class ClosetL10n extends InheritedWidget {
 
   static ClosetL10n of(BuildContext context) {
     return context.dependOnInheritedWidgetOfExactType<ClosetL10n>() ??
-        _L10nInstance(const Locale('fr'));
+        const _L10nInstance(Locale('fr'));
   }
 
-  static final ClosetL10n fr = _L10nInstance(const Locale('fr'));
+  static const ClosetL10n fr = _L10nInstance(Locale('fr'));
 
   String t(String fr, String en) => _fr ? fr : en;
 
@@ -265,7 +265,7 @@ class ClosetL10n extends InheritedWidget {
 // ─────────────────────────────────────────────────────────────────────────────
 
 class _L10nInstance extends ClosetL10n {
-  _L10nInstance(Locale locale)
+  const _L10nInstance(Locale locale)
       : super(locale: locale, child: const SizedBox.shrink());
 }
 

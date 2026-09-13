@@ -37,6 +37,29 @@ extension ComportementOperation on TypeOperation {
   bool get afficheFrise => this == TypeOperation.paiement;
 
   /// Titre de l'écran de traitement (`162:5220` / `32:756`).
+  /// Titre du récapitulatif, dernière étape annulable du tunnel.
+  String get titreConfirmation => switch (this) {
+        TypeOperation.retrait => 'Confirmer le retrait',
+        TypeOperation.paiement => 'Confirmer le paiement',
+      };
+
+  /// Ce que l'écran de confirmation annonce avant l'engagement.
+  String get messageConfirmation => switch (this) {
+        TypeOperation.retrait =>
+          'Vérifiez le montant et le compte crédité. Une fois confirmé, le '
+              'retrait est transmis et ne peut plus être annulé ici.',
+        TypeOperation.paiement =>
+          'Vérifiez votre commande avant de payer. Une fois confirmé, vous '
+              'serez dirigée vers votre opérateur et le paiement ne pourra '
+              'plus être annulé depuis l’application.',
+      };
+
+  /// Libellé du bouton qui engage réellement l'opération.
+  String get libelleConfirmer => switch (this) {
+        TypeOperation.retrait => 'Confirmer le retrait',
+        TypeOperation.paiement => 'Payer maintenant',
+      };
+
   String get titreTraitement => switch (this) {
         TypeOperation.retrait => 'Traitement en cours',
         TypeOperation.paiement => 'Paiement en cours',
