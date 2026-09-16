@@ -224,7 +224,7 @@ class _ArticleCardState extends ConsumerState<ArticleCard> {
       isFavorite: isWishlisted,
       isSold: article.isSoldOut,
       onTap: widget.onTap,
-      onFavoriteTap: () => basculerFavori(ref, article),
+      onFavoriteTap: () => basculerFavori(context, ref, article),
     );
   }
 }

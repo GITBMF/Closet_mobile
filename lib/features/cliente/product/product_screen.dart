@@ -18,6 +18,7 @@ import '../../../data/models/article.dart';
 import '../../../data/repositories/cart_repository.dart';
 import '../../../data/repositories/catalog_repository.dart';
 import '../../../data/repositories/wishlist_repository.dart';
+import '../../auth/auth_screen.dart';
 
 final productDetailProvider =
     FutureProvider.family<Article?, String>((ref, id) {
@@ -375,6 +376,10 @@ class _BarreAjout extends ConsumerWidget {
                 onTap: indisponible
                     ? null
                     : () {
+                        if (!ref.read(isAuthenticatedProvider)) {
+                          allerCreerCompte(context, ref);
+                          return;
+                        }
                         final cart = ref.read(cartProvider.notifier);
                         if (dejaDansSelection) {
                           cart.removeArticle(article.id);
@@ -469,7 +474,7 @@ class _BoutonsFiche extends ConsumerWidget {
               ? 'Retirer de la wishlist'
               : 'Ajouter à la wishlist',
           couleurIcone: enWishlist ? ClosetColors.erreurCouture : null,
-          onTap: () => basculerFavori(ref, article),
+          onTap: () => basculerFavori(context, ref, article),
           sansDisque: true,
         ),
       ],

@@ -1,6 +1,8 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/widgets/toasts.dart';
+import '../../features/auth/auth_screen.dart';
 import '../api/api_exception.dart';
 import '../api/api_json.dart';
 import '../bff_client/api_client.dart';
@@ -114,13 +116,13 @@ final wishlistListProvider = Provider<List<Article>>((ref) {
 });
 
 /// Cœur : `POST` / `DELETE /wishlist/{id}`, puis resynchronise via `GET`.
-Future<void> basculerFavori(WidgetRef ref, Article article) async {
+Future<void> basculerFavori(
+  BuildContext context,
+  WidgetRef ref,
+  Article article,
+) async {
   if (ref.read(currentUserProvider) == null) {
-    toastInfo(
-      ref,
-      'Connexion requise',
-      'Veuillez vous connecter à votre compte pour continuer.',
-    );
+    allerCreerCompte(context, ref);
     return;
   }
   try {

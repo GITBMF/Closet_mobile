@@ -12,11 +12,12 @@ import '../../../core/validation/formats.dart';
 import '../../../core/validation/indicateurs_pays.dart';
 import '../../../core/widgets/aide_mot_de_passe.dart';
 import '../../../core/widgets/champ_telephone.dart';
-import '../../../core/widgets/closet_feedback.dart';
 import '../../../core/widgets/google_g_icon.dart';
 import '../../../core/widgets/toasts.dart';
+import '../../../data/models/user.dart';
 import '../../../data/repositories/auth_repository.dart';
 import '../../../data/repositories/sourceur_repository.dart';
+import 'mfa_dialog.dart';
 import 'mot_de_passe_oublie_dialog.dart';
 
 // ─── Auth State ──────────────────────────────────────────────────────────────
@@ -30,28 +31,27 @@ final isAuthenticatedProvider = Provider<bool>(
   (ref) => ref.watch(currentUserProvider) != null,
 );
 
-/// Si la session est ouverte, continue. Sinon affiche la demande de connexion.
+enum AuthMode { login, register }
+
+final authModeProvider = StateProvider<AuthMode>((ref) => AuthMode.login);
+
+/// Si la session est ouverte, continue. Sinon ouvre l’inscription.
 Future<bool> exigerConnexion(
   BuildContext context,
   WidgetRef ref, {
   String? message,
 }) async {
   if (ref.read(isAuthenticatedProvider)) return true;
-  final aller = await ClosetDialogue.connexionRequise(
-    context,
-    message: message,
-  );
-  if (aller && context.mounted) {
-    await context.push('/auth');
-  }
+  allerCreerCompte(context, ref);
   return false;
 }
 
+void allerCreerCompte(BuildContext context, WidgetRef ref) {
+  ref.read(authModeProvider.notifier).state = AuthMode.register;
+  context.push('/auth');
+}
+
 // ─── Auth Screen (Login / Register) ─────────────────────────────────────────
-
-enum AuthMode { login, register }
-
-final authModeProvider = StateProvider<AuthMode>((ref) => AuthMode.login);
 
 /// Connexion / Inscription — transcription de la maquette Figma `5:1304`.
 ///
@@ -159,15 +159,24 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
 
     try {
       final authRepo = ref.read(authRepositoryProvider);
-      final user = isLogin
-          ? await authRepo.logIn(email: email, password: password)
-          : await authRepo.signUp(
-              firstName: firstName,
-              lastName: lastName,
-              email: email,
-              password: password,
-              phone: phone,
-            );
+      late final ClosetUser user;
+      try {
+        user = isLogin
+            ? await authRepo.logIn(email: email, password: password)
+            : await authRepo.signUp(
+                firstName: firstName,
+                lastName: lastName,
+                email: email,
+                password: password,
+                phone: phone,
+              );
+      } on MfaRequise catch (defi) {
+        if (!mounted) return;
+        setState(() => _isLoading = false);
+        final viaMfa = await afficherDialogueMfa(context, defi);
+        if (viaMfa == null || !mounted) return;
+        user = viaMfa;
+      }
 
       try {
         await ref

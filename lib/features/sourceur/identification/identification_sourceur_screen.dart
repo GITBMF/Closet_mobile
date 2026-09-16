@@ -10,6 +10,7 @@ import '../../../core/validation/formats.dart';
 import '../../../core/widgets/toasts.dart';
 import '../../../data/repositories/auth_repository.dart';
 import '../../../data/repositories/sourceur_repository.dart';
+import '../../auth/mfa_dialog.dart';
 import '../../auth/mot_de_passe_oublie_dialog.dart';
 import '../widgets/sourceur_header.dart';
 import '../widgets/sourceur_programme_visuel.dart';
@@ -58,9 +59,16 @@ class _IdentificationSourceurScreenState
 
     setState(() => _enCours = true);
     try {
-      await ref
-          .read(authRepositoryProvider)
-          .logIn(email: identifiant, password: motDePasse);
+      try {
+        await ref
+            .read(authRepositoryProvider)
+            .logIn(email: identifiant, password: motDePasse);
+      } on MfaRequise catch (defi) {
+        if (!mounted) return;
+        setState(() => _enCours = false);
+        final viaMfa = await afficherDialogueMfa(context, defi);
+        if (viaMfa == null || !mounted) return;
+      }
       if (!mounted) return;
       final user = ref.read(currentUserProvider);
       await ref

@@ -113,17 +113,34 @@ class AuthRepository {
     });
 
     if (booleenDe(data['mfa_required'])) {
-      throw ApiException(
-        message: messageMelange(
-          local:
-              'Ce compte exige une double authentification, non disponible dans '
-              'l’application pour le moment.',
-          backend: messageDepuisCorps(data),
-        ),
-        kind: KindErreurApi.validation,
+      final challenge = chaineDe(data['challenge_token']);
+      if (challenge.isEmpty) {
+        throw ApiException(
+          message: messageMelange(
+            local: 'La double authentification a échoué. Réessayez.',
+            backend: messageDepuisCorps(data),
+          ),
+          kind: KindErreurApi.serveur,
+        );
+      }
+      throw MfaRequise(
+        challengeToken: challenge,
+        expiresIn: entierDe(data['expires_in'], 300),
       );
     }
 
+    return _ouvrirSession(data);
+  }
+
+  /// `POST /auth/login/mfa` — code TOTP + jeton de défi renvoyé par `/auth/login`.
+  Future<ClosetUser> validerMfa({
+    required String challengeToken,
+    required String code,
+  }) async {
+    final data = await _client.postJson('/auth/login/mfa', data: {
+      'challenge_token': challengeToken,
+      'code': code.trim(),
+    });
     return _ouvrirSession(data);
   }
 
@@ -208,6 +225,20 @@ final authRepositoryProvider = Provider<AuthRepository>((ref) {
 });
 
 final currentUserProvider = StateProvider<ClosetUser?>((ref) => null);
+
+/// `/auth/login` a réussi mais le compte exige un code TOTP.
+class MfaRequise implements Exception {
+  const MfaRequise({
+    required this.challengeToken,
+    this.expiresIn = 300,
+  });
+
+  final String challengeToken;
+  final int expiresIn;
+
+  @override
+  String toString() => 'Double authentification requise.';
+}
 
 /// Corps de `POST /auth/register` — miroir de `RegisterRequest` (OpenAPI).
 ///
