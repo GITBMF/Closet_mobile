@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:dio/dio.dart';
 
 /// Nature d'un échec réseau, pour que l'UI choisisse le bon écran.
@@ -21,14 +23,26 @@ class ApiException implements Exception {
     required this.message,
     required this.kind,
     this.status,
+    this.code,
   });
 
   final String message;
   final KindErreurApi kind;
   final int? status;
+  final String? code;
 
   bool get estHorsLigne =>
       kind == KindErreurApi.horsLigne || kind == KindErreurApi.delaiDepasse;
+
+  bool get emailNonVerifie {
+    final c = (code ?? '').toLowerCase();
+    if (c.contains('verif') || c.contains('unverified')) return true;
+    final t = message.toLowerCase();
+    return t.contains('vérifi') ||
+        t.contains('verifi') ||
+        t.contains('confirmez votre e-mail') ||
+        t.contains('confirmez votre email');
+  }
 
   factory ApiException.depuisDio(DioException e) {
     final status = e.response?.statusCode;
@@ -40,6 +54,7 @@ class ApiException implements Exception {
       ),
       kind: kind,
       status: status,
+      code: codeDepuisCorps(e.response?.data),
     );
   }
 
@@ -82,6 +97,28 @@ class ApiException implements Exception {
 
   @override
   String toString() => message;
+}
+
+String codeDepuisCorps(dynamic data) {
+  var parsed = data;
+  if (parsed is String) {
+    final texte = parsed.trim();
+    if (!texte.startsWith('{')) return '';
+    try {
+      parsed = jsonDecode(texte);
+    } on FormatException {
+      return '';
+    }
+  }
+  if (parsed is! Map) return '';
+  final error = parsed['error'];
+  if (error is Map) {
+    final code = error['code'];
+    if (code is String && code.trim().isNotEmpty) return code.trim();
+  }
+  final code = parsed['code'];
+  if (code is String && code.trim().isNotEmpty) return code.trim();
+  return '';
 }
 
 /// Texte utile d'un corps JSON d'API : `detail` (chaîne ou liste FastAPI)

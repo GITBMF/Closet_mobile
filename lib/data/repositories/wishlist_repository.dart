@@ -17,6 +17,8 @@ class WishlistNotifier extends AsyncNotifier<List<Article>> {
   Future<List<Article>> build() async {
     ref.watch(currentUserProvider);
     if (!_connectee) return const [];
+    final user = ref.read(currentUserProvider);
+    if (user != null && user.nePeutPasAcheter) return const [];
     await ref.read(bffClientProvider).restaurerJeton();
     return chargerDepuisServeur();
   }
@@ -24,7 +26,13 @@ class WishlistNotifier extends AsyncNotifier<List<Article>> {
   /// `GET /wishlist` → liste de `PieceSummary`.
   Future<List<Article>> chargerDepuisServeur() async {
     final client = ref.read(bffClientProvider);
-    final brut = await client.getList('/wishlist');
+    final List<dynamic> brut;
+    try {
+      brut = await client.getList('/wishlist');
+    } on ApiException catch (e) {
+      if (e.status == 403) return const [];
+      rethrow;
+    }
 
     var maisons = const <String, String>{};
     var univers = const <String, String>{};
@@ -123,6 +131,15 @@ Future<void> basculerFavori(
 ) async {
   if (ref.read(currentUserProvider) == null) {
     allerCreerCompte(context, ref);
+    return;
+  }
+  final user = ref.read(currentUserProvider);
+  if (user != null && user.nePeutPasAcheter) {
+    toastInfo(
+      ref,
+      'Favoris',
+      'Les comptes administrateur et livreur ne peuvent pas faire d’achats.',
+    );
     return;
   }
   try {

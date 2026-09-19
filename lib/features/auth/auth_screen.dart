@@ -19,6 +19,7 @@ import '../../../data/repositories/auth_repository.dart';
 import '../../../data/repositories/sourceur_repository.dart';
 import 'mfa_dialog.dart';
 import 'mot_de_passe_oublie_dialog.dart';
+import 'verify_email_dialog.dart';
 
 // ─── Auth State ──────────────────────────────────────────────────────────────
 
@@ -170,6 +171,24 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
                 password: password,
                 phone: phone,
               );
+      } on EmailAVerifier catch (defi) {
+        if (!mounted) return;
+        setState(() => _isLoading = false);
+        final ok = await afficherDialogueVerificationEmail(
+          context,
+          email: defi.email,
+        );
+        if (ok != true || !mounted) return;
+        setState(() => _isLoading = true);
+        try {
+          user = await authRepo.logIn(email: email, password: password);
+        } on MfaRequise catch (mfa) {
+          if (!mounted) return;
+          setState(() => _isLoading = false);
+          final viaMfa = await afficherDialogueMfa(context, mfa);
+          if (viaMfa == null || !mounted) return;
+          user = viaMfa;
+        }
       } on MfaRequise catch (defi) {
         if (!mounted) return;
         setState(() => _isLoading = false);

@@ -114,10 +114,14 @@ Future<void> dialogueErreur(
   String? titre,
 }) {
   final l10n = ClosetL10n.of(context);
+  final depuisApi = messageErreur(erreur);
+  final message = depuisApi.isNotEmpty
+      ? depuisApi
+      : l10n.messageDepuisErreur(erreur);
   return ClosetDialogue.resultat(
     context,
     succes: false,
     titre: titre ?? l10n.erreurTitre,
-    message: l10n.messageDepuisErreur(erreur),
+    message: message.isNotEmpty ? message : l10n.erreurGenerique,
   );
 }

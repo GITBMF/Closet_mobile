@@ -92,14 +92,34 @@ class AuthRepository {
       phone: phone,
       city: city,
     );
-    await _client.postJson('/auth/register', data: payload);
+    try {
+      await _client.postJson('/auth/register', data: payload);
+    } on ApiException catch (e) {
+      // Compte déjà créé : le code Gmail reste valable.
+      if (e.status != 409) rethrow;
+    }
 
-    // L'inscription ne renvoie pas de jeton : on ouvre la session tout de
-    // suite avec les identifiants venant d'être créés.
-    return logIn(
-      email: payload['email'] as String,
-      password: password,
-    );
+    // Le serveur envoie un code par e-mail : pas de session tant qu’il
+    // n’est pas validé via `POST /auth/verify-email`.
+    throw EmailAVerifier(email: payload['email'] as String);
+  }
+
+  /// `POST /auth/verify-email` — code reçu dans la boîte mail.
+  Future<void> verifierEmail({
+    required String email,
+    required String code,
+  }) async {
+    await _client.postJson('/auth/verify-email', data: {
+      'email': email.toLowerCase().trim(),
+      'code': code.trim(),
+    });
+  }
+
+  /// `POST /auth/verify-email/resend`
+  Future<void> renvoyerCodeVerification(String email) async {
+    await _client.postJson('/auth/verify-email/resend', data: {
+      'email': email.toLowerCase().trim(),
+    });
   }
 
   Future<ClosetUser> logIn({
@@ -107,10 +127,17 @@ class AuthRepository {
     required String password,
   }) async {
     _client.clearAccessToken();
-    final data = await _client.postJson('/auth/login', data: {
-      'email': email.toLowerCase().trim(),
-      'password': password,
-    });
+    final adresse = email.toLowerCase().trim();
+    late final Map<String, dynamic> data;
+    try {
+      data = await _client.postJson('/auth/login', data: {
+        'email': adresse,
+        'password': password,
+      });
+    } on ApiException catch (e) {
+      if (e.emailNonVerifie) throw EmailAVerifier(email: adresse);
+      rethrow;
+    }
 
     if (booleenDe(data['mfa_required'])) {
       final challenge = chaineDe(data['challenge_token']);
@@ -238,6 +265,16 @@ class MfaRequise implements Exception {
 
   @override
   String toString() => 'Double authentification requise.';
+}
+
+/// `/auth/register` (ou login) exige le code reçu par e-mail.
+class EmailAVerifier implements Exception {
+  const EmailAVerifier({required this.email});
+
+  final String email;
+
+  @override
+  String toString() => 'Vérifiez votre e-mail pour activer le compte.';
 }
 
 /// Corps de `POST /auth/register` — miroir de `RegisterRequest` (OpenAPI).

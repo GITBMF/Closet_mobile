@@ -47,6 +47,12 @@ class ClosetL10n extends InheritedWidget {
 
   // ─── Collections / Recherche ────────────────────────────────────────────────
   String get rechercherPiece => t('Rechercher une pièce…', 'Search for an item…');
+  String get recherchesPopulaires => t('Recherches populaires', 'Popular searches');
+  String get marquesTendance => t('Marques tendance', 'Trending brands');
+  String get suggestionsMarques => t('Marques', 'Brands');
+  String get suggestionsTypes => t('Types', 'Types');
+  String get suggestionsTailles => t('Tailles', 'Sizes');
+  String get suggestionsEtats => t('États', 'Condition');
   String get toutes => t('Toutes', 'All');
   String get aucunePieceRecherche => t('Aucune pièce ne correspond.', 'No items found.');
   String get effacerRecherche => t('Effacer', 'Clear');
