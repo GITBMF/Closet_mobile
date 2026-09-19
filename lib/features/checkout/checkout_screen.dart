@@ -11,6 +11,7 @@ import '../../core/widgets/champ_telephone.dart';
 import '../../core/widgets/closet_app_bar.dart';
 import '../../core/widgets/closet_sections.dart';
 import '../../core/widgets/frise_tunnel.dart';
+import '../../core/widgets/marque_paiement.dart';
 import '../../core/widgets/spotlight_showcase.dart';
 import '../../core/widgets/toasts.dart';
 import '../../data/models/geo.dart';
@@ -342,6 +343,13 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                           l10n: l10n,
                         ),
                       ),
+                      const SizedBox(height: AppSpacing.p8),
+                      Text(
+                        'Nous vous écrirons sur WhatsApp pour suivre votre pièce.',
+                        style: ClosetTextStyles.meta.copyWith(
+                          color: ClosetColors.fond500,
+                        ),
+                      ),
                       const SizedBox(height: AppSpacing.p20),
                       _BlocAdresse(
                         brouillon: brouillon,
@@ -575,7 +583,7 @@ class _LignePaiement extends StatelessWidget {
                 padding: const EdgeInsets.all(AppSpacing.p12),
                 child: Row(
                   children: [
-                    Icon(moyen.icone, size: 20, color: ClosetColors.vert),
+                    MarquePaiement(id: moyen.id),
                     const SizedBox(width: AppSpacing.p12),
                     Expanded(
                       child: Text(

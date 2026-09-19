@@ -32,6 +32,7 @@ class ClosetL10n extends InheritedWidget {
   String get navCollections => t('Collections', 'Collections');
   String get navWishlist => t('Wishlist', 'Wishlist');
   String get navSelection => t('Sélection', 'Selection');
+  String get voirMaSelection => t('Voir ma sélection', 'View selection');
   String get navEspace => t('Espace', 'Space');
   String get navDepots => t('Mes Dépôts', 'My Items');
   String get navConfier => t('Confier', 'Consign');
@@ -47,6 +48,12 @@ class ClosetL10n extends InheritedWidget {
 
   // ─── Collections / Recherche ────────────────────────────────────────────────
   String get rechercherPiece => t('Rechercher une pièce…', 'Search for an item…');
+  String get recherchesPopulaires => t('Recherches populaires', 'Popular searches');
+  String get marquesTendance => t('Marques tendance', 'Trending brands');
+  String get suggestionsMarques => t('Marques', 'Brands');
+  String get suggestionsTypes => t('Types', 'Types');
+  String get suggestionsTailles => t('Tailles', 'Sizes');
+  String get suggestionsEtats => t('États', 'Condition');
   String get toutes => t('Toutes', 'All');
   String get aucunePieceRecherche => t('Aucune pièce ne correspond.', 'No items found.');
   String get effacerRecherche => t('Effacer', 'Clear');
@@ -60,6 +67,8 @@ class ClosetL10n extends InheritedWidget {
   String get tailleLabel => t('Taille', 'Size');
   String get matiere => t('Matière', 'Material');
   String get etatPiece => t('État', 'Condition');
+  String get etatDeLaPiece => t('État de la pièce', 'Item condition');
+  String get signesUsage => t('Signes d’usage relevés', 'Noted signs of wear');
   String get descriptionArticle => t('À propos de cette pièce', 'About this item');
 
   // ─── Sélection / Checkout ───────────────────────────────────────────────────
@@ -67,6 +76,9 @@ class ClosetL10n extends InheritedWidget {
   String get paiementEnCours => t('Paiement en cours…', 'Payment in progress…');
   String get annulerPaiement => t('Annuler', 'Cancel');
   String get maSelection => t('Ma sélection', 'My selection');
+  String dansMaSelection(int n) => t('Dans ma sélection, ${nbPieces(n)}', 'In my selection, ${nbPieces(n)}');
+  String get achatsIndisponiblesTitre => t('Achats indisponibles', 'Purchases unavailable');
+  String get achatsIndisponiblesMessage => t('Les comptes administrateur et livreur ne peuvent pas faire d’achats.', 'Administrator and delivery accounts cannot make purchases.');
   String selectionAvecCompte(int n) =>
       t('Sélection, $n pièces', 'Selection, $n items');
   String get bienvenueVirgule => t('Bienvenue,', 'Welcome,');
@@ -160,6 +172,31 @@ class ClosetL10n extends InheritedWidget {
   String get langue => t('Langue', 'Language');
   String get ok => t('OK', 'OK');
   String get retour => t('Retour', 'Back');
+  String get visiteGuidee => t('Visite guidée', 'Guided tour');
+  String get visiteEtape => t('Étape', 'Step');
+  String get visitePasser => t('PASSER', 'SKIP');
+  String get visiteSuivant => t('Suivant', 'Next');
+  String get visiteTerminer => t('Terminer', 'Done');
+  String get visiteDressing => t(
+        'Les nouveautés et la pièce de la semaine, dès l’ouverture.',
+        'New arrivals and the piece of the week, right on home.',
+      );
+  String get visiteCollections => t(
+        'Cherchez par univers, taille, état et budget.',
+        'Search by universe, size, condition and budget.',
+      );
+  String get visiteWishlist => t(
+        'Vos coups de cœur. La connexion est demandée pour les garder.',
+        'Your saved pieces. Sign in to keep them.',
+      );
+  String get visiteSelection => t(
+        'Les pièces mises de côté, prêtes à être finalisées.',
+        'Items set aside, ready to check out.',
+      );
+  String get visiteEspace => t(
+        'Commandes, profil, et relance de cette visite.',
+        'Orders, profile, and this tour again.',
+      );
 
   // ─── Carte Sourceur ─────────────────────────────────────────────────────────
   String get nouveau => t('Nouveau', 'New');
@@ -187,6 +224,20 @@ class ClosetL10n extends InheritedWidget {
   String get depotsVide =>
       t("Vous n'avez encore confié aucune pièce.", "You haven't consigned any items yet.");
   String get confierUnePiece => t('Confier une pièce', 'Consign an item');
+  String etapeDepot(int n) => t('Étape $n/3', 'Step $n/3');
+  String get depotEtapePhotos => t('Photos', 'Photos');
+  String get depotEtapeType => t('Type', 'Category');
+  String get depotEtapeDetails => t('Marque et taille', 'Brand and size');
+  String get depotContinuer => t('Continuer', 'Continue');
+  String get depotConfierCta => t('Confier cette pièce', 'Consign this item');
+  String get depotPhotoRequise =>
+      t('Ajoutez au moins une photo.', 'Add at least one photo.');
+  String get depotTypeRequis =>
+      t('Choisissez un type d’article.', 'Choose a category.');
+  String get depotPhotosAide => t(
+        'Une photo nette suffit pour commencer. Vous pourrez en ajouter.',
+        'One clear photo is enough to start. You can add more later.',
+      );
   String get aucunePieceFiltre => t('Aucune pièce pour ce filtre.', 'No items for this filter.');
   String get enVente => t('En vente', 'For sale');
   String get enLigne => t('En ligne', 'Online');
@@ -324,6 +375,8 @@ class ClosetL10n extends InheritedWidget {
   String get filtreEtat => t('État', 'Condition');
   String get filtreMaison => t('Maison', 'House');
   String get filtreBudget => t('Budget', 'Budget');
+  String get filtresPrecedents => t('Filtres précédents', 'Previous filters');
+  String get filtresSuivants => t('Filtres suivants', 'More filters');
 
   // ─── Validation formulaire (compléments) ────────────────────────────────────
   String get ajouterChiffre =>
@@ -368,6 +421,7 @@ class ClosetL10n extends InheritedWidget {
       );
   String get codePrivilegeLabel => t('Code privilège', 'Privilege code');
   String get cerclePrivilegeHint => t('cercle-privilège', 'privilege-circle');
+  String get facultatifLabel => t('Facultatif', 'Optional');
   String get retirerLabel => t('Retirer', 'Remove');
   String get appliquerLabel => t('Appliquer', 'Apply');
   String get ficheSourceurNonLieeMessage => t(

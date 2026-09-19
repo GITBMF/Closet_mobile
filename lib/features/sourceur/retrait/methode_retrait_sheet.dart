@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/l10n/closet_l10n.dart';
@@ -6,6 +6,8 @@ import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/closet_colors.dart';
 import '../../../core/theme/closet_text_styles.dart';
 import '../../../core/widgets/closet_app_bar.dart';
+import '../../../core/widgets/closet_filet.dart';
+import '../../../core/widgets/marque_paiement.dart';
 import '../../../core/widgets/toasts.dart';
 import '../../../data/models/user.dart';
 import '../../../data/repositories/auth_repository.dart';
@@ -142,11 +144,7 @@ class _MethodeRetraitSheetState
                 ),
               ),
               const SizedBox(height: AppSpacing.p12),
-              const Divider(
-                color: ClosetColors.caseVide,
-                height: AppStroke.fin,
-                thickness: AppStroke.fin,
-              ),
+              const ClosetFilet(couleur: ClosetColors.caseVide),
               const SizedBox(height: AppSpacing.p12),
               Text(
                 l10n.aReverser(
@@ -253,21 +251,19 @@ class _LigneMoyen extends StatelessWidget {
           padding: const EdgeInsets.symmetric(vertical: AppSpacing.p12),
           child: Row(
             children: [
-              Container(
-                width: 45,
-                height: 32,
-                alignment: Alignment.center,
+              DecoratedBox(
                 decoration: BoxDecoration(
-                  color: ClosetColors.blanc,
                   borderRadius: BorderRadius.circular(4),
                   border: Border.all(
-                    color: choisi
-                        ? ClosetColors.vert
-                        : ClosetColors.caseVide,
+                    color: choisi ? ClosetColors.vert : ClosetColors.caseVide,
                     width: AppStroke.fin,
                   ),
                 ),
-                child: Icon(moyen.icone, size: 18, color: ClosetColors.vert),
+                child: MarquePaiement(
+                  id: moyen.id,
+                  largeur: 45,
+                  hauteur: 32,
+                ),
               ),
               const SizedBox(width: AppSpacing.p12),
               Expanded(

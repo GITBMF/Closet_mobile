@@ -1,5 +1,6 @@
 import '../../core/l10n/closet_l10n.dart';
 import '../api/api_json.dart';
+import 'etat_piece.dart';
 
 class Article {
   final String id;
@@ -21,6 +22,7 @@ class Article {
   final String? universeId;
   final String sourceurNom;
   final String? sourceurId;
+  final List<String> imperfections;
 
   Article({
     required this.id,
@@ -42,7 +44,10 @@ class Article {
     this.universeId,
     this.sourceurNom = '',
     this.sourceurId,
+    this.imperfections = const [],
   });
+
+  NiveauEtat get niveauEtat => NiveauEtatX.depuis(condition);
 
   factory Article.fromJson(Map<String, dynamic> json) {
     return Article.fromApi(json);
@@ -67,7 +72,10 @@ class Article {
 
     final statut = chaineDe(json['status']);
     final conditionApi = chaineDe(json['condition']);
+    final niveau = NiveauEtatX.depuis(conditionApi);
     final titre = chaineDe(json['title']);
+    final description = chaineDe(json['description'], chaineDe(json['story']));
+    final story = json['story'] as String?;
     final marque = nomMaison ??
         chaineDe(json['brand'], chaineDe(json['house']));
     final sourceur = objetDe(json['sourcer'] ?? json['sourceur']);
@@ -85,11 +93,11 @@ class Article {
     return Article(
       id: chaineDe(json['id']),
       title: titre,
-      description: chaineDe(json['description'], chaineDe(json['story'])),
+      description: description,
       brand: marque.isNotEmpty ? marque : _marqueDepuisTitre(titre),
       size: chaineDe(json['size_label'], chaineDe(json['size'])),
       material: chaineDe(json['material']),
-      condition: conditionApi,
+      condition: niveau.libelle,
       color: chaineDe(
         json['color'],
         chaineDe(
@@ -103,9 +111,15 @@ class Article {
       universe: nomUnivers ?? chaineDe(json['universe']),
       isSoldOut: statut == 'sold' || statut == 'reserved' || statut == 'withdrawn',
       isWishlisted: booleenDe(json['in_wishlist']),
-      story: json['story'] as String?,
+      story: story,
       houseId: json['house_id'] as String?,
       universeId: json['universe_id'] as String?,
+      imperfections: extraireImperfections(
+        json: json,
+        description: description,
+        story: story ?? '',
+        niveau: niveau,
+      ),
       sourceurNom: nomSourceur,
       sourceurId: chaineDe(
         json['sourcer_id'],
@@ -145,7 +159,7 @@ class Article {
   }
 
   bool correspondEtat(String etat) =>
-      condition.trim().toLowerCase() == etat.trim().toLowerCase();
+      niveauEtat == NiveauEtatX.depuis(etat);
 
   bool correspondMaison(String nom) =>
       brand.toLowerCase() == nom.trim().toLowerCase();
@@ -193,6 +207,7 @@ class Article {
         'universe_id': universeId,
         'sourcer_name': sourceurNom,
         'sourcer_id': sourceurId,
+        'imperfections': imperfections,
       };
 
   Article copyWith({
@@ -215,6 +230,7 @@ class Article {
     String? universeId,
     String? sourceurNom,
     String? sourceurId,
+    List<String>? imperfections,
   }) {
     return Article(
       id: id ?? this.id,
@@ -236,6 +252,7 @@ class Article {
       universeId: universeId ?? this.universeId,
       sourceurNom: sourceurNom ?? this.sourceurNom,
       sourceurId: sourceurId ?? this.sourceurId,
+      imperfections: imperfections ?? this.imperfections,
     );
   }
 
@@ -252,12 +269,8 @@ class Article {
   }
 
   /// Notation visuelle de l'état, à gauche du nom (sans badge sur la photo).
-  int get etoilesEtat => switch (condition) {
-        'new' || 'excellent' => 5,
-        'very_good' => 4,
-        'good' => 3,
-        _ => condition.trim().isEmpty ? 0 : 3,
-      };
+  int get etoilesEtat =>
+      condition.trim().isEmpty ? 0 : niveauEtat.etoiles;
 
   /// Conseil d'entretien dérivé de la matière renvoyée par le catalogue.
   String conseilsLavage(ClosetL10n l10n) {

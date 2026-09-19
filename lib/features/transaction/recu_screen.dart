@@ -6,6 +6,7 @@ import '../../core/theme/closet_colors.dart';
 import '../../core/theme/closet_text_styles.dart';
 import '../../core/utils/date_format.dart';
 import '../../core/widgets/closet_app_bar.dart';
+import '../../core/widgets/closet_filet.dart';
 import 'transaction_models.dart';
 import 'widgets/transaction_scaffold.dart';
 
@@ -51,7 +52,10 @@ class RecuScreen extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: AppSpacing.p16),
-                const Divider(color: ClosetColors.champPlaceholder, height: 1),
+                const ClosetFilet(
+                  couleur: ClosetColors.champPlaceholder,
+                  hauteur: 1,
+                ),
                 const SizedBox(height: AppSpacing.p16),
                 _Ligne(l10n.transactionDateHeure, formatDateCommande(recu.horodatage)),
                 if (d.type.afficheReference)

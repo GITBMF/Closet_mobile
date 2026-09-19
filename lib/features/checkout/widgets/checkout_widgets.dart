@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/closet_colors.dart';
 import '../../../core/theme/closet_text_styles.dart';
+import '../../../core/widgets/closet_filet.dart';
 
 /// Champ du formulaire de livraison : libellé vert, zone blanche cerclée d'or.
 ///
@@ -265,11 +266,10 @@ Future<T?> afficherSelecteur<T>({
     isScrollControlled: true,
     backgroundColor: Colors.transparent,
     builder: (context) {
-      return DecoratedBox(
-        decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.surface,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-        ),
+      return Material(
+        color: Theme.of(context).colorScheme.surface,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+        clipBehavior: Clip.antiAlias,
         child: SafeArea(
           top: false,
           child: ConstrainedBox(
@@ -280,22 +280,11 @@ Future<T?> afficherSelecteur<T>({
               mainAxisSize: MainAxisSize.min,
               children: [
                 const SizedBox(height: AppSpacing.p12),
-                Container(
-                  width: 48,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: ClosetColors.caseVide,
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
-                const SizedBox(height: AppSpacing.p20),
+                const ClosetPoignee(couleur: ClosetColors.caseVide),
+                const SizedBox(height: AppSpacing.p16),
                 Text(titre, style: ClosetTextStyles.titreBloc),
                 const SizedBox(height: AppSpacing.p12),
-                const Divider(
-                  color: ClosetColors.caseVide,
-                  height: AppStroke.fin,
-                  thickness: AppStroke.fin,
-                ),
+                const ClosetFilet(couleur: ClosetColors.caseVide),
                 Flexible(
                   child: ListView.builder(
                     padding: const EdgeInsets.symmetric(

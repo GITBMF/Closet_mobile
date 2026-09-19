@@ -11,11 +11,9 @@ class ClosetTextStyles {
 
   /// Facteur d'échelle typographique global.
   ///
-  /// À `1.0`, les tailles sont celles de la maquette au point près.
-  /// La maquette compte 842 calques entre 6 et 10 pt, ce qui est sous le
-  /// minimum lisible usuel (~11 pt). Si le rendu sur appareil confirme le
-  /// problème, monter cette valeur à ~1.4 remonte toute l'échelle d'un coup
-  /// en préservant la hiérarchie relative.
+  /// À `1.0`, les tailles suivent la maquette. Les styles sous 11 pt sont
+  /// relevés individuellement (revue : lisibilité) plutôt que par un
+  /// facteur global, pour ne pas faire déborder les cartes produit.
   static const double scale = 1.0;
 
   static double _s(double v) => v * scale;
@@ -156,58 +154,58 @@ class ClosetTextStyles {
     fontWeight: FontWeight.w600,
   );
 
-  /// Métadonnée — Lato 400 / 10 pt
+  /// Métadonnée — Lato 400 / 12 pt
   static TextStyle meta = GoogleFonts.lato(
-    fontSize: _s(10),
+    fontSize: _s(12),
     letterSpacing: 0.2,
-    height: 12 / 10,
+    height: 14.4 / 12,
     color: ClosetColors.texteSecondaire,
   );
 
-  /// Action secondaire — Lato 500 / 10 pt
+  /// Action secondaire — Lato 500 / 12 pt
   static TextStyle actionPetite = GoogleFonts.lato(
-    fontSize: _s(10),
+    fontSize: _s(12),
     fontWeight: FontWeight.w500,
-    height: 14.5 / 10,
+    height: 16 / 12,
   );
 
-  /// Détail produit — Lato 400 / 9 pt
+  /// Détail produit — Lato 400 / 11 pt
   static TextStyle detail = GoogleFonts.lato(
-    fontSize: _s(9),
+    fontSize: _s(11),
     letterSpacing: 0.18,
-    height: 10.8 / 9,
+    height: 13.2 / 11,
     color: ClosetColors.texteSecondaire,
   );
 
-  /// Mention légère — Lato 300 / 9 pt
+  /// Mention légère — Lato 300 / 11 pt
   static TextStyle mention = GoogleFonts.lato(
-    fontSize: _s(9),
+    fontSize: _s(11),
     fontWeight: FontWeight.w300,
     letterSpacing: 0.16,
     color: ClosetColors.texteSecondaire,
   );
 
-  /// Attribut produit (taille, matière) — Lato 400 / 8 pt
+  /// Attribut produit (taille, matière) — Lato 400 / 10 pt
   static TextStyle attribut = GoogleFonts.lato(
-    fontSize: _s(8),
+    fontSize: _s(10),
     letterSpacing: -0.16,
-    height: 9.6 / 8,
+    height: 12 / 10,
     color: ClosetColors.texteSecondaire,
   );
 
-  /// Micro-légende — Lato 400 / 7 pt
+  /// Micro-légende — Lato 400 / 10 pt
   static TextStyle microLegende = GoogleFonts.lato(
-    fontSize: _s(7),
+    fontSize: _s(10),
     letterSpacing: 0.28,
-    height: 8.4 / 7,
+    height: 12 / 10,
     color: ClosetColors.texteSecondaire,
   );
 
-  /// Plus petit texte de la maquette — Lato 400 / 6 pt
+  /// Plus petit texte — Lato 400 / 10 pt (plancher lisible)
   static TextStyle micro = GoogleFonts.lato(
-    fontSize: _s(6),
+    fontSize: _s(10),
     letterSpacing: 0.24,
-    height: 7.2 / 6,
+    height: 12 / 10,
     color: ClosetColors.texteSecondaire,
   );
 
@@ -269,11 +267,11 @@ class ClosetTextStyles {
     height: 10.8 / 9,
   );
 
-  /// Suréclat de section — Lato 400 / 8 pt, très espacé
+  /// Suréclat de section — Lato 400 / 10 pt, très espacé
   static TextStyle surtitre = GoogleFonts.lato(
-    fontSize: _s(8),
+    fontSize: _s(10),
     letterSpacing: 1.84,
-    height: 9.6 / 8,
+    height: 12 / 10,
     color: ClosetColors.texteSecondaire,
   );
 }

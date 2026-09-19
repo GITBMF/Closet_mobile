@@ -9,26 +9,6 @@ import '../bff_client/api_client.dart';
 import '../models/user.dart';
 import '../services/auth_storage_service.dart';
 
-/// Levée par [AuthRepository.signUp] quand le compte vient d'être créé mais
-/// que le backend refuse la connexion tant que l'e-mail n'est pas vérifié
-/// (code `email_not_verified`). Porte les identifiants pour que l'écran de
-/// vérification puisse se reconnecter une fois le code validé, sans
-/// redemander le mot de passe.
-class EmailNonVerifieException implements Exception {
-  const EmailNonVerifieException({
-    required this.email,
-    required this.password,
-    required this.message,
-  });
-
-  final String email;
-  final String password;
-  final String message;
-
-  @override
-  String toString() => message;
-}
-
 class AuthRepository {
   AuthRepository(this._ref, this._client);
 
@@ -114,25 +94,16 @@ class AuthRepository {
       phone: phone,
       city: city,
     );
-    await _client.postJson('/auth/register', data: payload);
-
-    final emailInscrit = payload['email'] as String;
-    // L'inscription ne renvoie pas de jeton : on ouvre la session tout de
-    // suite avec les identifiants venant d'être créés. Le backend refuse
-    // toutefois la connexion tant que l'e-mail n'est pas vérifié : l'appelant
-    // doit alors faire vérifier le code avant de retenter `logIn`.
     try {
-      return await logIn(email: emailInscrit, password: password, l10n: l10n);
+      await _client.postJson('/auth/register', data: payload);
     } on ApiException catch (e) {
-      if (e.code == 'email_not_verified') {
-        throw EmailNonVerifieException(
-          email: emailInscrit,
-          password: password,
-          message: e.message,
-        );
-      }
-      rethrow;
+      // Compte déjà créé : le code Gmail reste valable.
+      if (e.status != 409) rethrow;
     }
+
+    // Le serveur envoie un code par e-mail : pas de session tant qu’il
+    // n’est pas validé via `POST /auth/verify-email`.
+    throw EmailAVerifier(email: payload['email'] as String);
   }
 
   /// `POST /auth/verify-email` — code à 6 chiffres reçu par e-mail.
@@ -161,21 +132,48 @@ class AuthRepository {
     ClosetL10n? l10n,
   }) async {
     _client.clearAccessToken();
-    final data = await _client.postJson('/auth/login', data: {
-      'email': email.toLowerCase().trim(),
-      'password': password,
-    });
+    final adresse = email.toLowerCase().trim();
+    late final Map<String, dynamic> data;
+    try {
+      data = await _client.postJson('/auth/login', data: {
+        'email': adresse,
+        'password': password,
+      });
+    } on ApiException catch (e) {
+      if (e.emailNonVerifie) throw EmailAVerifier(email: adresse);
+      rethrow;
+    }
 
     if (booleenDe(data['mfa_required'])) {
-      throw ApiException(
-        message: messageMelange(
-          local: l10n?.mfaNonDisponibleMessage ?? ClosetL10n.fr.mfaNonDisponibleMessage,
-          backend: messageDepuisCorps(data),
-        ),
-        kind: KindErreurApi.validation,
+      final challenge = chaineDe(data['challenge_token']);
+      if (challenge.isEmpty) {
+        throw ApiException(
+          message: messageMelange(
+            local: 'La double authentification a échoué. Réessayez.',
+            backend: messageDepuisCorps(data),
+          ),
+          kind: KindErreurApi.serveur,
+        );
+      }
+      throw MfaRequise(
+        challengeToken: challenge,
+        expiresIn: entierDe(data['expires_in'], 300),
       );
     }
 
+    return _ouvrirSession(data, l10n);
+  }
+
+  /// `POST /auth/login/mfa` — code TOTP + jeton de défi renvoyé par `/auth/login`.
+  Future<ClosetUser> validerMfa({
+    required String challengeToken,
+    required String code,
+    ClosetL10n? l10n,
+  }) async {
+    final data = await _client.postJson('/auth/login/mfa', data: {
+      'challenge_token': challengeToken,
+      'code': code.trim(),
+    });
     return _ouvrirSession(data, l10n);
   }
 
@@ -263,6 +261,30 @@ final authRepositoryProvider = Provider<AuthRepository>((ref) {
 });
 
 final currentUserProvider = StateProvider<ClosetUser?>((ref) => null);
+
+/// `/auth/login` a réussi mais le compte exige un code TOTP.
+class MfaRequise implements Exception {
+  const MfaRequise({
+    required this.challengeToken,
+    this.expiresIn = 300,
+  });
+
+  final String challengeToken;
+  final int expiresIn;
+
+  @override
+  String toString() => 'Double authentification requise.';
+}
+
+/// `/auth/register` (ou login) exige le code reçu par e-mail.
+class EmailAVerifier implements Exception {
+  const EmailAVerifier({required this.email});
+
+  final String email;
+
+  @override
+  String toString() => 'Vérifiez votre e-mail pour activer le compte.';
+}
 
 /// Corps de `POST /auth/register` — miroir de `RegisterRequest` (OpenAPI).
 ///

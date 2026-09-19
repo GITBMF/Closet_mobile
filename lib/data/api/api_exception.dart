@@ -39,6 +39,16 @@ class ApiException implements Exception {
   bool get estHorsLigne =>
       kind == KindErreurApi.horsLigne || kind == KindErreurApi.delaiDepasse;
 
+  bool get emailNonVerifie {
+    final c = (code ?? '').toLowerCase();
+    if (c.contains('verif') || c.contains('unverified')) return true;
+    final t = message.toLowerCase();
+    return t.contains('vérifi') ||
+        t.contains('verifi') ||
+        t.contains('confirmez votre e-mail') ||
+        t.contains('confirmez votre email');
+  }
+
   factory ApiException.depuisDio(DioException e) {
     final status = e.response?.statusCode;
     final kind = _kind(e, status);

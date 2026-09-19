@@ -10,11 +10,15 @@ class ClosetNotification {
   final String title;
   final String message;
   final NotificationType type;
+  final String? actionLabel;
+  final VoidCallback? onAction;
 
   const ClosetNotification({
     required this.title,
     required this.message,
     this.type = NotificationType.info,
+    this.actionLabel,
+    this.onAction,
   });
 }
 
@@ -30,13 +34,25 @@ class NotificationNotifier extends Notifier<ClosetNotification?> {
 
   Timer? _dismissTimer;
 
-  void show(String title, String message, {NotificationType type = NotificationType.info}) {
+  void show(
+    String title,
+    String message, {
+    NotificationType type = NotificationType.info,
+    String? actionLabel,
+    VoidCallback? onAction,
+  }) {
     _dismissTimer?.cancel();
     
     // Déclenche le retour haptique léger lors de l'apparition
     HapticFeedback.lightImpact();
     
-    state = ClosetNotification(title: title, message: message, type: type);
+    state = ClosetNotification(
+      title: title,
+      message: message,
+      type: type,
+      actionLabel: actionLabel,
+      onAction: onAction,
+    );
 
     // Auto-fermeture après 4 secondes
     _dismissTimer = Timer(const Duration(seconds: 4), () {
@@ -49,8 +65,19 @@ class NotificationNotifier extends Notifier<ClosetNotification?> {
     state = null;
   }
 
-  void showSuccess(String title, String message) {
-    show(title, message, type: NotificationType.success);
+  void showSuccess(
+    String title,
+    String message, {
+    String? actionLabel,
+    VoidCallback? onAction,
+  }) {
+    show(
+      title,
+      message,
+      type: NotificationType.success,
+      actionLabel: actionLabel,
+      onAction: onAction,
+    );
   }
 
   void showError(String title, String message) {

@@ -6,6 +6,7 @@ import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/closet_colors.dart';
 import '../../../core/theme/closet_layout.dart';
 import '../../../core/theme/closet_text_styles.dart';
+import '../../../core/widgets/closet_filet.dart';
 import '../../../core/widgets/closet_header_button.dart';
 
 /// Revient en arrière, ou rejoint [repli] si la pile de navigation est vide.
@@ -153,11 +154,7 @@ class SourceurEntree extends StatelessWidget {
     return Column(
       children: [
         if (!premier)
-          const Divider(
-            height: AppStroke.fin,
-            thickness: AppStroke.fin,
-            color: ClosetColors.ligne,
-          ),
+          const ClosetFilet(),
         InkWell(
           onTap: onTap,
           child: Padding(

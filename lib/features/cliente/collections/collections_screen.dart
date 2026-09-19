@@ -9,6 +9,7 @@ import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/closet_colors.dart';
 import '../../../core/theme/closet_layout.dart';
 import '../../../core/theme/closet_text_styles.dart';
+import '../../../core/widgets/bandeau_defilable.dart';
 import '../../../core/widgets/closet_app_bar.dart';
 import '../../../core/widgets/closet_chip.dart';
 import '../../../core/widgets/closet_feedback.dart';
@@ -17,8 +18,12 @@ import '../../../core/widgets/etat_ecran.dart';
 import '../../../core/widgets/piece_card.dart';
 import '../../../core/widgets/spotlight_showcase.dart';
 import '../../../data/models/article.dart';
+import '../../../data/recherche/suggestion_recherche.dart';
 import '../../../data/repositories/catalog_repository.dart';
+import '../../../data/services/historique_recherche_service.dart';
 import 'filtres_sheet.dart';
+import 'panneau_suggestions.dart';
+import 'recherche_providers.dart';
 
 // Notifiers for type-safety under strict-inference
 class UniverseNotifier extends Notifier<String> {
@@ -154,15 +159,32 @@ List<String> universCatalogue(WidgetRef ref) {
 
 class _CollectionsScreenState extends ConsumerState<CollectionsScreen> {
   late final TextEditingController _recherche;
+  late final FocusNode _focus;
+  bool _champActif = false;
 
   @override
   void initState() {
     super.initState();
     _recherche = TextEditingController(text: ref.read(searchQueryProvider));
+    _focus = FocusNode();
+    _focus.addListener(() {
+      if (!mounted) return;
+      if (_focus.hasFocus) {
+        setState(() => _champActif = true);
+        return;
+      }
+      // Laisse le tap d’une puce se terminer avant de replier le panneau.
+      Future<void>.delayed(const Duration(milliseconds: 140), () {
+        if (mounted && !_focus.hasFocus) {
+          setState(() => _champActif = false);
+        }
+      });
+    });
   }
 
   @override
   void dispose() {
+    _focus.dispose();
     _recherche.dispose();
     super.dispose();
   }
@@ -180,6 +202,74 @@ class _CollectionsScreenState extends ConsumerState<CollectionsScreen> {
     _recherche.clear();
     ref.read(searchQueryProvider.notifier).clear();
     setState(() {});
+  }
+
+  Future<void> _appliquerTexte(String brut, {bool immediat = false}) async {
+    final q = brut.trim();
+    if (immediat) {
+      ref.read(searchQueryProvider.notifier).appliquerMaintenant(q);
+      if (q.length >= 2) {
+        await HistoriqueRechercheService.enregistrer(q);
+        ref.invalidate(historiqueRechercheProvider);
+      }
+      return;
+    }
+    ref.read(searchQueryProvider.notifier).setQuery(q);
+  }
+
+  void _inscrireChamp(String texte) {
+    if (_recherche.text != texte) _recherche.text = texte;
+    setState(() {});
+  }
+
+  Future<void> _choisirTexte(String texte) async {
+    _inscrireChamp(texte);
+    await _appliquerTexte(texte, immediat: true);
+    _focus.unfocus();
+  }
+
+  Future<void> _choisirSuggestion(SuggestionRecherche s) async {
+    _inscrireChamp(s.libelle);
+    switch (s.categorie) {
+      case CategorieSuggestion.marque:
+        ref.read(filterBrandProvider.notifier).setMaison(
+              s.maison ?? Maison(id: s.libelle, nom: s.libelle),
+            );
+        ref.read(searchQueryProvider.notifier).clear();
+      case CategorieSuggestion.type:
+        ref.read(selectedUniverseProvider.notifier).setUniverse(s.libelle);
+        ref.read(searchQueryProvider.notifier).clear();
+      case CategorieSuggestion.taille:
+        ref.read(filterTailleProvider.notifier).setTaille(s.libelle);
+        ref.read(searchQueryProvider.notifier).clear();
+      case CategorieSuggestion.etat:
+        ref.read(filterEtatProvider.notifier).setEtat(s.libelle);
+        ref.read(searchQueryProvider.notifier).clear();
+    }
+    await HistoriqueRechercheService.enregistrer(s.libelle);
+    ref.invalidate(historiqueRechercheProvider);
+    _focus.unfocus();
+  }
+
+  Future<void> _choisirMarqueTendance(String nom) async {
+    final index = ref.read(indexRechercheProvider).maybeWhen(
+          data: (i) => i,
+          orElse: () => IndexRecherche.vide,
+        );
+    Maison? maison;
+    for (final m in index.maisons) {
+      if (m.nom.toLowerCase() == nom.toLowerCase()) {
+        maison = m;
+        break;
+      }
+    }
+    await _choisirSuggestion(
+      SuggestionRecherche(
+        categorie: CategorieSuggestion.marque,
+        libelle: nom,
+        maison: maison ?? Maison(id: nom, nom: nom),
+      ),
+    );
   }
 
   void _reinitialiserFiltres() {
@@ -201,10 +291,25 @@ class _CollectionsScreenState extends ConsumerState<CollectionsScreen> {
     final l10n = ClosetL10n.of(context);
 
     ref.listen<String>(searchQueryProvider, (precedent, suivant) {
+      if (_focus.hasFocus) return;
       if (_recherche.text != suivant) {
         _recherche.text = suivant;
       }
     });
+
+    final index = ref.watch(indexRechercheProvider).maybeWhen(
+          data: (i) => i,
+          orElse: () => IndexRecherche.vide,
+        );
+    final historique = ref.watch(historiqueRechercheProvider).maybeWhen(
+          data: (h) => h,
+          orElse: () => const <String>[],
+        );
+    final panneau = construirePanneau(
+      requete: _recherche.text,
+      index: index,
+      historique: historique,
+    );
 
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
@@ -217,51 +322,54 @@ class _CollectionsScreenState extends ConsumerState<CollectionsScreen> {
               const SizedBox(height: AppSpacing.p12),
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: marge),
-                child: _BarreRecherche(
-                  controller: _recherche,
-                  filtresActifs: _filtresActifs ||
-                      _recherche.text.trim().isNotEmpty,
-                  onChanged: (v) {
-                    setState(() {});
-                  },
-                  onSubmitted: (v) => ref
-                      .read(searchQueryProvider.notifier)
-                      .appliquerMaintenant(v),
-                  onEffacer: _effacerRecherche,
-                  onFiltres: () => _ouvrirFiltres(context),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    _BarreRecherche(
+                      controller: _recherche,
+                      focusNode: _focus,
+                      filtresActifs: _filtresActifs ||
+                          _recherche.text.trim().isNotEmpty,
+                      onChanged: (v) {
+                        setState(() {});
+                        _appliquerTexte(v);
+                      },
+                      onSubmitted: (v) => _appliquerTexte(v, immediat: true),
+                      onEffacer: _effacerRecherche,
+                      onFiltres: () => _ouvrirFiltres(context),
+                    ),
+                    if (_champActif)
+                      PanneauSuggestionsRecherche(
+                        panneau: panneau,
+                        onPopulaire: _choisirTexte,
+                        onMarqueTendance: _choisirMarqueTendance,
+                        onSuggestion: _choisirSuggestion,
+                      ),
+                  ],
                 ),
               ),
               if (categories.isNotEmpty) ...[
                 const SizedBox(height: AppSpacing.p16),
-                SizedBox(
+                BandeauDefilable(
                   key: ClosetTourKeys.universKey,
-                  height: 42,
-                  child: ListView.separated(
-                    scrollDirection: Axis.horizontal,
-                    padding: EdgeInsets.symmetric(horizontal: marge),
-                    itemCount: categories.length + 1,
-                    separatorBuilder: (_, _) =>
-                        const SizedBox(width: AppSpacing.p8),
-                    itemBuilder: (context, i) {
-                      if (i == 0) {
-                        return ClosetChip(
-                          label: l10n.toutes,
-                          isActive: universActif.isEmpty,
-                          onTap: () => ref
-                              .read(selectedUniverseProvider.notifier)
-                              .setUniverse(''),
-                        );
-                      }
-                      final nom = categories[i - 1];
-                      return ClosetChip(
+                  padding: EdgeInsets.symmetric(horizontal: marge),
+                  enfants: [
+                    ClosetChip(
+                      label: l10n.toutes,
+                      isActive: universActif.isEmpty,
+                      onTap: () => ref
+                          .read(selectedUniverseProvider.notifier)
+                          .setUniverse(''),
+                    ),
+                    for (final nom in categories)
+                      ClosetChip(
                         label: nom,
                         isActive: nom == universActif,
                         onTap: () => ref
                             .read(selectedUniverseProvider.notifier)
                             .setUniverse(nom == universActif ? '' : nom),
-                      );
-                    },
-                  ),
+                      ),
+                  ],
                 ),
               ],
               const SizedBox(height: AppSpacing.p16),
@@ -355,6 +463,7 @@ class _Resultats extends StatelessWidget {
 class _BarreRecherche extends StatelessWidget {
   const _BarreRecherche({
     required this.controller,
+    required this.focusNode,
     required this.onChanged,
     required this.onSubmitted,
     required this.onEffacer,
@@ -363,6 +472,7 @@ class _BarreRecherche extends StatelessWidget {
   });
 
   final TextEditingController controller;
+  final FocusNode focusNode;
   final ValueChanged<String> onChanged;
   final ValueChanged<String> onSubmitted;
   final VoidCallback onEffacer;
@@ -376,6 +486,7 @@ class _BarreRecherche extends StatelessWidget {
       height: 45,
       child: TextField(
         controller: controller,
+        focusNode: focusNode,
         onChanged: onChanged,
         onSubmitted: onSubmitted,
         textInputAction: TextInputAction.search,

@@ -11,7 +11,9 @@ import '../../../core/validation/formats.dart';
 import '../../../core/widgets/toasts.dart';
 import '../../../data/repositories/auth_repository.dart';
 import '../../../data/repositories/sourceur_repository.dart';
+import '../../auth/mfa_dialog.dart';
 import '../../auth/mot_de_passe_oublie_dialog.dart';
+import '../../auth/verify_email_dialog.dart';
 import '../widgets/sourceur_header.dart';
 import '../widgets/sourceur_programme_visuel.dart';
 
@@ -61,9 +63,28 @@ class _IdentificationSourceurScreenState
 
     setState(() => _enCours = true);
     try {
-      await ref
-          .read(authRepositoryProvider)
-          .logIn(email: identifiant, password: motDePasse, l10n: l10n);
+      try {
+        await ref
+            .read(authRepositoryProvider)
+            .logIn(email: identifiant, password: motDePasse, l10n: l10n);
+      } on EmailAVerifier catch (defi) {
+        if (!mounted) return;
+        setState(() => _enCours = false);
+        final ok = await afficherDialogueVerificationEmail(
+          context,
+          email: defi.email,
+        );
+        if (ok != true || !mounted) return;
+        setState(() => _enCours = true);
+        await ref
+            .read(authRepositoryProvider)
+            .logIn(email: identifiant, password: motDePasse, l10n: l10n);
+      } on MfaRequise catch (defi) {
+        if (!mounted) return;
+        setState(() => _enCours = false);
+        final viaMfa = await afficherDialogueMfa(context, defi);
+        if (viaMfa == null || !mounted) return;
+      }
       if (!mounted) return;
       final user = ref.read(currentUserProvider);
       await ref

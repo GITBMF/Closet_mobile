@@ -176,7 +176,7 @@ class _Salutation extends StatelessWidget {
             fontSize: 14,
             fontWeight: FontWeight.w700,
             letterSpacing: 0.28,
-            color: ClosetColors.doreEncre,
+            color: context.closetDoreTexte,
           ),
         ),
       ],
@@ -227,7 +227,7 @@ class _ArticleCardState extends ConsumerState<ArticleCard> {
       isFavorite: isWishlisted,
       isSold: article.isSoldOut,
       onTap: widget.onTap,
-      onFavoriteTap: () => basculerFavori(ref, article),
+      onFavoriteTap: () => basculerFavori(context, ref, article),
     );
   }
 }

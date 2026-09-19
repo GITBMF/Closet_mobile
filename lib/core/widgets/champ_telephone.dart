@@ -6,6 +6,7 @@ import '../theme/app_spacing.dart';
 import '../theme/closet_colors.dart';
 import '../theme/closet_text_styles.dart';
 import '../validation/indicateurs_pays.dart';
+import 'drapeau_pays.dart';
 
 /// Habillage du champ téléphone selon l’écran hôte.
 enum StyleChampTelephone { auth, libelle, checkout, sourceur }
@@ -479,7 +480,7 @@ class _BoutonIndicateur extends StatelessWidget {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(pays.drapeau, style: const TextStyle(fontSize: 18)),
+              DrapeauPays(iso: pays.iso),
               const SizedBox(width: 4),
               Text(
                 pays.libelleCourt,
@@ -594,7 +595,7 @@ class _SelecteurPaysSheetState extends State<_SelecteurPaysSheet> {
                 final choisi = p.iso == widget.selection.iso &&
                     p.nom == widget.selection.nom;
                 return ListTile(
-                  leading: Text(p.drapeau, style: const TextStyle(fontSize: 22)),
+                  leading: DrapeauPays(iso: p.iso, largeur: 28, hauteur: 20),
                   title: Text(p.nomAffiche(l10n), style: ClosetTextStyles.corps),
                   trailing: Text(
                     p.libelleCourt,

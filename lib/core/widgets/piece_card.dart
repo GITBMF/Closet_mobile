@@ -73,11 +73,11 @@ class PieceCard extends StatelessWidget {
         decoration: BoxDecoration(
           color: context.closetSombre
               ? ClosetColors.emeraude400
-              : ClosetColors.carteFond,
+              : ClosetColors.creme,
           border: Border.all(
             color: context.closetSombre
                 ? ClosetColors.emeraude300
-                : ClosetColors.carteBordure,
+                : ClosetColors.fond200,
             width: AppStroke.fin,
           ),
           borderRadius: BorderRadius.circular(AppRadius.carte),
@@ -103,16 +103,29 @@ class PieceCard extends StatelessWidget {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: ClosetTextStyles.microLegende.copyWith(
-                    color: ClosetColors.fond400,
+                    color: context.closetDoreTexte,
                   ),
                 ),
                 const SizedBox(height: 3),
               ],
-              Text(
-                nom,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: ClosetTextStyles.nomProduit,
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (etoiles > 0) ...[
+                    EtoilesEtat(etoiles),
+                    const SizedBox(width: 4),
+                  ],
+                  Expanded(
+                    child: Text(
+                      nom,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: ClosetTextStyles.nomProduit.copyWith(
+                        color: context.closetEncre,
+                      ),
+                    ),
+                  ),
+                ],
               ),
               const SizedBox(height: 3),
               Row(
@@ -122,8 +135,8 @@ class PieceCard extends StatelessWidget {
                       isSold ? ClosetL10n.of(context).indisponibleLabel : prix,
                       style: ClosetTextStyles.prix.copyWith(
                         color: isSold
-                            ? ClosetColors.taupe
-                            : ClosetColors.emeraude400,
+                            ? context.closetSecondaire
+                            : context.closetPrix,
                       ),
                     ),
                   ),
@@ -147,7 +160,7 @@ class PieceCard extends StatelessWidget {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: ClosetTextStyles.micro.copyWith(
-                    color: ClosetColors.neutre600,
+                    color: context.closetSecondaire,
                   ),
                 ),
               ],

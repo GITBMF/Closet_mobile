@@ -13,22 +13,18 @@ import '../../../core/theme/closet_colors.dart';
 import '../../../core/theme/closet_text_styles.dart';
 import '../../../core/widgets/closet_chip.dart';
 import '../../../core/widgets/closet_feedback.dart';
+import '../../../core/widgets/closet_sections.dart';
 import '../../../core/widgets/toasts.dart';
 import '../../../data/models/article.dart';
 import '../../../data/repositories/catalog_repository.dart';
 import '../../../data/repositories/sourceur_repository.dart';
+import '../widgets/sourceur_header.dart';
 
 /// États alignés sur `PieceCondition` : `new` | `very_good` | `good`.
 List<(String api, String libelle)> etatsPiecePour(ClosetL10n l10n) => [
       ('new', l10n.etatNeuf),
       ('very_good', l10n.etatTresBonEtat),
       ('good', l10n.etatBonEtat),
-    ];
-
-/// Remise de la pièce — `collection_method` : `drop_off` | `pickup`.
-List<(String api, String libelle)> methodesCollectePour(ClosetL10n l10n) => [
-      ('drop_off', l10n.collecteDepot),
-      ('pickup', l10n.collecteDomicile),
     ];
 
 List<String> typesArticlePour(ClosetL10n l10n) => [
@@ -61,14 +57,11 @@ const taillesArticle = [
   '44',
 ];
 
-/// Confier une pièce — transcription de la maquette `33:1389` (étape 2/4).
+/// Confier une pièce — dépôt en 3 étapes : photos, type, marque + taille.
 ///
-/// Trois sections coiffées de sur-titres dorés : spécificité de la pièce,
-/// état, estimation, puis la zone de dépôt photo.
-///
-/// La pièce est réellement enregistrée via [SourceurRepository.deposerPiece],
-/// puis l'écran d'inspection prend le relais — c'est le parcours dessiné dans
-/// la section Figma `39:1262`.
+/// `condition_claimed` et `desired_price` restent exigés par
+/// `POST /sourcing/submissions` : ils tiennent sur la dernière étape, en
+/// bandeau compact. Récit, collecte et partage sont omis (défauts API).
 class SourceurNouvellePieceScreen extends ConsumerStatefulWidget {
   const SourceurNouvellePieceScreen({super.key});
 
@@ -82,14 +75,12 @@ class _SourceurNouvellePieceScreenState
   final _formKey = GlobalKey<FormState>();
   final _marque = TextEditingController();
   final _prix = TextEditingController();
-  final _recit = TextEditingController();
   final _picker = ImagePicker();
 
-  String _etat = 'new';
-  String _methodeCollecte = 'drop_off';
+  String _etat = 'very_good';
   String? _type;
   String? _taille;
-  bool _partageAutorise = false;
+  int _etape = 0;
   final List<XFile> _medias = [];
   bool _envoiEnCours = false;
 
@@ -97,7 +88,6 @@ class _SourceurNouvellePieceScreenState
   void dispose() {
     _marque.dispose();
     _prix.dispose();
-    _recit.dispose();
     super.dispose();
   }
 
@@ -147,9 +137,9 @@ class _SourceurNouvellePieceScreenState
       statut: StatutPiece.enRevue,
       taille: (_taille ?? '').trim().isEmpty ? null : _taille!.trim(),
       etat: _etat,
-      recit: _recit.text.trim().isEmpty ? null : _recit.text.trim(),
-      methodeCollecte: _methodeCollecte,
-      partageAutorise: _partageAutorise,
+      recit: null,
+      methodeCollecte: 'drop_off',
+      partageAutorise: false,
     );
     final medias = [
       for (final f in _medias) FichierMedia(chemin: f.path, nom: f.name),
@@ -195,6 +185,41 @@ class _SourceurNouvellePieceScreenState
     return double.tryParse(brut) ?? 0;
   }
 
+  List<String> get _titresEtape {
+    final l10n = ClosetL10n.of(context);
+    return [
+      l10n.depotEtapePhotos,
+      l10n.depotEtapeType,
+      l10n.depotEtapeDetails,
+    ];
+  }
+
+  void _revenir() {
+    if (_etape == 0) return;
+    setState(() => _etape -= 1);
+  }
+
+  Future<void> _avancer() async {
+    final l10n = ClosetL10n.of(context);
+    if (_etape == 0 && _medias.isEmpty) {
+      toastInfo(ref, l10n.depotEtapePhotos, l10n.depotPhotoRequise);
+      return;
+    }
+    if (_etape == 1 && (_type == null || _type!.trim().isEmpty)) {
+      toastInfo(ref, l10n.depotEtapeType, l10n.depotTypeRequis);
+      return;
+    }
+    if (_etape == 2) {
+      if (_taille == null || _taille!.trim().isEmpty) {
+        toastInfo(ref, l10n.depotEtapeDetails, 'Indiquez la taille.');
+        return;
+      }
+      await _poursuivre();
+      return;
+    }
+    setState(() => _etape += 1);
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = ClosetL10n.of(context);
@@ -214,174 +239,88 @@ class _SourceurNouvellePieceScreenState
       body: SafeArea(
         child: Column(
           children: [
+            SourceurHeader(
+              titre: _titresEtape[_etape],
+              surtitre: l10n.etapeDepot(_etape + 1),
+              afficherRetour: _etape > 0,
+              onRetour: _revenir,
+            ),
+            _BarreEtapes(etape: _etape),
             Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(
-                  AppSpacing.p20,
-                  AppSpacing.p20,
-                  AppSpacing.p20,
-                  AppSpacing.p24,
+              child: Form(
+                key: _formKey,
+                child: AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 220),
+                  child: SingleChildScrollView(
+                    key: ValueKey(_etape),
+                    padding: const EdgeInsets.fromLTRB(
+                      AppSpacing.p20,
+                      AppSpacing.p20,
+                      AppSpacing.p20,
+                      AppSpacing.p24,
+                    ),
+                    child: switch (_etape) {
+                      0 => _EtapePhotos(
+                          medias: _medias,
+                          aide: l10n.depotPhotosAide,
+                          onPrendre: () => _choisirPhoto(ImageSource.camera),
+                          onFilmer: _filmer,
+                          onImporter: _importerMedias,
+                          onRetirer: (i) => setState(() => _medias.removeAt(i)),
+                        ),
+                      1 => _EtapeType(
+                          types: types,
+                          choisi: _type,
+                          onChoix: (v) => setState(() => _type = v),
+                        ),
+                      _ => _EtapeDetails(
+                          marque: _marque,
+                          maisons: maisons,
+                          taille: _taille,
+                          etat: _etat,
+                          prix: _prix,
+                          onTaille: (v) => setState(() => _taille = v),
+                          onEtat: (v) => setState(() => _etat = v),
+                        ),
+                    },
+                  ),
                 ),
-                child: Form(
-                  key: _formKey,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      _ListeDeroulante(
-                        label: l10n.nouvellePieceTypeArticle,
-                        valeur: _type,
-                        options: types,
-                        hint: l10n.typeVeste,
-                        validator: (v) =>
-                            (v == null || v.trim().isEmpty)
-                                ? l10n.nouvellePiecePreciserType
-                                : null,
-                        onChanged: (v) => setState(() => _type = v),
-                      ),
-                      const SizedBox(height: AppSpacing.p24),
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Expanded(
-                            child: _ChampMarque(
-                              controller: _marque,
-                              suggestions: maisons,
-                            ),
-                          ),
-                          const SizedBox(width: AppSpacing.p20),
-                          Expanded(
-                            child: _ListeDeroulante(
-                              label: l10n.nouvellePieceTaille,
-                              valeur: _taille,
-                              options: taillesArticle,
-                              hint: 'M',
-                              validator: (v) =>
-                                  (v == null || v.trim().isEmpty)
-                                      ? l10n.nouvellePieceIndiquerTaille
-                                      : null,
-                              onChanged: (v) => setState(() => _taille = v),
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: AppSpacing.p24),
-                      Wrap(
-                        spacing: AppSpacing.p12,
-                        runSpacing: AppSpacing.p16,
-                        children: [
-                          for (final etat in etatsPiecePour(l10n))
-                            ClosetChip(
-                              label: etat.$2,
-                              isActive: etat.$1 == _etat,
-                              onTap: () => setState(() => _etat = etat.$1),
-                            ),
-                        ],
-                      ),
-                      const SizedBox(height: AppSpacing.p24),
-                      _Champ(
-                        label: l10n.nouvellePiecePrixSouhaite,
-                        hint: '30.000',
-                        controller: _prix,
-                        keyboardType: TextInputType.number,
-                        textInputAction: TextInputAction.next,
-                        validator: (v) => _validerPrix(v, l10n),
-                        inputFormatters: const [_SeparateurMilliers()],
-                      ),
-                      const SizedBox(height: AppSpacing.p16),
-                      Text(
-                        l10n.nouvellePieceValorisation,
-                        style: ClosetTextStyles.labelChamp.copyWith(
-                          fontWeight: FontWeight.w500,
-                          color: ClosetColors.neutre700,
-                        ),
-                      ),
-                      const SizedBox(height: AppSpacing.p24),
-                      _Champ(
-                        label: l10n.nouvellePieceRecit,
-                        hint: l10n.nouvellePieceRecitHint,
-                        controller: _recit,
-                        keyboardType: TextInputType.multiline,
-                        textInputAction: TextInputAction.newline,
-                        maxLines: 4,
-                        minLines: 3,
-                      ),
-                      const SizedBox(height: AppSpacing.p24),
-                      Wrap(
-                        spacing: AppSpacing.p12,
-                        runSpacing: AppSpacing.p16,
-                        children: [
-                          for (final methode in methodesCollectePour(l10n))
-                            ClosetChip(
-                              label: methode.$2,
-                              isActive: methode.$1 == _methodeCollecte,
-                              onTap: () =>
-                                  setState(() => _methodeCollecte = methode.$1),
-                            ),
-                        ],
-                      ),
-                      const SizedBox(height: AppSpacing.p24),
-                      SwitchListTile.adaptive(
-                        contentPadding: EdgeInsets.zero,
-                        value: _partageAutorise,
-                        onChanged: (v) => setState(() => _partageAutorise = v),
-                        title: Text(
-                          l10n.nouvellePieceAutoriserPartage,
-                          style: ClosetTextStyles.labelChamp.copyWith(
-                            fontWeight: FontWeight.w500,
-                            color: ClosetColors.vert,
-                          ),
-                        ),
-                        subtitle: Text(
-                          l10n.nouvellePiecePartageDetail,
-                          style: ClosetTextStyles.corps.copyWith(
-                            color: ClosetColors.neutre700,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: AppSpacing.p24),
-                      _ZoneDepotPhotos(
-                        medias: _medias,
-                        onPrendre: () => _choisirPhoto(ImageSource.camera),
-                        onFilmer: _filmer,
-                        onImporter: _importerMedias,
-                        onRetirer: (i) => setState(() => _medias.removeAt(i)),
-                      ),
-                      const SizedBox(height: AppSpacing.p24),
-                      Center(
-                        child: SizedBox(
-                          width: 312,
-                          height: 44,
-                          child: Material(
-                            color: _envoiEnCours
-                                ? ClosetColors.sauge
-                                : ClosetColors.vert,
-                            borderRadius:
-                                BorderRadius.circular(AppRadius.cercle),
-                            child: InkWell(
-                              borderRadius:
-                                  BorderRadius.circular(AppRadius.cercle),
-                              onTap: _envoiEnCours ? null : _poursuivre,
-                              child: Center(
-                                child: _envoiEnCours
-                                    ? const SizedBox(
-                                        width: 18,
-                                        height: 18,
-                                        child: CircularProgressIndicator(
-                                          strokeWidth: 2,
-                                          color: ClosetColors.blanc,
-                                        ),
-                                      )
-                                    : Text(
-                                        l10n.nouvellePiecePoursuivre,
-                                        style: ClosetTextStyles.libelleFort
-                                            .copyWith(color: ClosetColors.blanc),
-                                      ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(
+                AppSpacing.p20,
+                0,
+                AppSpacing.p20,
+                AppSpacing.p16,
+              ),
+              child: SizedBox(
+                height: 44,
+                width: double.infinity,
+                child: Material(
+                  color: _envoiEnCours ? ClosetColors.sauge : ClosetColors.vert,
+                  borderRadius: BorderRadius.circular(AppRadius.cercle),
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(AppRadius.cercle),
+                    onTap: _envoiEnCours ? null : _avancer,
+                    child: Center(
+                      child: _envoiEnCours
+                          ? const SizedBox(
+                              width: 18,
+                              height: 18,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: ClosetColors.blanc,
                               ),
+                            )
+                          : Text(
+                              _etape == 2
+                                  ? l10n.depotConfierCta
+                                  : l10n.depotContinuer,
+                              style: ClosetTextStyles.libelleFort
+                                  .copyWith(color: ClosetColors.blanc),
                             ),
-                          ),
-                        ),
-                      ),
-                    ],
+                    ),
                   ),
                 ),
               ),
@@ -426,74 +365,181 @@ class _SeparateurMilliers extends TextInputFormatter {
   }
 }
 
-class _ListeDeroulante extends StatelessWidget {
-  const _ListeDeroulante({
-    required this.label,
-    required this.valeur,
-    required this.options,
-    required this.hint,
-    required this.onChanged,
-    this.validator,
-  });
+class _BarreEtapes extends StatelessWidget {
+  const _BarreEtapes({required this.etape});
 
-  final String label;
-  final String? valeur;
-  final List<String> options;
-  final String hint;
-  final ValueChanged<String?> onChanged;
-  final FormFieldValidator<String>? validator;
+  final int etape;
 
   @override
   Widget build(BuildContext context) {
-    final choix = {
-      if (valeur != null && valeur!.isNotEmpty) valeur!,
-      ...options,
-    }.toList();
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.p20,
+        AppSpacing.p12,
+        AppSpacing.p20,
+        0,
+      ),
+      child: Row(
+        children: [
+          for (var i = 0; i < 3; i++) ...[
+            if (i > 0) const SizedBox(width: AppSpacing.p8),
+            Expanded(
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                height: 3,
+                decoration: BoxDecoration(
+                  color: i <= etape
+                      ? ClosetColors.vert
+                      : ClosetColors.fond300.withValues(alpha: 0.45),
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
 
+class _EtapePhotos extends StatelessWidget {
+  const _EtapePhotos({
+    required this.medias,
+    required this.aide,
+    required this.onPrendre,
+    required this.onFilmer,
+    required this.onImporter,
+    required this.onRetirer,
+  });
+
+  final List<XFile> medias;
+  final String aide;
+  final VoidCallback onPrendre;
+  final VoidCallback onFilmer;
+  final VoidCallback onImporter;
+  final ValueChanged<int> onRetirer;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Text(aide, style: ClosetTextStyles.corps.copyWith(
+          color: ClosetColors.neutre700,
+        )),
+        const SizedBox(height: AppSpacing.p16),
+        _ZoneDepotPhotos(
+          medias: medias,
+          onPrendre: onPrendre,
+          onFilmer: onFilmer,
+          onImporter: onImporter,
+          onRetirer: onRetirer,
+        ),
+      ],
+    );
+  }
+}
+
+class _EtapeType extends StatelessWidget {
+  const _EtapeType({
+    required this.types,
+    required this.choisi,
+    required this.onChoix,
+  });
+
+  final List<String> types;
+  final String? choisi;
+  final ValueChanged<String> onChoix;
+
+  @override
+  Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          label,
-          style: ClosetTextStyles.labelChamp.copyWith(
-            fontWeight: FontWeight.w500,
-            color: ClosetColors.vert,
-          ),
-        ),
-        const SizedBox(height: AppSpacing.p8),
-        DropdownButtonFormField<String>(
-          initialValue: choix.contains(valeur) ? valeur : null,
-          hint: Text(
-            hint,
-            style: ClosetTextStyles.saisie.copyWith(
-              color: ClosetColors.placeholderGris,
-            ),
-          ),
-          items: [
-            for (final o in choix)
-              DropdownMenuItem(
-                value: o,
-                child: Text(o, overflow: TextOverflow.ellipsis),
+        ClosetSurtitre(ClosetL10n.of(context).depotEtapeType),
+        const SizedBox(height: AppSpacing.p12),
+        Wrap(
+          spacing: AppSpacing.p8,
+          runSpacing: AppSpacing.p8,
+          children: [
+            for (final type in types)
+              ClosetChip(
+                label: type,
+                isActive: type == choisi,
+                onTap: () => onChoix(type),
               ),
           ],
-          onChanged: onChanged,
-          validator: validator,
-          style: ClosetTextStyles.saisie.copyWith(color: ClosetColors.noir),
-          icon: const Icon(Icons.expand_more, color: ClosetColors.vert),
-          decoration: InputDecoration(
-            filled: true,
-            fillColor: ClosetColors.blanc,
-            isDense: true,
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: AppSpacing.p16,
-              vertical: AppSpacing.p12,
-            ),
-            border: _Champ._bordure(ClosetColors.fond300),
-            enabledBorder: _Champ._bordure(ClosetColors.fond300),
-            focusedBorder: _Champ._bordure(ClosetColors.vert),
-            errorBorder: _Champ._bordure(ClosetColors.erreurCouture),
-            focusedErrorBorder: _Champ._bordure(ClosetColors.erreurCouture),
-          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _EtapeDetails extends StatelessWidget {
+  const _EtapeDetails({
+    required this.marque,
+    required this.maisons,
+    required this.taille,
+    required this.etat,
+    required this.prix,
+    required this.onTaille,
+    required this.onEtat,
+  });
+
+  final TextEditingController marque;
+  final List<String> maisons;
+  final String? taille;
+  final String etat;
+  final TextEditingController prix;
+  final ValueChanged<String> onTaille;
+  final ValueChanged<String> onEtat;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = ClosetL10n.of(context);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _ChampMarque(controller: marque, suggestions: maisons),
+        const SizedBox(height: AppSpacing.p24),
+        ClosetSurtitre(l10n.tailleLabel),
+        const SizedBox(height: AppSpacing.p12),
+        Wrap(
+          spacing: AppSpacing.p8,
+          runSpacing: AppSpacing.p8,
+          children: [
+            for (final t in taillesArticle)
+              ClosetChip(
+                label: t,
+                isActive: t == taille,
+                onTap: () => onTaille(t),
+              ),
+          ],
+        ),
+        const SizedBox(height: AppSpacing.p24),
+        ClosetSurtitre(l10n.etatPiece),
+        const SizedBox(height: AppSpacing.p12),
+        Wrap(
+          spacing: AppSpacing.p8,
+          runSpacing: AppSpacing.p8,
+          children: [
+            for (final e in etatsPiecePour(l10n))
+              ClosetChip(
+                label: e.$2,
+                isActive: e.$1 == etat,
+                onTap: () => onEtat(e.$1),
+              ),
+          ],
+        ),
+        const SizedBox(height: AppSpacing.p24),
+        _Champ(
+          label: l10n.nouvellePiecePrixSouhaite,
+          hint: '30.000',
+          controller: prix,
+          keyboardType: TextInputType.number,
+          textInputAction: TextInputAction.done,
+          validator: (v) => _SourceurNouvellePieceScreenState._validerPrix(v, l10n),
+          inputFormatters: const [_SeparateurMilliers()],
         ),
       ],
     );
@@ -580,8 +626,6 @@ class _Champ extends StatelessWidget {
     this.keyboardType,
     this.textInputAction,
     this.validator,
-    this.maxLines = 1,
-    this.minLines,
     this.inputFormatters,
   });
 
@@ -591,8 +635,6 @@ class _Champ extends StatelessWidget {
   final TextInputType? keyboardType;
   final TextInputAction? textInputAction;
   final FormFieldValidator<String>? validator;
-  final int maxLines;
-  final int? minLines;
   final List<TextInputFormatter>? inputFormatters;
 
   @override
@@ -613,8 +655,6 @@ class _Champ extends StatelessWidget {
           keyboardType: keyboardType,
           textInputAction: textInputAction,
           validator: validator,
-          maxLines: maxLines,
-          minLines: minLines,
           inputFormatters: inputFormatters,
           textCapitalization: TextCapitalization.sentences,
           style: ClosetTextStyles.saisie.copyWith(color: ClosetColors.noir),

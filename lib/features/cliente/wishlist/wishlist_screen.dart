@@ -1,4 +1,4 @@
-﻿import 'package:cached_network_image/cached_network_image.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -28,7 +28,8 @@ class WishlistScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = ClosetL10n.of(context);
-    final connectee = ref.watch(currentUserProvider) != null;
+    final user = ref.watch(currentUserProvider);
+    final connectee = user != null;
     final favoris = ref.watch(wishlistProvider);
 
     return Scaffold(
@@ -49,7 +50,12 @@ class WishlistScreen extends ConsumerWidget {
                     action: () => context.push('/auth'),
                     libelleAction: l10n.seConnecter,
                   )
-                : corpsAsync<List<Article>>(
+                : user.nePeutPasAcheter
+                    ? ClosetListeVide(
+                        titre: l10n.achatsIndisponiblesTitre,
+                        message: l10n.achatsIndisponiblesMessage,
+                      )
+                    : corpsAsync<List<Article>>(
                     favoris,
                     onRetry: () => ref.invalidate(wishlistProvider),
                     data: (liste) => liste.isEmpty
@@ -78,9 +84,9 @@ class WishlistScreen extends ConsumerWidget {
                                 onTap: () =>
                                     context.push('/product/${article.id}'),
                                 onRetirer: () =>
-                                    basculerFavori(ref, article),
+                                    basculerFavori(context, ref, article),
                                 onAjouter: () =>
-                                    basculerSelection(ref, article),
+                                    basculerSelection(context, ref, article),
                               );
                             },
                           ),

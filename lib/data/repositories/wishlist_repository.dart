@@ -1,7 +1,9 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/l10n/closet_l10n.dart';
 import '../../core/widgets/toasts.dart';
+import '../../features/auth/auth_screen.dart';
 import '../api/api_exception.dart';
 import '../api/api_json.dart';
 import '../bff_client/api_client.dart';
@@ -16,6 +18,8 @@ class WishlistNotifier extends AsyncNotifier<List<Article>> {
   Future<List<Article>> build() async {
     ref.watch(currentUserProvider);
     if (!_connectee) return const [];
+    final user = ref.read(currentUserProvider);
+    if (user != null && user.nePeutPasAcheter) return const [];
     await ref.read(bffClientProvider).restaurerJeton();
     return chargerDepuisServeur();
   }
@@ -23,7 +27,13 @@ class WishlistNotifier extends AsyncNotifier<List<Article>> {
   /// `GET /wishlist` → liste de `PieceSummary`.
   Future<List<Article>> chargerDepuisServeur() async {
     final client = ref.read(bffClientProvider);
-    final brut = await client.getList('/wishlist');
+    final List<dynamic> brut;
+    try {
+      brut = await client.getList('/wishlist');
+    } on ApiException catch (e) {
+      if (e.status == 403) return const [];
+      rethrow;
+    }
 
     var maisons = const <String, String>{};
     var univers = const <String, String>{};
@@ -113,9 +123,18 @@ final wishlistListProvider = Provider<List<Article>>((ref) {
 });
 
 /// Cœur : `POST` / `DELETE /wishlist/{id}`, puis resynchronise via `GET`.
-Future<void> basculerFavori(WidgetRef ref, Article article) async {
+Future<void> basculerFavori(
+  BuildContext context,
+  WidgetRef ref,
+  Article article,
+) async {
   final l10n = ref.read(l10nProvider);
   if (ref.read(currentUserProvider) == null) {
+    allerCreerCompte(context, ref);
+    return;
+  }
+  final user = ref.read(currentUserProvider);
+  if (user != null && user.nePeutPasAcheter) {
     toastInfo(
       ref,
       l10n.connexionRequiseTitre,

@@ -6,6 +6,7 @@ import '../../core/theme/app_spacing.dart';
 import '../../core/theme/closet_colors.dart';
 import '../../core/theme/closet_text_styles.dart';
 import '../../core/widgets/closet_app_bar.dart';
+import '../../core/widgets/closet_filet.dart';
 import '../../data/repositories/cart_repository.dart';
 import '../../data/repositories/livraison_repository.dart';
 import 'brouillon_commande.dart';
@@ -31,7 +32,11 @@ final totalAReglerProvider = Provider<double?>((ref) {
   return sousTotal - remise + devis.montant;
 });
 
-/// Récapitulatif des montants — maquette `16:3448`.
+/// Mention Figma `162:5119` sous le total.
+const mentionReservationPiece =
+    'Paiement chiffré. Votre pièce est réservée pendant 15 minutes.';
+
+/// Récapitulatif des montants — maquette `16:3448` / `162:5119`.
 ///
 /// Sous-total, remise éventuelle, livraison, puis total séparé par un filet
 /// doré. Partagé entre la sélection et le checkout : les deux écrans doivent
@@ -68,17 +73,20 @@ class RecapMontants extends ConsumerWidget {
           },
         ),
         const SizedBox(height: AppSpacing.p16),
-        const Divider(
-          color: ClosetColors.fond400,
-          thickness: AppStroke.fin,
-          height: AppStroke.fin,
-        ),
+        const ClosetFilet(couleur: ClosetColors.fond400),
         const SizedBox(height: AppSpacing.p16),
         LigneMontant(
           label: l10n.totalARegler,
           valeur: total == null ? l10n.aDeterminer : formatPrixFcfa(total),
           couleurLabel: context.closetEncre,
           grand: true,
+        ),
+        const SizedBox(height: AppSpacing.p12),
+        Text(
+          mentionReservationPiece,
+          style: ClosetTextStyles.mention.copyWith(
+            color: ClosetColors.taupe,
+          ),
         ),
       ],
     );

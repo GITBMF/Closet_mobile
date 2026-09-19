@@ -49,6 +49,15 @@ class ClosetUser {
     return r == 'sourcer' || r == 'sourceur' || r == 'admin';
   }
 
+  /// Admin / livreur : le backend refuse wishlist et commande (`staff_cannot_shop`).
+  bool get nePeutPasAcheter {
+    final r = role.trim().toLowerCase();
+    return r == 'admin' ||
+        r == 'courier' ||
+        r == 'livreur' ||
+        r == 'delivery';
+  }
+
   factory ClosetUser.fromJson(Map<String, dynamic> json) {
     final fullName = _texte(json['full_name'] ?? json['fullName']);
     final firstName = _texte(json['first_name'] ?? json['firstName']);

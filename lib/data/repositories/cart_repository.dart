@@ -1,7 +1,9 @@
+import 'package:flutter/widgets.dart' show BuildContext;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/l10n/closet_l10n.dart';
 import '../../core/widgets/toasts.dart';
+import '../../features/auth/auth_screen.dart';
 import '../api/api_exception.dart';
 import '../models/article.dart';
 import '../services/local_storage_service.dart';
@@ -107,8 +109,16 @@ final cartCountProvider = Provider<int>((ref) {
 });
 
 /// Ajoute ou retire une pièce de la sélection, puis annonce le résultat.
-Future<void> basculerSelection(WidgetRef ref, Article article) async {
+Future<void> basculerSelection(
+  BuildContext context,
+  WidgetRef ref,
+  Article article,
+) async {
   final l10n = ref.read(l10nProvider);
+  if (!ref.read(isAuthenticatedProvider)) {
+    allerCreerCompte(context, ref);
+    return;
+  }
   final panier = ref.read(cartProvider.notifier);
   if (panier.isInCart(article.id)) {
     panier.removeArticle(article.id);

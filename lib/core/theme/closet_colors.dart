@@ -275,4 +275,15 @@ extension ClosetThemeX on BuildContext {
 
   Color get closetChamp =>
       closetSombre ? ClosetColors.emeraude400 : ClosetColors.blanc;
+
+  /// Prix et accents verts : émeraude foncé sur fond clair, doré sur fond
+  /// nuit — sinon le montant disparaît sur la carte sombre.
+  Color get closetPrix =>
+      closetSombre ? ClosetColors.doreClair : ClosetColors.vert;
+
+  Color get closetSecondaire =>
+      closetSombre ? ClosetColors.neutre300 : ClosetColors.taupe;
+
+  Color get closetDoreTexte =>
+      closetSombre ? ClosetColors.doreClair : ClosetColors.doreEncre;
 }

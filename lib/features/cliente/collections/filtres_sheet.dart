@@ -1,33 +1,35 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/l10n/closet_l10n.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/closet_colors.dart';
 import '../../../core/theme/closet_text_styles.dart';
+import '../../../core/widgets/bandeau_defilable.dart';
 import '../../../core/widgets/closet_app_bar.dart';
 import '../../../core/widgets/closet_chip.dart';
+import '../../../core/widgets/closet_filet.dart';
 import '../../../core/widgets/closet_sections.dart';
 import '../../../data/models/article.dart';
 import '../../../data/repositories/catalog_repository.dart';
 import 'collections_screen.dart';
 
-/// Repère affiché en placeholder — alignée sur les prix réels du catalogue
-/// (`GET /pieces` → jusqu'à ~44.000 FCFA).
+/// Bornes Figma `14:1514` (10.000 – 45.000 FCFA), alignées sur les prix
+/// réels du catalogue (`GET /pieces` → ~7.000 à 44.000).
+const double prixMinimum = 5000;
 const double prixMaximum = 50000;
 
 /// Puces taille de la maquette. Filtre `size_label` (pas de query API).
 const taillesCatalogue = ['XS', 'S', 'M', 'L', 'XL'];
 
-/// `PieceCondition` du backend : `new` / `very_good` / `good`.
-const etatsCatalogue = ['new', 'very_good', 'good'];
-
-String libelleEtatCatalogue(String code, ClosetL10n l10n) => switch (code) {
-      'new' => l10n.etatNeuf,
-      'very_good' => l10n.etatTresBonEtat,
-      _ => l10n.etatBonEtat,
-    };
+/// Échelle à 5 crans (API : `new` / `very_good` / `good` + excellent / fair).
+const etatsCatalogue = [
+  'Neuf avec étiquettes',
+  'Excellent',
+  'Très bon état',
+  'Bon état',
+  'État correct',
+];
 
 /// Ouvre le panneau de filtres — options en bandes horizontales.
 Future<void> afficherFiltres(BuildContext context) {
@@ -51,7 +53,7 @@ class _FiltresSheetState extends ConsumerState<_FiltresSheet> {
   late Maison? _maison;
   late String? _taille;
   late String? _etat;
-  final _prixMaxController = TextEditingController();
+  late RangeValues _fourchette;
 
   @override
   void initState() {
@@ -60,16 +62,21 @@ class _FiltresSheetState extends ConsumerState<_FiltresSheet> {
     _maison = ref.read(filterBrandProvider);
     _taille = ref.read(filterTailleProvider);
     _etat = ref.read(filterEtatProvider);
-    final prixMax = ref.read(filterPriceProvider);
-    if (prixMax != null) {
-      _prixMaxController.text = _formaterMilliers(prixMax.round());
-    }
+    _fourchette = _fourchetteDepuis(
+      ref.read(filterPrixMinProvider),
+      ref.read(filterPriceProvider),
+    );
   }
 
-  @override
-  void dispose() {
-    _prixMaxController.dispose();
-    super.dispose();
+  RangeValues _fourchetteDepuis(double? minBrut, double? maxBrut) {
+    final min = (minBrut ?? prixMinimum)
+        .clamp(prixMinimum, prixMaximum)
+        .toDouble();
+    final max = (maxBrut ?? prixMaximum)
+        .clamp(prixMinimum, prixMaximum)
+        .toDouble();
+    if (min > max) return RangeValues(max, min);
+    return RangeValues(min, max);
   }
 
   void _toutReinitialiser() {
@@ -78,7 +85,7 @@ class _FiltresSheetState extends ConsumerState<_FiltresSheet> {
       _maison = null;
       _taille = null;
       _etat = null;
-      _prixMaxController.clear();
+      _fourchette = const RangeValues(prixMinimum, prixMaximum);
     });
   }
 
@@ -87,11 +94,12 @@ class _FiltresSheetState extends ConsumerState<_FiltresSheet> {
     ref.read(filterBrandProvider.notifier).setMaison(_maison);
     ref.read(filterTailleProvider.notifier).setTaille(_taille);
     ref.read(filterEtatProvider.notifier).setEtat(_etat);
-    // Le prix minimum n'est plus réglable ici (saisie manuelle du maximum
-    // seulement) — on ne touche donc jamais `filterPrixMinProvider`.
-    final chiffres = _prixMaxController.text.replaceAll(RegExp(r'[^\d]'), '');
-    final prixMax = chiffres.isEmpty ? null : double.tryParse(chiffres);
-    ref.read(filterPriceProvider.notifier).setPrice(prixMax);
+    ref.read(filterPrixMinProvider.notifier).setPrice(
+          _fourchette.start <= prixMinimum ? null : _fourchette.start,
+        );
+    ref.read(filterPriceProvider.notifier).setPrice(
+          _fourchette.end >= prixMaximum ? null : _fourchette.end,
+        );
     Navigator.of(context).pop();
   }
 
@@ -139,7 +147,7 @@ class _FiltresSheetState extends ConsumerState<_FiltresSheet> {
           items: [
             for (final e in etatsCatalogue)
               ClosetChip(
-                label: libelleEtatCatalogue(e, l10n),
+                label: e,
                 isActive: e == _etat,
                 onTap: () => setState(
                   () => _etat = e == _etat ? null : e,
@@ -166,7 +174,10 @@ class _FiltresSheetState extends ConsumerState<_FiltresSheet> {
         ),
       (
         titre: l10n.filtreBudget,
-        corps: _ChampBudget(controller: _prixMaxController),
+        corps: _CurseurBudget(
+          fourchette: _fourchette,
+          onChanged: (v) => setState(() => _fourchette = v),
+        ),
       ),
     ];
 
@@ -186,18 +197,9 @@ class _FiltresSheetState extends ConsumerState<_FiltresSheet> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const SizedBox(height: AppSpacing.p20),
-                Center(
-                  child: Container(
-                    width: 48,
-                    height: 4,
-                    decoration: BoxDecoration(
-                      color: ClosetColors.fond300,
-                      borderRadius: BorderRadius.circular(2),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: AppSpacing.p20),
+                const SizedBox(height: AppSpacing.p12),
+                const ClosetPoignee(),
+                const SizedBox(height: AppSpacing.p16),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 23),
                   child: ClosetEnTeteSection(
@@ -207,19 +209,11 @@ class _FiltresSheetState extends ConsumerState<_FiltresSheet> {
                   ),
                 ),
                 const SizedBox(height: AppSpacing.p8),
-                TabBar(
-                  isScrollable: true,
-                  tabAlignment: TabAlignment.start,
-                  dividerColor: Colors.transparent,
-                  labelColor: ClosetColors.vert,
-                  unselectedLabelColor: ClosetColors.chipTexteInactif,
-                  indicatorColor: ClosetColors.vert,
-                  labelStyle: ClosetTextStyles.libelle,
-                  unselectedLabelStyle: ClosetTextStyles.libelle,
-                  tabs: [for (final p in pages) Tab(text: p.titre)],
+                _OngletsFiltres(
+                  titres: [for (final p in pages) p.titre],
                 ),
                 SizedBox(
-                  height: 108,
+                  height: 88,
                   child: TabBarView(
                     children: [for (final p in pages) p.corps],
                   ),
@@ -257,7 +251,52 @@ class _FiltresSheetState extends ConsumerState<_FiltresSheet> {
   }
 }
 
-/// Une rangée de puces que l’on fait glisser de droite à gauche.
+/// Onglets Univers / Taille / État / Maison / Budget + flèches.
+class _OngletsFiltres extends StatelessWidget {
+  const _OngletsFiltres({required this.titres});
+
+  final List<String> titres;
+
+  @override
+  Widget build(BuildContext context) {
+    final controller = DefaultTabController.of(context);
+    return AnimatedBuilder(
+      animation: controller,
+      builder: (context, _) {
+        return Row(
+          children: [
+            FlecheBandeau(
+              versLaDroite: false,
+              visible: controller.index > 0,
+              onTap: () => controller.animateTo(controller.index - 1),
+            ),
+            Expanded(
+              child: TabBar(
+                isScrollable: true,
+                tabAlignment: TabAlignment.start,
+                dividerColor: Colors.transparent,
+                indicatorWeight: AppStroke.fin,
+                labelColor: ClosetColors.vert,
+                unselectedLabelColor: ClosetColors.chipTexteInactif,
+                indicatorColor: ClosetColors.vert,
+                labelStyle: ClosetTextStyles.libelle,
+                unselectedLabelStyle: ClosetTextStyles.libelle,
+                tabs: [for (final t in titres) Tab(text: t)],
+              ),
+            ),
+            FlecheBandeau(
+              versLaDroite: true,
+              visible: controller.index < controller.length - 1,
+              onTap: () => controller.animateTo(controller.index + 1),
+            ),
+          ],
+        );
+      },
+    );
+  }
+}
+
+/// Une rangée de puces : glissement + flèches si le contenu déborde.
 class _RangeeCoulissante extends StatelessWidget {
   const _RangeeCoulissante({required this.items});
 
@@ -267,96 +306,75 @@ class _RangeeCoulissante extends StatelessWidget {
   Widget build(BuildContext context) {
     return Align(
       alignment: Alignment.centerLeft,
-      child: SizedBox(
-        height: 42,
-        child: ListView.separated(
-          scrollDirection: Axis.horizontal,
-          padding: const EdgeInsets.symmetric(horizontal: 23, vertical: 2),
-          itemCount: items.length,
-          separatorBuilder: (_, _) => const SizedBox(width: AppSpacing.p12),
-          itemBuilder: (_, i) => items[i],
-        ),
+      child: BandeauDefilable(
+        enfants: items,
+        padding: const EdgeInsets.symmetric(horizontal: 23, vertical: 2),
+        ecart: AppSpacing.p12,
       ),
     );
   }
 }
 
-/// Saisie manuelle du prix maximum — remplace la réglette à deux curseurs :
-/// la personne tape directement le montant qu'elle ne veut pas dépasser,
-/// plutôt que de manipuler une plage.
-class _ChampBudget extends StatelessWidget {
-  const _ChampBudget({required this.controller});
+class _CurseurBudget extends StatelessWidget {
+  const _CurseurBudget({
+    required this.fourchette,
+    required this.onChanged,
+  });
 
-  final TextEditingController controller;
+  final RangeValues fourchette;
+  final ValueChanged<RangeValues> onChanged;
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 23),
+      padding: const EdgeInsets.symmetric(horizontal: 11),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Text(
-            ClosetL10n.of(context).filtreBudget,
-            style: ClosetTextStyles.labelChamp,
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  formatPrixFcfa(fourchette.start),
+                  style: ClosetTextStyles.prix.copyWith(
+                    color: ClosetColors.vert,
+                  ),
+                ),
+                Text(
+                  formatPrixFcfa(fourchette.end),
+                  style: ClosetTextStyles.prix.copyWith(
+                    color: ClosetColors.vert,
+                  ),
+                ),
+              ],
+            ),
           ),
-          const SizedBox(height: AppSpacing.p8),
-          TextField(
-            controller: controller,
-            keyboardType: TextInputType.number,
-            inputFormatters: [_SeparateurMilliersBudget()],
-            style: ClosetTextStyles.prix.copyWith(color: ClosetColors.vert),
-            decoration: InputDecoration(
-              hintText: formatPrixFcfa(prixMaximum),
-              suffixText: 'FCFA',
-              isDense: true,
-              contentPadding: const EdgeInsets.symmetric(
-                horizontal: AppSpacing.p16,
-                vertical: AppSpacing.p12,
+          SliderTheme(
+            data: SliderTheme.of(context).copyWith(
+              trackHeight: AppStroke.epais,
+              overlayShape: const RoundSliderOverlayShape(overlayRadius: 14),
+              rangeThumbShape: const RoundRangeSliderThumbShape(
+                enabledThumbRadius: 7,
               ),
-              filled: true,
-              fillColor: ClosetColors.champFond,
-              border: _bordureBudget(ClosetColors.champBordure),
-              enabledBorder: _bordureBudget(ClosetColors.champBordure),
-              focusedBorder: _bordureBudget(ClosetColors.vert),
+            ),
+            child: RangeSlider(
+              values: fourchette,
+              min: prixMinimum,
+              max: prixMaximum,
+              divisions: 45,
+              activeColor: ClosetColors.vert,
+              inactiveColor: ClosetColors.ligne,
+              labels: RangeLabels(
+                formatPrixFcfa(fourchette.start),
+                formatPrixFcfa(fourchette.end),
+              ),
+              onChanged: onChanged,
             ),
           ),
         ],
       ),
     );
   }
-
-  static OutlineInputBorder _bordureBudget(Color couleur) =>
-      OutlineInputBorder(
-        borderRadius: BorderRadius.circular(AppRadius.carte),
-        borderSide: BorderSide(color: couleur, width: AppStroke.fin),
-      );
-}
-
-/// Sépare les milliers par un point pendant la saisie (`45000` → `45.000`).
-class _SeparateurMilliersBudget extends TextInputFormatter {
-  @override
-  TextEditingValue formatEditUpdate(
-    TextEditingValue ancien,
-    TextEditingValue suivant,
-  ) {
-    final chiffres = suivant.text.replaceAll(RegExp(r'[^\d]'), '');
-    if (chiffres.isEmpty) return suivant.copyWith(text: '');
-    final texte = _formaterMilliers(int.parse(chiffres));
-    return TextEditingValue(
-      text: texte,
-      selection: TextSelection.collapsed(offset: texte.length),
-    );
-  }
-}
-
-String _formaterMilliers(int valeur) {
-  final chiffres = valeur.toString();
-  final buffer = StringBuffer();
-  for (var i = 0; i < chiffres.length; i++) {
-    if (i > 0 && (chiffres.length - i) % 3 == 0) buffer.write('.');
-    buffer.write(chiffres[i]);
-  }
-  return buffer.toString();
 }

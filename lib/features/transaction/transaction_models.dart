@@ -97,7 +97,7 @@ extension ComportementOperation on TypeOperation {
   /// Destination du bouton de sortie.
   String get routeRetour => switch (this) {
         TypeOperation.retrait => '/sourceur/espace',
-        TypeOperation.paiement => '/dressing',
+        TypeOperation.paiement => '/home',
       };
 }
 

@@ -1,4 +1,4 @@
-﻿import 'package:cached_network_image/cached_network_image.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -9,8 +9,10 @@ import '../../../core/theme/closet_colors.dart';
 import '../../../core/theme/closet_layout.dart';
 import '../../../core/theme/closet_text_styles.dart';
 import '../../../core/widgets/closet_app_bar.dart';
+import '../../../core/widgets/closet_filet.dart';
 import '../../../core/widgets/closet_header_button.dart';
 import '../../../core/widgets/etat_ecran.dart';
+import '../../../core/widgets/jauge_etat.dart';
 import '../../../core/widgets/piece_card.dart';
 import '../../../core/widgets/spotlight_showcase.dart';
 import '../../../core/widgets/status_badge.dart';
@@ -126,8 +128,6 @@ class _Corps extends ConsumerWidget {
     return [
       if (article.color.trim().isNotEmpty)
         (label: l10n.couleurVetement, valeur: article.color),
-      if (article.condition.trim().isNotEmpty)
-        (label: l10n.etatPiece, valeur: article.libelleCondition(l10n)),
       if (article.size.trim().isNotEmpty)
         (label: l10n.tailleEtCoupe, valeur: article.size),
       if (article.material.trim().isNotEmpty)
@@ -198,15 +198,24 @@ class _Corps extends ConsumerWidget {
                   const SizedBox(height: AppSpacing.p8),
                   _LienSourceur(article: article),
                 ],
-                if (lignes.isNotEmpty) ...[
+                if (article.condition.trim().isNotEmpty) ...[
                   const SizedBox(height: AppSpacing.p24),
-                  const _Filet(),
+                  const ClosetFilet(couleur: ClosetColors.fond400),
+                  const SizedBox(height: AppSpacing.p20),
+                  JaugeEtatPiece(
+                    niveau: article.niveauEtat,
+                    imperfections: article.imperfections,
+                  ),
+                  const SizedBox(height: AppSpacing.p20),
+                ],
+                if (lignes.isNotEmpty) ...[
+                  const ClosetFilet(couleur: ClosetColors.fond400),
                   for (final ligne in lignes) ...[
                     _LigneCaracteristique(
                       label: ligne.label,
                       valeur: ligne.valeur,
                     ),
-                    const _Filet(),
+                    const ClosetFilet(couleur: ClosetColors.fond400),
                   ],
                 ],
                 if (recit != null) ...[
@@ -292,19 +301,6 @@ class _Carrousel extends StatelessWidget {
   }
 }
 
-class _Filet extends StatelessWidget {
-  const _Filet();
-
-  @override
-  Widget build(BuildContext context) {
-    return const Divider(
-      color: ClosetColors.fond400,
-      thickness: AppStroke.fin,
-      height: AppStroke.fin,
-    );
-  }
-}
-
 class _LigneCaracteristique extends StatelessWidget {
   const _LigneCaracteristique({required this.label, required this.valeur});
 
@@ -379,7 +375,7 @@ class _BarreAjout extends ConsumerWidget {
                 borderRadius: BorderRadius.circular(AppRadius.cercle),
                 onTap: indisponible
                     ? null
-                    : () => basculerSelection(ref, article),
+                    : () => basculerSelection(context, ref, article),
                 child: Center(
                   child: Text(
                     indisponible
@@ -441,6 +437,9 @@ class _BoutonsFiche extends ConsumerWidget {
     final l10n = ClosetL10n.of(context);
     final enWishlist =
         ref.watch(wishlistListProvider).any((a) => a.id == article.id);
+    final dansSelection =
+        ref.watch(cartListProvider).any((a) => a.id == article.id);
+    final nbSelection = ref.watch(cartCountProvider);
 
     return Row(
       children: [
@@ -452,11 +451,22 @@ class _BoutonsFiche extends ConsumerWidget {
         ),
         const Spacer(),
         ClosetBoutonHeader(
+          icone: dansSelection
+              ? Icons.shopping_basket
+              : Icons.shopping_basket_outlined,
+          label: dansSelection
+              ? l10n.dansMaSelection(nbSelection)
+              : l10n.maSelection,
+          pastille: nbSelection > 0 ? nbSelection : null,
+          onTap: () => context.go('/selection'),
+          sansDisque: true,
+        ),
+        ClosetBoutonHeader(
           key: ClosetTourKeys.produitFavoriKey,
           icone: enWishlist ? Icons.favorite : Icons.favorite_border,
           label: enWishlist ? l10n.retirerDeWishlist : l10n.ajouterAWishlist,
           couleurIcone: enWishlist ? ClosetColors.erreurCouture : null,
-          onTap: () => basculerFavori(ref, article),
+          onTap: () => basculerFavori(context, ref, article),
           sansDisque: true,
         ),
       ],

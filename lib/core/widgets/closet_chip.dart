@@ -46,11 +46,11 @@ class ClosetChip extends StatelessWidget {
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 180),
           curve: Curves.easeOut,
-          constraints: const BoxConstraints(minHeight: 30),
+          constraints: const BoxConstraints(minHeight: 28),
           alignment: Alignment.center,
           padding: const EdgeInsets.symmetric(
-            horizontal: AppSpacing.p16,
-            vertical: AppSpacing.p8,
+            horizontal: AppSpacing.p12,
+            vertical: AppSpacing.p4,
           ),
           decoration: BoxDecoration(
             color: _active
@@ -60,7 +60,7 @@ class ClosetChip extends StatelessWidget {
                     : ClosetColors.carteFond),
             border: Border.all(
               color: _active ? Colors.transparent : ClosetColors.fond300,
-              width: AppStroke.fin,
+              width: AppStroke.filet,
             ),
             borderRadius: BorderRadius.circular(AppRadius.bouton),
           ),
