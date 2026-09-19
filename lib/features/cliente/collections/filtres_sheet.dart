@@ -20,8 +20,14 @@ const double prixMaximum = 50000;
 /// Puces taille de la maquette. Filtre `size_label` (pas de query API).
 const taillesCatalogue = ['XS', 'S', 'M', 'L', 'XL'];
 
-/// `PieceCondition` du backend : `new` / `very_good` / `good`.
-const etatsCatalogue = ['Neuf', 'Très bon état', 'Bon état'];
+/// Échelle à 5 crans (API : `new` / `very_good` / `good` + excellent / fair).
+const etatsCatalogue = [
+  'Neuf avec étiquettes',
+  'Excellent',
+  'Très bon état',
+  'Bon état',
+  'État correct',
+];
 
 /// Ouvre le panneau de filtres — options en bandes horizontales.
 Future<void> afficherFiltres(BuildContext context) {

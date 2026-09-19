@@ -11,6 +11,7 @@ import '../../../core/theme/closet_text_styles.dart';
 import '../../../core/widgets/closet_app_bar.dart';
 import '../../../core/widgets/closet_header_button.dart';
 import '../../../core/widgets/etat_ecran.dart';
+import '../../../core/widgets/jauge_etat.dart';
 import '../../../core/widgets/piece_card.dart';
 import '../../../core/widgets/status_badge.dart';
 import '../../../core/widgets/toasts.dart';
@@ -126,8 +127,6 @@ class _Corps extends ConsumerWidget {
     return [
       if (article.color.trim().isNotEmpty)
         (label: 'Couleur du vêtement', valeur: article.color),
-      if (article.condition.trim().isNotEmpty)
-        (label: 'État', valeur: article.condition),
       if (article.size.trim().isNotEmpty)
         (label: 'Taille et coupe', valeur: article.size),
       if (article.material.trim().isNotEmpty)
@@ -197,8 +196,17 @@ class _Corps extends ConsumerWidget {
                   const SizedBox(height: AppSpacing.p8),
                   _LienSourceur(article: article),
                 ],
-                if (lignes.isNotEmpty) ...[
+                if (article.condition.trim().isNotEmpty) ...[
                   const SizedBox(height: AppSpacing.p24),
+                  const _Filet(),
+                  const SizedBox(height: AppSpacing.p20),
+                  JaugeEtatPiece(
+                    niveau: article.niveauEtat,
+                    imperfections: article.imperfections,
+                  ),
+                  const SizedBox(height: AppSpacing.p20),
+                ],
+                if (lignes.isNotEmpty) ...[
                   const _Filet(),
                   for (final ligne in lignes) ...[
                     _LigneCaracteristique(

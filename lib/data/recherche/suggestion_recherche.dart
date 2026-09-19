@@ -112,9 +112,11 @@ IndexRecherche indexDepuisCatalogue({
   required List<Article> pieces,
   List<String> taillesCanoniques = const ['XS', 'S', 'M', 'L', 'XL'],
   List<String> etatsCanoniques = const [
-    'Neuf',
+    'Neuf avec étiquettes',
+    'Excellent',
     'Très bon état',
     'Bon état',
+    'État correct',
   ],
 }) {
   final types = <String>{...univers.where((u) => u.trim().isNotEmpty)};

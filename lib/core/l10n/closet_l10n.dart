@@ -66,6 +66,8 @@ class ClosetL10n extends InheritedWidget {
   String get tailleLabel => t('Taille', 'Size');
   String get matiere => t('Matière', 'Material');
   String get etatPiece => t('État', 'Condition');
+  String get etatDeLaPiece => t('État de la pièce', 'Item condition');
+  String get signesUsage => t('Signes d’usage relevés', 'Noted signs of wear');
   String get descriptionArticle => t('À propos de cette pièce', 'About this item');
 
   // ─── Sélection / Checkout ───────────────────────────────────────────────────
