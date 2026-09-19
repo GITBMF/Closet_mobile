@@ -172,7 +172,7 @@ class EtatEcran extends StatelessWidget {
               texteMessage,
               textAlign: TextAlign.center,
               style: ClosetTextStyles.citation.copyWith(
-                color: ClosetColors.taupe,
+                color: context.closetSecondaire,
               ),
             ),
             if (action != null && texteAction != null) ...[

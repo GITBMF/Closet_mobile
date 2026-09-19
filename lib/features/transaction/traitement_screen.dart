@@ -162,7 +162,10 @@ class SuccesScreen extends StatelessWidget {
               ),
             ],
             const SizedBox(height: AppSpacing.p32),
-            BoutonTransaction(label: l10n.transactionVoirRecu, onPressed: onVoirRecu),
+            BoutonTransaction(
+              label: l10n.transactionVoirRecu,
+              onPressed: onVoirRecu,
+            ),
             const SizedBox(height: AppSpacing.p24),
             BoutonTransaction(
               label: type.libelleSortie(l10n),
@@ -206,8 +209,11 @@ class _ArcheSucces extends StatelessWidget {
               color: ClosetColors.vert,
               shape: BoxShape.circle,
             ),
-            child: const Icon(Icons.check_rounded,
-                size: 44, color: ClosetColors.blanc),
+            child: const Icon(
+              Icons.check_rounded,
+              size: 44,
+              color: ClosetColors.blanc,
+            ),
           ),
           const Spacer(),
           Text(l10n.transactionToutBon, style: ClosetTextStyles.accroche),

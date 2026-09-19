@@ -29,13 +29,13 @@ class JaugeEtatPiece extends StatelessWidget {
         Text(
           niveau.libelle,
           style: ClosetTextStyles.titreBloc.copyWith(
-            color: ClosetColors.vert,
+            color: context.closetVert,
           ),
         ),
-        const SizedBox(height: AppSpacing.p16),
+        const SizedBox(height: AppSpacing.p12),
         _Cranes(actif: niveau),
         if (imperfections.isNotEmpty) ...[
-          const SizedBox(height: AppSpacing.p20),
+          const SizedBox(height: AppSpacing.p16),
           ClosetSurtitre(l10n.signesUsage),
           const SizedBox(height: AppSpacing.p8),
           for (final note in imperfections)
@@ -67,7 +67,7 @@ class _Cranes extends StatelessWidget {
                     child: Container(
                       height: 2,
                       color: i < actif.cran
-                          ? ClosetColors.vert
+                          ? context.closetVert
                           : ClosetColors.fond300.withValues(alpha: 0.55),
                     ),
                   ),
@@ -87,8 +87,8 @@ class _Cranes extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   style: ClosetTextStyles.detail.copyWith(
                     color: n == actif
-                        ? ClosetColors.vert
-                        : ClosetColors.taupe,
+                        ? context.closetVert
+                        : context.closetSecondaire,
                     fontWeight: n == actif ? FontWeight.w700 : FontWeight.w400,
                   ),
                 ),
@@ -114,11 +114,11 @@ class _Point extends StatelessWidget {
       height: taille,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: atteint ? ClosetColors.vert : ClosetColors.carteFond,
+        color: atteint ? context.closetVert : context.closetCarte,
         border: Border.all(
           color: courant
               ? ClosetColors.doreEncre
-              : (atteint ? ClosetColors.vert : ClosetColors.fond300),
+              : (atteint ? context.closetVert : ClosetColors.fond300),
           width: courant ? 2 : AppStroke.fin,
         ),
       ),
@@ -134,7 +134,7 @@ class _PuceUsage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: AppSpacing.p8),
+      padding: const EdgeInsets.only(bottom: AppSpacing.p4),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

@@ -108,24 +108,13 @@ class PieceCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 3),
               ],
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  if (etoiles > 0) ...[
-                    EtoilesEtat(etoiles),
-                    const SizedBox(width: 4),
-                  ],
-                  Expanded(
-                    child: Text(
-                      nom,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: ClosetTextStyles.nomProduit.copyWith(
-                        color: context.closetEncre,
-                      ),
-                    ),
-                  ),
-                ],
+              Text(
+                nom,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: ClosetTextStyles.nomProduit.copyWith(
+                  color: context.closetEncre,
+                ),
               ),
               const SizedBox(height: 3),
               Row(

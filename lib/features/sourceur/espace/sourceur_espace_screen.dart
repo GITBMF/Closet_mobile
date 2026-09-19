@@ -102,8 +102,8 @@ class _FicheSourceur extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.fromLTRB(20, 18, 20, 18),
       decoration: BoxDecoration(
-        color: ClosetColors.blanc,
-        border: Border.all(color: ClosetColors.fond300, width: AppStroke.fin),
+        color: context.closetCarte,
+        border: Border.all(color: context.closetBordure, width: AppStroke.fin),
         borderRadius: BorderRadius.circular(AppRadius.carte),
       ),
       child: Column(
@@ -111,9 +111,7 @@ class _FicheSourceur extends StatelessWidget {
         children: [
           Text(
             profile.nomAtelier,
-            style: ClosetTextStyles.libelleFort.copyWith(
-              color: ClosetColors.vert,
-            ),
+            style: ClosetTextStyles.libelleFort.copyWith(color: context.closetVert),
           ),
           const SizedBox(height: AppSpacing.p8),
           _LigneFiche(libelle: l10n.statut, valeur: profile.libelleStatut(l10n)),

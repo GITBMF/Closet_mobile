@@ -25,7 +25,6 @@ import 'brouillon_commande.dart';
 import 'montants.dart';
 import 'moyens_paiement.dart';
 import 'widgets/checkout_widgets.dart';
-import 'widgets/code_privilege.dart';
 
 /// Finalisation de la sélection — transcription de la maquette `56:11462`.
 ///
@@ -53,7 +52,6 @@ class CheckoutScreen extends ConsumerStatefulWidget {
 class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
   final _formKey = GlobalKey<FormState>();
   final _nom = TextEditingController();
-  final _codePrivilege = TextEditingController();
   late final TelephoneController _telephone;
   late int _etape = widget.etapeInitiale;
 
@@ -90,7 +88,6 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
   void dispose() {
     _nom.dispose();
     _telephone.dispose();
-    _codePrivilege.dispose();
     super.dispose();
   }
 
@@ -251,7 +248,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                 ? pieces.first.title
                 : _l10n.checkoutRecuNPieces(pieces.length),
           ),
-          LigneRecu(_l10n.checkoutRecuMoyenPaiement, moyen.libelle),
+          LigneRecu(_l10n.checkoutRecuMoyenPaiement, moyen.libelleCourt),
           LigneRecu(_l10n.checkoutLivraisonTitre, brouillon.adresseResumee),
           if (brouillon.remise > 0)
             LigneRecu(
@@ -267,7 +264,6 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
   Widget build(BuildContext context) {
     final l10n = ClosetL10n.of(context);
     final brouillon = ref.watch(brouillonCommandeProvider);
-    final total = ref.watch(totalAReglerProvider);
 
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
@@ -313,7 +309,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                       Text(
                         l10n.checkoutDelaiLivraison,
                         style: ClosetTextStyles.meta.copyWith(
-                          color: ClosetColors.taupe,
+                          color: context.closetSecondaire,
                         ),
                       ),
                       const SizedBox(height: AppSpacing.p20),
@@ -361,8 +357,6 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                         onMode: _brouillon.choisirMode,
                       ),
                     ] else ...[
-                      ClosetEnTeteSection(titre: l10n.checkoutMethodePaiement),
-                      const SizedBox(height: AppSpacing.p16),
                       Column(
                         key: ClosetTourKeys.checkoutMoyensKey,
                         children: [
@@ -376,11 +370,6 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                         ],
                       ),
                       const SizedBox(height: AppSpacing.p24),
-                      ChampCodePrivilege(
-                        key: ClosetTourKeys.checkoutCodeKey,
-                        controller: _codePrivilege,
-                      ),
-                      const SizedBox(height: AppSpacing.p24),
                       RecapMontants(key: ClosetTourKeys.checkoutRecapKey),
                     ],
                   ],
@@ -388,29 +377,24 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
               ),
             ),
             Padding(
-              padding: const EdgeInsets.fromLTRB(39, 0, 39, AppSpacing.p12),
+              padding: const EdgeInsets.fromLTRB(AppSpacing.p24, 0, AppSpacing.p24, AppSpacing.p12),
               child: SizedBox(
                 key: _etape == 0
                     ? ClosetTourKeys.checkoutSuivantKey
                     : ClosetTourKeys.checkoutPayerKey,
                 height: 44,
                 child: Material(
-                  color: ClosetColors.vert,
+                  color: context.closetAction,
                   borderRadius: BorderRadius.circular(AppRadius.cercle),
                   child: InkWell(
                     borderRadius: BorderRadius.circular(AppRadius.cercle),
                     onTap: _etape == 0 ? _validerCoordonnees : _poursuivre,
                     child: Center(
                       child: Text(
-                        _etape == 0
-                            ? l10n.checkoutSuivant
-                            : total == null
-                                ? l10n.checkoutPoursuivrePaiement
-                                : l10n.checkoutPoursuivrePaiementMontant(
-                                    formatPrixFcfa(total)),
+                        l10n.valider,
                         style: ClosetTextStyles.bouton.copyWith(
                           fontWeight: FontWeight.w600,
-                          color: ClosetColors.blanc,
+                          color: context.closetActionTexte,
                         ),
                       ),
                     ),
@@ -567,7 +551,7 @@ class _LignePaiement extends StatelessWidget {
         color: context.closetCarte,
         borderRadius: BorderRadius.circular(AppRadius.carte),
         border: Border.all(
-          color: choisi ? ClosetColors.vert : ClosetColors.fond300,
+          color: choisi ? context.closetVert : context.closetBordure,
           width: choisi ? AppStroke.moyen : AppStroke.fin,
         ),
       ),
@@ -583,7 +567,7 @@ class _LignePaiement extends StatelessWidget {
                 padding: const EdgeInsets.all(AppSpacing.p12),
                 child: Row(
                   children: [
-                    MarquePaiement(id: moyen.id),
+                    MarquePaiement(id: moyen.id, largeur: 52, hauteur: 34),
                     const SizedBox(width: AppSpacing.p12),
                     Expanded(
                       child: Text(
@@ -595,7 +579,7 @@ class _LignePaiement extends StatelessWidget {
                       Text(
                         moyen.compteMasque,
                         style: ClosetTextStyles.meta.copyWith(
-                          color: ClosetColors.taupe,
+                          color: context.closetSecondaire,
                         ),
                       ),
                       const SizedBox(width: AppSpacing.p8),
@@ -605,7 +589,7 @@ class _LignePaiement extends StatelessWidget {
                           ? Icons.radio_button_checked
                           : Icons.radio_button_unchecked,
                       size: 20,
-                      color: choisi ? ClosetColors.vert : ClosetColors.ligne,
+                      color: choisi ? context.closetVert : context.closetLigne,
                     ),
                   ],
                 ),

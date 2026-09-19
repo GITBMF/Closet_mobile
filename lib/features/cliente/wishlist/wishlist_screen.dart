@@ -36,64 +36,65 @@ class WishlistScreen extends ConsumerWidget {
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
         child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const SizedBox(height: AppSpacing.p12),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.p20),
-            child: ClosetTitreEcran(l10n.mesFavorisTitre),
-          ),
-          Expanded(
-            child: !connectee
-                ? ClosetListeVide(
-                    message: l10n.connexionRequiseFavoris,
-                    action: () => context.push('/auth'),
-                    libelleAction: l10n.seConnecter,
-                  )
-                : user.nePeutPasAcheter
-                    ? ClosetListeVide(
-                        titre: l10n.achatsIndisponiblesTitre,
-                        message: l10n.achatsIndisponiblesMessage,
-                      )
-                    : corpsAsync<List<Article>>(
-                    favoris,
-                    onRetry: () => ref.invalidate(wishlistProvider),
-                    data: (liste) => liste.isEmpty
-                        ? ClosetListeVide(
-                            message: l10n.aucunFavoriMessage,
-                            action: () => context.go('/collections'),
-                            libelleAction: l10n.decouvrirCollections,
-                          )
-                        : ListView.separated(
-                            padding: const EdgeInsets.fromLTRB(
-                              18,
-                              AppSpacing.p16,
-                              18,
-                              AppSpacing.p32,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const SizedBox(height: AppSpacing.p12),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.p20),
+              child: ClosetTitreEcran(l10n.mesFavorisTitre),
+            ),
+            Expanded(
+              child: !connectee
+                  ? ClosetListeVide(
+                      message: l10n.connexionRequiseFavoris,
+                      action: () => context.push('/auth'),
+                      libelleAction: l10n.seConnecter,
+                    )
+                  : user.nePeutPasAcheter
+                  ? ClosetListeVide(
+                      titre: l10n.achatsIndisponiblesTitre,
+                      message: l10n.achatsIndisponiblesMessage,
+                    )
+                  : corpsAsync<List<Article>>(
+                      favoris,
+                      onRetry: () => ref.invalidate(wishlistProvider),
+                      data: (liste) => liste.isEmpty
+                          ? ClosetListeVide(
+                              message: l10n.aucunFavoriMessage,
+                              action: () => context.go('/collections'),
+                              libelleAction: l10n.decouvrirCollections,
+                            )
+                          : ListView.separated(
+                              padding: const EdgeInsets.fromLTRB(
+                                AppSpacing.p20,
+                                AppSpacing.p16,
+                                AppSpacing.p20,
+                                AppSpacing.p32,
+                              ),
+                              itemCount: liste.length,
+                              separatorBuilder: (_, _) =>
+                                  const SizedBox(height: 23),
+                              itemBuilder: (context, i) {
+                                final article = liste[i];
+                                return _CarteFavori(
+                                  // La visite guidée éclaire la première carte.
+                                  cleAjout: i == 0
+                                      ? ClosetTourKeys.wishlistAjoutKey
+                                      : null,
+                                  article: article,
+                                  onTap: () =>
+                                      context.push('/product/${article.id}'),
+                                  onRetirer: () =>
+                                      basculerFavori(context, ref, article),
+                                  onAjouter: () =>
+                                      basculerSelection(context, ref, article),
+                                );
+                              },
                             ),
-                            itemCount: liste.length,
-                            separatorBuilder: (_, _) =>
-                                const SizedBox(height: 23),
-                            itemBuilder: (context, i) {
-                              final article = liste[i];
-                              return _CarteFavori(
-                                // La visite guidée éclaire la première carte.
-                                cleAjout:
-                                    i == 0 ? ClosetTourKeys.wishlistAjoutKey : null,
-                                article: article,
-                                onTap: () =>
-                                    context.push('/product/${article.id}'),
-                                onRetirer: () =>
-                                    basculerFavori(context, ref, article),
-                                onAjouter: () =>
-                                    basculerSelection(context, ref, article),
-                              );
-                            },
-                          ),
-                  ),
-          ),
-        ],
-      ),
+                    ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -118,13 +119,14 @@ class _CarteFavori extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final dejaAjoute =
-        ref.watch(cartListProvider).any((a) => a.id == article.id);
+    final dejaAjoute = ref
+        .watch(cartListProvider)
+        .any((a) => a.id == article.id);
 
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        height: 97,
+        constraints: const BoxConstraints(minHeight: 97),
         padding: const EdgeInsets.all(AppSpacing.p8),
         decoration: BoxDecoration(
           color: ClosetColors.vert,
@@ -158,39 +160,34 @@ class _CarteFavori extends ConsumerWidget {
                   const SizedBox(height: 2),
                   Text(
                     article.brand.toUpperCase(),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
                     style: ClosetTextStyles.attribut.copyWith(
                       fontWeight: FontWeight.w500,
                       letterSpacing: 0,
                       color: ClosetColors.neutre300,
                     ),
                   ),
-                  const SizedBox(height: 7),
+                  const SizedBox(height: AppSpacing.p4),
                   Text(
                     article.title,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
                     style: ClosetTextStyles.citation.copyWith(
                       fontSize: 14,
                       color: ClosetColors.blanc,
                     ),
                   ),
-                  const Spacer(),
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.end,
+                  const SizedBox(height: AppSpacing.p8),
+                  Wrap(
+                    alignment: WrapAlignment.spaceBetween,
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    spacing: AppSpacing.p8,
+                    runSpacing: AppSpacing.p8,
                     children: [
-                      Expanded(
-                        child: Text(
-                          formatPrixFcfa(article.price),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: ClosetTextStyles.prix.copyWith(
-                            fontSize: 17,
-                            fontWeight: FontWeight.w600,
-                            letterSpacing: 0.34,
-                            color: ClosetColors.fond200,
-                          ),
+                      Text(
+                        formatPrixFcfa(article.price),
+                        style: ClosetTextStyles.prix.copyWith(
+                          fontSize: 17,
+                          fontWeight: FontWeight.w600,
+                          letterSpacing: 0.34,
+                          color: ClosetColors.fond200,
                         ),
                       ),
                       _BoutonAjouter(
@@ -253,9 +250,8 @@ class _BoutonAjouter extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final actif = !indisponible;
-    return SizedBox(
-      width: 116,
-      height: 33,
+    return ConstrainedBox(
+      constraints: const BoxConstraints(minWidth: 116, minHeight: 33),
       child: Material(
         color: indisponible ? ClosetColors.doreDesactive : ClosetColors.fond300,
         borderRadius: BorderRadius.circular(AppRadius.cercle),
@@ -263,18 +259,25 @@ class _BoutonAjouter extends StatelessWidget {
           borderRadius: BorderRadius.circular(AppRadius.cercle),
           onTap: actif ? onTap : null,
           child: Center(
-            child: Text(
-              indisponible
-                  ? ClosetL10n.of(context).indisponibleLabel
-                  : dejaAjoute
-                      ? ClosetL10n.of(context).retirerCourt
-                      : ClosetL10n.of(context).ajouterCourt,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: ClosetTextStyles.attribut.copyWith(
-                fontWeight: FontWeight.w500,
-                letterSpacing: 0,
-                color: ClosetColors.neutre1000,
+            widthFactor: 1,
+            heightFactor: 1,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.p12,
+                vertical: AppSpacing.p8,
+              ),
+              child: Text(
+                indisponible
+                    ? ClosetL10n.of(context).indisponibleLabel
+                    : dejaAjoute
+                    ? ClosetL10n.of(context).retirerCourt
+                    : ClosetL10n.of(context).ajouterCourt,
+                textAlign: TextAlign.center,
+                style: ClosetTextStyles.attribut.copyWith(
+                  fontWeight: FontWeight.w500,
+                  letterSpacing: 0,
+                  color: ClosetColors.neutre1000,
+                ),
               ),
             ),
           ),

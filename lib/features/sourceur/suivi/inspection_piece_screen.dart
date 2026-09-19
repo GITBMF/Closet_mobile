@@ -66,8 +66,8 @@ class _ArcheReception extends StatelessWidget {
         AppSpacing.p24,
       ),
       decoration: BoxDecoration(
-        color: ClosetColors.blanc,
-        border: Border.all(color: ClosetColors.fond300, width: AppStroke.fin),
+        color: context.closetCarte,
+        border: Border.all(color: context.closetBordure, width: AppStroke.fin),
         borderRadius: const BorderRadius.vertical(top: Radius.circular(159)),
       ),
       child: Column(
@@ -91,7 +91,7 @@ class _ArcheReception extends StatelessWidget {
             textAlign: TextAlign.center,
             style: ClosetTextStyles.sousTitre.copyWith(
               letterSpacing: 0.38,
-              color: ClosetColors.vert,
+              color: context.closetVert,
             ),
           ),
         ],

@@ -61,7 +61,7 @@ class MesAdressesScreen extends ConsumerWidget {
                           fontFamily: ClosetTextStyles.prix.fontFamily,
                           fontWeight: FontWeight.w600,
                           letterSpacing: 0.36,
-                          color: ClosetColors.noir,
+                          color: context.closetEncre,
                         ),
                       ),
                     ),

@@ -41,9 +41,10 @@ class ClosetLayout {
   /// Hauteur de la barre d'outils, hors inset statut (le Scaffold l'ajoute).
   static const double hauteurBarre = 62;
 
-  /// Hauteur du carrousel produit, proportionnelle à l'écran.
+  /// Hauteur du carrousel produit : assez basse pour que toute la fiche tienne
+  /// dans l'écran sans défilement.
   double get hauteurHeroProduit =>
-      (size.height * 0.48).clamp(260.0, 493.0);
+      (size.height * 0.30).clamp(190.0, 300.0);
 
   /// Photo de la pièce de la semaine, un peu plus basse sur petit écran.
   double get hauteurPieceSemaine => compact ? 170.0 : 215.0;

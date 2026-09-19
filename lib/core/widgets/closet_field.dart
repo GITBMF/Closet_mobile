@@ -50,9 +50,10 @@ class ClosetField extends StatelessWidget {
       validator: validator,
       enabled: enabled,
       style: ClosetTextStyles.saisie.copyWith(fontWeight: FontWeight.w500),
-      cursorColor: ClosetColors.vert,
+      cursorColor: context.closetVert,
       cursorWidth: 1.5,
       decoration: closetFieldDecoration(
+        context: context,
         label: label,
         hint: hint,
         suffixIcon: suffixIcon,
@@ -64,6 +65,7 @@ class ClosetField extends StatelessWidget {
 /// Décoration partagée par [ClosetField] et [ClosetSelectField], pour que les
 /// deux restent alignés sur la même spec Figma.
 InputDecoration closetFieldDecoration({
+  required BuildContext context,
   required String label,
   String? hint,
   Widget? suffixIcon,
@@ -80,10 +82,10 @@ InputDecoration closetFieldDecoration({
     hintText: hint,
     suffixIcon: suffixIcon,
     filled: true,
-    fillColor: ClosetColors.blanc,
+    fillColor: context.closetChamp,
     floatingLabelBehavior: FloatingLabelBehavior.always,
     labelStyle: ClosetTextStyles.labelChamp.copyWith(
-      color: ClosetColors.vert,
+      color: context.closetLabel,
       fontWeight: FontWeight.w500,
     ),
     hintStyle: ClosetTextStyles.saisieHint,
@@ -91,12 +93,12 @@ InputDecoration closetFieldDecoration({
       horizontal: AppSpacing.p16,
       vertical: AppSpacing.p16,
     ),
-    border: bordure(ClosetColors.fond300, AppStroke.fin),
-    enabledBorder: bordure(ClosetColors.fond300, AppStroke.fin),
-    focusedBorder: bordure(ClosetColors.vert, AppStroke.moyen),
+    border: bordure(context.closetBordure, AppStroke.fin),
+    enabledBorder: bordure(context.closetBordure, AppStroke.fin),
+    focusedBorder: bordure(context.closetVert, AppStroke.moyen),
     errorBorder: bordure(ClosetColors.erreur, AppStroke.fin),
     focusedErrorBorder: bordure(ClosetColors.erreur, AppStroke.moyen),
-    disabledBorder: bordure(ClosetColors.ligne, AppStroke.fin),
+    disabledBorder: bordure(context.closetLigne, AppStroke.fin),
   );
 }
 
@@ -141,7 +143,7 @@ class ClosetChampLibelle extends StatelessWidget {
           label,
           style: ClosetTextStyles.labelChamp.copyWith(
             fontWeight: FontWeight.w500,
-            color: ClosetColors.vert,
+            color: context.closetLabel,
           ),
         ),
         const SizedBox(height: AppSpacing.p8),
@@ -156,7 +158,7 @@ class ClosetChampLibelle extends StatelessWidget {
             autocorrect: autocorrect,
             enableSuggestions: autocorrect,
             style: ClosetTextStyles.saisie.copyWith(color: context.closetEncre),
-            cursorColor: ClosetColors.vert,
+            cursorColor: context.closetVert,
             cursorWidth: 1.5,
             decoration: InputDecoration(
               hintText: hint,
@@ -170,12 +172,12 @@ class ClosetChampLibelle extends StatelessWidget {
                 horizontal: AppSpacing.p12,
                 vertical: AppSpacing.p12,
               ),
-              border: _bordureLibelle(ClosetColors.fond300),
-              enabledBorder: _bordureLibelle(ClosetColors.fond300),
-              focusedBorder: _bordureLibelle(ClosetColors.vert),
+              border: _bordureLibelle(context.closetBordure),
+              enabledBorder: _bordureLibelle(context.closetBordure),
+              focusedBorder: _bordureLibelle(context.closetVert),
               errorBorder: _bordureLibelle(ClosetColors.erreur),
               focusedErrorBorder: _bordureLibelle(ClosetColors.erreur),
-              disabledBorder: _bordureLibelle(ClosetColors.ligne),
+              disabledBorder: _bordureLibelle(context.closetLigne),
             ),
         ),
       ],
@@ -223,7 +225,7 @@ class ClosetSelectField<T> extends StatelessWidget {
           color: ClosetColors.taupe),
       dropdownColor: ClosetColors.blanc,
       borderRadius: BorderRadius.circular(AppRadius.carte),
-      decoration: closetFieldDecoration(label: label, hint: hint),
+      decoration: closetFieldDecoration(context: context, label: label, hint: hint),
       items: [
         for (var i = 0; i < items.length; i++)
           DropdownMenuItem<T>(

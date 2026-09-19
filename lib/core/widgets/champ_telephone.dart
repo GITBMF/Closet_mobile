@@ -259,8 +259,8 @@ class _HabillageTelephone extends StatelessWidget {
           onPays: onPays,
           onChanged: onChanged,
           fond: context.closetChamp,
-          bordure: ClosetColors.fond300,
-          focus: ClosetColors.vert,
+          bordure: context.closetBordure,
+          focus: context.closetVert,
           hauteur: 42,
         ),
       StyleChampTelephone.checkout => _ChampEncadreTel(
@@ -270,8 +270,8 @@ class _HabillageTelephone extends StatelessWidget {
           onPays: onPays,
           onChanged: onChanged,
           fond: context.closetChamp,
-          bordure: ClosetColors.fond300,
-          focus: ClosetColors.vert,
+          bordure: context.closetBordure,
+          focus: context.closetVert,
           hauteur: null,
         ),
     };
@@ -301,7 +301,7 @@ class _HabillageTelephone extends StatelessWidget {
           label,
           style: ClosetTextStyles.labelChamp.copyWith(
             fontWeight: FontWeight.w500,
-            color: ClosetColors.vert,
+            color: context.closetLabel,
           ),
         ),
     };
@@ -558,7 +558,7 @@ class _SelecteurPaysSheetState extends State<_SelecteurPaysSheet> {
             child: Text(
               l10n.indicatifDuPays,
               style: ClosetTextStyles.titreBloc.copyWith(
-                color: ClosetColors.vert,
+                color: context.closetVert,
               ),
             ),
           ),
@@ -601,7 +601,7 @@ class _SelecteurPaysSheetState extends State<_SelecteurPaysSheet> {
                     p.libelleCourt,
                     style: ClosetTextStyles.saisie.copyWith(
                       fontWeight: FontWeight.w600,
-                      color: ClosetColors.vert,
+                      color: context.closetVert,
                     ),
                   ),
                   selected: choisi,

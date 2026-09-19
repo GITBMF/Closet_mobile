@@ -68,61 +68,61 @@ class ClosetBottomNav extends StatelessWidget {
 
   /// Entrées du parcours cliente.
   static List<ClosetNavItem> itemsClientePour(ClosetL10n l10n) => [
-        ClosetNavItem(
-          icone: Icons.home_outlined,
-          iconeActive: Icons.home,
-          label: l10n.navDressing,
-          cle: ClosetTourKeys.dressingNavKey,
-        ),
-        ClosetNavItem(
-          icone: Icons.grid_view_outlined,
-          iconeActive: Icons.grid_view,
-          label: l10n.navCollections,
-          cle: ClosetTourKeys.collectionsNavKey,
-        ),
-        ClosetNavItem(
-          icone: Icons.favorite_border,
-          iconeActive: Icons.favorite,
-          label: l10n.navWishlist,
-          cle: ClosetTourKeys.wishlistNavKey,
-        ),
-        ClosetNavItem(
-          icone: Icons.shopping_bag_outlined,
-          iconeActive: Icons.shopping_bag,
-          label: l10n.navSelection,
-          cle: ClosetTourKeys.selectionNavKey,
-        ),
-        ClosetNavItem(
-          icone: Icons.person_outline,
-          iconeActive: Icons.person,
-          label: l10n.navEspace,
-          cle: ClosetTourKeys.espaceNavKey,
-        ),
-      ];
+    ClosetNavItem(
+      icone: Icons.home_outlined,
+      iconeActive: Icons.home,
+      label: l10n.navDressing,
+      cle: ClosetTourKeys.dressingNavKey,
+    ),
+    ClosetNavItem(
+      icone: Icons.grid_view_outlined,
+      iconeActive: Icons.grid_view,
+      label: l10n.navCollections,
+      cle: ClosetTourKeys.collectionsNavKey,
+    ),
+    ClosetNavItem(
+      icone: Icons.favorite_border,
+      iconeActive: Icons.favorite,
+      label: l10n.navWishlist,
+      cle: ClosetTourKeys.wishlistNavKey,
+    ),
+    ClosetNavItem(
+      icone: Icons.shopping_bag_outlined,
+      iconeActive: Icons.shopping_bag,
+      label: l10n.navSelection,
+      cle: ClosetTourKeys.selectionNavKey,
+    ),
+    ClosetNavItem(
+      icone: Icons.person_outline,
+      iconeActive: Icons.person,
+      label: l10n.navEspace,
+      cle: ClosetTourKeys.espaceNavKey,
+    ),
+  ];
 
   /// Entrées du parcours sourceur.
   static List<ClosetNavItem> itemsSourceurPour(ClosetL10n l10n) => [
-        ClosetNavItem(
-          icone: Icons.inventory_2_outlined,
-          iconeActive: Icons.inventory_2,
-          label: l10n.navDepots,
-        ),
-        ClosetNavItem(
-          icone: Icons.add_circle_outline,
-          iconeActive: Icons.add_circle,
-          label: l10n.navConfier,
-        ),
-        ClosetNavItem(
-          icone: Icons.account_balance_wallet_outlined,
-          iconeActive: Icons.account_balance_wallet,
-          label: l10n.navGains,
-        ),
-        ClosetNavItem(
-          icone: Icons.person_outline,
-          iconeActive: Icons.person,
-          label: l10n.navEspace,
-        ),
-      ];
+    ClosetNavItem(
+      icone: Icons.inventory_2_outlined,
+      iconeActive: Icons.inventory_2,
+      label: l10n.navDepots,
+    ),
+    ClosetNavItem(
+      icone: Icons.add_circle_outline,
+      iconeActive: Icons.add_circle,
+      label: l10n.navConfier,
+    ),
+    ClosetNavItem(
+      icone: Icons.account_balance_wallet_outlined,
+      iconeActive: Icons.account_balance_wallet,
+      label: l10n.navGains,
+    ),
+    ClosetNavItem(
+      icone: Icons.person_outline,
+      iconeActive: Icons.person,
+      label: l10n.navEspace,
+    ),
+  ];
 
   /// Compatibilité tests / appels historiques (français).
   static List<ClosetNavItem> get itemsCliente =>
@@ -133,39 +133,49 @@ class ClosetBottomNav extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final layout = ClosetLayout.of(context);
-    final ecartOnglets = layout.compact ? AppSpacing.p8 : AppSpacing.p20;
-    return Material(
-      color: Theme.of(context).scaffoldBackgroundColor,
-      child: SafeArea(
-        top: false,
-        child: Padding(
-          padding: const EdgeInsets.all(AppSpacing.p8),
-          child: Align(
-            alignment: Alignment.bottomCenter,
-            heightFactor: 1,
-            child: SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Container(
-                padding: const EdgeInsets.all(AppSpacing.p8),
-                decoration: BoxDecoration(
-                  color: ClosetColors.navigationFond,
-                  borderRadius: BorderRadius.circular(AppRadius.cercle),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    for (var i = 0; i < items.length; i++) ...[
-                      if (i > 0) SizedBox(width: ecartOnglets),
-                      _Onglet(
-                        key: items[i].cle,
-                        item: items[i],
-                        actif: i == indexActif,
-                        compteur: compteurs[i],
-                        onTap: onTap == null ? null : () => onTap!(i),
-                        compact: layout.compact,
-                      ),
+    final grandTexte = MediaQuery.textScalerOf(context).scale(1) > 1.05;
+    final ecartOnglets = layout.compact || grandTexte
+        ? AppSpacing.p8
+        : AppSpacing.p20;
+    // La barre doit rester tout entière à l'écran : ses libellés suivent la
+    // taille du texte choisie, mais plafonnée.
+    return MediaQuery(
+      data: MediaQuery.of(context).copyWith(
+        textScaler: MediaQuery.textScalerOf(context).clamp(maxScaleFactor: 1.1),
+      ),
+      child: Material(
+        color: Theme.of(context).scaffoldBackgroundColor,
+        child: SafeArea(
+          top: false,
+          child: Padding(
+            padding: const EdgeInsets.all(AppSpacing.p8),
+            child: Align(
+              alignment: Alignment.bottomCenter,
+              heightFactor: 1,
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Container(
+                  padding: const EdgeInsets.all(AppSpacing.p8),
+                  decoration: BoxDecoration(
+                    color: ClosetColors.navigationFond,
+                    borderRadius: BorderRadius.circular(AppRadius.cercle),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      for (var i = 0; i < items.length; i++) ...[
+                        if (i > 0) SizedBox(width: ecartOnglets),
+                        _Onglet(
+                          key: items[i].cle,
+                          item: items[i],
+                          actif: i == indexActif,
+                          compteur: compteurs[i],
+                          onTap: onTap == null ? null : () => onTap!(i),
+                          compact: layout.compact,
+                        ),
+                      ],
                     ],
-                  ],
+                  ),
                 ),
               ),
             ),
@@ -197,8 +207,9 @@ class _Onglet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final couleur =
-        actif ? ClosetColors.navigationActifTrait : ClosetColors.navigationInactif;
+    final couleur = actif
+        ? ClosetColors.navigationActifTrait
+        : ClosetColors.navigationInactif;
 
     Widget icone = Icon(
       actif ? item.iconeActive : item.icone,
@@ -246,37 +257,39 @@ class _Onglet extends StatelessWidget {
           onTap: onTap,
           borderRadius: BorderRadius.circular(AppRadius.carteProduit),
           child: AnimatedContainer(
-          duration: const Duration(milliseconds: 220),
-          curve: Curves.easeOutCubic,
-          padding: EdgeInsets.all(
-            compact ? AppSpacing.p8 : AppSpacing.gouttiere,
-          ),
-          decoration: BoxDecoration(
-            color: actif ? ClosetColors.navigationActifFond : Colors.transparent,
-            borderRadius: BorderRadius.circular(AppRadius.carteProduit),
-            border: actif
-                ? Border.all(
-                    color: ClosetColors.navigationActifTrait,
-                    width: AppStroke.fin,
-                  )
-                : null,
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              icone,
-              if (actif) ...[
-                const SizedBox(width: AppSpacing.p4),
-                Text(
-                  item.label,
-                  style: ClosetTextStyles.navigation.copyWith(
-                    color: ClosetColors.navigationActifTexte,
+            duration: const Duration(milliseconds: 220),
+            curve: Curves.easeOutCubic,
+            padding: EdgeInsets.all(
+              compact ? AppSpacing.p8 : AppSpacing.gouttiere,
+            ),
+            decoration: BoxDecoration(
+              color: actif
+                  ? ClosetColors.navigationActifFond
+                  : Colors.transparent,
+              borderRadius: BorderRadius.circular(AppRadius.carteProduit),
+              border: actif
+                  ? Border.all(
+                      color: ClosetColors.navigationActifTrait,
+                      width: AppStroke.fin,
+                    )
+                  : null,
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                icone,
+                if (actif) ...[
+                  const SizedBox(width: AppSpacing.p4),
+                  Text(
+                    item.label,
+                    style: ClosetTextStyles.navigation.copyWith(
+                      color: ClosetColors.navigationActifTexte,
+                    ),
                   ),
-                ),
+                ],
               ],
-            ],
+            ),
           ),
-        ),
         ),
       ),
     );

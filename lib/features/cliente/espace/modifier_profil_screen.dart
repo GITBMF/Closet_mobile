@@ -147,10 +147,10 @@ class _ModifierProfilScreenState
                       const SizedBox(height: 47),
                       Center(
                         child: SizedBox(
-                          width: 312,
+                          width: double.infinity,
                           height: 44,
                           child: Material(
-                            color: ClosetColors.vert,
+                            color: context.closetAction,
                             borderRadius:
                                 BorderRadius.circular(AppRadius.cercle),
                             child: InkWell(
@@ -159,19 +159,19 @@ class _ModifierProfilScreenState
                               onTap: _envoiEnCours ? null : _enregistrer,
                               child: Center(
                                 child: _envoiEnCours
-                                    ? const SizedBox(
+                                    ? SizedBox(
                                         width: 18,
                                         height: 18,
                                         child: CircularProgressIndicator(
                                           strokeWidth: 2,
-                                          color: ClosetColors.blanc,
+                                          color: context.closetActionTexte,
                                         ),
                                       )
                                     : Text(
                                         l10n.mettreAJour,
                                         style:
                                             ClosetTextStyles.bouton.copyWith(
-                                          color: ClosetColors.blanc,
+                                          color: context.closetActionTexte,
                                         ),
                                       ),
                               ),
@@ -220,7 +220,7 @@ class _EnTeteRetour extends StatelessWidget {
                 titre,
                 style: ClosetTextStyles.accroche.copyWith(
                   fontWeight: FontWeight.w600,
-                  color: ClosetColors.noir,
+                  color: context.closetEncre,
                 ),
               ),
             ),

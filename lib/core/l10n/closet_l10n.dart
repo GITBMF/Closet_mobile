@@ -170,6 +170,31 @@ class ClosetL10n extends InheritedWidget {
   String get deconnexion => t('Déconnexion', 'Sign out');
   String get themeSombre => t('Mode sombre', 'Dark mode');
   String get langue => t('Langue', 'Language');
+  String get espaceGroupeCompte => t('Mon compte', 'My account');
+  String get espaceGroupeCompteDetail => t(
+        'Commandes, informations, code privilège',
+        'Orders, details, privilege code',
+      );
+  String get espaceGroupeAffichage => t('Affichage et langue', 'Display and language');
+  String get espaceGroupeAide => t('Aide et visite guidée', 'Help and guided tour');
+  String get espaceGroupeAideDetail => t(
+        'Découvrez l’application pas à pas',
+        'Discover the app step by step',
+      );
+  String get taillePolice => t('Taille du texte', 'Text size');
+  String get taillePoliceAide => t(
+        'Agrandit tous les textes de l’application.',
+        'Makes all text in the app larger.',
+      );
+  String get policeNormale => t('Normale', 'Normal');
+  String get policeGrande => t('Grande', 'Large');
+  String get policeTresGrande => t('Très grande', 'Extra large');
+  String get valider => t('Valider', 'Confirm');
+  String get filtresGlisser => t(
+        'Faites glisser pour parcourir les critères et les choix.',
+        'Swipe to browse the criteria and choices.',
+      );
+  String get revenirAccueil => t('Revenir à l’accueil', 'Back to home');
   String get ok => t('OK', 'OK');
   String get retour => t('Retour', 'Back');
   String get visiteGuidee => t('Visite guidée', 'Guided tour');
@@ -279,7 +304,7 @@ class ClosetL10n extends InheritedWidget {
       t('Cette section est vide pour le moment.', 'This section is empty for now.');
 
   // ─── Auth ────────────────────────────────────────────────────────────────────
-  String get ouSeConnecter => t('ou se connecter avec', 'or sign in with');
+  String get ouSeConnecter => t('Ou se connecter avec', 'Or sign in with');
   String get emailInvalide => t('Adresse e-mail invalide.', 'Invalid e-mail address.');
   String get emailInvalideTitre => t('E-mail invalide', 'Invalid e-mail');
   String get motDePasseTropCourt => t('Minimum 6 caractères.', 'Minimum 6 characters.');
@@ -421,7 +446,15 @@ class ClosetL10n extends InheritedWidget {
       );
   String get codePrivilegeLabel => t('Code privilège', 'Privilege code');
   String get cerclePrivilegeHint => t('cercle-privilège', 'privilege-circle');
-  String get facultatifLabel => t('Facultatif', 'Optional');
+  String get codePrivilegeAccroche => t(
+        'Un code, une réduction ! Saisissez-le pour profiter d’un avantage '
+            'exclusif sur votre prochaine commande. Nos pièces uniques partent '
+            'vite : plus vous commandez, plus vos privilèges grandissent.',
+        'One code, one discount! Enter it to enjoy an exclusive perk on your '
+            'next order. Our one-of-a-kind pieces go fast: the more you order, '
+            'the more your privileges grow.',
+      );
+  String get codePrivilegeSaisir => t('Saisissez votre code', 'Enter your code');
   String get retirerLabel => t('Retirer', 'Remove');
   String get appliquerLabel => t('Appliquer', 'Apply');
   String get ficheSourceurNonLieeMessage => t(
@@ -828,8 +861,8 @@ class ClosetL10n extends InheritedWidget {
   String get badgePreparation => t('Préparation', 'Preparing');
   String get badgeMiseEnVente => t('Mis en vente', 'Listed for sale');
   String get badgeEnAnalyse => t('En cours d’analyse', 'Under review');
-  String get badgeDepotRecu => t('dépôt reçu', 'drop-off received');
-  String get badgeRefusee => t('refusé', 'refused');
+  String get badgeDepotRecu => t('Dépôt reçu', 'Drop-off received');
+  String get badgeRefusee => t('Refusé', 'Refused');
   String get badgeRetournee => t('Retourné', 'Returned');
   String get badgeVendue => t('Vendue', 'Sold');
   String get badgeAcceptee => t('Acceptée', 'Accepted');
@@ -1053,10 +1086,10 @@ class ClosetL10n extends InheritedWidget {
   String get estimationLabel => t('Estimation', 'Estimate');
   String get suivreMaCommande => t('Suivre ma commande', 'Track my order');
   String get passerAutresCommandes => t('Passer d’autres commandes', 'Place other orders');
-  String get sousTotalLivraison => t('sous-total + livraison', 'subtotal + delivery');
+  String get sousTotalLivraison => t('Sous-total + livraison', 'Subtotal + delivery');
   String get totalARegler => t('Total à régler', 'Total due');
   String get laissezNousMessage => t('Laissez-nous un message', 'Leave us a message');
-  String get maCommandeSurtitre => t('ma commande', 'my order');
+  String get maCommandeSurtitre => t('Ma commande', 'My order');
   String get suiviIndisponible => t(
         'Le suivi n’est plus disponible pour cette commande.',
         'Tracking is no longer available for this order.',
@@ -1103,7 +1136,7 @@ class ClosetL10n extends InheritedWidget {
   String get preciserVilleQuartier =>
       t('Précisez la ville et le quartier.', 'Specify the city and neighbourhood.');
   String get typeLabel => t('Type', 'Type');
-  String get parDefautBadge => t('par Défaut', 'Default');
+  String get parDefautBadge => t('Par défaut', 'Default');
   String get adresseParDefaut => t('Adresse par défaut', 'Default address');
   String get adresseParDefautDetail => t(
         'Proposée en premier au moment de commander.',
@@ -1371,6 +1404,24 @@ class ClosetL10n extends InheritedWidget {
   String get tourTerminer => t('Terminer', 'Done');
 
   // Noms d'écrans, en surtitre de l'infobulle.
+  String get tourEcranBienvenue => t('BIENVENUE', 'WELCOME');
+  String get tourEcranFin => t('BONNE DÉCOUVERTE', 'ENJOY');
+  String get tourBienvenueTitre => t('Bienvenue chez ClosET', 'Welcome to ClosET');
+  String get tourBienvenueCorps => t(
+        'Cette visite vous montre, en quelques touches, comment chercher, '
+            'choisir et commander vos pièces. Touchez l’écran ou « Suivant » '
+            'pour avancer.',
+        'This tour shows you, in a few taps, how to search, choose and order '
+            'your items. Tap the screen or “Next” to move on.',
+      );
+  String get tourFinTitre => t('À vous de jouer !', 'Your turn!');
+  String get tourFinCorps => t(
+        'Vous savez tout faire : chercher, mettre de côté, commander. Vous '
+            'pouvez relancer cette visite depuis Mon espace, dans « Aide et '
+            'visite guidée ».',
+        'You know it all: search, set aside, order. You can restart this tour '
+            'from My space, under “Help and guided tour”.',
+      );
   String get tourEcranDressing => t('MON DRESSING', 'MY WARDROBE');
   String get tourEcranNavigation => t('NAVIGATION', 'NAVIGATION');
   String get tourEcranCollections => t('COLLECTIONS', 'COLLECTIONS');
@@ -1608,12 +1659,12 @@ class ClosetL10n extends InheritedWidget {
         'Your name and how long you have been a member. The green badge opens '
             'profile editing — or account creation if you are still a guest.',
       );
-  String get tourCommandesTitre => t('Mes commandes', 'My orders');
+  String get tourCommandesTitre => t('Mon compte', 'My account');
   String get tourCommandesCorps => t(
-        'L’historique de vos commandes, chacune avec son suivi étape par étape '
-            'jusqu’à la remise.',
-        'Your order history, each one with step-by-step tracking through to '
-            'the handover.',
+        'Vos commandes avec leur suivi étape par étape, vos informations et '
+            'votre code privilège.',
+        'Your orders with step-by-step tracking, your details and your '
+            'privilege code.',
       );
   String get tourSourceurTitre =>
       t('Devenir sourceuse', 'Becoming a sourcer');
@@ -1623,17 +1674,17 @@ class ClosetL10n extends InheritedWidget {
         'Entrust your own pieces to the wardrobe: this card opens the sourcer '
             'programme and its membership path.',
       );
-  String get tourLangueTitre => t('Français ou anglais', 'French or English');
+  String get tourLangueTitre => t('Affichage et langue', 'Display and language');
   String get tourLangueCorps => t(
-        'Toute l’application change de langue, messages d’erreur compris. Le '
-            'choix est retenu au prochain lancement.',
-        'The whole app switches language, error messages included. Your choice '
-            'is remembered next time you open it.',
+        'Français ou anglais, mode sombre et taille du texte. Vos choix sont '
+            'retenus au prochain lancement.',
+        'French or English, dark mode and text size. Your choices are '
+            'remembered next time you open the app.',
       );
-  String get tourRevoirTitre => t('Revoir cette visite', 'Replay this tour');
+  String get tourRevoirTitre => t('Aide et visite guidée', 'Help and guided tour');
   String get tourRevoirCorps => t(
-        'Cette entrée relance la visite quand vous voulez. Bonne découverte !',
-        'This entry restarts the tour whenever you like. Enjoy exploring!',
+        'Relancez la visite quand vous voulez. Bonne découverte !',
+        'Restart the tour whenever you like. Enjoy exploring!',
       );
 }
 

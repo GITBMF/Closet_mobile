@@ -138,7 +138,7 @@ class DevenirSourceurScreen extends StatelessWidget {
                   ),
                 ),
                 Padding(
-                  padding: const EdgeInsets.fromLTRB(39, 0, 39, AppSpacing.p8),
+                  padding: const EdgeInsets.fromLTRB(AppSpacing.p24, 0, AppSpacing.p24, AppSpacing.p8),
                   child: SizedBox(
                     height: 44,
                     child: Material(

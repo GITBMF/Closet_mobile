@@ -59,7 +59,13 @@ class Article {
     String? nomMaison,
     String? nomUnivers,
   }) {
-    final images = chainesDe(json['images']);
+    // `imageUrls` : clé écrite par [toJson] pour la sélection et les favoris
+    // stockés sur l'appareil — sans elle, les photos disparaissaient au
+    // rechargement.
+    final images = [
+      ...chainesDe(json['images']),
+      ...chainesDe(json['imageUrls']),
+    ];
     final couverture = chaineDe(json['image_url']);
     final urls = <String>[
       if (couverture.isNotEmpty) couverture,

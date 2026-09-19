@@ -39,7 +39,8 @@ class TransactionScaffold extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final texteMention = mention ?? ClosetL10n.of(context).mentionChiffrementMessage;
+    final texteMention =
+        mention ?? ClosetL10n.of(context).mentionChiffrementMessage;
     return Scaffold(
       backgroundColor: ClosetColors.vert,
       body: SafeArea(
@@ -58,8 +59,7 @@ class TransactionScaffold extends StatelessWidget {
             SizedBox(height: entete == null ? hautTitre - 47 : AppSpacing.p32),
             if (titre != null)
               Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: AppSpacing.p24),
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.p24),
                 child: Text(
                   titre!,
                   textAlign: TextAlign.center,
@@ -114,7 +114,7 @@ class TexteTransaction extends StatelessWidget {
   }
 }
 
-/// Bouton pleine largeur du tunnel : 312 × 44, rayon 100.
+/// Bouton pleine largeur du tunnel, dans la gouttière de 24 : hauteur 44, rayon 100.
 ///
 /// En version dorée pour l'action principale, en version cerclée de blanc
 /// sur fond vert pour l'action secondaire.
@@ -133,9 +133,10 @@ class BoutonTransaction extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final rayon = BorderRadius.circular(AppRadius.cercle);
-    return Center(
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.p24),
       child: SizedBox(
-        width: 312,
+        width: double.infinity,
         height: 44,
         child: Material(
           color: dore ? ClosetColors.fond300 : ClosetColors.vert,

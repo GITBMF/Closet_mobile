@@ -70,6 +70,8 @@ class OnboardingScreen extends ConsumerWidget {
                 l10n.onboardingBienvenue,
                 textAlign: TextAlign.center,
                 style: ClosetTextStyles.titreEcran.copyWith(
+                  fontSize: 30,
+                  height: 1.2,
                   color: ClosetColors.neutre200,
                 ),
               ),
@@ -78,6 +80,8 @@ class OnboardingScreen extends ConsumerWidget {
                 l10n.onboardingSousTitre,
                 textAlign: TextAlign.center,
                 style: ClosetTextStyles.corps.copyWith(
+                  fontSize: 17,
+                  height: 1.4,
                   color: ClosetColors.beige,
                 ),
               ),

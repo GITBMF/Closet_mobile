@@ -103,7 +103,7 @@ class _Corps extends StatelessWidget {
           piece.nom,
           style: ClosetTextStyles.libelleFort.copyWith(
             letterSpacing: -0.28,
-            color: ClosetColors.vert,
+            color: context.closetVert,
           ),
         ),
         const SizedBox(height: AppSpacing.p8),
@@ -135,10 +135,10 @@ class _Corps extends StatelessWidget {
         const SizedBox(height: AppSpacing.p32),
         Center(
           child: SizedBox(
-            width: 312,
+            width: double.infinity,
             height: 44,
             child: Material(
-              color: ClosetColors.vert,
+              color: context.closetAction,
               borderRadius: BorderRadius.circular(AppRadius.cercle),
               child: InkWell(
                 borderRadius: BorderRadius.circular(AppRadius.cercle),
@@ -148,7 +148,7 @@ class _Corps extends StatelessWidget {
                   child: Text(
                     l10n.suiviRetourEspace,
                     style: ClosetTextStyles.bouton.copyWith(
-                      color: ClosetColors.blanc,
+                      color: context.closetActionTexte,
                     ),
                   ),
                 ),
@@ -164,9 +164,7 @@ class _Corps extends StatelessWidget {
                   allerOngletSourceur(context, OngletSourceur.confier),
               child: Text(
                 l10n.suiviSoumettreNouvelle,
-                style: ClosetTextStyles.bouton.copyWith(
-                  color: ClosetColors.vert,
-                ),
+                style: ClosetTextStyles.bouton.copyWith(color: context.closetVert),
               ),
             ),
           ),

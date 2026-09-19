@@ -8,6 +8,7 @@ import '../l10n/closet_l10n.dart';
 import '../theme/app_spacing.dart';
 import '../theme/closet_colors.dart';
 import '../theme/closet_text_styles.dart';
+import '../utils/texte.dart';
 import 'closet_buttons.dart';
 
 /// Liste vide — aucune donnée renvoyée par le backend.
@@ -51,7 +52,7 @@ class ClosetListeVide extends StatelessWidget {
             messageAffiche,
             textAlign: TextAlign.center,
             style: ClosetTextStyles.citation.copyWith(
-              color: ClosetColors.taupe,
+              color: context.closetSecondaire,
             ),
           ),
           if (action != null && libelleAction != null) ...[
@@ -214,16 +215,16 @@ class ClosetDialogue {
             ),
             const SizedBox(height: AppSpacing.p12),
             Text(
-              titre,
+              avecMajuscule(titre),
               textAlign: TextAlign.center,
               style: ClosetTextStyles.titreSection,
             ),
           ],
         ),
         content: Text(
-          message,
+          avecMajuscule(message),
           textAlign: TextAlign.center,
-          style: ClosetTextStyles.citation.copyWith(color: ClosetColors.taupe),
+          style: ClosetTextStyles.citation.copyWith(color: context.closetSecondaire),
         ),
         actionsAlignment: MainAxisAlignment.center,
         actions: [
@@ -256,10 +257,10 @@ class ClosetDialogue {
         ),
         title: Column(
           children: [
-            const Icon(
+            Icon(
               Icons.lock_outline_rounded,
               size: 40,
-              color: ClosetColors.vert,
+              color: context.closetVert,
             ),
             const SizedBox(height: AppSpacing.p12),
             Text(
@@ -272,7 +273,7 @@ class ClosetDialogue {
         content: Text(
           message ?? l10n.connexionRequiseSelection,
           textAlign: TextAlign.center,
-          style: ClosetTextStyles.citation.copyWith(color: ClosetColors.taupe),
+          style: ClosetTextStyles.citation.copyWith(color: context.closetSecondaire),
         ),
         actionsAlignment: MainAxisAlignment.center,
         actions: [
@@ -280,7 +281,7 @@ class ClosetDialogue {
             onPressed: () => Navigator.of(context).pop(false),
             child: Text(
               l10n.plusTard,
-              style: ClosetTextStyles.corps.copyWith(color: ClosetColors.taupe),
+              style: ClosetTextStyles.corps.copyWith(color: context.closetSecondaire),
             ),
           ),
           const SizedBox(width: AppSpacing.p8),

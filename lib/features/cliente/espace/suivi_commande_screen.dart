@@ -89,7 +89,7 @@ class _Corps extends StatelessWidget {
           'COMMANDE #${commande.numero}',
           style: ClosetTextStyles.libelleFort.copyWith(
             letterSpacing: -0.28,
-            color: ClosetColors.vert,
+            color: context.closetVert,
           ),
         ),
         const SizedBox(height: AppSpacing.p8),

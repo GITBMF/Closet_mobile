@@ -12,6 +12,7 @@ import '../../../core/widgets/closet_app_bar.dart';
 import '../../../core/widgets/closet_filet.dart';
 import '../../../core/widgets/closet_header_button.dart';
 import '../../../core/widgets/etat_ecran.dart';
+import '../../../core/widgets/icone_panier.dart';
 import '../../../core/widgets/jauge_etat.dart';
 import '../../../core/widgets/piece_card.dart';
 import '../../../core/widgets/spotlight_showcase.dart';
@@ -156,7 +157,7 @@ class _Corps extends ConsumerWidget {
         ),
         SliverToBoxAdapter(
           child: Padding(
-            padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
+            padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -178,7 +179,7 @@ class _Corps extends ConsumerWidget {
                     ],
                   ],
                 ),
-                const SizedBox(height: AppSpacing.p12),
+                const SizedBox(height: AppSpacing.p8),
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
@@ -186,7 +187,7 @@ class _Corps extends ConsumerWidget {
                       child: Text(
                         formatPrixFcfa(article.price),
                         style: ClosetTextStyles.prixGrand.copyWith(
-                          color: ClosetColors.vert,
+                          color: context.closetPrix,
                         ),
                       ),
                     ),
@@ -199,30 +200,35 @@ class _Corps extends ConsumerWidget {
                   _LienSourceur(article: article),
                 ],
                 if (article.condition.trim().isNotEmpty) ...[
-                  const SizedBox(height: AppSpacing.p24),
-                  const ClosetFilet(couleur: ClosetColors.fond400),
-                  const SizedBox(height: AppSpacing.p20),
+                  const SizedBox(height: AppSpacing.p12),
+                  const _FiletTableau(),
+                  const SizedBox(height: AppSpacing.p12),
                   JaugeEtatPiece(
                     niveau: article.niveauEtat,
                     imperfections: article.imperfections,
                   ),
-                  const SizedBox(height: AppSpacing.p20),
+                  const SizedBox(height: AppSpacing.p12),
                 ],
                 if (lignes.isNotEmpty) ...[
-                  const ClosetFilet(couleur: ClosetColors.fond400),
+                  const _FiletTableau(),
                   for (final ligne in lignes) ...[
                     _LigneCaracteristique(
                       label: ligne.label,
                       valeur: ligne.valeur,
                     ),
-                    const ClosetFilet(couleur: ClosetColors.fond400),
+                    const _FiletTableau(),
                   ],
                 ],
                 if (recit != null) ...[
-                  const SizedBox(height: AppSpacing.p20),
-                  Text(recit, style: ClosetTextStyles.citation),
+                  const SizedBox(height: AppSpacing.p12),
+                  Text(
+                    recit,
+                    maxLines: 3,
+                    overflow: TextOverflow.ellipsis,
+                    style: ClosetTextStyles.citation,
+                  ),
                 ],
-                const SizedBox(height: 140),
+                const SizedBox(height: 96),
               ],
             ),
           ),
@@ -301,6 +307,20 @@ class _Carrousel extends StatelessWidget {
   }
 }
 
+/// Trait des tableaux d'informations : le plus fin possible, en teinte claire.
+class _FiletTableau extends StatelessWidget {
+  const _FiletTableau();
+
+  @override
+  Widget build(BuildContext context) {
+    return ClosetFilet(
+      couleur: context.closetLigne,
+      epaisseur: 0.4,
+      hauteur: 0.4,
+    );
+  }
+}
+
 class _LigneCaracteristique extends StatelessWidget {
   const _LigneCaracteristique({required this.label, required this.valeur});
 
@@ -310,7 +330,7 @@ class _LigneCaracteristique extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: AppSpacing.p20),
+      padding: const EdgeInsets.symmetric(vertical: AppSpacing.p8),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -319,7 +339,7 @@ class _LigneCaracteristique extends StatelessWidget {
             child: Text(
               label,
               style: ClosetTextStyles.corps.copyWith(
-                color: ClosetColors.taupe,
+                color: context.closetSecondaire,
               ),
             ),
           ),
@@ -369,7 +389,7 @@ class _BarreAjout extends ConsumerWidget {
             child: Material(
               color: indisponible
                   ? ClosetColors.doreDesactive
-                  : ClosetColors.vert,
+                  : context.closetAction,
               borderRadius: BorderRadius.circular(AppRadius.cercle),
               child: InkWell(
                 borderRadius: BorderRadius.circular(AppRadius.cercle),
@@ -384,7 +404,7 @@ class _BarreAjout extends ConsumerWidget {
                             ? l10n.retirerDeSelection
                             : l10n.ajouterASelection,
                     style: ClosetTextStyles.bouton.copyWith(
-                      color: ClosetColors.blanc,
+                      color: indisponible ? ClosetColors.neutre900 : context.closetActionTexte,
                     ),
                   ),
                 ),
@@ -451,9 +471,12 @@ class _BoutonsFiche extends ConsumerWidget {
         ),
         const Spacer(),
         ClosetBoutonHeader(
-          icone: dansSelection
-              ? Icons.shopping_basket
-              : Icons.shopping_basket_outlined,
+          icone: Icons.shopping_basket_outlined,
+          dessin: (t, c) => IconePanier(
+            taille: t,
+            couleur: c,
+            rempli: dansSelection,
+          ),
           label: dansSelection
               ? l10n.dansMaSelection(nbSelection)
               : l10n.maSelection,
@@ -489,7 +512,7 @@ class _LienSourceur extends StatelessWidget {
       children: [
         Text(
           l10n.venduPar,
-          style: ClosetTextStyles.meta.copyWith(color: ClosetColors.taupe),
+          style: ClosetTextStyles.meta.copyWith(color: context.closetSecondaire),
         ),
         Flexible(
           child: Semantics(
@@ -505,10 +528,10 @@ class _LienSourceur extends StatelessWidget {
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: ClosetTextStyles.meta.copyWith(
-                  color: ClosetColors.vert,
+                  color: context.closetVert,
                   fontWeight: FontWeight.w700,
                   decoration: TextDecoration.underline,
-                  decorationColor: ClosetColors.vert,
+                  decorationColor: context.closetVert,
                 ),
               ),
             ),

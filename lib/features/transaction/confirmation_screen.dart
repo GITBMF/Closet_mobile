@@ -6,6 +6,7 @@ import '../../core/theme/closet_colors.dart';
 import '../../core/theme/closet_text_styles.dart';
 import '../../core/widgets/closet_app_bar.dart';
 import '../../core/widgets/frise_tunnel.dart';
+import '../checkout/moyens_paiement.dart';
 import 'transaction_models.dart';
 import 'widgets/transaction_scaffold.dart';
 
@@ -93,7 +94,10 @@ class _Recapitulatif extends StatelessWidget {
               label: l10n.transactionDontLivraison,
               valeur: formatPrixFcfa(demande.fraisLivraison),
             ),
-          _Ligne(label: l10n.transactionMoyen, valeur: demande.moyen),
+          _Ligne(
+            label: l10n.transactionMoyen,
+            valeur: _libelleMoyen(demande.moyen),
+          ),
           // Jamais le numéro complet : cet écran peut être capturé.
           _Ligne(label: l10n.transactionCompte, valeur: demande.compteMasque),
         ],
@@ -135,4 +139,12 @@ class _Ligne extends StatelessWidget {
       ),
     );
   }
+}
+
+/// Nom lisible d'un moyen de paiement (`mtn_momo` → « MTN MOMO »).
+String _libelleMoyen(String id) {
+  for (final m in moyensPaiement) {
+    if (m.id == id) return m.libelleCourt;
+  }
+  return id.replaceAll('_', ' ').toUpperCase();
 }

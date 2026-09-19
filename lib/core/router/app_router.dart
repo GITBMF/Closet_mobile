@@ -469,6 +469,12 @@ final appRouterProvider = Provider<GoRouter>((ref) {
                     ],
                   ),
                   GoRoute(
+                    path: 'reglages/:groupe',
+                    builder: (context, state) => EspaceGroupeScreen(
+                      groupe: state.pathParameters['groupe']!,
+                    ),
+                  ),
+                  GoRoute(
                     path: 'deconnexion',
                     builder: (context, state) => const DeconnexionScreen(),
                   ),

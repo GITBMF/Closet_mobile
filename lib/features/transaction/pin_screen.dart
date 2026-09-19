@@ -14,11 +14,7 @@ import 'widgets/transaction_scaffold.dart';
 /// cerclée d'or quand elle a le focus, blanche cerclée de gris une fois
 /// remplie.
 class PinScreen extends StatefulWidget {
-  const PinScreen({
-    super.key,
-    required this.demande,
-    required this.onValide,
-  });
+  const PinScreen({super.key, required this.demande, required this.onValide});
 
   final DemandeTransaction demande;
 
@@ -62,10 +58,7 @@ class _PinScreenState extends State<PinScreen> {
           const SizedBox(height: 55),
           TexteTransaction(l10n.ajouterCodePin),
           const SizedBox(height: 32),
-          _CasesPin(
-            code: _controller.text,
-            onTap: () => _focus.requestFocus(),
-          ),
+          _CasesPin(code: _controller.text, onTap: () => _focus.requestFocus()),
           // Champ réel, invisible : il porte la saisie et le clavier.
           SizedBox(
             height: 0,
@@ -87,8 +80,9 @@ class _PinScreenState extends State<PinScreen> {
           const SizedBox(height: 88),
           BoutonTransaction(
             label: l10n.validerNumeroPin,
-            onPressed:
-                _complet ? () => widget.onValide(_controller.text) : null,
+            onPressed: _complet
+                ? () => widget.onValide(_controller.text)
+                : null,
           ),
           const Spacer(),
         ],

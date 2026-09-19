@@ -13,6 +13,7 @@ import '../../data/repositories/auth_repository.dart';
 import '../../data/repositories/cart_repository.dart';
 import '../../data/repositories/wishlist_repository.dart';
 import 'closet_header_button.dart';
+import 'icone_panier.dart';
 import 'piece_card.dart';
 import 'spotlight_showcase.dart';
 
@@ -41,8 +42,7 @@ class ClosetAppBar extends ConsumerWidget implements PreferredSizeWidget {
   final List<Widget>? actions;
 
   @override
-  Size get preferredSize =>
-      const Size.fromHeight(ClosetLayout.hauteurBarre);
+  Size get preferredSize => const Size.fromHeight(ClosetLayout.hauteurBarre);
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -80,6 +80,7 @@ class ClosetAppBar extends ConsumerWidget implements PreferredSizeWidget {
                   ],
                   Expanded(
                     child: GestureDetector(
+                      key: ClosetTourKeys.accueilKey,
                       behavior: HitTestBehavior.opaque,
                       onTap: user == null ? () => context.push('/auth') : null,
                       child: Align(
@@ -97,10 +98,7 @@ class ClosetAppBar extends ConsumerWidget implements PreferredSizeWidget {
                     ),
                   ),
                   if (actions != null)
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: actions!,
-                    )
+                    Row(mainAxisSize: MainAxisSize.min, children: actions!)
                   else if (showShortcuts)
                     Row(
                       mainAxisSize: MainAxisSize.min,
@@ -108,6 +106,11 @@ class ClosetAppBar extends ConsumerWidget implements PreferredSizeWidget {
                         ClosetBoutonHeader(
                           key: ClosetTourKeys.selectionKey,
                           icone: Icons.shopping_basket_outlined,
+                          dessin: (t, c) => IconePanier(
+                            taille: t,
+                            couleur: c,
+                            rempli: cartCount > 0,
+                          ),
                           label: cartCount > 0
                               ? l10n.selectionAvecCompte(cartCount)
                               : l10n.maSelection,
@@ -147,11 +150,12 @@ class _Salutation extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = ClosetL10n.of(context);
-    final nom = subtitle ??
+    final nom =
+        subtitle ??
         (user == null
             ? l10n.invite
             : '${user!.firstName} ${user!.lastName.isEmpty ? '' : '${user!.lastName[0]}.'}'
-                .trim());
+                  .trim());
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,

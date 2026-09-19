@@ -86,8 +86,8 @@ class _ClosetPrimaryButtonState extends State<ClosetPrimaryButton>
       fond = actif ? ClosetColors.fond300 : ClosetColors.doreDesactive;
       texte = actif ? ClosetColors.noir : ClosetColors.doreEncre;
     } else {
-      fond = actif ? ClosetColors.vert : ClosetColors.sauge;
-      texte = ClosetColors.texteSurVert;
+      fond = actif ? context.closetAction : ClosetColors.sauge;
+      texte = context.closetActionTexte;
     }
 
     final rayon = BorderRadius.circular(AppRadius.cercle);
@@ -159,8 +159,8 @@ class ClosetOutlineButton extends StatelessWidget {
         color: Colors.transparent,
         shape: RoundedRectangleBorder(
           borderRadius: rayon,
-          side: const BorderSide(
-            color: ClosetColors.vert,
+          side: BorderSide(
+            color: context.closetVert,
             width: AppStroke.moyen,
           ),
         ),
@@ -173,8 +173,9 @@ class ClosetOutlineButton extends StatelessWidget {
               child: Text(
                 label,
                 overflow: TextOverflow.ellipsis,
-                style:
-                    ClosetTextStyles.bouton.copyWith(color: ClosetColors.vert),
+                style: ClosetTextStyles.bouton.copyWith(
+                  color: context.closetVert,
+                ),
               ),
             ),
           ),

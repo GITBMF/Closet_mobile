@@ -32,7 +32,7 @@ class ClosetChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final couleurTexte = _active
-        ? ClosetColors.blanc
+        ? context.closetActionTexte
         : (context.closetSombre
             ? ClosetColors.creme
             : ClosetColors.chipTexteInactif);
@@ -54,12 +54,12 @@ class ClosetChip extends StatelessWidget {
           ),
           decoration: BoxDecoration(
             color: _active
-                ? ClosetColors.vert
+                ? context.closetAction
                 : (context.closetSombre
                     ? ClosetColors.emeraude400
                     : ClosetColors.carteFond),
             border: Border.all(
-              color: _active ? Colors.transparent : ClosetColors.fond300,
+              color: _active ? Colors.transparent : context.closetBordure,
               width: AppStroke.filet,
             ),
             borderRadius: BorderRadius.circular(AppRadius.bouton),

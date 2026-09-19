@@ -91,8 +91,8 @@ class _CarteCommande extends StatelessWidget {
         constraints: const BoxConstraints(minHeight: 80),
         padding: const EdgeInsets.symmetric(horizontal: AppSpacing.p16),
         decoration: BoxDecoration(
-          color: ClosetColors.blanc,
-          border: Border.all(color: ClosetColors.fond300, width: AppStroke.fin),
+          color: context.closetCarte,
+          border: Border.all(color: context.closetBordure, width: AppStroke.fin),
           borderRadius: BorderRadius.circular(AppRadius.carte),
         ),
         child: Column(
@@ -108,7 +108,7 @@ class _CarteCommande extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                     style: ClosetTextStyles.libelleFort.copyWith(
                       letterSpacing: -0.28,
-                      color: ClosetColors.vert,
+                      color: context.closetVert,
                     ),
                   ),
                 ),
@@ -121,7 +121,7 @@ class _CarteCommande extends StatelessWidget {
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: ClosetTextStyles.corps.copyWith(
-                color: ClosetColors.neutre900,
+                color: context.closetEncre,
               ),
             ),
           ],

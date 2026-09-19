@@ -238,10 +238,10 @@ class EspaceContactScreen extends StatelessWidget {
             children: [
               Text(
                 l10n.espaceConciergerieClient,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 10,
                   fontWeight: FontWeight.w700,
-                  color: ClosetColors.taupe,
+                  color: context.closetSecondaire,
                   letterSpacing: 1.5,
                 ),
               ),
@@ -367,10 +367,10 @@ class EspaceConfidentialiteScreen extends StatelessWidget {
             children: [
               Text(
                 l10n.espaceProtectionDonnees,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 10,
                   fontWeight: FontWeight.w700,
-                  color: ClosetColors.taupe,
+                  color: context.closetSecondaire,
                   letterSpacing: 1.5,
                 ),
               ),
@@ -460,10 +460,10 @@ class _EspaceEvaluationScreenState
             children: [
               Text(
                 l10n.espacePartagezExperience,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 10,
                   fontWeight: FontWeight.w700,
-                  color: ClosetColors.taupe,
+                  color: context.closetSecondaire,
                   letterSpacing: 1.5,
                 ),
               ),
@@ -507,10 +507,10 @@ class _EspaceEvaluationScreenState
               const SizedBox(height: 24),
               Text(
                 l10n.espaceVotreCommentaire,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 10,
                   fontWeight: FontWeight.w700,
-                  color: ClosetColors.taupe,
+                  color: context.closetSecondaire,
                   letterSpacing: 1.5,
                 ),
               ),
@@ -521,7 +521,7 @@ class _EspaceEvaluationScreenState
                 style: const TextStyle(color: ClosetColors.noir, fontSize: 14),
                 decoration: InputDecoration(
                   hintText: l10n.espaceCommentaireHint,
-                  hintStyle: const TextStyle(color: ClosetColors.taupe, fontSize: 13),
+                  hintStyle: TextStyle(color: context.closetSecondaire, fontSize: 13),
                   filled: true,
                   fillColor: ClosetColors.creme,
                   border: OutlineInputBorder(

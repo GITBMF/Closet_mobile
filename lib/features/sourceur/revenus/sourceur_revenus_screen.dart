@@ -110,7 +110,7 @@ class SourceurRevenusScreen extends ConsumerWidget {
                             ClosetL10n.of(context).t('Transactions', 'Transactions'),
                             style: ClosetTextStyles.corpsMedium.copyWith(
                               letterSpacing: -0.24,
-                              color: ClosetColors.vert,
+                              color: context.closetVert,
                             ),
                           ),
                           _PastilleFiltre(
@@ -230,8 +230,8 @@ class _LigneTransaction extends StatelessWidget {
         vertical: AppSpacing.p12,
       ),
       decoration: BoxDecoration(
-        color: ClosetColors.blanc,
-        border: Border.all(color: ClosetColors.fond300, width: AppStroke.fin),
+        color: context.closetCarte,
+        border: Border.all(color: context.closetBordure, width: AppStroke.fin),
         borderRadius: BorderRadius.circular(AppRadius.carte),
       ),
       child: Row(

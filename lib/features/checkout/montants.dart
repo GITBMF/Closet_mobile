@@ -85,7 +85,7 @@ class RecapMontants extends ConsumerWidget {
         Text(
           mentionReservationPiece,
           style: ClosetTextStyles.mention.copyWith(
-            color: ClosetColors.taupe,
+            color: context.closetSecondaire,
           ),
         ),
       ],
@@ -121,12 +121,12 @@ class LigneMontant extends StatelessWidget {
         Text(
           valeur,
           style: grand
-              ? ClosetTextStyles.prixGrand.copyWith(color: ClosetColors.vert)
+              ? ClosetTextStyles.prixGrand.copyWith(color: context.closetPrix)
               : ClosetTextStyles.prix.copyWith(
                   fontSize: 15,
                   fontWeight: FontWeight.w600,
                   letterSpacing: 0.30,
-                  color: ClosetColors.vert,
+                  color: context.closetPrix,
                 ),
         ),
       ],

@@ -41,56 +41,65 @@ class _SelectionScreenState extends ConsumerState<SelectionScreen> {
                 action: () => context.go('/collections'),
                 libelleAction: l10n.decouvrirCollections,
               )
-            : SingleChildScrollView(
-                padding: const EdgeInsets.only(bottom: AppSpacing.p32),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const SizedBox(height: AppSpacing.p16),
-                    const _BoutonFinaliser(),
-                    const SizedBox(height: AppSpacing.p20),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: AppSpacing.p24,
+            : Column(
+                children: [
+                  const SizedBox(height: AppSpacing.p16),
+                  const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: AppSpacing.p20),
+                    child: _BoutonFinaliser(),
+                  ),
+                  const SizedBox(height: AppSpacing.p12),
+                  Expanded(
+                    child: ListView(
+                      padding: const EdgeInsets.only(
+                        top: AppSpacing.p8,
+                        bottom: AppSpacing.p32,
                       ),
-                      child: Text(
-                        pieces.length == 1
-                            ? l10n.uneSeulePieceMiseDeCote
-                            : l10n.nPiecesMisesDeCote(pieces.length),
-                        style: ClosetTextStyles.citation.copyWith(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w400,
-                          letterSpacing: -0.28,
-                          color: ClosetColors.neutre700,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: AppSpacing.p20,
+                          ),
+                          child: Text(
+                            pieces.length == 1
+                                ? l10n.uneSeulePieceMiseDeCote
+                                : l10n.nPiecesMisesDeCote(pieces.length),
+                            style: ClosetTextStyles.citation.copyWith(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w400,
+                              letterSpacing: -0.28,
+                              color: context.closetSecondaire,
+                            ),
+                          ),
                         ),
-                      ),
+                        const SizedBox(height: AppSpacing.p16),
+                        for (final piece in pieces) ...[
+                          Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: AppSpacing.p20,
+                            ),
+                            child: _LignePiece(
+                              article: piece,
+                              onRetirer: () {
+                                ref
+                                    .read(cartProvider.notifier)
+                                    .removeArticle(piece.id);
+                                toastActionPiece(
+                                  ref,
+                                  nom: piece.title,
+                                  resultat: l10n.retireeDeSelection,
+                                  succes: false,
+                                );
+                              },
+                              onTap: () => context.push('/product/${piece.id}'),
+                            ),
+                          ),
+                          const SizedBox(height: AppSpacing.p12),
+                        ],
+                      ],
                     ),
-                    const SizedBox(height: AppSpacing.p20),
-                    for (final piece in pieces) ...[
-                      Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: AppSpacing.p20,
-                        ),
-                        child: _LignePiece(
-                          article: piece,
-                          onRetirer: () {
-                            ref
-                                .read(cartProvider.notifier)
-                                .removeArticle(piece.id);
-                            toastActionPiece(
-                              ref,
-                              nom: piece.title,
-                              resultat: l10n.retireeDeSelection,
-                              succes: false,
-                            );
-                          },
-                          onTap: () => context.push('/product/${piece.id}'),
-                        ),
-                      ),
-                      const SizedBox(height: AppSpacing.p12),
-                    ],
-                  ],
-                ),
+                  ),
+                ],
               ),
       ),
     );
@@ -118,8 +127,8 @@ class _LignePiece extends StatelessWidget {
         constraints: const BoxConstraints(minHeight: 146),
         padding: const EdgeInsets.all(AppSpacing.p8),
         decoration: BoxDecoration(
-          color: ClosetColors.blanc,
-          border: Border.all(color: ClosetColors.fond300, width: AppStroke.fin),
+          color: context.closetCarte,
+          border: Border.all(color: context.closetBordure, width: AppStroke.fin),
           borderRadius: BorderRadius.circular(AppRadius.carte),
         ),
         child: Row(
@@ -164,6 +173,7 @@ class _LignePiece extends StatelessWidget {
                     style: ClosetTextStyles.nomProduit.copyWith(
                       fontSize: 14,
                       letterSpacing: -0.28,
+                      color: context.closetEncre,
                     ),
                   ),
                   const SizedBox(height: AppSpacing.p8),
@@ -187,7 +197,7 @@ class _LignePiece extends StatelessWidget {
                   Text(
                     formatPrixFcfa(article.price),
                     style: ClosetTextStyles.prixGrand.copyWith(
-                      color: ClosetColors.vert,
+                      color: context.closetPrix,
                     ),
                   ),
                 ],
@@ -198,13 +208,13 @@ class _LignePiece extends StatelessWidget {
               label: ClosetL10n.of(context).retirerDeSelection,
               child: GestureDetector(
                 onTap: onRetirer,
-                child: const SizedBox(
+                child: SizedBox(
                   width: 28,
                   height: 28,
                   child: Icon(
                     Icons.close,
                     size: 15,
-                    color: ClosetColors.noirPur,
+                    color: context.closetEncre,
                   ),
                 ),
               ),
@@ -227,23 +237,21 @@ class _BoutonFinaliser extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final connectee = ref.watch<bool>(isAuthenticatedProvider);
 
-    return Center(
-      child: SizedBox(
-        key: ClosetTourKeys.finaliserKey,
-        width: 312,
-        height: 44,
-        child: Material(
-          color: ClosetColors.vert,
+    return SizedBox(
+      key: ClosetTourKeys.finaliserKey,
+      width: double.infinity,
+      height: 44,
+      child: Material(
+        color: context.closetAction,
+        borderRadius: BorderRadius.circular(AppRadius.cercle),
+        child: InkWell(
           borderRadius: BorderRadius.circular(AppRadius.cercle),
-          child: InkWell(
-            borderRadius: BorderRadius.circular(AppRadius.cercle),
-            onTap: () => context.push(connectee ? '/checkout' : '/auth'),
-            child: Center(
-              child: Text(
-                ClosetL10n.of(context).finaliserMaSelection,
-                style: ClosetTextStyles.bouton.copyWith(
-                  color: ClosetColors.blanc,
-                ),
+          onTap: () => context.push(connectee ? '/checkout' : '/auth'),
+          child: Center(
+            child: Text(
+              ClosetL10n.of(context).finaliserMaSelection,
+              style: ClosetTextStyles.bouton.copyWith(
+                color: context.closetActionTexte,
               ),
             ),
           ),

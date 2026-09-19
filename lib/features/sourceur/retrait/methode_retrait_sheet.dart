@@ -169,7 +169,7 @@ class _MethodeRetraitSheetState
               SizedBox(
                 height: 44,
                 child: Material(
-                  color: ClosetColors.vert,
+                  color: context.closetAction,
                   borderRadius: BorderRadius.circular(AppRadius.cercle),
                   child: InkWell(
                     borderRadius: BorderRadius.circular(AppRadius.cercle),
@@ -179,7 +179,7 @@ class _MethodeRetraitSheetState
                         l10n.validerMethodeRetrait,
                         style: ClosetTextStyles.bouton.copyWith(
                           fontWeight: FontWeight.w600,
-                          color: ClosetColors.blanc,
+                          color: context.closetActionTexte,
                         ),
                       ),
                     ),

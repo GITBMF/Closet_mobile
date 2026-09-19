@@ -16,6 +16,7 @@ class ClosetBoutonHeader extends StatelessWidget {
     required this.icone,
     required this.label,
     required this.onTap,
+    this.dessin,
     this.pastille,
     this.couleurIcone,
     this.fond,
@@ -23,6 +24,10 @@ class ClosetBoutonHeader extends StatelessWidget {
   });
 
   final IconData icone;
+
+  /// Dessin personnalisé (taille, couleur) qui remplace [icone] — utilisé pour
+  /// le panier, absent de la police d'icônes sous une forme lisible.
+  final Widget Function(double taille, Color couleur)? dessin;
   final String label;
   final VoidCallback onTap;
   final int? pastille;
@@ -56,14 +61,29 @@ class ClosetBoutonHeader extends StatelessWidget {
                 clipBehavior: Clip.none,
                 children: [
                   if (sansDisque)
-                    Icon(
-                      icone,
-                      size: layout.iconeHeader + 4,
-                      color: couleurIcone ?? ClosetColors.vert,
-                      shadows: const [
-                        Shadow(blurRadius: 10, color: Colors.black38),
-                      ],
-                    )
+                    dessin != null
+                        ? DecoratedBox(
+                            decoration: const BoxDecoration(
+                              boxShadow: [
+                                BoxShadow(
+                                  blurRadius: 10,
+                                  color: Colors.black26,
+                                ),
+                              ],
+                            ),
+                            child: dessin!(
+                              layout.iconeHeader + 9,
+                              couleurIcone ?? ClosetColors.vert,
+                            ),
+                          )
+                        : Icon(
+                            icone,
+                            size: layout.iconeHeader + 4,
+                            color: couleurIcone ?? ClosetColors.vert,
+                            shadows: const [
+                              Shadow(blurRadius: 10, color: Colors.black38),
+                            ],
+                          )
                   else
                     Container(
                       width: disque,
@@ -76,16 +96,23 @@ class ClosetBoutonHeader extends StatelessWidget {
                           width: AppStroke.fin,
                         ),
                       ),
-                      child: Icon(
-                        icone,
-                        size: layout.iconeHeader,
-                        color: couleurIcone ?? ClosetColors.vert,
-                      ),
+                      child: dessin != null
+                          ? Center(
+                              child: dessin!(
+                                layout.iconeHeader + 9,
+                                couleurIcone ?? ClosetColors.vert,
+                              ),
+                            )
+                          : Icon(
+                              icone,
+                              size: layout.iconeHeader,
+                              color: couleurIcone ?? ClosetColors.vert,
+                            ),
                     ),
                   if (pastille != null)
                     Positioned(
-                      top: -2,
-                      right: -2,
+                      top: sansDisque ? -8 : -2,
+                      right: sansDisque ? -10 : -2,
                       child: IgnorePointer(
                         child: Container(
                           padding: const EdgeInsets.all(AppSpacing.p4),

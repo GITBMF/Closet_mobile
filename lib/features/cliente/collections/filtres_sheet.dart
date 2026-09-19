@@ -35,6 +35,7 @@ const etatsCatalogue = [
 Future<void> afficherFiltres(BuildContext context) {
   return showModalBottomSheet<void>(
     context: context,
+    useRootNavigator: true,
     isScrollControlled: true,
     backgroundColor: Colors.transparent,
     builder: (context) => const _FiltresSheet(),
@@ -212,6 +213,27 @@ class _FiltresSheetState extends ConsumerState<_FiltresSheet> {
                 _OngletsFiltres(
                   titres: [for (final p in pages) p.titre],
                 ),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(23, 4, 23, 0),
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.swipe_rounded,
+                        size: 14,
+                        color: context.closetSecondaire,
+                      ),
+                      const SizedBox(width: AppSpacing.p8),
+                      Expanded(
+                        child: Text(
+                          l10n.filtresGlisser,
+                          style: ClosetTextStyles.meta.copyWith(
+                            color: context.closetSecondaire,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
                 SizedBox(
                   height: 88,
                   child: TabBarView(
@@ -224,7 +246,7 @@ class _FiltresSheetState extends ConsumerState<_FiltresSheet> {
                     height: 44,
                     width: double.infinity,
                     child: Material(
-                      color: ClosetColors.vert,
+                      color: context.closetAction,
                       borderRadius: BorderRadius.circular(AppRadius.cercle),
                       child: InkWell(
                         borderRadius: BorderRadius.circular(AppRadius.cercle),
@@ -233,7 +255,7 @@ class _FiltresSheetState extends ConsumerState<_FiltresSheet> {
                           child: Text(
                             l10n.voirLesPieces,
                             style: ClosetTextStyles.bouton.copyWith(
-                              color: ClosetColors.blanc,
+                              color: context.closetActionTexte,
                             ),
                           ),
                         ),
@@ -276,9 +298,9 @@ class _OngletsFiltres extends StatelessWidget {
                 tabAlignment: TabAlignment.start,
                 dividerColor: Colors.transparent,
                 indicatorWeight: AppStroke.fin,
-                labelColor: ClosetColors.vert,
-                unselectedLabelColor: ClosetColors.chipTexteInactif,
-                indicatorColor: ClosetColors.vert,
+                labelColor: context.closetVert,
+                unselectedLabelColor: context.closetSecondaire,
+                indicatorColor: context.closetVert,
                 labelStyle: ClosetTextStyles.libelle,
                 unselectedLabelStyle: ClosetTextStyles.libelle,
                 tabs: [for (final t in titres) Tab(text: t)],
@@ -339,13 +361,13 @@ class _CurseurBudget extends StatelessWidget {
                 Text(
                   formatPrixFcfa(fourchette.start),
                   style: ClosetTextStyles.prix.copyWith(
-                    color: ClosetColors.vert,
+                    color: context.closetPrix,
                   ),
                 ),
                 Text(
                   formatPrixFcfa(fourchette.end),
                   style: ClosetTextStyles.prix.copyWith(
-                    color: ClosetColors.vert,
+                    color: context.closetPrix,
                   ),
                 ),
               ],
@@ -364,8 +386,8 @@ class _CurseurBudget extends StatelessWidget {
               min: prixMinimum,
               max: prixMaximum,
               divisions: 45,
-              activeColor: ClosetColors.vert,
-              inactiveColor: ClosetColors.ligne,
+              activeColor: context.closetVert,
+              inactiveColor: context.closetLigne,
               labels: RangeLabels(
                 formatPrixFcfa(fourchette.start),
                 formatPrixFcfa(fourchette.end),

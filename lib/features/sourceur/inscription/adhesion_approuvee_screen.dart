@@ -87,8 +87,8 @@ class _ArcheValidation extends StatelessWidget {
         AppSpacing.p24,
       ),
       decoration: BoxDecoration(
-        color: ClosetColors.blanc,
-        border: Border.all(color: ClosetColors.fond300, width: AppStroke.fin),
+        color: context.closetCarte,
+        border: Border.all(color: context.closetBordure, width: AppStroke.fin),
         borderRadius: const BorderRadius.vertical(top: Radius.circular(159)),
       ),
       child: Column(
@@ -114,7 +114,7 @@ class _ArcheValidation extends StatelessWidget {
               fontFamily: ClosetTextStyles.prix.fontFamily,
               fontWeight: FontWeight.w700,
               letterSpacing: 0.30,
-              color: ClosetColors.vert,
+              color: context.closetVert,
             ),
           ),
         ],

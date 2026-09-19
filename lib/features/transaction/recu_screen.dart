@@ -57,7 +57,10 @@ class RecuScreen extends StatelessWidget {
                   hauteur: 1,
                 ),
                 const SizedBox(height: AppSpacing.p16),
-                _Ligne(l10n.transactionDateHeure, formatDateCommande(recu.horodatage)),
+                _Ligne(
+                  l10n.transactionDateHeure,
+                  formatDateCommande(recu.horodatage),
+                ),
                 if (d.type.afficheReference)
                   _Ligne(l10n.transactionNumeroReference, recu.reference),
                 for (final ligne in d.lignesRecu)
@@ -114,7 +117,6 @@ class RecuScreen extends StatelessWidget {
       ),
     );
   }
-
 }
 
 /// Carte blanche du reçu : 310 de large, rayon 30.

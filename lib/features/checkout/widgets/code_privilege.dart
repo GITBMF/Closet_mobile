@@ -20,12 +20,17 @@ class ChampCodePrivilege extends ConsumerWidget {
     final code = controller.text.trim();
     if (code.isEmpty) return;
 
-    final applique =
-        ref.read(brouillonCommandeProvider.notifier).appliquerCodePrivilege(code);
+    final applique = ref
+        .read(brouillonCommandeProvider.notifier)
+        .appliquerCodePrivilege(code);
 
     if (applique) {
       final l10n = ref.read(l10nProvider);
-      toastSucces(ref, l10n.codeEnregistreTitre, l10n.remiseCalculeeAuPaiementMessage);
+      toastSucces(
+        ref,
+        l10n.codeEnregistreTitre,
+        l10n.remiseCalculeeAuPaiementMessage,
+      );
     }
   }
 
@@ -37,10 +42,13 @@ class ChampCodePrivilege extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = ClosetL10n.of(context);
-    final applique =
-        ref.watch(brouillonCommandeProvider).codePrivilege.isNotEmpty;
+    final applique = ref
+        .watch(brouillonCommandeProvider)
+        .codePrivilege
+        .isNotEmpty;
     final encreChamp = ClosetTextStyles.prix.copyWith(
-      fontWeight: FontWeight.w300,
+      fontSize: 20,
+      fontWeight: FontWeight.w400,
       color: context.closetEncre,
     );
 
@@ -49,78 +57,167 @@ class ChampCodePrivilege extends ConsumerWidget {
       children: [
         Row(
           children: [
-            Text(
-              l10n.codePrivilegeLabel,
-              style: ClosetTextStyles.meta.copyWith(
+            Container(
+              width: 40,
+              height: 40,
+              decoration: const BoxDecoration(
+                color: ClosetColors.emeraude100,
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.local_activity_outlined,
+                size: 22,
                 color: ClosetColors.vert,
               ),
             ),
-            const Spacer(),
-            Text(
-              l10n.facultatifLabel,
-              style: ClosetTextStyles.mention.copyWith(
-                color: ClosetColors.taupe,
+            const SizedBox(width: AppSpacing.p12),
+            Expanded(
+              child: Text(
+                l10n.codePrivilegeLabel,
+                style: ClosetTextStyles.titreSection.copyWith(
+                  color: context.closetEncre,
+                ),
               ),
             ),
           ],
         ),
-        const SizedBox(height: AppSpacing.p8),
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Expanded(
-              child: SizedBox(
-                height: 42,
-                child: TextField(
-                  controller: controller,
-                  enabled: !applique,
-                  textCapitalization: TextCapitalization.characters,
-                  onSubmitted: (_) => _appliquer(ref),
-                  style: encreChamp,
-                  cursorColor: ClosetColors.vert,
-                  decoration: InputDecoration(
-                    hintText: l10n.cerclePrivilegeHint,
-                    hintStyle: encreChamp.copyWith(
-                      color: ClosetColors.placeholderGris,
-                    ),
-                    filled: true,
-                    fillColor: applique
-                        ? ClosetColors.emeraude100
-                        : context.closetChamp,
-                    isDense: true,
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: AppSpacing.p16,
-                      vertical: AppSpacing.p12,
-                    ),
-                    border: bordureChamp(ClosetColors.fond300),
-                    enabledBorder: bordureChamp(ClosetColors.fond300),
-                    disabledBorder: bordureChamp(ClosetColors.emeraude100),
-                    focusedBorder: bordureChamp(ClosetColors.vert),
+        const SizedBox(height: AppSpacing.p12),
+        Text(
+          l10n.codePrivilegeAccroche,
+          style: ClosetTextStyles.corps.copyWith(
+            fontSize: 15,
+            height: 1.45,
+            color: context.closetSecondaire,
+          ),
+        ),
+        const SizedBox(height: AppSpacing.p20),
+        TextField(
+          controller: controller,
+          enabled: !applique,
+          textCapitalization: TextCapitalization.characters,
+          textInputAction: TextInputAction.done,
+          onSubmitted: (_) => _appliquer(ref),
+          style: encreChamp,
+          cursorColor: context.closetVert,
+          decoration: InputDecoration(
+            hintText: l10n.codePrivilegeSaisir,
+            hintStyle: encreChamp.copyWith(
+              fontSize: 17,
+              color: context.closetSecondaire,
+            ),
+            filled: true,
+            fillColor: applique
+                ? ClosetColors.emeraude100
+                : context.closetChamp,
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.p20,
+              vertical: AppSpacing.p20,
+            ),
+            border: bordureChamp(ClosetColors.fond300),
+            enabledBorder: bordureChamp(ClosetColors.fond300),
+            disabledBorder: bordureChamp(ClosetColors.emeraude100),
+            focusedBorder: bordureChamp(context.closetVert),
+          ),
+        ),
+        const SizedBox(height: AppSpacing.p16),
+        SizedBox(
+          width: double.infinity,
+          height: 48,
+          child: Material(
+            color: applique ? Colors.transparent : context.closetAction,
+            shape: StadiumBorder(
+              side: applique
+                  ? BorderSide(color: context.closetSecondaire)
+                  : BorderSide.none,
+            ),
+            child: InkWell(
+              customBorder: const StadiumBorder(),
+              onTap: applique ? () => _retirer(ref) : () => _appliquer(ref),
+              child: Center(
+                child: Text(
+                  applique ? l10n.retirerLabel : l10n.appliquerLabel,
+                  style: ClosetTextStyles.bouton.copyWith(
+                    color: applique ? context.closetSecondaire : context.closetActionTexte,
                   ),
                 ),
               ),
             ),
-            const SizedBox(width: AppSpacing.p8),
-            TextButton(
-              onPressed:
-                  applique ? () => _retirer(ref) : () => _appliquer(ref),
-              style: TextButton.styleFrom(
-                minimumSize: const Size(72, 42),
-                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.p8),
-                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                foregroundColor:
-                    applique ? ClosetColors.taupe : ClosetColors.fond400,
-              ),
-              child: Text(
-                applique ? l10n.retirerLabel : l10n.appliquerLabel,
-                style: ClosetTextStyles.actionPetite.copyWith(
-                  color: applique ? ClosetColors.taupe : ClosetColors.fond400,
-                ),
-              ),
-            ),
-          ],
+          ),
         ),
       ],
+    );
+  }
+}
+
+/// Feuille de saisie du code privilège, ouverte depuis Mon espace : le champ
+/// n'apparaît plus dans le tunnel de paiement.
+void afficherCodePrivilege(BuildContext context) {
+  showModalBottomSheet<void>(
+    context: context,
+    useRootNavigator: true,
+    isScrollControlled: true,
+    backgroundColor: Colors.transparent,
+    builder: (_) => const _FeuilleCodePrivilege(),
+  );
+}
+
+class _FeuilleCodePrivilege extends ConsumerStatefulWidget {
+  const _FeuilleCodePrivilege();
+
+  @override
+  ConsumerState<_FeuilleCodePrivilege> createState() =>
+      _FeuilleCodePrivilegeState();
+}
+
+class _FeuilleCodePrivilegeState extends ConsumerState<_FeuilleCodePrivilege> {
+  late final TextEditingController _controller = TextEditingController(
+    text: ref.read(brouillonCommandeProvider).codePrivilege,
+  );
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.only(bottom: MediaQuery.viewInsetsOf(context).bottom),
+      child: Container(
+        decoration: BoxDecoration(
+          color: Theme.of(context).scaffoldBackgroundColor,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        padding: const EdgeInsets.fromLTRB(
+          AppSpacing.p24,
+          AppSpacing.p20,
+          AppSpacing.p24,
+          AppSpacing.p32,
+        ),
+        child: SafeArea(
+          top: false,
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Center(
+                  child: Container(
+                    width: 40,
+                    height: 4,
+                    margin: const EdgeInsets.only(bottom: AppSpacing.p20),
+                    decoration: BoxDecoration(
+                      color: ClosetColors.carteBordure,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                ),
+                ChampCodePrivilege(controller: _controller),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

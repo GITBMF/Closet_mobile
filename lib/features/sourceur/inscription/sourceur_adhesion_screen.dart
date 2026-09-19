@@ -86,7 +86,7 @@ class SourceurAdhesionScreen extends ConsumerWidget {
                       style: ClosetTextStyles.titreBloc.copyWith(
                         fontFamily: ClosetTextStyles.prix.fontFamily,
                         letterSpacing: -0.30,
-                        color: ClosetColors.vert,
+                        color: context.closetVert,
                       ),
                     ),
                     const SizedBox(height: AppSpacing.p8),
@@ -94,7 +94,7 @@ class SourceurAdhesionScreen extends ConsumerWidget {
                       l10n.adhesionGarantie,
                       style: ClosetTextStyles.meta.copyWith(
                         letterSpacing: 0.10,
-                        color: ClosetColors.taupe,
+                        color: context.closetSecondaire,
                       ),
                     ),
                     const SizedBox(height: AppSpacing.p32),
@@ -102,7 +102,7 @@ class SourceurAdhesionScreen extends ConsumerWidget {
                         etapeCourante == EtapeAdhesion.premierePiece) ...[
                       Center(
                         child: SizedBox(
-                          width: 312,
+                          width: double.infinity,
                           height: 44,
                           child: Material(
                             color: ClosetColors.fond300,
@@ -118,7 +118,7 @@ class SourceurAdhesionScreen extends ConsumerWidget {
                                   l10n.adhesionVoirValidation,
                                   style: ClosetTextStyles.bouton.copyWith(
                                     fontWeight: FontWeight.w600,
-                                    color: ClosetColors.vert,
+                                    color: context.closetVert,
                                   ),
                                 ),
                               ),
@@ -130,7 +130,7 @@ class SourceurAdhesionScreen extends ConsumerWidget {
                     ],
                     Center(
                       child: SizedBox(
-                        width: 312,
+                        width: double.infinity,
                         height: 44,
                         child: ClosetOutlineButton(
                           label: l10n.retourAccueil,
@@ -179,23 +179,23 @@ class _AucuneAdhesion extends StatelessWidget {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(
+                      Icon(
                         Icons.badge_outlined,
                         size: 48,
-                        color: ClosetColors.taupe,
+                        color: context.closetSecondaire,
                       ),
                       const SizedBox(height: AppSpacing.p16),
                       Text(
                         l10n.adhesionAucuneTitre,
                         style: ClosetTextStyles.titreBloc
-                            .copyWith(color: ClosetColors.vert),
+                            .copyWith(color: context.closetVert),
                         textAlign: TextAlign.center,
                       ),
                       const SizedBox(height: AppSpacing.p8),
                       Text(
                         l10n.adhesionAucuneCorps,
                         style: ClosetTextStyles.meta
-                            .copyWith(color: ClosetColors.taupe),
+                            .copyWith(color: context.closetSecondaire),
                         textAlign: TextAlign.center,
                       ),
                       const SizedBox(height: AppSpacing.p24),
@@ -361,7 +361,7 @@ class _EtapeFrise extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final couleur = atteinte ? ClosetColors.vert : ClosetColors.ligne;
+    final couleur = atteinte ? context.closetVert : context.closetLigne;
 
     return IntrinsicHeight(
       child: Row(
@@ -373,12 +373,16 @@ class _EtapeFrise extends StatelessWidget {
                 width: 18,
                 height: 18,
                 decoration: BoxDecoration(
-                  color: atteinte ? ClosetColors.vert : ClosetColors.blanc,
+                  color: atteinte ? context.closetVert : context.closetCarte,
                   shape: BoxShape.circle,
                   border: Border.all(color: couleur, width: AppStroke.moyen),
                 ),
                 child: atteinte
-                    ? const Icon(Icons.check, size: 11, color: ClosetColors.blanc)
+                    ? Icon(
+                        Icons.check,
+                        size: 11,
+                        color: context.closetActionTexte,
+                      )
                     : null,
               ),
               if (!derniere)
@@ -399,7 +403,9 @@ class _EtapeFrise extends StatelessWidget {
                     style: ClosetTextStyles.libelle.copyWith(
                       fontWeight:
                           courante ? FontWeight.w700 : FontWeight.w500,
-                      color: atteinte ? ClosetColors.noir : ClosetColors.taupe,
+                      color: atteinte
+                          ? context.closetEncre
+                          : context.closetSecondaire,
                     ),
                   ),
                   const SizedBox(height: AppSpacing.p4),
@@ -407,7 +413,7 @@ class _EtapeFrise extends StatelessWidget {
                     detail,
                     style: ClosetTextStyles.meta.copyWith(
                       fontSize: 11,
-                      color: ClosetColors.taupe,
+                      color: context.closetSecondaire,
                     ),
                   ),
                 ],

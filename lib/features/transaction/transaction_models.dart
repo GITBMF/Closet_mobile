@@ -41,38 +41,38 @@ extension ComportementOperation on TypeOperation {
   /// Titre de l'écran de traitement (`162:5220` / `32:756`).
   /// Titre du récapitulatif, dernière étape annulable du tunnel.
   String titreConfirmation(ClosetL10n l10n) => switch (this) {
-        TypeOperation.retrait => l10n.transactionConfirmerRetrait,
-        TypeOperation.paiement => l10n.transactionConfirmerPaiement,
-      };
+    TypeOperation.retrait => l10n.transactionConfirmerRetrait,
+    TypeOperation.paiement => l10n.transactionConfirmerPaiement,
+  };
 
   /// Ce que l'écran de confirmation annonce avant l'engagement.
   String messageConfirmation(ClosetL10n l10n) => switch (this) {
-        TypeOperation.retrait => l10n.transactionMessageConfirmRetrait,
-        TypeOperation.paiement => l10n.transactionMessageConfirmPaiement,
-      };
+    TypeOperation.retrait => l10n.transactionMessageConfirmRetrait,
+    TypeOperation.paiement => l10n.transactionMessageConfirmPaiement,
+  };
 
   /// Libellé du bouton qui engage réellement l'opération.
   String libelleConfirmer(ClosetL10n l10n) => switch (this) {
-        TypeOperation.retrait => l10n.transactionConfirmerRetrait,
-        TypeOperation.paiement => l10n.transactionPayerMaintenant,
-      };
+    TypeOperation.retrait => l10n.transactionConfirmerRetrait,
+    TypeOperation.paiement => l10n.transactionPayerMaintenant,
+  };
 
   String titreTraitement(ClosetL10n l10n) => switch (this) {
-        TypeOperation.retrait => l10n.transactionTraitementRetrait,
-        TypeOperation.paiement => l10n.transactionTraitementPaiement,
-      };
+    TypeOperation.retrait => l10n.transactionTraitementRetrait,
+    TypeOperation.paiement => l10n.transactionTraitementPaiement,
+  };
 
   /// Titre de l'écran de succès (`162:3351` / `32:813`).
   String titreSucces(ClosetL10n l10n) => switch (this) {
-        TypeOperation.retrait => l10n.transactionReussie,
-        TypeOperation.paiement => l10n.transactionPaiementReussi,
-      };
+    TypeOperation.retrait => l10n.transactionReussie,
+    TypeOperation.paiement => l10n.transactionPaiementReussi,
+  };
 
   /// Message de succès, tel que la maquette l'écrit.
   String messageSucces(ClosetL10n l10n) => switch (this) {
-        TypeOperation.retrait => l10n.transactionMessageSuccesRetrait,
-        TypeOperation.paiement => l10n.transactionMessageSuccesPaiement,
-      };
+    TypeOperation.retrait => l10n.transactionMessageSuccesRetrait,
+    TypeOperation.paiement => l10n.transactionMessageSuccesPaiement,
+  };
 
   /// Libellé du montant sur le reçu.
   ///
@@ -80,9 +80,9 @@ extension ComportementOperation on TypeOperation {
   /// de l'acheteuse (`162:3473`) — un report de copie du gabarit sourceur.
   /// « Total payé » est retenu côté acheteuse, où « retiré » n'a pas de sens.
   String libelleTotal(ClosetL10n l10n) => switch (this) {
-        TypeOperation.retrait => l10n.transactionTotalRetire,
-        TypeOperation.paiement => l10n.transactionTotalPaye,
-      };
+    TypeOperation.retrait => l10n.transactionTotalRetire,
+    TypeOperation.paiement => l10n.transactionTotalPaye,
+  };
 
   /// Le reçu de retrait porte un numéro de référence opérateur ; celui de
   /// l'acheteuse décrit la pièce et n'en affiche pas.
@@ -90,15 +90,15 @@ extension ComportementOperation on TypeOperation {
 
   /// Libellé du bouton de sortie (`32:865` / `162:3473`).
   String libelleSortie(ClosetL10n l10n) => switch (this) {
-        TypeOperation.retrait => l10n.transactionRetourEspace,
-        TypeOperation.paiement => l10n.transactionPoursuivreVisite,
-      };
+    TypeOperation.retrait => l10n.transactionRetourEspace,
+    TypeOperation.paiement => l10n.transactionPoursuivreVisite,
+  };
 
   /// Destination du bouton de sortie.
   String get routeRetour => switch (this) {
-        TypeOperation.retrait => '/sourceur/espace',
-        TypeOperation.paiement => '/home',
-      };
+    TypeOperation.retrait => '/sourceur/espace',
+    TypeOperation.paiement => '/home',
+  };
 }
 
 /// Une ligne du corps du reçu : libellé à gauche, valeur à droite.

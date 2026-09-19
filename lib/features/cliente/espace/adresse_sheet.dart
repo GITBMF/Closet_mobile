@@ -108,7 +108,7 @@ class _AdresseSheetState extends ConsumerState<_AdresseSheet> {
             onPressed: () => Navigator.of(context).pop(false),
             child: Text(l10n.annulerPaiement,
                 style:
-                    ClosetTextStyles.bouton.copyWith(color: ClosetColors.taupe)),
+                    ClosetTextStyles.bouton.copyWith(color: context.closetSecondaire)),
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(true),
@@ -191,7 +191,7 @@ class _AdresseSheetState extends ConsumerState<_AdresseSheet> {
                   l10n.typeLabel,
                   style: ClosetTextStyles.labelChamp.copyWith(
                     fontWeight: FontWeight.w500,
-                    color: ClosetColors.vert,
+                    color: context.closetVert,
                   ),
                 ),
                 const SizedBox(height: AppSpacing.p8),
@@ -218,7 +218,7 @@ class _AdresseSheetState extends ConsumerState<_AdresseSheet> {
                   subtitle: Text(
                     l10n.adresseParDefautDetail,
                     style: ClosetTextStyles.meta.copyWith(
-                      color: ClosetColors.taupe,
+                      color: context.closetSecondaire,
                     ),
                   ),
                   onChanged: (v) => setState(() => _parDefaut = v),
@@ -227,19 +227,19 @@ class _AdresseSheetState extends ConsumerState<_AdresseSheet> {
                 SizedBox(
                   height: 44,
                   child: Material(
-                    color: ClosetColors.vert,
+                    color: context.closetAction,
                     borderRadius: BorderRadius.circular(AppRadius.cercle),
                     child: InkWell(
                       borderRadius: BorderRadius.circular(AppRadius.cercle),
                       onTap: _envoiEnCours ? null : _enregistrer,
                       child: Center(
                         child: _envoiEnCours
-                            ? const SizedBox(
+                            ? SizedBox(
                                 width: 18,
                                 height: 18,
                                 child: CircularProgressIndicator(
                                   strokeWidth: 2,
-                                  color: ClosetColors.blanc,
+                                  color: context.closetActionTexte,
                                 ),
                               )
                             : Text(

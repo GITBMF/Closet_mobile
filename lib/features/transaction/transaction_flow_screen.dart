@@ -20,11 +20,12 @@ enum _EtapeTunnel { pin, confirmation, traitement, succes, recu }
 ///
 /// [pin] n'est renseigné que pour un retrait sourceur ; il est nul pour un
 /// paiement acheteuse, qui ne passe pas par un code.
-typedef ExecuteurTransaction = Future<RecuTransaction> Function(
-  DemandeTransaction demande,
-  String? pin, [
-  ClosetL10n? l10n,
-]);
+typedef ExecuteurTransaction =
+    Future<RecuTransaction> Function(
+      DemandeTransaction demande,
+      String? pin, [
+      ClosetL10n? l10n,
+    ]);
 
 /// Tunnel de transaction — orchestre `32:704` → `32:756` → `32:813` → `32:865`
 /// côté retrait, et `162:5220` → `162:3351` → `162:3473` côté paiement.
@@ -142,37 +143,37 @@ class _TransactionFlowScreenState extends ConsumerState<TransactionFlowScreen> {
       canPop: _retourAutorise,
       child: switch (_etape) {
         _EtapeTunnel.pin => PinScreen(
-            demande: widget.demande,
-            onValide: _validerPin,
-          ),
+          demande: widget.demande,
+          onValide: _validerPin,
+        ),
         _EtapeTunnel.confirmation => ConfirmationScreen(
-            demande: widget.demande,
-            onConfirmer: _confirmer,
-            onAnnuler: _annuler,
-          ),
+          demande: widget.demande,
+          onConfirmer: _confirmer,
+          onAnnuler: _annuler,
+        ),
         _EtapeTunnel.traitement => TraitementScreen(
-            type: widget.demande.type,
-            operation: _executer,
-            onTermine: _surSucces,
-            onEchec: _surEchec,
-          ),
+          type: widget.demande.type,
+          operation: _executer,
+          onTermine: _surSucces,
+          onEchec: _surEchec,
+        ),
         _EtapeTunnel.succes => SuccesScreen(
-            recu: _recu!,
-            onVoirRecu: () => setState(() => _etape = _EtapeTunnel.recu),
-            onRetour: _quitter,
-          ),
+          recu: _recu!,
+          onVoirRecu: () => setState(() => _etape = _EtapeTunnel.recu),
+          onRetour: _quitter,
+        ),
         _EtapeTunnel.recu => RecuScreen(
-            recu: _recu!,
-            onPartager: () {
-              final l10n = ClosetL10n.of(context);
-              toastInfo(
-                ref,
-                l10n.transactionPartageIndisponibleTitre,
-                l10n.transactionPartageIndisponibleCorps,
-              );
-            },
-            onRetour: _quitter,
-          ),
+          recu: _recu!,
+          onPartager: () {
+            final l10n = ClosetL10n.of(context);
+            toastInfo(
+              ref,
+              l10n.transactionPartageIndisponibleTitre,
+              l10n.transactionPartageIndisponibleCorps,
+            );
+          },
+          onRetour: _quitter,
+        ),
       },
     );
   }

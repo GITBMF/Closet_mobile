@@ -7,6 +7,15 @@ import 'package:flutter_test/flutter_test.dart';
 /// Visite guidée de la démo : on vérifie qu'elle s'affiche bien par-dessus
 /// l'écran, qu'elle avance, et surtout qu'elle ne se bloque pas sur une cible
 /// absente — un blocage laisserait l'app muette en pleine démonstration.
+/// Le projecteur pulse en continu : `pumpAndSettle` ne s'arrêterait jamais.
+/// On avance donc d'un nombre borné d'images (~2 s), assez pour les
+/// transitions et pour le délai d'abandon d'une cible absente.
+Future<void> laisserPasser(WidgetTester tester) async {
+  for (var i = 0; i < 130; i++) {
+    await tester.pump(const Duration(milliseconds: 16));
+  }
+}
+
 void main() {
   final cible1 = GlobalKey(debugLabel: 'cible1');
   final cible2 = GlobalKey(debugLabel: 'cible2');
@@ -62,7 +71,7 @@ void main() {
         ),
       ),
     );
-    await tester.pumpAndSettle();
+    await laisserPasser(tester);
     return container;
   }
 
@@ -80,19 +89,19 @@ void main() {
     final container = await monter(tester, [cible1, cible2]);
 
     container.read(spotlightTourProvider.notifier).startTour();
-    await tester.pumpAndSettle();
+    await laisserPasser(tester);
 
     expect(find.text('Titre 1'), findsOneWidget);
     expect(find.text('ÉCRAN · Étape 1 sur 2'), findsOneWidget);
 
     await tester.tap(find.text('Suivant'));
-    await tester.pumpAndSettle();
+    await laisserPasser(tester);
 
     expect(find.text('Titre 2'), findsOneWidget);
     expect(find.text('Terminer'), findsOneWidget);
 
     await tester.tap(find.text('Terminer'));
-    await tester.pumpAndSettle();
+    await laisserPasser(tester);
 
     expect(find.text('Titre 2'), findsNothing);
     expect(container.read(spotlightTourProvider).isActive, isFalse);
@@ -102,10 +111,10 @@ void main() {
     final container = await monter(tester, [cible1, cible2]);
 
     container.read(spotlightTourProvider.notifier).startTour();
-    await tester.pumpAndSettle();
+    await laisserPasser(tester);
 
     await tester.tap(find.text('PASSER'));
-    await tester.pumpAndSettle();
+    await laisserPasser(tester);
 
     expect(container.read(spotlightTourProvider).isActive, isFalse);
   });
@@ -122,7 +131,7 @@ void main() {
 
     // Le temps d'attente écoulé, la visite passe d'elle-même à l'étape
     // suivante, dont la cible existe.
-    await tester.pumpAndSettle();
+    await laisserPasser(tester);
     expect(find.text('Titre 2'), findsOneWidget);
     expect(container.read(spotlightTourProvider).isActive, isTrue);
   });
@@ -132,7 +141,7 @@ void main() {
     final container = await monter(tester, [jamaisMontee]);
 
     container.read(spotlightTourProvider.notifier).startTour();
-    await tester.pumpAndSettle();
+    await laisserPasser(tester);
 
     expect(container.read(spotlightTourProvider).isActive, isFalse);
   });
@@ -141,17 +150,17 @@ void main() {
     final container = await monter(tester, [cible1, cible2]);
 
     container.read(spotlightTourProvider.notifier).startTour();
-    await tester.pumpAndSettle();
+    await laisserPasser(tester);
 
     // Étape 1 : rien à revenir en arrière.
     expect(find.text('Précédent'), findsNothing);
 
     await tester.tap(find.text('Suivant'));
-    await tester.pumpAndSettle();
+    await laisserPasser(tester);
     expect(find.text('Titre 2'), findsOneWidget);
 
     await tester.tap(find.text('Précédent'));
-    await tester.pumpAndSettle();
+    await laisserPasser(tester);
     expect(find.text('Titre 1'), findsOneWidget);
   });
 
@@ -180,7 +189,7 @@ void main() {
     );
 
     container.read(spotlightTourProvider.notifier).startTour();
-    await tester.pumpAndSettle();
+    await laisserPasser(tester);
 
     expect(navigations, 0);
     expect(find.text('Titre 1'), findsNothing);
@@ -212,12 +221,12 @@ void main() {
     );
 
     container.read(spotlightTourProvider.notifier).startTour();
-    await tester.pumpAndSettle();
+    await laisserPasser(tester);
     expect(atteints, ['un']);
     expect(find.text('Titre 1'), findsOneWidget);
 
     await tester.tap(find.text('Suivant'));
-    await tester.pumpAndSettle();
+    await laisserPasser(tester);
     // Chaque écran n'est rejoint qu'une fois, malgré les rebuilds successifs.
     expect(atteints, ['un', 'deux']);
   });
@@ -259,7 +268,7 @@ void main() {
       ),
     );
     container.read(spotlightTourProvider.notifier).startTour();
-    await tester.pumpAndSettle();
+    await laisserPasser(tester);
 
     final cible = tester.getRect(find.byKey(carte));
     final bulle = tester.getRect(find.text('Grande carte'));

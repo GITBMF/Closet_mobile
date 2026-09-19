@@ -25,12 +25,16 @@ class MoyenPaiement {
     required this.id,
     required this.libelle,
     required this.icone,
+    required this.libelleCourt,
     this.compteMasque = '',
     this.saisie = SaisieMoyen.aucune,
   });
 
   final String id;
   final String libelle;
+
+  /// Nom en majuscules, sans tiret : « MTN MOMO », « ORANGE MONEY », « VISA ».
+  final String libelleCourt;
   final IconData icone;
 
   /// Numéro déjà connu, affiché tronqué (« **** 4864 » sur la maquette).
@@ -50,18 +54,21 @@ const List<MoyenPaiement> moyensPaiement = [
   MoyenPaiement(
     id: 'orange_money',
     libelle: 'Orange Money',
+    libelleCourt: 'ORANGE MONEY',
     icone: Icons.phone_android_rounded,
     saisie: SaisieMoyen.telephone,
   ),
   MoyenPaiement(
     id: 'mtn_momo',
     libelle: 'MTN Mobile Money',
+    libelleCourt: 'MTN MOMO',
     icone: Icons.phone_iphone_rounded,
     saisie: SaisieMoyen.telephone,
   ),
   MoyenPaiement(
     id: 'visa',
     libelle: 'Visa Card',
+    libelleCourt: 'VISA',
     icone: Icons.credit_card_rounded,
     compteMasque: '**** 4864',
     saisie: SaisieMoyen.carte,

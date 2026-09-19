@@ -97,7 +97,7 @@ class _EnTete extends StatelessWidget {
                 style: ClosetTextStyles.libelle.copyWith(
                   fontSize: 18,
                   letterSpacing: 0.36,
-                  color: ClosetColors.noir,
+                  color: context.closetEncre,
                 ),
               ),
             ),
@@ -136,10 +136,10 @@ class _Corps extends StatelessWidget {
         const SizedBox(height: AppSpacing.p24),
         Center(
           child: SizedBox(
-            width: 312,
+            width: double.infinity,
             height: 44,
             child: Material(
-              color: ClosetColors.vert,
+              color: context.closetAction,
               borderRadius: BorderRadius.circular(AppRadius.cercle),
               child: InkWell(
                 borderRadius: BorderRadius.circular(AppRadius.cercle),
@@ -150,7 +150,7 @@ class _Corps extends StatelessWidget {
                   child: Text(
                     l10n.suivreMaCommande,
                     style: ClosetTextStyles.bouton.copyWith(
-                      color: ClosetColors.blanc,
+                      color: context.closetActionTexte,
                     ),
                   ),
                 ),
@@ -164,9 +164,7 @@ class _Corps extends StatelessWidget {
             onPressed: () => context.go('/collections'),
             child: Text(
               l10n.passerAutresCommandes,
-              style: ClosetTextStyles.bouton.copyWith(
-                color: ClosetColors.vert,
-              ),
+              style: ClosetTextStyles.bouton.copyWith(color: context.closetVert),
             ),
           ),
         ),
@@ -187,8 +185,8 @@ class _CarteSuivi extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.p16),
       decoration: BoxDecoration(
-        color: ClosetColors.blanc,
-        border: Border.all(color: ClosetColors.fond300, width: AppStroke.fin),
+        color: context.closetCarte,
+        border: Border.all(color: context.closetBordure, width: AppStroke.fin),
         borderRadius: BorderRadius.circular(AppRadius.carte),
       ),
       child: Column(
@@ -201,7 +199,7 @@ class _CarteSuivi extends StatelessWidget {
               fontSize: 17,
               fontWeight: FontWeight.w600,
               letterSpacing: -0.34,
-              color: ClosetColors.vert,
+              color: context.closetVert,
             ),
           ),
           const SizedBox(height: AppSpacing.p16),
@@ -294,8 +292,8 @@ class _LignePiece extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.p12),
       decoration: BoxDecoration(
-        color: ClosetColors.blanc,
-        border: Border.all(color: ClosetColors.fond300, width: AppStroke.fin),
+        color: context.closetCarte,
+        border: Border.all(color: context.closetBordure, width: AppStroke.fin),
         borderRadius: BorderRadius.circular(AppRadius.carte),
       ),
       child: Row(
@@ -351,7 +349,7 @@ class _LignePiece extends StatelessWidget {
                           fontSize: 17,
                           fontWeight: FontWeight.w600,
                           letterSpacing: 0.34,
-                          color: ClosetColors.vert,
+                          color: context.closetVert,
                         ),
                       ),
                     ),
