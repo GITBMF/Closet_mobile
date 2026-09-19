@@ -116,21 +116,24 @@ class _FicheSourceur extends StatelessWidget {
             ),
           ),
           const SizedBox(height: AppSpacing.p8),
-          _LigneFiche(libelle: l10n.statut, valeur: profile.libelleStatut),
+          _LigneFiche(libelle: l10n.statut, valeur: profile.libelleStatut(l10n)),
           if (profile.whatsapp.isNotEmpty)
             _LigneFiche(libelle: l10n.telephone, valeur: profile.whatsapp),
           _LigneFiche(
             libelle: l10n.collaboration,
-            valeur: profile.libelleCollaboration,
+            valeur: profile.libelleCollaboration(l10n),
           ),
           _LigneFiche(
             libelle: l10n.paiement,
             valeur: profile.numeroPaiement.isEmpty
-                ? profile.libelleMoyenPaiement
-                : '${profile.libelleMoyenPaiement} · ${profile.numeroPaiement}',
+                ? profile.libelleMoyenPaiement(l10n)
+                : '${profile.libelleMoyenPaiement(l10n)} · ${profile.numeroPaiement}',
           ),
-          if (profile.depuis.isNotEmpty)
-            _LigneFiche(libelle: l10n.membreDepuis, valeur: profile.depuis),
+          if (profile.depuis != null)
+            _LigneFiche(
+              libelle: l10n.membreDepuis,
+              valeur: profile.libelleDepuis,
+            ),
           if (raisonRefus != null && raisonRefus!.isNotEmpty) ...[
             const SizedBox(height: AppSpacing.p8),
             Text(

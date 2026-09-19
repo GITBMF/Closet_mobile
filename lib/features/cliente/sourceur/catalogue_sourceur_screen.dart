@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/l10n/closet_l10n.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/widgets/closet_app_bar.dart';
 import '../../../core/widgets/closet_feedback.dart';
@@ -29,6 +30,7 @@ class CatalogueSourceurScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = ClosetL10n.of(context);
     final pieces = ref.watch(catalogueSourceurProvider(sourceurId));
 
     return Scaffold(
@@ -37,7 +39,7 @@ class CatalogueSourceurScreen extends ConsumerWidget {
         child: Column(
           children: [
             ClosetPageHeader(
-              titre: nom.trim().isEmpty ? 'Catalogue' : nom.trim(),
+              titre: nom.trim().isEmpty ? l10n.catalogueTitre : nom.trim(),
               onRetour: () => context.pop(),
             ),
             Expanded(
@@ -47,10 +49,9 @@ class CatalogueSourceurScreen extends ConsumerWidget {
                     ref.invalidate(catalogueSourceurProvider(sourceurId)),
                 data: (liste) => liste.isEmpty
                     ? ClosetListeVide(
-                        message:
-                            'Ce sourceur n’a aucune pièce en vente pour le moment.',
+                        message: l10n.aucunePieceEnVenteSourceurMessage,
                         action: () => context.go('/collections'),
-                        libelleAction: 'Découvrir les collections',
+                        libelleAction: l10n.decouvrirCollections,
                       )
                     : GridView.builder(
                         padding: const EdgeInsets.fromLTRB(

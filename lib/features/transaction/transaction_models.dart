@@ -1,5 +1,7 @@
 import 'package:flutter/foundation.dart';
 
+import '../../core/l10n/closet_l10n.dart';
+
 /// Nature de l'opération qui traverse le tunnel de transaction.
 ///
 /// La maquette dessine **deux tunnels bâtis sur le même gabarit** :
@@ -38,47 +40,38 @@ extension ComportementOperation on TypeOperation {
 
   /// Titre de l'écran de traitement (`162:5220` / `32:756`).
   /// Titre du récapitulatif, dernière étape annulable du tunnel.
-  String get titreConfirmation => switch (this) {
-        TypeOperation.retrait => 'Confirmer le retrait',
-        TypeOperation.paiement => 'Confirmer le paiement',
+  String titreConfirmation(ClosetL10n l10n) => switch (this) {
+        TypeOperation.retrait => l10n.transactionConfirmerRetrait,
+        TypeOperation.paiement => l10n.transactionConfirmerPaiement,
       };
 
   /// Ce que l'écran de confirmation annonce avant l'engagement.
-  String get messageConfirmation => switch (this) {
-        TypeOperation.retrait =>
-          'Vérifiez le montant et le compte crédité. Une fois confirmé, le '
-              'retrait est transmis et ne peut plus être annulé ici.',
-        TypeOperation.paiement =>
-          'Vérifiez votre commande avant de payer. Une fois confirmé, vous '
-              'serez dirigée vers votre opérateur et le paiement ne pourra '
-              'plus être annulé depuis l’application.',
+  String messageConfirmation(ClosetL10n l10n) => switch (this) {
+        TypeOperation.retrait => l10n.transactionMessageConfirmRetrait,
+        TypeOperation.paiement => l10n.transactionMessageConfirmPaiement,
       };
 
   /// Libellé du bouton qui engage réellement l'opération.
-  String get libelleConfirmer => switch (this) {
-        TypeOperation.retrait => 'Confirmer le retrait',
-        TypeOperation.paiement => 'Payer maintenant',
+  String libelleConfirmer(ClosetL10n l10n) => switch (this) {
+        TypeOperation.retrait => l10n.transactionConfirmerRetrait,
+        TypeOperation.paiement => l10n.transactionPayerMaintenant,
       };
 
-  String get titreTraitement => switch (this) {
-        TypeOperation.retrait => 'Traitement en cours',
-        TypeOperation.paiement => 'Paiement en cours',
+  String titreTraitement(ClosetL10n l10n) => switch (this) {
+        TypeOperation.retrait => l10n.transactionTraitementRetrait,
+        TypeOperation.paiement => l10n.transactionTraitementPaiement,
       };
 
   /// Titre de l'écran de succès (`162:3351` / `32:813`).
-  String get titreSucces => switch (this) {
-        TypeOperation.retrait => 'Transaction reussie !',
-        TypeOperation.paiement => 'Paiement reussi',
+  String titreSucces(ClosetL10n l10n) => switch (this) {
+        TypeOperation.retrait => l10n.transactionReussie,
+        TypeOperation.paiement => l10n.transactionPaiementReussi,
       };
 
   /// Message de succès, tel que la maquette l'écrit.
-  String get messageSucces => switch (this) {
-        TypeOperation.retrait =>
-          'Votre opération a été effectuée avec succès. Vous allez recevoir '
-              "un reçu de confirmation d'ici quelques instants.",
-        TypeOperation.paiement =>
-          'Votre paiement a été effectuée avec succès. Vous allez recevoir '
-              "un reçu de confirmation d'ici quelques instants.",
+  String messageSucces(ClosetL10n l10n) => switch (this) {
+        TypeOperation.retrait => l10n.transactionMessageSuccesRetrait,
+        TypeOperation.paiement => l10n.transactionMessageSuccesPaiement,
       };
 
   /// Libellé du montant sur le reçu.
@@ -86,9 +79,9 @@ extension ComportementOperation on TypeOperation {
   /// La maquette affiche « Total retiré » sur les deux reçus, y compris celui
   /// de l'acheteuse (`162:3473`) — un report de copie du gabarit sourceur.
   /// « Total payé » est retenu côté acheteuse, où « retiré » n'a pas de sens.
-  String get libelleTotal => switch (this) {
-        TypeOperation.retrait => 'Total retiré',
-        TypeOperation.paiement => 'Total payé',
+  String libelleTotal(ClosetL10n l10n) => switch (this) {
+        TypeOperation.retrait => l10n.transactionTotalRetire,
+        TypeOperation.paiement => l10n.transactionTotalPaye,
       };
 
   /// Le reçu de retrait porte un numéro de référence opérateur ; celui de
@@ -96,9 +89,9 @@ extension ComportementOperation on TypeOperation {
   bool get afficheReference => this == TypeOperation.retrait;
 
   /// Libellé du bouton de sortie (`32:865` / `162:3473`).
-  String get libelleSortie => switch (this) {
-        TypeOperation.retrait => 'Retour dans Mon Espace',
-        TypeOperation.paiement => 'Poursuivre ma visite',
+  String libelleSortie(ClosetL10n l10n) => switch (this) {
+        TypeOperation.retrait => l10n.transactionRetourEspace,
+        TypeOperation.paiement => l10n.transactionPoursuivreVisite,
       };
 
   /// Destination du bouton de sortie.

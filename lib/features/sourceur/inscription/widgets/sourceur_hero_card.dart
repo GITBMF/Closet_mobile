@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/l10n/closet_l10n.dart';
 import '../../../../core/theme/closet_colors.dart';
 import '../../../../core/theme/closet_text_styles.dart';
 
@@ -10,6 +11,7 @@ class SourceurHeroCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = ClosetL10n.of(context);
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.fromLTRB(22, 30, 22, 28),
@@ -34,21 +36,20 @@ class SourceurHeroCard extends StatelessWidget {
                 const Icon(Icons.auto_awesome,
                     size: 12, color: ClosetColors.noir),
                 const SizedBox(width: 7),
-                Text('CERCLE DES SOURCEURS',
+                Text(l10n.cercleDesSourceursBadge,
                     style: ClosetTextStyles.badgePill),
               ],
             ),
           ),
           const SizedBox(height: 14),
           Text(
-            "Confiez vos pièces d'exception",
+            l10n.confiezVosPiecesDexception,
             textAlign: TextAlign.center,
             style: ClosetTextStyles.titreHero,
           ),
           const SizedBox(height: 10),
           Text(
-            'Le comité Clos ET authentifie, photographie et met en '
-            "lumière vos pièces auprès d'une clientèle raffinée.",
+            l10n.comiteClosEtAuthentifieMessage,
             textAlign: TextAlign.center,
             style: ClosetTextStyles.corpsSurVert,
           ),

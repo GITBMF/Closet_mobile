@@ -1,6 +1,7 @@
 ﻿import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/l10n/closet_l10n.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/closet_colors.dart';
 import '../../../core/theme/closet_text_styles.dart';
@@ -18,21 +19,18 @@ class InspectionPieceScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = ClosetL10n.of(context);
     return TransactionScaffold(
-      titre: 'Inspection et analyse de votre pièce',
+      titre: l10n.inspectionTitre,
       child: Column(
         children: [
           const SizedBox(height: 47),
           const _ArcheReception(),
           const SizedBox(height: 42),
-          const TexteTransaction(
-            'Notre équipe va examiner votre pièce avec le plus grand soin. '
-            'Nous vérifions vos informations et nous vous reviendrons très '
-            'rapidement avec une réponse.',
-          ),
+          TexteTransaction(l10n.inspectionCorps),
           const Spacer(),
           BoutonTransaction(
-            label: 'Suivre l’analyse de ma pièce',
+            label: l10n.suivreAnalysePiece,
             onPressed: () => context.go(
               pieceId == null
                   ? '/sourceur/pieces'
@@ -41,7 +39,7 @@ class InspectionPieceScreen extends StatelessWidget {
           ),
           const SizedBox(height: 24),
           BoutonTransaction(
-            label: 'Retour dans Mon Espace',
+            label: l10n.transactionRetourEspace,
             dore: false,
             onPressed: () => context.go('/sourceur/espace'),
           ),
@@ -89,7 +87,7 @@ class _ArcheReception extends StatelessWidget {
           ),
           const SizedBox(height: AppSpacing.p16),
           Text(
-            'Pièce bien reçue !',
+            ClosetL10n.of(context).pieceBienRecue,
             textAlign: TextAlign.center,
             style: ClosetTextStyles.sousTitre.copyWith(
               letterSpacing: 0.38,

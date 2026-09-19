@@ -14,6 +14,7 @@ class ChampCheckout extends StatelessWidget {
     required this.label,
     required this.hint,
     this.controller,
+    this.initialValue,
     this.keyboardType,
     this.textInputAction,
     this.validator,
@@ -25,6 +26,9 @@ class ChampCheckout extends StatelessWidget {
   final String label;
   final String hint;
   final TextEditingController? controller;
+
+  /// Ignoré si [controller] est fourni (limite de `TextFormField`).
+  final String? initialValue;
   final TextInputType? keyboardType;
   final TextInputAction? textInputAction;
   final FormFieldValidator<String>? validator;
@@ -47,6 +51,7 @@ class ChampCheckout extends StatelessWidget {
         const SizedBox(height: AppSpacing.p8),
         TextFormField(
           controller: controller,
+          initialValue: controller == null ? initialValue : null,
           keyboardType: keyboardType,
           textInputAction: textInputAction,
           validator: validator,

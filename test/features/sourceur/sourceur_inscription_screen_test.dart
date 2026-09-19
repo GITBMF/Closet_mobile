@@ -20,7 +20,7 @@ class _RepoEspion extends SourceurRepository {
     return SourceurProfile(
       nomAtelier: data.nomAtelier,
       ville: data.ville,
-      depuis: 'Août 2026',
+      depuis: DateTime(2026, 8, 1),
       whatsapp: data.whatsapp,
       univers: data.univers,
     );
@@ -261,7 +261,7 @@ void main() {
       expect(repo.recu!.ville, 'Douala');
       expect(repo.recu!.whatsapp, '+237699887766');
       expect(repo.recu!.univers, 'Pièces chinées, coupes structurées.');
-      expect(repo.recu!.specialite, 'Robes');
+      expect(repo.recu!.specialite, 'robes');
       expect(repo.recu!.numeroPaiement, '+237699001122');
       expect(find.text(_ecranAdhesion), findsOneWidget);
     });
@@ -278,7 +278,7 @@ void main() {
         find.widgetWithText(ClosetPrimaryButton, 'Rejoindre le cercle'),
       );
 
-      expect(repo.recu!.moyenPaiement, 'MTN MoMo');
+      expect(repo.recu!.moyenPaiement, 'mtn_momo');
     });
 
     testWidgets('transmet le moyen de paiement sélectionné', (tester) async {
@@ -293,7 +293,7 @@ void main() {
         find.widgetWithText(ClosetPrimaryButton, 'Rejoindre le cercle'),
       );
 
-      expect(repo.recu!.moyenPaiement, 'Orange Money');
+      expect(repo.recu!.moyenPaiement, 'orange_money');
     });
   });
 

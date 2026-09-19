@@ -3,9 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/l10n/closet_l10n.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/closet_colors.dart';
 import '../../../core/theme/closet_text_styles.dart';
+import '../../../core/utils/date_format.dart';
 import '../../../core/widgets/closet_app_bar.dart';
 import '../../../core/widgets/etat_ecran.dart';
 import '../../../data/models/commande.dart';
@@ -24,6 +26,7 @@ class DetailCommandeScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = ClosetL10n.of(context);
     final commande = ref.watch(commandeProvider(numero));
 
     return Scaffold(
@@ -36,10 +39,10 @@ class DetailCommandeScreen extends ConsumerWidget {
               child: commande.when(
                 data: (c) => c == null
                     ? EtatEcran.vide(
-                        titre: 'Commande introuvable',
-                        message: 'Cette commande n’apparaît plus dans votre historique.',
+                        titre: l10n.commandeIntrouvableTitre,
+                        message: l10n.commandeIntrouvableMessage,
                         action: () => context.pop(),
-                        libelleAction: 'Retour',
+                        libelleAction: l10n.retour,
                       )
                     : _Corps(commande: c),
                 loading: () => const EtatEcran.chargement(),
@@ -63,6 +66,7 @@ class _EnTete extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = ClosetL10n.of(context);
     return DecoratedBox(
       decoration: const BoxDecoration(
         border: Border(
@@ -83,12 +87,12 @@ class _EnTete extends StatelessWidget {
           children: [
             SourceurBoutonRond(
               icone: Icons.arrow_back_ios_new,
-              label: 'Retour',
+              label: l10n.retour,
               onTap: onRetour,
             ),
             Expanded(
               child: Text(
-                'Mes commandes',
+                l10n.mesCommandes,
                 textAlign: TextAlign.center,
                 style: ClosetTextStyles.libelle.copyWith(
                   fontSize: 18,
@@ -112,6 +116,7 @@ class _Corps extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = ClosetL10n.of(context);
     return ListView(
       padding: const EdgeInsets.fromLTRB(
         AppSpacing.p20,
@@ -143,7 +148,7 @@ class _Corps extends StatelessWidget {
                 ),
                 child: Center(
                   child: Text(
-                    'Suivre ma commande',
+                    l10n.suivreMaCommande,
                     style: ClosetTextStyles.bouton.copyWith(
                       color: ClosetColors.blanc,
                     ),
@@ -158,7 +163,7 @@ class _Corps extends StatelessWidget {
           child: TextButton(
             onPressed: () => context.go('/collections'),
             child: Text(
-              'Passer d’autres commandes',
+              l10n.passerAutresCommandes,
               style: ClosetTextStyles.bouton.copyWith(
                 color: ClosetColors.vert,
               ),
@@ -178,6 +183,7 @@ class _CarteSuivi extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = ClosetL10n.of(context);
     return Container(
       padding: const EdgeInsets.all(AppSpacing.p16),
       decoration: BoxDecoration(
@@ -204,31 +210,31 @@ class _CarteSuivi extends StatelessWidget {
               SizedBox(
                 width: 104,
                 child: Text(
-                  'Statut',
+                  l10n.statut,
                   style: ClosetTextStyles.saisie.copyWith(
                     color: ClosetColors.neutre700,
                   ),
                 ),
               ),
-              badgeStatutCommande(commande.statut),
+              badgeStatutCommande(commande.statut, l10n),
             ],
           ),
           const SizedBox(height: AppSpacing.p12),
           _LigneInfo(
-            label: 'Déposé le',
+            label: l10n.deposeLe,
             valeur: formatDateCommande(commande.dateDepot),
           ),
           if (commande.estimation != null) ...[
             const SizedBox(height: AppSpacing.p8),
             _LigneInfo(
-              label: 'Estimation',
+              label: l10n.estimationLabel,
               valeur: formatDateCommande(commande.estimation!),
             ),
           ],
           if (commande.adresseLivraison != null) ...[
             const SizedBox(height: AppSpacing.p8),
             _LigneInfo(
-              label: 'Livraison',
+              label: l10n.checkoutLivraisonTitre,
               valeur: commande.adresseLivraison!,
               couleurValeur: ClosetColors.neutre500,
             ),
@@ -386,6 +392,7 @@ class _CarteRecapitulatif extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = ClosetL10n.of(context);
     return Container(
       padding: const EdgeInsets.all(AppSpacing.p20),
       decoration: BoxDecoration(
@@ -396,7 +403,7 @@ class _CarteRecapitulatif extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'sous-total + livraison',
+            l10n.sousTotalLivraison,
             style: ClosetTextStyles.sousTitre.copyWith(
               fontSize: 16,
               color: ClosetColors.neutre300,
@@ -408,7 +415,7 @@ class _CarteRecapitulatif extends StatelessWidget {
             children: [
               Expanded(
                 child: Text(
-                  'Total à régler',
+                  l10n.totalARegler,
                   style: ClosetTextStyles.corpsMedium.copyWith(
                     color: ClosetColors.neutre300,
                   ),
@@ -424,7 +431,7 @@ class _CarteRecapitulatif extends StatelessWidget {
           ),
           const SizedBox(height: AppSpacing.p16),
           Text(
-            'Paiement chiffré. Votre pièce est réservée pendant 15 minutes.',
+            l10n.paiementChiffre,
             style: ClosetTextStyles.microLegende.copyWith(
               fontWeight: FontWeight.w300,
               letterSpacing: 0.14,

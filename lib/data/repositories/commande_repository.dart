@@ -50,6 +50,8 @@ class CommandeRepository {
       'line1': brouillon.quartier.trim().isNotEmpty
           ? brouillon.quartier.trim()
           : brouillon.adresseResumee,
+      if (brouillon.arrondissement.trim().isNotEmpty)
+        'line2': brouillon.arrondissement.trim(),
       if (brouillon.ville != null) 'city_id': brouillon.ville!.id,
       if (brouillon.region != null) 'region_id': brouillon.region!.id,
       if (brouillon.quartier.trim().isNotEmpty)

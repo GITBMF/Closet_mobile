@@ -2,6 +2,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/l10n/closet_l10n.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/closet_colors.dart';
 import '../../../core/theme/closet_text_styles.dart';
@@ -64,6 +65,7 @@ class _Confirmation extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = ClosetL10n.of(context);
     return TransactionScaffold(
       hautTitre: 47,
       child: Column(
@@ -74,7 +76,7 @@ class _Confirmation extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 35),
             child: Text(
-              'Êtes vous sûre de vouloir vous\ndéconnecter ?',
+              l10n.deconnexionConfirmation,
               textAlign: TextAlign.center,
               style: ClosetTextStyles.sousTitre.copyWith(
                 fontSize: 27,
@@ -83,15 +85,17 @@ class _Confirmation extends StatelessWidget {
             ),
           ),
           const Spacer(),
+          // Le retour ouvre la pile, sans couleur ; la déconnexion garde la
+          // mise en avant dorée et ferme la série, au plus près du pouce.
           BoutonTransaction(
-            label: 'Oui, me déconnecter',
-            onPressed: onConfirmer,
+            label: l10n.nonRetourEspace,
+            dore: false,
+            onPressed: onAnnuler,
           ),
           const SizedBox(height: 24),
           BoutonTransaction(
-            label: 'Non, Retour dans Mon Espace',
-            dore: false,
-            onPressed: onAnnuler,
+            label: l10n.ouiMeDeconnecter,
+            onPressed: onConfirmer,
           ),
           const SizedBox(height: 36),
         ],
@@ -130,7 +134,7 @@ class _ArcheSortie extends StatelessWidget {
           ),
           const Spacer(),
           Text(
-            'Par ici la sortie',
+            ClosetL10n.of(context).parIciLaSortie,
             textAlign: TextAlign.center,
             style: ClosetTextStyles.sousTitre.copyWith(
               letterSpacing: 0.38,
@@ -148,15 +152,15 @@ class _Adieu extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = ClosetL10n.of(context);
     return TransactionScaffold(
-      mention: 'Vous serez automatiquement redirigé vers l’écran d’accueil '
-          'd’ici quelques secondes',
+      mention: l10n.redirectionAutomatique,
       child: Column(
         children: [
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: AppSpacing.p24),
             child: Text(
-              'Ce n’est qu’un au revoir !',
+              l10n.ceNestQuUnAuRevoir,
               textAlign: TextAlign.center,
               style: ClosetTextStyles.sousTitre.copyWith(
                 fontSize: 20,
@@ -165,10 +169,7 @@ class _Adieu extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 62),
-          const TexteTransaction(
-            'Vous êtes maintenant déconnecté en toute sécurité. Prenez soin '
-            'de vous, nous avons déjà hâte de vous retrouver !',
-          ),
+          TexteTransaction(l10n.deconnecteEnSecurite),
           const Spacer(),
           const SizedBox(
             width: 40,

@@ -3,11 +3,15 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import 'core/l10n/closet_l10n.dart';
 import 'core/router/app_router.dart';
 import 'core/theme/app_theme.dart';
+import 'core/theme/locale_provider.dart';
 import 'core/theme/theme_provider.dart';
+import 'core/widgets/spotlight_showcase.dart';
 import 'core/widgets/top_notification_overlay.dart';
 import 'core/widgets/veille_reseau.dart';
+import 'features/onboarding/visite_guidee.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -31,6 +35,7 @@ class ClosetApp extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final router = ref.watch<GoRouter>(appRouterProvider);
     final themeMode = ref.watch<ThemeMode>(themeModeProvider);
+    final locale = ref.watch<Locale>(localeProvider);
 
     return MaterialApp.router(
       title: 'ClosET',
@@ -41,13 +46,30 @@ class ClosetApp extends ConsumerWidget {
       debugShowCheckedModeBanner: false,
       builder: (context, child) {
         final onSurface = Theme.of(context).colorScheme.onSurface;
-        return DefaultTextStyle(
-          style: TextStyle(color: onSurface),
-          child: IconTheme(
-            data: IconThemeData(color: onSurface),
-            child: VeilleReseau(
-              child: TopNotificationOverlay(child: child!),
-            ),
+        // Branche le choix FR/EN persisté (`localeProvider`) sur le système
+        // de textes `ClosetL10n` : sans ce wrapper, `ClosetL10n.of(context)`
+        // ne trouve jamais d'ancêtre et retombe toujours sur le français,
+        // quel que soit le choix enregistré dans le sélecteur de langue.
+        return ClosetL10n(
+          locale: locale,
+          child: Builder(
+            builder: (innerContext) {
+              final l10n = ClosetL10n.of(innerContext);
+              return DefaultTextStyle(
+                style: TextStyle(color: onSurface),
+                child: IconTheme(
+                  data: IconThemeData(color: onSurface),
+                  child: VeilleReseau(
+                    child: TopNotificationOverlay(
+                      child: SpotlightShowcase(
+                        steps: visiteGuidee(l10n),
+                        child: child!,
+                      ),
+                    ),
+                  ),
+                ),
+              );
+            },
           ),
         );
       },

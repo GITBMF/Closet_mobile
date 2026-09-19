@@ -55,7 +55,7 @@ void toastMelange(
 
 void toastErreur(WidgetRef ref, Object erreur, {String? titre}) {
   final l10n = ref.read(l10nProvider);
-  final texte = l10n.messageDepuisErreur(erreur);
+  final texte = messageErreur(erreur, l10n);
   ref.read<NotificationNotifier>(notificationProvider.notifier).showError(
         titre ?? l10n.erreurTitre,
         texte.isEmpty ? l10n.erreurGenerique : texte,
@@ -114,10 +114,11 @@ Future<void> dialogueErreur(
   String? titre,
 }) {
   final l10n = ClosetL10n.of(context);
+  final texte = messageErreur(erreur, l10n);
   return ClosetDialogue.resultat(
     context,
     succes: false,
     titre: titre ?? l10n.erreurTitre,
-    message: l10n.messageDepuisErreur(erreur),
+    message: texte.isEmpty ? l10n.erreurGenerique : texte,
   );
 }

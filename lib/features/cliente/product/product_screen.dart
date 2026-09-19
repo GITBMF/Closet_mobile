@@ -12,8 +12,8 @@ import '../../../core/widgets/closet_app_bar.dart';
 import '../../../core/widgets/closet_header_button.dart';
 import '../../../core/widgets/etat_ecran.dart';
 import '../../../core/widgets/piece_card.dart';
+import '../../../core/widgets/spotlight_showcase.dart';
 import '../../../core/widgets/status_badge.dart';
-import '../../../core/widgets/toasts.dart';
 import '../../../data/models/article.dart';
 import '../../../data/repositories/cart_repository.dart';
 import '../../../data/repositories/catalog_repository.dart';
@@ -46,6 +46,7 @@ class _ProductScreenState extends ConsumerState<ProductScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = ClosetL10n.of(context);
     final articleAsync = ref.watch(productDetailProvider(widget.articleId));
 
     return Scaffold(
@@ -55,10 +56,10 @@ class _ProductScreenState extends ConsumerState<ProductScreen> {
           if (article == null) {
             return EtatEcran.vide(
               icone: Icons.search_off_rounded,
-              titre: 'Pièce introuvable',
-              message: 'Cette pièce n’est plus dans le dressing.',
+              titre: l10n.pieceIntrouvableTitre,
+              message: l10n.pieceIntrouvableMessage,
               action: () => context.pop(),
-              libelleAction: 'Retour',
+              libelleAction: l10n.retour,
             );
           }
           return Stack(
@@ -121,26 +122,27 @@ class _Corps extends ConsumerWidget {
     return null;
   }
 
-  List<({String label, String valeur})> get _caracteristiques {
+  List<({String label, String valeur})> _caracteristiques(ClosetL10n l10n) {
     return [
       if (article.color.trim().isNotEmpty)
-        (label: 'Couleur du vêtement', valeur: article.color),
+        (label: l10n.couleurVetement, valeur: article.color),
       if (article.condition.trim().isNotEmpty)
-        (label: 'État', valeur: article.condition),
+        (label: l10n.etatPiece, valeur: article.libelleCondition(l10n)),
       if (article.size.trim().isNotEmpty)
-        (label: 'Taille et coupe', valeur: article.size),
+        (label: l10n.tailleEtCoupe, valeur: article.size),
       if (article.material.trim().isNotEmpty)
-        (label: 'Matière', valeur: article.material),
-      (label: 'Conseils de lavage', valeur: article.conseilsLavage),
+        (label: l10n.matiere, valeur: article.material),
+      (label: l10n.conseilsLavageLabel, valeur: article.conseilsLavage(l10n)),
       if (article.universe.trim().isNotEmpty)
-        (label: 'Univers', valeur: article.universe),
+        (label: l10n.universLabel, valeur: article.universe),
     ];
   }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = ClosetL10n.of(context);
     final recit = _recit(article);
-    final lignes = _caracteristiques;
+    final lignes = _caracteristiques(l10n);
 
     return CustomScrollView(
       slivers: [
@@ -240,6 +242,7 @@ class _Carrousel extends StatelessWidget {
     final layout = ClosetLayout.of(context);
 
     return SizedBox(
+      key: ClosetTourKeys.produitCarrouselKey,
       height: layout.hauteurHeroProduit,
       child: Stack(
         children: [
@@ -346,6 +349,7 @@ class _BarreAjout extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = ClosetL10n.of(context);
     final dejaDansSelection =
         ref.watch(cartListProvider).any((a) => a.id == article.id);
     final indisponible = article.isSoldOut;
@@ -363,6 +367,7 @@ class _BarreAjout extends ConsumerWidget {
             AppSpacing.p12,
           ),
           child: SizedBox(
+            key: ClosetTourKeys.produitAjoutKey,
             height: layout.cibleTactile,
             width: double.infinity,
             child: Material(
@@ -374,32 +379,14 @@ class _BarreAjout extends ConsumerWidget {
                 borderRadius: BorderRadius.circular(AppRadius.cercle),
                 onTap: indisponible
                     ? null
-                    : () {
-                        final cart = ref.read(cartProvider.notifier);
-                        if (dejaDansSelection) {
-                          cart.removeArticle(article.id);
-                          toastActionPiece(
-                            ref,
-                            nom: article.title,
-                            resultat: 'a été retirée de votre sélection.',
-                            succes: false,
-                          );
-                        } else {
-                          cart.addArticle(article);
-                          toastActionPiece(
-                            ref,
-                            nom: article.title,
-                            resultat: 'a été ajoutée à votre sélection.',
-                          );
-                        }
-                      },
+                    : () => basculerSelection(ref, article),
                 child: Center(
                   child: Text(
                     indisponible
-                        ? 'Indisponible'
+                        ? l10n.indisponibleLabel
                         : dejaDansSelection
-                            ? 'Retirer de ma sélection'
-                            : 'Ajouter à ma sélection',
+                            ? l10n.retirerDeSelection
+                            : l10n.ajouterASelection,
                     style: ClosetTextStyles.bouton.copyWith(
                       color: ClosetColors.blanc,
                     ),
@@ -451,6 +438,7 @@ class _BoutonsFiche extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = ClosetL10n.of(context);
     final enWishlist =
         ref.watch(wishlistListProvider).any((a) => a.id == article.id);
 
@@ -458,16 +446,15 @@ class _BoutonsFiche extends ConsumerWidget {
       children: [
         ClosetBoutonHeader(
           icone: Icons.arrow_back_ios_new,
-          label: 'Retour',
+          label: l10n.retour,
           onTap: () => context.pop(),
           sansDisque: true,
         ),
         const Spacer(),
         ClosetBoutonHeader(
+          key: ClosetTourKeys.produitFavoriKey,
           icone: enWishlist ? Icons.favorite : Icons.favorite_border,
-          label: enWishlist
-              ? 'Retirer de la wishlist'
-              : 'Ajouter à la wishlist',
+          label: enWishlist ? l10n.retirerDeWishlist : l10n.ajouterAWishlist,
           couleurIcone: enWishlist ? ClosetColors.erreurCouture : null,
           onTap: () => basculerFavori(ref, article),
           sansDisque: true,
@@ -485,18 +472,19 @@ class _LienSourceur extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = ClosetL10n.of(context);
     final nom = article.libelleSourceur;
 
     return Row(
       children: [
         Text(
-          'Vendu par ',
+          l10n.venduPar,
           style: ClosetTextStyles.meta.copyWith(color: ClosetColors.taupe),
         ),
         Flexible(
           child: Semantics(
             button: true,
-            label: 'Voir le catalogue de $nom',
+            label: l10n.voirCatalogueDe(nom),
             child: InkWell(
               onTap: () => context.push(
                 '/catalogue-sourceur/${article.sourceurId}'

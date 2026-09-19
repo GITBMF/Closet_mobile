@@ -1,3 +1,4 @@
+import '../../core/l10n/closet_l10n.dart';
 import '../api/api_json.dart';
 
 class Article {
@@ -88,7 +89,7 @@ class Article {
       brand: marque.isNotEmpty ? marque : _marqueDepuisTitre(titre),
       size: chaineDe(json['size_label'], chaineDe(json['size'])),
       material: chaineDe(json['material']),
-      condition: _libelleEtat(conditionApi),
+      condition: conditionApi,
       color: chaineDe(
         json['color'],
         chaineDe(
@@ -144,7 +145,7 @@ class Article {
   }
 
   bool correspondEtat(String etat) =>
-      condition.toLowerCase() == etat.trim().toLowerCase();
+      condition.trim().toLowerCase() == etat.trim().toLowerCase();
 
   bool correspondMaison(String nom) =>
       brand.toLowerCase() == nom.trim().toLowerCase();
@@ -160,13 +161,15 @@ class Article {
     ).hasMatch(title);
   }
 
-  static String _libelleEtat(String brut) {
-    return switch (brut) {
-      'new' => 'Neuf',
-      'very_good' => 'Très bon état',
-      'good' => 'Bon état',
-      'excellent' => 'Excellent',
-      _ => brut.isEmpty ? '' : brut,
+  /// Libellé localisé de [condition] (`new` / `very_good` / `good` /
+  /// `excellent` du backend).
+  String libelleCondition(ClosetL10n l10n) {
+    return switch (condition) {
+      'new' => l10n.etatNeuf,
+      'very_good' => l10n.etatTresBonEtat,
+      'good' => l10n.etatBonEtat,
+      'excellent' => l10n.etatExcellent,
+      _ => condition,
     };
   }
 
@@ -250,25 +253,25 @@ class Article {
 
   /// Notation visuelle de l'état, à gauche du nom (sans badge sur la photo).
   int get etoilesEtat => switch (condition) {
-        'Neuf' || 'Excellent' => 5,
-        'Très bon état' => 4,
-        'Bon état' => 3,
+        'new' || 'excellent' => 5,
+        'very_good' => 4,
+        'good' => 3,
         _ => condition.trim().isEmpty ? 0 : 3,
       };
 
   /// Conseil d'entretien dérivé de la matière renvoyée par le catalogue.
-  String get conseilsLavage {
+  String conseilsLavage(ClosetL10n l10n) {
     final m = material.toLowerCase();
     if (m.contains('soie') || m.contains('silk')) {
-      return 'Nettoyage à sec recommandé';
+      return l10n.conseilNettoyageSec;
     }
     if (m.contains('laine') || m.contains('wool') || m.contains('cachemire')) {
-      return 'Lavage à la main, à froid';
+      return l10n.conseilLavageMain;
     }
     if (m.contains('cuir') || m.contains('leather')) {
-      return 'Entretien cuir, pas de lavage en machine';
+      return l10n.conseilEntretienCuir;
     }
-    return 'Lavage délicat. Suivre l’étiquette d’entretien.';
+    return l10n.conseilLavageDelicat;
   }
 }
 

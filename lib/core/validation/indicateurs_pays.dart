@@ -1,3 +1,5 @@
+import '../l10n/closet_l10n.dart';
+
 /// Indicatifs téléphoniques proposés dans le sélecteur (drapeau + recherche).
 class IndicateurPays {
   const IndicateurPays({
@@ -26,6 +28,8 @@ class IndicateurPays {
   }
 
   String get libelleCourt => '+$indicatif';
+
+  String nomAffiche(ClosetL10n l10n) => l10n.nomPays(iso, nom);
 
   static const cameroun = IndicateurPays(
     iso: 'CM',
@@ -331,16 +335,19 @@ class SaisieTelephone {
 String? validerTelephone(
   String? e164, {
   required bool obligatoire,
-  String libelle = 'numéro',
+  String? libelle,
+  ClosetL10n? l10n,
 }) {
+  final mots = l10n ?? ClosetL10n.fr;
   final saisie = (e164 ?? '').trim();
+  final texteLibelle = libelle ?? mots.numero;
   if (saisie.isEmpty) {
-    return obligatoire ? 'Indiquez un $libelle.' : null;
+    return obligatoire ? mots.indiquerUnLibelle(texteLibelle) : null;
   }
   final parse = IndicateurPays.analyser(saisie);
-  if (parse == null) return 'Ce $libelle semble incorrect.';
+  if (parse == null) return mots.libelleSembleIncorrect(texteLibelle);
   if (parse.national.length < parse.pays.minChiffres) {
-    return 'Ce $libelle semble incomplet.';
+    return mots.libelleSembleIncomplet(texteLibelle);
   }
   return null;
 }

@@ -1,6 +1,7 @@
 ﻿import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/l10n/closet_l10n.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/closet_colors.dart';
 import '../../../core/theme/closet_text_styles.dart';
@@ -15,13 +16,14 @@ class AdhesionApprouveeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = ClosetL10n.of(context);
     return PopScope(
       // L'adhésion est actée côté serveur : revenir en arrière renverrait sur
       // un écran de suivi devenu faux.
       canPop: false,
       child: TransactionScaffold(
         hautTitre: 47,
-        mention: 'Confirmation envoyée sur WhatsApp',
+        mention: l10n.transactionConfirmationWhatsapp,
         child: Column(
           children: [
             const SizedBox(height: 124),
@@ -30,7 +32,7 @@ class AdhesionApprouveeScreen extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 42),
               child: Text(
-                'Felicitation votre adhesion a été approuvée avec succès !',
+                l10n.felicitationAdhesion,
                 textAlign: TextAlign.center,
                 style: ClosetTextStyles.titreEcran.copyWith(
                   letterSpacing: 0.66,
@@ -42,8 +44,7 @@ class AdhesionApprouveeScreen extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 42),
               child: Text(
-                'Votre espace de dépôt est désormais ouvert.\n'
-                'Vous pouvez confier votre première pièce.',
+                l10n.espaceDepotOuvertMessage,
                 textAlign: TextAlign.center,
                 style: ClosetTextStyles.labelChamp.copyWith(
                   fontWeight: FontWeight.w500,
@@ -53,12 +54,12 @@ class AdhesionApprouveeScreen extends StatelessWidget {
             ),
             const Spacer(),
             BoutonTransaction(
-              label: 'Entrer dans mon espace sourceur',
+              label: l10n.entrerEspaceSourceur,
               onPressed: () => context.go('/sourceur/espace'),
             ),
             const SizedBox(height: 24),
             BoutonTransaction(
-              label: 'Poursuivre ma visite',
+              label: l10n.transactionPoursuivreVisite,
               dore: false,
               onPressed: () => context.go('/home'),
             ),
@@ -107,7 +108,7 @@ class _ArcheValidation extends StatelessWidget {
           ),
           const Spacer(),
           Text(
-            'Vérification approuvée !',
+            ClosetL10n.of(context).verificationApprouvee,
             textAlign: TextAlign.center,
             style: ClosetTextStyles.titreBloc.copyWith(
               fontFamily: ClosetTextStyles.prix.fontFamily,

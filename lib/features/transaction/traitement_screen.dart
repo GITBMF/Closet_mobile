@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../core/l10n/closet_l10n.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/theme/closet_colors.dart';
 import '../../core/theme/closet_text_styles.dart';
@@ -54,19 +55,16 @@ class _TraitementScreenState extends State<TraitementScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = ClosetL10n.of(context);
     return TransactionScaffold(
-      titre: widget.type.titreTraitement,
+      titre: widget.type.titreTraitement(l10n),
       entete: widget.type.afficheFrise
           ? const FriseTunnel(etapeCourante: 2, surFondSombre: true)
           : null,
       child: Column(
         children: [
           const SizedBox(height: 62),
-          const TexteTransaction(
-            'Veuillez patienter quelques instants pendant que nous sécurisons '
-            'et validons votre transaction. Merci de ne pas fermer cette '
-            'application.',
-          ),
+          TexteTransaction(l10n.transactionPatientez),
           const SizedBox(height: 104),
           const Icon(
             Icons.swap_horiz_rounded,
@@ -85,7 +83,7 @@ class _TraitementScreenState extends State<TraitementScreen> {
           if (widget.type.afficheFrise) ...[
             const SizedBox(height: AppSpacing.p12),
             Text(
-              'Paiement en cours',
+              l10n.transactionTraitementPaiement,
               style: ClosetTextStyles.corps.copyWith(color: ClosetColors.beige),
             ),
           ],
@@ -115,10 +113,11 @@ class SuccesScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = ClosetL10n.of(context);
     final type = recu.demande.type;
 
     return TransactionScaffold(
-      titre: type.titreSucces,
+      titre: type.titreSucces(l10n),
       entete: type.afficheFrise
           ? const FriseTunnel(etapeCourante: 3, surFondSombre: true)
           : null,
@@ -128,21 +127,20 @@ class SuccesScreen extends StatelessWidget {
             const SizedBox(height: 47),
             _ArcheSucces(
               legende: type == TypeOperation.paiement
-                  ? 'Votre pièce sera préparée avec soin et expédiée très '
-                      'prochainement'
+                  ? l10n.transactionColisPreparation
                   : null,
             ),
             const SizedBox(height: AppSpacing.p20),
             if (recu.numeroCommande != null) ...[
               Text(
-                'Commande N° ${recu.numeroCommande}',
+                l10n.transactionCommandeNumero(recu.numeroCommande!),
                 style: ClosetTextStyles.libelleFort.copyWith(
                   color: ClosetColors.fond300,
                 ),
               ),
               const SizedBox(height: AppSpacing.p16),
             ],
-            TexteTransaction(type.messageSucces),
+            TexteTransaction(type.messageSucces(l10n)),
             if (type == TypeOperation.paiement) ...[
               const SizedBox(height: AppSpacing.p16),
               Row(
@@ -155,7 +153,7 @@ class SuccesScreen extends StatelessWidget {
                   ),
                   const SizedBox(width: AppSpacing.gapChip),
                   Text(
-                    'Confirmation envoyée sur WhatsApp',
+                    l10n.transactionConfirmationWhatsapp,
                     style: ClosetTextStyles.meta.copyWith(
                       color: ClosetColors.emeraude100,
                     ),
@@ -164,10 +162,10 @@ class SuccesScreen extends StatelessWidget {
               ),
             ],
             const SizedBox(height: AppSpacing.p32),
-            BoutonTransaction(label: 'Voir le reçu', onPressed: onVoirRecu),
+            BoutonTransaction(label: l10n.transactionVoirRecu, onPressed: onVoirRecu),
             const SizedBox(height: AppSpacing.p24),
             BoutonTransaction(
-              label: type.libelleSortie,
+              label: type.libelleSortie(l10n),
               dore: false,
               onPressed: onRetour,
             ),
@@ -187,6 +185,7 @@ class _ArcheSucces extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = ClosetL10n.of(context);
     return Container(
       width: 217,
       height: 275,
@@ -211,7 +210,7 @@ class _ArcheSucces extends StatelessWidget {
                 size: 44, color: ClosetColors.blanc),
           ),
           const Spacer(),
-          Text('C’est tout bon !', style: ClosetTextStyles.accroche),
+          Text(l10n.transactionToutBon, style: ClosetTextStyles.accroche),
           if (legende != null) ...[
             const SizedBox(height: AppSpacing.p8),
             Text(

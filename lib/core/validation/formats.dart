@@ -13,16 +13,17 @@ final RegExp motifEmail = RegExp(
 
 String? validerEmail(String? valeur,
     {bool obligatoire = true, ClosetL10n? l10n}) {
+  final mots = l10n ?? ClosetL10n.fr;
   final saisie = (valeur ?? '').trim();
   if (saisie.isEmpty) {
     if (!obligatoire) return null;
-    return l10n?.renseignerEmail ?? 'Veuillez renseigner votre e-mail.';
+    return mots.renseignerEmail;
   }
   if (saisie.length > 254 || saisie.contains(' ')) {
-    return l10n?.emailIncorrect ?? 'Cet e-mail semble incorrect.';
+    return mots.emailIncorrect;
   }
   if (!motifEmail.hasMatch(saisie)) {
-    return l10n?.emailIncorrect ?? 'Utilisez une adresse du type nom@domaine.com.';
+    return mots.emailFormatAttendu;
   }
   return null;
 }
@@ -31,23 +32,15 @@ String? validerEmail(String? valeur,
 /// Inscription : 8 à 128 caractères, une lettre, un chiffre, sans espace.
 String? validerMotDePasse(String? valeur,
     {bool connexion = false, ClosetL10n? l10n}) {
+  final mots = l10n ?? ClosetL10n.fr;
   final saisie = valeur ?? '';
-  if (saisie.isEmpty) {
-    return l10n?.renseignerMdp ?? 'Indiquez votre mot de passe.';
-  }
-  if (saisie.length > 128) return l10n?.max128 ?? '128 caractères maximum.';
+  if (saisie.isEmpty) return mots.renseignerMdp;
+  if (saisie.length > 128) return mots.max128;
   if (connexion) return null;
-  if (RegExp(r'\s').hasMatch(saisie)) {
-    return l10n?.mdpSansEspaces ??
-        'Le mot de passe ne doit pas contenir d’espaces.';
-  }
-  if (saisie.length < 8) return l10n?.min8Caracteres ?? '8 caractères minimum.';
-  if (!RegExp(r'[A-Za-zÀ-ÿ]').hasMatch(saisie)) {
-    return l10n?.ajouterLettre ?? 'Ajoutez au moins une lettre.';
-  }
-  if (!RegExp(r'\d').hasMatch(saisie)) {
-    return l10n?.ajouterChiffre ?? 'Ajoutez au moins un chiffre.';
-  }
+  if (RegExp(r'\s').hasMatch(saisie)) return mots.mdpSansEspaces;
+  if (saisie.length < 8) return mots.min8Caracteres;
+  if (!RegExp(r'[A-Za-zÀ-ÿ]').hasMatch(saisie)) return mots.ajouterLettre;
+  if (!RegExp(r'\d').hasMatch(saisie)) return mots.ajouterChiffre;
   return null;
 }
 
@@ -79,15 +72,14 @@ class EtatMotDePasse {
 
 /// Identifiant « e-mail ou téléphone » : l’API de connexion n’accepte que
 /// l’e-mail. Un numéro bien formé reçoit un message dédié.
-String? validerIdentifiantConnexion(String? valeur) {
+String? validerIdentifiantConnexion(String? valeur, [ClosetL10n? l10n]) {
+  final mots = l10n ?? ClosetL10n.fr;
   final saisie = (valeur ?? '').trim();
-  if (saisie.isEmpty) return 'Veuillez renseigner votre e-mail.';
-  if (saisie.contains('@')) return validerEmail(saisie);
+  if (saisie.isEmpty) return mots.renseignerEmail;
+  if (saisie.contains('@')) return validerEmail(saisie, l10n: l10n);
   final chiffres = saisie.replaceAll(RegExp(r'\D'), '');
-  if (chiffres.length >= 8) {
-    return 'La connexion se fait avec l’e-mail du compte, pas le téléphone.';
-  }
-  return 'Utilisez l’e-mail du compte (nom@domaine.com).';
+  if (chiffres.length >= 8) return mots.connexionEmailPasTelephone;
+  return mots.utiliserEmailCompte;
 }
 
 /// Première lettre de chaque mot en majuscule (prénom).

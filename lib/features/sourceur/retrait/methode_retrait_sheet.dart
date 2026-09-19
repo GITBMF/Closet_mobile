@@ -1,6 +1,7 @@
 ﻿import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/l10n/closet_l10n.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/closet_colors.dart';
 import '../../../core/theme/closet_text_styles.dart';
@@ -30,26 +31,26 @@ class MoyenRetrait {
 }
 
 /// TODO(backend): les moyens de retrait doivent venir du profil sourceur.
-const List<MoyenRetrait> moyensRetrait = [
-  MoyenRetrait(
-    id: 'orange',
-    libelle: 'Orange Money',
-    compte: '699000000',
-    icone: Icons.phone_android_rounded,
-  ),
-  MoyenRetrait(
-    id: 'mtn',
-    libelle: 'MTN Mobile Money',
-    compte: '677000000',
-    icone: Icons.phone_iphone_rounded,
-  ),
-  MoyenRetrait(
-    id: 'visa',
-    libelle: 'Carte Visa',
-    compte: '4864',
-    icone: Icons.credit_card_rounded,
-  ),
-];
+List<MoyenRetrait> moyensRetraitPour(ClosetL10n l10n) => [
+      MoyenRetrait(
+        id: 'orange',
+        libelle: l10n.moyenOrangeMoney,
+        compte: '699000000',
+        icone: Icons.phone_android_rounded,
+      ),
+      MoyenRetrait(
+        id: 'mtn',
+        libelle: l10n.moyenMtnMobileMoney,
+        compte: '677000000',
+        icone: Icons.phone_iphone_rounded,
+      ),
+      MoyenRetrait(
+        id: 'visa',
+        libelle: l10n.moyenCarteVisa,
+        compte: '4864',
+        icone: Icons.credit_card_rounded,
+      ),
+    ];
 
 /// Ouvre le panneau « Méthode de retrait de fonds » — maquette `32:511`.
 ///
@@ -74,7 +75,7 @@ class _MethodeRetraitSheet extends ConsumerStatefulWidget {
 
 class _MethodeRetraitSheetState
     extends ConsumerState<_MethodeRetraitSheet> {
-  String _choisi = moyensRetrait.first.id;
+  String _choisi = 'orange';
 
   @override
   void initState() {
@@ -92,6 +93,7 @@ class _MethodeRetraitSheetState
 
   @override
   Widget build(BuildContext context) {
+    final l10n = ClosetL10n.of(context);
     final revenus = ref.watch(revenusSourceurProvider);
     final pieces = ref.watch(mesPiecesProvider);
     final ClosetUser? user = ref.watch<ClosetUser?>(currentUserProvider);
@@ -126,14 +128,14 @@ class _MethodeRetraitSheetState
               ),
               const SizedBox(height: AppSpacing.p20),
               Text(
-                'Méthode de retrait de fonds',
+                l10n.methodeRetraitTitre,
                 style: ClosetTextStyles.libelle.copyWith(fontSize: 18),
               ),
               const SizedBox(height: AppSpacing.p16),
               Text(
-                'Pièces en vente : '
-                '${pieces.maybeWhen(data: _compteEnVente, orElse: () => '0')} '
-                'pièces',
+                l10n.piecesEnVente(
+                  pieces.maybeWhen(data: _compteEnVente, orElse: () => '0'),
+                ),
                 style: ClosetTextStyles.actionPetite.copyWith(
                   letterSpacing: 0.30,
                   color: ClosetColors.fond300,
@@ -147,15 +149,19 @@ class _MethodeRetraitSheetState
               ),
               const SizedBox(height: AppSpacing.p12),
               Text(
-                'À reverser : '
-                '${revenus.maybeWhen(data: (r) => formatPrixFcfa(r.enAttente.toDouble()), orElse: () => '--')}',
+                l10n.aReverser(
+                  revenus.maybeWhen(
+                    data: (r) => formatPrixFcfa(r.enAttente.toDouble()),
+                    orElse: () => '--',
+                  ),
+                ),
                 style: ClosetTextStyles.actionPetite.copyWith(
                   letterSpacing: 0.30,
                   color: ClosetColors.fond300,
                 ),
               ),
               const SizedBox(height: AppSpacing.p16),
-              for (final moyen in _moyensAffiches())
+              for (final moyen in _moyensAffiches(l10n))
                 _LigneMoyen(
                   moyen: moyen,
                   choisi: moyen.id == _choisi,
@@ -172,7 +178,7 @@ class _MethodeRetraitSheetState
                     onTap: () => _valider(context, revenus, user),
                     child: Center(
                       child: Text(
-                        'Valider la méthode de retrait',
+                        l10n.validerMethodeRetrait,
                         style: ClosetTextStyles.bouton.copyWith(
                           fontWeight: FontWeight.w600,
                           color: ClosetColors.blanc,
@@ -190,7 +196,8 @@ class _MethodeRetraitSheetState
   }
 
   /// Moyens de la maquette, avec le numéro enregistré via `GET /sourcing/me`.
-  List<MoyenRetrait> _moyensAffiches() {
+  List<MoyenRetrait> _moyensAffiches(ClosetL10n l10n) {
+    final moyensRetrait = moyensRetraitPour(l10n);
     final profil = ref.watch(sourceurRepositoryProvider).profile;
     final numero = profil?.numeroPaiement ?? '';
     if (numero.isEmpty) return moyensRetrait;
@@ -212,12 +219,9 @@ class _MethodeRetraitSheetState
     AsyncValue<RevenusSourceur> revenus,
     ClosetUser? user,
   ) {
+    final l10n = ClosetL10n.of(context);
     Navigator.of(context).pop();
-    toastInfo(
-      ref,
-      'Retraits gérés par ClosET',
-      'Les virements sont émis une fois vos pièces vendues.',
-    );
+    toastInfo(ref, l10n.retraitsGeresTitre, l10n.virementsEmis);
   }
 
   /// Nombre de pièces effectivement en vente.

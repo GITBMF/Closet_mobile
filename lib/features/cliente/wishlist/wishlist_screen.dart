@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/l10n/closet_l10n.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/closet_colors.dart';
 import '../../../core/theme/closet_text_styles.dart';
@@ -10,7 +11,7 @@ import '../../../core/widgets/closet_app_bar.dart';
 import '../../../core/widgets/closet_feedback.dart';
 import '../../../core/widgets/closet_sections.dart';
 import '../../../core/widgets/etat_ecran.dart';
-import '../../../core/widgets/toasts.dart';
+import '../../../core/widgets/spotlight_showcase.dart';
 import '../../../data/models/article.dart';
 import '../../../data/repositories/auth_repository.dart';
 import '../../../data/repositories/cart_repository.dart';
@@ -26,6 +27,7 @@ class WishlistScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = ClosetL10n.of(context);
     final connectee = ref.watch(currentUserProvider) != null;
     final favoris = ref.watch(wishlistProvider);
 
@@ -36,27 +38,25 @@ class WishlistScreen extends ConsumerWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const SizedBox(height: AppSpacing.p12),
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: AppSpacing.p20),
-            child: ClosetTitreEcran('Mes favoris'),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.p20),
+            child: ClosetTitreEcran(l10n.mesFavorisTitre),
           ),
           Expanded(
             child: !connectee
                 ? ClosetListeVide(
-                    message:
-                        'Connectez-vous pour enregistrer et retrouver vos pièces favorites.',
+                    message: l10n.connexionRequiseFavoris,
                     action: () => context.push('/auth'),
-                    libelleAction: 'Se connecter',
+                    libelleAction: l10n.seConnecter,
                   )
                 : corpsAsync<List<Article>>(
                     favoris,
                     onRetry: () => ref.invalidate(wishlistProvider),
                     data: (liste) => liste.isEmpty
                         ? ClosetListeVide(
-                            message:
-                                'Aucune pièce n’a été ajoutée aux favoris.',
+                            message: l10n.aucunFavoriMessage,
                             action: () => context.go('/collections'),
-                            libelleAction: 'Découvrir les collections',
+                            libelleAction: l10n.decouvrirCollections,
                           )
                         : ListView.separated(
                             padding: const EdgeInsets.fromLTRB(
@@ -71,35 +71,16 @@ class WishlistScreen extends ConsumerWidget {
                             itemBuilder: (context, i) {
                               final article = liste[i];
                               return _CarteFavori(
+                                // La visite guidée éclaire la première carte.
+                                cleAjout:
+                                    i == 0 ? ClosetTourKeys.wishlistAjoutKey : null,
                                 article: article,
                                 onTap: () =>
                                     context.push('/product/${article.id}'),
                                 onRetirer: () =>
                                     basculerFavori(ref, article),
-                                onAjouter: () {
-                                  final cart = ref.read(cartProvider.notifier);
-                                  final deja = ref
-                                      .read(cartListProvider)
-                                      .any((a) => a.id == article.id);
-                                  if (deja) {
-                                    cart.removeArticle(article.id);
-                                    toastActionPiece(
-                                      ref,
-                                      nom: article.title,
-                                      resultat:
-                                          'a été retirée de votre sélection.',
-                                      succes: false,
-                                    );
-                                  } else {
-                                    cart.addArticle(article);
-                                    toastActionPiece(
-                                      ref,
-                                      nom: article.title,
-                                      resultat:
-                                          'a été ajoutée à votre sélection.',
-                                    );
-                                  }
-                                },
+                                onAjouter: () =>
+                                    basculerSelection(ref, article),
                               );
                             },
                           ),
@@ -118,12 +99,16 @@ class _CarteFavori extends ConsumerWidget {
     required this.onTap,
     required this.onRetirer,
     required this.onAjouter,
+    this.cleAjout,
   });
 
   final Article article;
   final VoidCallback onTap;
   final VoidCallback onRetirer;
   final VoidCallback onAjouter;
+
+  /// Clé de la visite guidée, posée sur le bouton d'ajout de la première carte.
+  final Key? cleAjout;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -203,6 +188,7 @@ class _CarteFavori extends ConsumerWidget {
                         ),
                       ),
                       _BoutonAjouter(
+                        key: cleAjout,
                         dejaAjoute: dejaAjoute,
                         indisponible: article.isSoldOut,
                         onTap: onAjouter,
@@ -216,7 +202,7 @@ class _CarteFavori extends ConsumerWidget {
             const SizedBox(width: AppSpacing.p8),
             Semantics(
               button: true,
-              label: 'Retirer des favoris',
+              label: ClosetL10n.of(context).retirerDesFavoris,
               child: GestureDetector(
                 onTap: onRetirer,
                 child: Container(
@@ -248,6 +234,7 @@ class _CarteFavori extends ConsumerWidget {
 /// Bouton doré « Ajouter au panier » : 116 × 33, rayon 100.
 class _BoutonAjouter extends StatelessWidget {
   const _BoutonAjouter({
+    super.key,
     required this.dejaAjoute,
     required this.indisponible,
     required this.onTap,
@@ -272,10 +259,10 @@ class _BoutonAjouter extends StatelessWidget {
           child: Center(
             child: Text(
               indisponible
-                  ? 'Indisponible'
+                  ? ClosetL10n.of(context).indisponibleLabel
                   : dejaAjoute
-                      ? 'Retirer'
-                      : 'Ajouter',
+                      ? ClosetL10n.of(context).retirerCourt
+                      : ClosetL10n.of(context).ajouterCourt,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: ClosetTextStyles.attribut.copyWith(

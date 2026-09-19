@@ -35,11 +35,17 @@ void main() {
       expect(etat().adresseComplete, isFalse);
     });
 
-    test('choisir une ville suffit à compléter l’adresse', () {
+    test('ville seule ne suffit pas sans quartier', () {
       brouillon.choisirVille(_yaounde);
+      expect(etat().adresseComplete, isFalse);
+    });
+
+    test('choisir une ville et un quartier complète l’adresse', () {
+      brouillon.choisirVille(_yaounde);
+      brouillon.majQuartier('Newtown Collège');
 
       expect(etat().adresseComplete, isTrue);
-      expect(etat().adresseResumee, 'Yaoundé');
+      expect(etat().adresseResumee, 'Yaoundé, Newtown Collège');
       expect(etat().villeIdPourDevis, 1);
     });
   });
@@ -52,29 +58,51 @@ void main() {
       expect(etat().adresseComplete, isFalse);
     });
 
-    test('région + département + quartier complètent l’adresse', () {
+    test('région + département + quartier sans arrondissement ne suffit pas', () {
       brouillon.choisirRegion(_centre);
       brouillon.choisirDepartement(_mfoundi);
       brouillon.majQuartier('Newtown Collège');
 
+      expect(etat().adresseComplete, isFalse);
+    });
+
+    test('région + département + arrondissement + quartier complètent l’adresse', () {
+      brouillon.choisirRegion(_centre);
+      brouillon.choisirDepartement(_mfoundi);
+      brouillon.majArrondissement('Yaoundé 3e');
+      brouillon.majQuartier('Newtown Collège');
+
       expect(etat().adresseComplete, isTrue);
-      expect(etat().adresseResumee, 'Mfoundi, Centre, Newtown Collège');
+      expect(etat().adresseResumee, 'Mfoundi, Centre, Yaoundé 3e, Newtown Collège');
     });
 
     test('un quartier fait de blancs ne compte pas', () {
       brouillon.choisirRegion(_centre);
       brouillon.choisirDepartement(_mfoundi);
+      brouillon.majArrondissement('Yaoundé 3e');
       brouillon.majQuartier('   ');
 
       expect(etat().adresseComplete, isFalse);
     });
 
-    test('changer de région efface le département retenu', () {
+    test('changer de département efface l’arrondissement retenu', () {
+      brouillon.choisirRegion(_centre);
+      brouillon.choisirDepartement(_mfoundi);
+      brouillon.majArrondissement('Yaoundé 3e');
+
+      brouillon.choisirDepartement(_lekie);
+
+      expect(etat().arrondissement, isEmpty);
+    });
+
+    test('changer de région efface le département et l’arrondissement retenus', () {
       brouillon.choisirRegion(_centre);
       brouillon.choisirDepartement(_lekie);
+      brouillon.majArrondissement('Yaoundé 3e');
       brouillon.choisirRegion(_littoral);
 
       expect(etat().departement, isNull);
+      expect(etat().arrondissement, isEmpty);
       expect(etat().adresseComplete, isFalse);
     });
 

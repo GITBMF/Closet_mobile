@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../core/l10n/closet_l10n.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/theme/closet_colors.dart';
 import '../../core/theme/closet_text_styles.dart';
@@ -56,7 +57,7 @@ class _MotDePasseOublieDialogState
   }
 
   Future<void> _envoyer() async {
-    final erreurEmail = validerEmail(_email.text);
+    final erreurEmail = validerEmail(_email.text, l10n: ClosetL10n.of(context));
     if (erreurEmail != null) {
       setState(() => _erreur = erreurEmail);
       return;
@@ -76,7 +77,7 @@ class _MotDePasseOublieDialogState
       });
     } catch (e) {
       if (!mounted) return;
-      setState(() => _erreur = messageErreur(e));
+      setState(() => _erreur = messageErreur(e, ClosetL10n.of(context)));
     } finally {
       if (mounted) setState(() => _envoiEnCours = false);
     }
@@ -84,21 +85,20 @@ class _MotDePasseOublieDialogState
 
   @override
   Widget build(BuildContext context) {
+    final l10n = ClosetL10n.of(context);
     return AlertDialog(
       backgroundColor: ClosetColors.blanc,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(AppRadius.carte),
       ),
       title: Text(
-        _envoye ? 'Vérifiez vos messages' : 'Mot de passe oublié',
+        _envoye ? l10n.verifiezVosMessages : l10n.mdpOublieDialogTitre,
         style: ClosetTextStyles.titreBloc.copyWith(color: ClosetColors.vert),
       ),
       content: _envoye
           ? Text(
               messageMelange(
-                local:
-                    'Si un compte est rattaché à ${_email.text.trim()}, un lien '
-                    'de réinitialisation vient d’y être envoyé.',
+                local: l10n.lienEnvoyeA(_email.text.trim()),
                 backend: _messageServeur,
               ),
               style:
@@ -109,8 +109,7 @@ class _MotDePasseOublieDialogState
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Indiquez l’adresse de votre compte : nous y enverrons un '
-                  'lien de réinitialisation.',
+                  l10n.indiquerAdresseReinit,
                   style:
                       ClosetTextStyles.meta.copyWith(color: ClosetColors.taupe),
                 ),
@@ -128,7 +127,7 @@ class _MotDePasseOublieDialogState
                   onSubmitted: (_) => _envoiEnCours ? null : _envoyer(),
                   style: ClosetTextStyles.corps,
                   decoration: InputDecoration(
-                    hintText: 'vous@exemple.com',
+                    hintText: 'you@example.com',
                     errorText: _erreur,
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(AppRadius.carte),
@@ -142,7 +141,7 @@ class _MotDePasseOublieDialogState
               TextButton(
                 onPressed: () => Navigator.of(context).pop(),
                 child: Text(
-                  'Fermer',
+                  l10n.fermer,
                   style:
                       ClosetTextStyles.bouton.copyWith(color: ClosetColors.vert),
                 ),
@@ -153,7 +152,7 @@ class _MotDePasseOublieDialogState
                 onPressed:
                     _envoiEnCours ? null : () => Navigator.of(context).pop(),
                 child: Text(
-                  'Annuler',
+                  l10n.annulerPaiement,
                   style: ClosetTextStyles.bouton
                       .copyWith(color: ClosetColors.taupe),
                 ),
@@ -170,7 +169,7 @@ class _MotDePasseOublieDialogState
                         ),
                       )
                     : Text(
-                        'Envoyer le lien',
+                        l10n.envoyerLeLien,
                         style: ClosetTextStyles.bouton
                             .copyWith(color: ClosetColors.vert),
                       ),

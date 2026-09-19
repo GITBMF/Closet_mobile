@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/l10n/closet_l10n.dart';
 import '../../../core/theme/closet_colors.dart';
 import '../../../core/theme/closet_text_styles.dart';
 import '../../../core/widgets/champ_telephone.dart';
@@ -25,14 +26,25 @@ class SourceurInscriptionScreen extends ConsumerStatefulWidget {
 
 class _SourceurInscriptionScreenState
     extends ConsumerState<SourceurInscriptionScreen> {
-  static const _specialites = [
-    'Robes',
-    'Vestes',
-    'Sacs',
-    'Accessoires',
-    'Multi-univers',
-  ];
-  static const _moyensPaiement = ['MTN MoMo', 'Orange Money', 'Virement bancaire'];
+  /// Codes stables (indépendants de la langue) envoyés au backend / comparés
+  /// en logique — les libellés affichés viennent de [ClosetL10n].
+  static const _specialiteCodes = ['robes', 'vestes', 'sacs', 'accessoires', 'multi'];
+  static const _moyenCodes = ['mtn_momo', 'orange_money', 'virement_bancaire'];
+  static const _collaborationCodes = ['consignment', 'direct_sale'];
+
+  List<String> _specialiteLabels(ClosetL10n l10n) => [
+        l10n.specialiteRobes,
+        l10n.specialiteVestes,
+        l10n.specialiteSacs,
+        l10n.specialiteAccessoires,
+        l10n.specialiteMultiUnivers,
+      ];
+
+  List<String> _moyenLabels(ClosetL10n l10n) =>
+      [l10n.moyenMtnMomo, l10n.moyenOrangeMoney, l10n.moyenVirementBancaire];
+
+  List<String> _collaborationLabels(ClosetL10n l10n) =>
+      [l10n.collabDepotVente, l10n.collabVenteDirecte];
 
   final _scrollController = ScrollController();
   bool _isLoading = false;
@@ -47,9 +59,8 @@ class _SourceurInscriptionScreenState
   String? _specialite;
 
   // Étape 3 — Paiement
-  static const _typesCollaboration = ['Dépôt-vente (commission 25%)', 'Vente directe (achat immédiat)'];
-  String _typeCollaboration = _typesCollaboration.first;
-  String _moyenPaiement = _moyensPaiement.first;
+  String _typeCollaboration = _collaborationCodes.first;
+  String _moyenPaiement = _moyenCodes.first;
   final _numero = TelephoneController();
 
   int _etape = 0;
@@ -70,7 +81,7 @@ class _SourceurInscriptionScreenState
             _villeController.text.trim().isNotEmpty &&
             _whatsapp.estValide,
         1 => _universController.text.trim().isNotEmpty && _specialite != null,
-        _ => _moyenPaiement == 'Virement bancaire'
+        _ => _moyenPaiement == 'virement_bancaire'
             ? _numero.national.text.trim().isNotEmpty
             : _numero.estValide,
       };
@@ -106,23 +117,22 @@ class _SourceurInscriptionScreenState
         numeroPaiement: _numero.e164.isNotEmpty
             ? _numero.e164
             : _numero.national.text.trim(),
-        typeCollaboration: _typeCollaboration.contains('directe')
-            ? 'direct_sale'
-            : 'consignment',
+        typeCollaboration: _typeCollaboration,
       ));
       if (!mounted) return;
+      final l10n = ClosetL10n.of(context);
       setState(() => _isLoading = false);
       await dialogueSucces(
         context,
-        titre: 'Adhésion transmise',
-        message: 'Votre fiche d’adhésion a bien été envoyée.',
+        titre: l10n.adhesionTransmiseTitre,
+        message: l10n.adhesionTransmiseCorps,
       );
       if (!mounted) return;
       context.go('/sourceur/adhesion');
     } catch (e) {
       if (!mounted) return;
       setState(() => _isLoading = false);
-      await dialogueErreur(context, e, titre: 'Adhésion impossible');
+      await dialogueErreur(context, e, titre: ClosetL10n.of(context).adhesionImpossibleTitre);
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -131,6 +141,7 @@ class _SourceurInscriptionScreenState
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = ClosetL10n.of(context);
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (didPop, _) {
@@ -156,14 +167,14 @@ class _SourceurInscriptionScreenState
                       padding: const EdgeInsets.symmetric(horizontal: 8),
                       child: StepIndicator(
                         etapeCourante: _etape,
-                        labels: const ['ATELIER', 'UNIVERS', 'PAIEMENT'],
+                        labels: [l10n.etapeAtelier, l10n.etapeUnivers, l10n.etapePaiement],
                       ),
                     ),
                     const SizedBox(height: 24),
                     switch (_etape) {
-                      0 => _buildEtapeAtelier(),
-                      1 => _buildEtapeUnivers(),
-                      _ => _buildEtapePaiement(),
+                      0 => _buildEtapeAtelier(l10n),
+                      1 => _buildEtapeUnivers(l10n),
+                      _ => _buildEtapePaiement(l10n),
                     },
                     const SizedBox(height: 28),
                     ListenableBuilder(
@@ -174,7 +185,7 @@ class _SourceurInscriptionScreenState
                         _universController,
                         _numero,
                       ]),
-                      builder: (_, _) => _buildBoutons(),
+                      builder: (_, _) => _buildBoutons(l10n),
                     ),
                   ],
                 ),
@@ -189,6 +200,7 @@ class _SourceurInscriptionScreenState
 
   Widget _buildTopBar(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
+    final l10n = ClosetL10n.of(context);
     return Container(
       padding: const EdgeInsets.fromLTRB(12, 8, 20, 12),
       decoration: BoxDecoration(
@@ -198,7 +210,7 @@ class _SourceurInscriptionScreenState
       child: Row(
         children: [
           IconButton(
-            tooltip: 'Retour',
+            tooltip: l10n.retour,
             onPressed: _retour,
             icon: Icon(
               Icons.arrow_back_ios_new,
@@ -207,7 +219,7 @@ class _SourceurInscriptionScreenState
             ),
           ),
           const SizedBox(width: 4),
-          Text('Devenir Sourceur',
+          Text(l10n.devenirSourceur,
               style: ClosetTextStyles.titreEcran.copyWith(
                   fontSize: 16, color: cs.onSurface)),
         ],
@@ -215,27 +227,27 @@ class _SourceurInscriptionScreenState
     );
   }
 
-  Widget _buildEtapeAtelier() {
+  Widget _buildEtapeAtelier(ClosetL10n l10n) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         LabeledField(
           icone: Icons.storefront_outlined,
-          label: 'Nom de votre atelier',
+          label: l10n.sourceurNomAtelier,
           controller: _atelierController,
-          hint: "L'Atelier d'Awa",
+          hint: l10n.sourceurAtelierHint,
         ),
         const SizedBox(height: 22),
         LabeledField(
           icone: Icons.location_on_outlined,
-          label: 'Ville',
+          label: l10n.villeSimple,
           controller: _villeController,
           hint: 'Yaoundé',
         ),
         const SizedBox(height: 22),
         ChampTelephone(
           icone: Icons.phone_outlined,
-          label: 'Téléphone WhatsApp',
+          label: l10n.sourceurTelephoneWhatsapp,
           controller: _whatsapp,
           hint: '6 77 45 22 18',
           style: StyleChampTelephone.sourceur,
@@ -245,16 +257,16 @@ class _SourceurInscriptionScreenState
     );
   }
 
-  Widget _buildEtapeUnivers() {
+  Widget _buildEtapeUnivers(ClosetL10n l10n) {
+    final labels = _specialiteLabels(l10n);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         LabeledField(
           icone: Icons.description_outlined,
-          label: 'Votre univers en quelques mots',
+          label: l10n.universDetailLabel,
           controller: _universController,
-          hint: 'Racontez votre histoire, votre sensibilité, '
-              'vos coups de cœur...',
+          hint: l10n.universDetailHint,
           maxLines: 6,
         ),
         const SizedBox(height: 22),
@@ -262,7 +274,7 @@ class _SourceurInscriptionScreenState
           children: [
             const Icon(Icons.palette_outlined, size: 16, color: ClosetColors.dore),
             const SizedBox(width: 8),
-            Text('SPÉCIALITÉ', style: ClosetTextStyles.labelChamp),
+            Text(l10n.specialiteLabel, style: ClosetTextStyles.labelChamp),
           ],
         ),
         const SizedBox(height: 16),
@@ -270,11 +282,11 @@ class _SourceurInscriptionScreenState
           spacing: 12,
           runSpacing: 12,
           children: [
-            for (final s in _specialites)
+            for (var i = 0; i < _specialiteCodes.length; i++)
               ClosetChip(
-                label: s,
-                selectionnee: _specialite == s,
-                onTap: () => setState(() => _specialite = s),
+                label: labels[i],
+                selectionnee: _specialite == _specialiteCodes[i],
+                onTap: () => setState(() => _specialite = _specialiteCodes[i]),
               ),
           ],
         ),
@@ -282,7 +294,9 @@ class _SourceurInscriptionScreenState
     );
   }
 
-  Widget _buildEtapePaiement() {
+  Widget _buildEtapePaiement(ClosetL10n l10n) {
+    final collaborationLabels = _collaborationLabels(l10n);
+    final moyenLabels = _moyenLabels(l10n);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -291,15 +305,15 @@ class _SourceurInscriptionScreenState
             const Icon(Icons.handshake_outlined,
                 size: 16, color: ClosetColors.dore),
             const SizedBox(width: 8),
-            Text('TYPE DE COLLABORATION', style: ClosetTextStyles.labelChamp),
+            Text(l10n.typeCollaborationLabel, style: ClosetTextStyles.labelChamp),
           ],
         ),
         const SizedBox(height: 16),
-        for (final type in _typesCollaboration) ...[
+        for (var i = 0; i < _collaborationCodes.length; i++) ...[
           _PaiementOption(
-            label: type,
-            selectionne: _typeCollaboration == type,
-            onTap: () => setState(() => _typeCollaboration = type),
+            label: collaborationLabels[i],
+            selectionne: _typeCollaboration == _collaborationCodes[i],
+            onTap: () => setState(() => _typeCollaboration = _collaborationCodes[i]),
           ),
           const SizedBox(height: 12),
         ],
@@ -309,22 +323,22 @@ class _SourceurInscriptionScreenState
             const Icon(Icons.payments_outlined,
                 size: 16, color: ClosetColors.dore),
             const SizedBox(width: 8),
-            Text('MOYEN DE RÉMUNÉRATION', style: ClosetTextStyles.labelChamp),
+            Text(l10n.moyenRemunerationLabel, style: ClosetTextStyles.labelChamp),
           ],
         ),
         const SizedBox(height: 16),
-        for (final moyen in _moyensPaiement) ...[
+        for (var i = 0; i < _moyenCodes.length; i++) ...[
           _PaiementOption(
-            label: moyen,
-            selectionne: _moyenPaiement == moyen,
-            onTap: () => setState(() => _moyenPaiement = moyen),
+            label: moyenLabels[i],
+            selectionne: _moyenPaiement == _moyenCodes[i],
+            onTap: () => setState(() => _moyenPaiement = _moyenCodes[i]),
           ),
           const SizedBox(height: 12),
         ],
         const SizedBox(height: 14),
         ChampTelephone(
           icone: Icons.phone_outlined,
-          label: 'Numéro',
+          label: l10n.numeroLabel,
           controller: _numero,
           hint: '6 90 12 34 56',
           style: StyleChampTelephone.sourceur,
@@ -344,20 +358,12 @@ class _SourceurInscriptionScreenState
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Conditions d’adhésion',
+                l10n.conditionsAdhesionTitre,
                 style: ClosetTextStyles.titreBloc,
               ),
               const SizedBox(height: 10),
               Text(
-                'En rejoignant le cercle ClosET, vous acceptez :\n'
-                '• une commission de 25% prélevée par ClosET sur chaque vente '
-                'en dépôt-vente ;\n'
-                '• l’authentification de chaque pièce avant mise en ligne ;\n'
-                '• le respect de la charte d’authenticité et des délais de '
-                'remise des pièces ;\n'
-                '• le règlement de vos ventes selon le moyen choisi '
-                '(Mobile Money ou virement).\n\n'
-                'Ces règles s’appliquent dès validation de votre adhésion.',
+                l10n.conditionsAdhesionCorps,
                 style: ClosetTextStyles.corps,
               ),
             ],
@@ -367,13 +373,13 @@ class _SourceurInscriptionScreenState
     );
   }
 
-  Widget _buildBoutons() {
+  Widget _buildBoutons(ClosetL10n l10n) {
     final derniereEtape = _etape == 2;
     final bouton = _isLoading
         ? const Center(
             child: CircularProgressIndicator(color: ClosetColors.dore))
         : ClosetPrimaryButton(
-            label: derniereEtape ? 'Rejoindre le cercle' : 'Continuer',
+            label: derniereEtape ? l10n.rejoindreLeCercle : l10n.continuer,
             dore: derniereEtape,
             onPressed: _etapeValide
                 ? (derniereEtape ? _rejoindreLeCercle : () => _changerEtape(1))
@@ -385,7 +391,7 @@ class _SourceurInscriptionScreenState
       children: [
         Expanded(
           child: ClosetOutlineButton(
-            label: 'Retour',
+            label: l10n.retour,
             onPressed: () => _changerEtape(-1),
           ),
         ),

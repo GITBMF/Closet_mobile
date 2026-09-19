@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../core/l10n/closet_l10n.dart';
 import '../../features/checkout/brouillon_commande.dart';
 import '../../features/transaction/transaction_flow_screen.dart';
 import '../../features/transaction/transaction_models.dart';
@@ -12,7 +13,8 @@ import 'cart_repository.dart';
 import 'commande_repository.dart';
 
 final transactionExecuteurProvider = Provider<ExecuteurTransaction>((ref) {
-  return (demande, pin) => TransactionRepository(ref).executer(demande, pin);
+  return (demande, pin, [l10n]) =>
+      TransactionRepository(ref).executer(demande, pin, l10n);
 });
 
 class TransactionRepository {
@@ -24,24 +26,28 @@ class TransactionRepository {
 
   Future<RecuTransaction> executer(
     DemandeTransaction demande,
-    String? pin,
-  ) async {
+    String? pin, [
+    ClosetL10n? l10n,
+  ]) async {
     return switch (demande.type) {
-      TypeOperation.retrait => _retirer(),
-      TypeOperation.paiement => _payer(demande),
+      TypeOperation.retrait => _retirer(l10n),
+      TypeOperation.paiement => _payer(demande, l10n),
     };
   }
 
-  Future<RecuTransaction> _retirer() async {
-    throw const TransactionRefusee(
-      'Les retraits sont versés par ClosET une fois vos pièces vendues.',
+  Future<RecuTransaction> _retirer([ClosetL10n? l10n]) async {
+    throw TransactionRefusee(
+      (l10n ?? ClosetL10n.fr).retraitsVersesParClosetMessage,
     );
   }
 
-  Future<RecuTransaction> _payer(DemandeTransaction demande) async {
+  Future<RecuTransaction> _payer(
+    DemandeTransaction demande, [
+    ClosetL10n? l10n,
+  ]) async {
     final pieces = _ref.read(cartListProvider);
     if (pieces.isEmpty) {
-      throw const TransactionRefusee('Votre sélection est vide.');
+      throw TransactionRefusee((l10n ?? ClosetL10n.fr).selectionVideMessage);
     }
 
     final brouillon = _ref.read(brouillonCommandeProvider);
@@ -55,10 +61,7 @@ class TransactionRepository {
             );
 
     if (commande.statut == StatutCommande.devis || commande.totalCalcule <= 0) {
-      throw const TransactionRefusee(
-        'La livraison vers cette zone est à devis. Nous vous contacterons '
-        'sur WhatsApp pour confirmer le montant avant tout paiement.',
-      );
+      throw TransactionRefusee((l10n ?? ClosetL10n.fr).livraisonADevisMessage);
     }
 
     final initiation = await _client.postJson('/payments/initiate', data: {
@@ -77,13 +80,13 @@ class TransactionRepository {
       }
     }
 
-    final paiement = await _attendreConfirmation(paymentId);
+    final paiement = await _attendreConfirmation(paymentId, l10n);
     final statut = chaineDe(paiement['status']);
     if (statut != 'succeeded') {
       throw TransactionRefusee(
         chaineDe(
           paiement['failure_reason'],
-          'Le paiement n’a pas abouti. Réessayez ou changez de moyen.',
+          (l10n ?? ClosetL10n.fr).paiementEchoueMessage,
         ),
       );
     }
@@ -101,10 +104,13 @@ class TransactionRepository {
     );
   }
 
-  Future<Map<String, dynamic>> _attendreConfirmation(String paymentId) async {
+  Future<Map<String, dynamic>> _attendreConfirmation(
+    String paymentId, [
+    ClosetL10n? l10n,
+  ]) async {
     if (paymentId.isEmpty) {
-      throw const TransactionRefusee(
-        'Le serveur n’a pas renvoyé d’identifiant de paiement.',
+      throw TransactionRefusee(
+        (l10n ?? ClosetL10n.fr).serveurPasIdentifiantPaiementMessage,
       );
     }
 
@@ -120,9 +126,8 @@ class TransactionRepository {
       }
       await Future<void>.delayed(delai);
     }
-    throw const TransactionRefusee(
-      'Le paiement est toujours en cours chez l’opérateur. '
-      'Vérifiez « Mes commandes » dans un instant.',
+    throw TransactionRefusee(
+      (l10n ?? ClosetL10n.fr).paiementEnCoursOperateurMessage,
     );
   }
 }

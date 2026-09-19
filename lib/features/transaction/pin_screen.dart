@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../../core/l10n/closet_l10n.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/theme/closet_colors.dart';
 import '../../core/theme/closet_text_styles.dart';
@@ -53,15 +54,13 @@ class _PinScreenState extends State<PinScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = ClosetL10n.of(context);
     return TransactionScaffold(
-      titre: 'Code PIN de sécurité',
+      titre: l10n.codePinSecurite,
       child: Column(
         children: [
           const SizedBox(height: 55),
-          const TexteTransaction(
-            'Ajoutez un code PIN pour renforcer la sécurité de votre '
-            'opération.',
-          ),
+          TexteTransaction(l10n.ajouterCodePin),
           const SizedBox(height: 32),
           _CasesPin(
             code: _controller.text,
@@ -87,7 +86,7 @@ class _PinScreenState extends State<PinScreen> {
           ),
           const SizedBox(height: 88),
           BoutonTransaction(
-            label: 'Valider le Numéro PIN',
+            label: l10n.validerNumeroPin,
             onPressed:
                 _complet ? () => widget.onValide(_controller.text) : null,
           ),

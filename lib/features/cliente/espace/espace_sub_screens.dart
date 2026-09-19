@@ -1,8 +1,9 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../../../core/l10n/closet_l10n.dart';
 import '../../../core/theme/closet_colors.dart';
 import '../../../core/theme/closet_layout.dart';
 import '../../../core/theme/closet_text_styles.dart';
@@ -25,6 +26,7 @@ class EspaceSubAppBar extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = ClosetL10n.of(context);
     final layout = ClosetLayout.of(context);
     final largeurLeading = layout.gouttiere + layout.cibleTactile;
     return AppBar(
@@ -37,7 +39,7 @@ class EspaceSubAppBar extends StatelessWidget implements PreferredSizeWidget {
         child: Center(
           child: EspaceBoutonRond(
             icone: Icons.arrow_back,
-            label: 'Retour',
+            label: l10n.retour,
             onTap: () => context.pop(),
           ),
         ),
@@ -64,7 +66,7 @@ class EspaceSubAppBar extends StatelessWidget implements PreferredSizeWidget {
             child: Center(
               child: EspaceBoutonRond(
                 icone: Icons.tune,
-                label: 'Réglages',
+                label: l10n.espaceReglages,
                 onTap: onSettingsTap!,
               ),
             ),
@@ -91,9 +93,10 @@ class EspacePaiementsScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = ClosetL10n.of(context);
     return Scaffold(
       backgroundColor: ClosetColors.ivoire,
-      appBar: const EspaceSubAppBar(title: 'Moyens de paiement'),
+      appBar: EspaceSubAppBar(title: l10n.espaceMoyensPaiement),
       body: SafeArea(
         child: Column(
           children: [
@@ -116,12 +119,12 @@ class EspacePaiementsScreen extends ConsumerWidget {
                   ),
                   onPressed: () => toastInfo(
                     ref,
-                    'Indisponible',
-                    'L’enregistrement d’un moyen de paiement n’est pas encore proposé par le serveur.',
+                    l10n.espaceIndisponibleTitre,
+                    l10n.espacePaiementIndisponible,
                   ),
-                  child: const Text(
-                    '+ Ajouter un moyen de paiement',
-                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                  child: Text(
+                    l10n.espaceAjouterMoyenPaiement,
+                    style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
                   ),
                 ),
               ),
@@ -141,15 +144,14 @@ class EspaceAlertesScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = ClosetL10n.of(context);
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      appBar: const EspaceSubAppBar(title: 'Mes notifications'),
+      appBar: EspaceSubAppBar(title: l10n.espaceMesNotifications),
       body: ClosetListeVide(
-        message:
-            'Les nouveautés de vos maisons, le suivi de vos pièces et les '
-            'confirmations de commande s’afficheront ici.',
+        message: l10n.espaceNotifsVideMessage,
         action: () => context.go('/home'),
-        libelleAction: 'Retour au dressing',
+        libelleAction: l10n.espaceRetourDressing,
       ),
     );
   }
@@ -160,34 +162,22 @@ class EspaceAlertesScreen extends StatelessWidget {
 class EspaceFaqScreen extends StatelessWidget {
   const EspaceFaqScreen({super.key});
 
-  static const _faq = [
-    {
-      'q': 'Comment se passe la livraison au Cameroun ?',
-      'a': 'Nous livrons à domicile ou en point relais partenaire à Yaoundé et Douala sous 24h à 48h. Pour les autres villes, des expéditions sécurisées sont organisées par agence de voyage sous 72h.',
-    },
-    {
-      'q': 'Les articles sont-ils authentiques ?',
-      'a': 'Absolument. Chaque pièce soumise par nos sourceurs passe par une double vérification physique par notre équipe d\'experts avant d\'être publiée en ligne.',
-    },
-    {
-      'q': 'Quelles sont les conditions de retour ?',
-      'a': 'S\'agissant de pièces uniques de seconde main haut de gamme, les retours sont acceptés uniquement sous 24h après réception si l\'article ne correspond pas aux photos ou à la description.',
-    },
-    {
-      'q': 'Comment devenir sourceur de pièces ?',
-      'a': 'Rendez-vous dans la section « Espace Sourceur » de votre profil, renseignez les informations sur votre atelier et demandez à rejoindre le cercle des sourceurs certifiés.',
-    },
-  ];
-
   @override
   Widget build(BuildContext context) {
+    final l10n = ClosetL10n.of(context);
+    final faq = [
+      (l10n.espaceFaqQ1, l10n.espaceFaqA1),
+      (l10n.espaceFaqQ2, l10n.espaceFaqA2),
+      (l10n.espaceFaqQ3, l10n.espaceFaqA3),
+      (l10n.espaceFaqQ4, l10n.espaceFaqA4),
+    ];
     return Scaffold(
       backgroundColor: ClosetColors.ivoire,
-      appBar: const EspaceSubAppBar(title: 'FAQ & Aide'),
+      appBar: EspaceSubAppBar(title: l10n.espaceFaqTitre),
       body: SafeArea(
         child: ListView.separated(
           padding: const EdgeInsets.all(24),
-          itemCount: _faq.length,
+          itemCount: faq.length,
           separatorBuilder: (_, _) => const SizedBox(height: 16),
           itemBuilder: (context, i) {
             return DecoratedBox(
@@ -201,7 +191,7 @@ class EspaceFaqScreen extends StatelessWidget {
                 collapsedIconColor: ClosetColors.vert,
                 shape: const Border(),
                 title: Text(
-                  _faq[i]['q']!,
+                  faq[i].$1,
                   style: const TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w700,
@@ -212,7 +202,7 @@ class EspaceFaqScreen extends StatelessWidget {
                   Padding(
                     padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
                     child: Text(
-                      _faq[i]['a']!,
+                      faq[i].$2,
                       style: TextStyle(
                         fontSize: 13,
                         height: 1.5,
@@ -236,18 +226,19 @@ class EspaceContactScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = ClosetL10n.of(context);
     return Scaffold(
       backgroundColor: ClosetColors.ivoire,
-      appBar: const EspaceSubAppBar(title: 'Nous contacter'),
+      appBar: EspaceSubAppBar(title: l10n.espaceNousContacter),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(24.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                'CONCIERGERIE CLIENT CLOSET',
-                style: TextStyle(
+              Text(
+                l10n.espaceConciergerieClient,
+                style: const TextStyle(
                   fontSize: 10,
                   fontWeight: FontWeight.w700,
                   color: ClosetColors.taupe,
@@ -257,25 +248,25 @@ class EspaceContactScreen extends StatelessWidget {
               const SizedBox(height: 24),
               _buildContactCard(
                 icon: Icons.chat_bubble_outline,
-                title: 'WhatsApp Conciergerie',
+                title: l10n.espaceWhatsappConciergerie,
                 subtitle: '+237 699 00 00 00',
-                btnLabel: 'Discuter sur WhatsApp',
+                btnLabel: l10n.espaceDiscuterWhatsapp,
                 color: Colors.green,
                 onTap: () {},
               ),
               const SizedBox(height: 20),
               _buildContactCard(
                 icon: Icons.email_outlined,
-                title: 'Assistance E-mail',
+                title: l10n.espaceAssistanceEmail,
                 subtitle: 'support@closet.com',
-                btnLabel: 'Nous envoyer un e-mail',
+                btnLabel: l10n.espaceEnvoyerEmail,
                 color: ClosetColors.vert,
                 onTap: () {},
               ),
               const Spacer(),
               Center(
                 child: Text(
-                  'DISPONIBLE 7J/7 · 9H00 À 19H00',
+                  l10n.espaceDisponibilite,
                   style: TextStyle(
                     fontSize: 10,
                     letterSpacing: 1.5,
@@ -364,39 +355,31 @@ class EspaceConfidentialiteScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
+    final l10n = ClosetL10n.of(context);
+    return Scaffold(
       backgroundColor: ClosetColors.ivoire,
-      appBar: EspaceSubAppBar(title: 'Confidentialité'),
+      appBar: EspaceSubAppBar(title: l10n.espaceConfidentialite),
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: EdgeInsets.all(24.0),
+          padding: const EdgeInsets.all(24.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'PROTECTION DES DONNÉES CLOSET',
-                style: TextStyle(
+                l10n.espaceProtectionDonnees,
+                style: const TextStyle(
                   fontSize: 10,
                   fontWeight: FontWeight.w700,
                   color: ClosetColors.taupe,
                   letterSpacing: 1.5,
                 ),
               ),
-              SizedBox(height: 20),
-              _PolicySection(
-                title: '1. Collecte des données',
-                body: 'Dans le cadre de votre dressing privé, nous collectons des données de profil (nom, prénom, e-mail, historique d\'achats et de favoris) dans le seul but de personnaliser vos sélections de mode seconde main de luxe.',
-              ),
-              SizedBox(height: 24),
-              _PolicySection(
-                title: '2. Sécurité des transactions',
-                body: 'Toutes les transactions effectuées par Orange Money, MTN MoMo ou carte de crédit sont sécurisées et cryptées par nos prestataires certifiés. Nous ne stockons aucun mot de passe de paiement.',
-              ),
-              SizedBox(height: 24),
-              _PolicySection(
-                title: '3. Partage d\'informations',
-                body: 'Chez ClosET, nous respectons scrupuleusement la vie privée de notre clientèle. Vos choix stylistiques et préférences de recherche ne sont jamais revendus ni partagés avec des partenaires tiers.',
-              ),
+              const SizedBox(height: 20),
+              _PolicySection(title: l10n.espacePolicy1Titre, body: l10n.espacePolicy1Corps),
+              const SizedBox(height: 24),
+              _PolicySection(title: l10n.espacePolicy2Titre, body: l10n.espacePolicy2Corps),
+              const SizedBox(height: 24),
+              _PolicySection(title: l10n.espacePolicy3Titre, body: l10n.espacePolicy3Corps),
             ],
           ),
         ),
@@ -450,32 +433,34 @@ class _EspaceEvaluationScreenState
   }
 
   void _submitFeedback() {
+    final l10n = ClosetL10n.of(context);
     if (_starsSelected == 0) {
-      toastInfo(ref, 'Note manquante', 'Veuillez sélectionner au moins une étoile.');
+      toastInfo(ref, l10n.espaceNoteManquanteTitre, l10n.espaceSelectionnerEtoile);
       return;
     }
 
     toastInfo(
       ref,
-      'Avis non transmis',
-      'Le serveur n’expose pas encore de dépôt d’évaluation. Votre note n’a pas été envoyée.',
+      l10n.espaceAvisNonTransmisTitre,
+      l10n.espaceAvisNonTransmisCorps,
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = ClosetL10n.of(context);
     return Scaffold(
       backgroundColor: ClosetColors.ivoire,
-      appBar: const EspaceSubAppBar(title: 'Nous évaluer'),
+      appBar: EspaceSubAppBar(title: l10n.espaceEvaluerTitre),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                'PARTAGEZ VOTRE EXPÉRIENCE',
-                style: TextStyle(
+              Text(
+                l10n.espacePartagezExperience,
+                style: const TextStyle(
                   fontSize: 10,
                   fontWeight: FontWeight.w700,
                   color: ClosetColors.taupe,
@@ -492,9 +477,9 @@ class _EspaceEvaluationScreenState
                 ),
                 child: Column(
                   children: [
-                    const Text(
-                      'Quelle note attribuez-vous à l\'application ?',
-                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: ClosetColors.noir),
+                    Text(
+                      l10n.espaceQuelleNote,
+                      style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: ClosetColors.noir),
                     ),
                     const SizedBox(height: 16),
                     Row(
@@ -520,9 +505,9 @@ class _EspaceEvaluationScreenState
                 ),
               ),
               const SizedBox(height: 24),
-              const Text(
-                'VOTRE COMMENTAIRE',
-                style: TextStyle(
+              Text(
+                l10n.espaceVotreCommentaire,
+                style: const TextStyle(
                   fontSize: 10,
                   fontWeight: FontWeight.w700,
                   color: ClosetColors.taupe,
@@ -535,7 +520,7 @@ class _EspaceEvaluationScreenState
                 maxLines: 5,
                 style: const TextStyle(color: ClosetColors.noir, fontSize: 14),
                 decoration: InputDecoration(
-                  hintText: 'Aidez-nous à nous améliorer en écrivant un commentaire...',
+                  hintText: l10n.espaceCommentaireHint,
                   hintStyle: const TextStyle(color: ClosetColors.taupe, fontSize: 13),
                   filled: true,
                   fillColor: ClosetColors.creme,
@@ -567,9 +552,9 @@ class _EspaceEvaluationScreenState
                     ),
                   ),
                   onPressed: _submitFeedback,
-                  child: const Text(
-                    'Envoyer mon avis',
-                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                  child: Text(
+                    l10n.espaceEnvoyerAvis,
+                    style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
                   ),
                 ),
               ),

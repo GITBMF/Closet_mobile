@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../core/l10n/closet_l10n.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/theme/closet_colors.dart';
 import '../../core/theme/closet_text_styles.dart';
@@ -40,6 +41,7 @@ class RecapMontants extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = ClosetL10n.of(context);
     final sousTotal = ref.watch(cartTotalProvider);
     final remise = ref.watch(brouillonCommandeProvider).remise;
     final devis = ref.watch(devisCourantProvider);
@@ -47,21 +49,21 @@ class RecapMontants extends ConsumerWidget {
 
     return Column(
       children: [
-        LigneMontant(label: 'Sous-total', valeur: formatPrixFcfa(sousTotal)),
+        LigneMontant(label: l10n.sousTotalLabel, valeur: formatPrixFcfa(sousTotal)),
         if (remise > 0) ...[
           const SizedBox(height: AppSpacing.p20),
           LigneMontant(
-            label: 'Code privilège',
+            label: l10n.checkoutRecuCodePrivilege,
             valeur: '- ${formatPrixFcfa(remise)}',
           ),
         ],
         const SizedBox(height: AppSpacing.p20),
         LigneMontant(
-          label: 'Livraison délicate',
+          label: l10n.livraisonDelicate,
           valeur: switch (devis) {
             AsyncData(:final value) =>
-              value.aDeviser ? 'À déterminer' : formatPrixFcfa(value.montant),
-            AsyncError() => 'Indisponible',
+              value.aDeviser ? l10n.aDeterminer : formatPrixFcfa(value.montant),
+            AsyncError() => l10n.indisponibleLabel,
             _ => '…',
           },
         ),
@@ -73,8 +75,8 @@ class RecapMontants extends ConsumerWidget {
         ),
         const SizedBox(height: AppSpacing.p16),
         LigneMontant(
-          label: 'Total à régler',
-          valeur: total == null ? 'À déterminer' : formatPrixFcfa(total),
+          label: l10n.totalARegler,
+          valeur: total == null ? l10n.aDeterminer : formatPrixFcfa(total),
           couleurLabel: context.closetEncre,
           grand: true,
         ),

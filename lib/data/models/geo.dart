@@ -1,5 +1,7 @@
 import 'package:flutter/foundation.dart';
 
+import '../../core/l10n/closet_l10n.dart';
+
 /// Découpage administratif servant à l'adresse de livraison.
 ///
 /// Les trois classes ci-dessous reprennent **la forme des DTO du backend**
@@ -85,7 +87,9 @@ class Ville {
   final int regionId;
 
   /// Délai affiché sous le nom de la ville (« Livraison à domicile 24h-48h »).
-  final String delaiAnnonce;
+  /// `null` = pas de délai renvoyé par le backend : [libelleDelai] retombe
+  /// sur un texte par défaut localisé.
+  final String? delaiAnnonce;
 
   /// Zone non tarifée : le montant de livraison doit être devisé à la main.
   final bool aDevis;
@@ -94,10 +98,14 @@ class Ville {
         id: json['id'] as int,
         nom: json['name'] as String,
         regionId: json['region_id'] as int,
-        delaiAnnonce: json['delivery_eta'] as String? ??
-            'Livraison à domicile disponible sous 24h à 48h après la commande *',
+        delaiAnnonce: json['delivery_eta'] as String?,
         aDevis: json['quote_required'] as bool? ?? false,
       );
+
+  String libelleDelai(ClosetL10n l10n) =>
+      delaiAnnonce?.trim().isNotEmpty == true
+          ? delaiAnnonce!
+          : l10n.livraisonDomicileDelaiDefaut;
 
   @override
   bool operator ==(Object other) => other is Ville && other.id == id;

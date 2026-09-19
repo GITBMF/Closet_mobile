@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/l10n/closet_l10n.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/closet_colors.dart';
 import '../../../core/theme/closet_text_styles.dart';
@@ -57,6 +58,7 @@ class _ModifierProfilScreenState
   Future<void> _enregistrer() async {
     if (_envoiEnCours) return;
     if (!(_formKey.currentState?.validate() ?? false)) return;
+    final l10n = ClosetL10n.of(context);
 
     setState(() => _envoiEnCours = true);
     try {
@@ -66,11 +68,11 @@ class _ModifierProfilScreenState
             phone: _telephone.e164,
           );
       if (!mounted) return;
-      toastSucces(ref, 'Profil mis à jour');
+      toastSucces(ref, l10n.profilMisAJour);
       context.pop();
     } catch (e) {
       if (!mounted) return;
-      toastErreur(ref, e, titre: 'Mise à jour impossible');
+      toastErreur(ref, e, titre: l10n.miseAJourImpossible);
     } finally {
       if (mounted) setState(() => _envoiEnCours = false);
     }
@@ -78,6 +80,7 @@ class _ModifierProfilScreenState
 
   @override
   Widget build(BuildContext context) {
+    final l10n = ClosetL10n.of(context);
     final user = ref.watch<ClosetUser?>(currentUserProvider);
 
     return Scaffold(
@@ -105,22 +108,22 @@ class _ModifierProfilScreenState
                       Center(child: _AvatarEditable(user: user)),
                       const SizedBox(height: 29),
                       ClosetChampLibelle(
-                        label: 'Nom complet',
+                        label: l10n.nomCompletLabel,
                         controller: _nom,
-                        hint: 'Marie Dupont',
+                        hint: 'Jane Doe',
                         textInputAction: TextInputAction.next,
                         validator: (v) => (v == null || v.trim().isEmpty)
-                            ? 'Veuillez renseigner votre nom.'
+                            ? l10n.veuillezRenseignerNom
                             : null,
                       ),
                       const SizedBox(height: AppSpacing.p24),
                       ClosetChampLibelle(
-                        label: 'Email',
+                        label: l10n.email,
                         controller: _email,
-                        hint: 'marie.dupont@email.com',
+                        hint: 'jane.doe@email.com',
                         keyboardType: TextInputType.emailAddress,
                         textInputAction: TextInputAction.next,
-                        validator: validerEmail,
+                        validator: (v) => validerEmail(v, l10n: l10n),
                         autocorrect: false,
                         inputFormatters: [
                           FilteringTextInputFormatter.deny(RegExp(r'\s')),
@@ -128,7 +131,7 @@ class _ModifierProfilScreenState
                       ),
                       const SizedBox(height: AppSpacing.p24),
                       ChampTelephone(
-                        label: 'Téléphone (Whatsapp)',
+                        label: l10n.telephoneWhatsappLibelle,
                         controller: _telephone,
                         hint: '6 90 12 34 56',
                         style: StyleChampTelephone.libelle,
@@ -137,7 +140,8 @@ class _ModifierProfilScreenState
                         validator: (v) => validerTelephone(
                           v,
                           obligatoire: false,
-                          libelle: 'numéro WhatsApp',
+                          libelle: l10n.numeroWhatsapp,
+                          l10n: l10n,
                         ),
                       ),
                       const SizedBox(height: 47),
@@ -164,7 +168,7 @@ class _ModifierProfilScreenState
                                         ),
                                       )
                                     : Text(
-                                        'Mettre à jour',
+                                        l10n.mettreAJour,
                                         style:
                                             ClosetTextStyles.bouton.copyWith(
                                           color: ClosetColors.blanc,
@@ -226,7 +230,7 @@ class _EnTeteRetour extends StatelessWidget {
                 padding: const EdgeInsets.only(left: AppSpacing.p20),
                 child: Semantics(
                   button: true,
-                  label: 'Retour',
+                  label: ClosetL10n.of(context).retour,
                   child: GestureDetector(
                     onTap: onRetour,
                     child: Container(
@@ -299,12 +303,12 @@ class _AvatarEditable extends ConsumerWidget {
             top: 80,
             child: Semantics(
               button: true,
-              label: 'Changer ma photo',
+              label: ClosetL10n.of(context).changerMaPhoto,
               child: GestureDetector(
                 onTap: () => toastInfo(
                   ref,
-                  'Photo indisponible',
-                  'Le changement de photo n’est pas encore proposé par le serveur.',
+                  ClosetL10n.of(context).photoIndisponibleTitre,
+                  ClosetL10n.of(context).photoIndisponibleCorps,
                 ),
                 child: Container(
                   width: 40,

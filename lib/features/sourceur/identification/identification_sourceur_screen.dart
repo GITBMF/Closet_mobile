@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/l10n/closet_l10n.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/closet_colors.dart';
 import '../../../core/theme/closet_text_styles.dart';
@@ -42,17 +43,19 @@ class _IdentificationSourceurScreenState
   }
 
   Future<void> _entrer() async {
+    final l10n = ClosetL10n.of(context);
     final identifiant = _identifiant.text.trim();
     final motDePasse = _motDePasse.text;
 
-    final erreurId = validerIdentifiantConnexion(identifiant);
+    final erreurId = validerIdentifiantConnexion(identifiant, l10n);
     if (erreurId != null) {
-      toastInfo(ref, 'Identifiant', erreurId);
+      toastInfo(ref, l10n.identifiantLabel, erreurId);
       return;
     }
-    final erreurMdp = validerMotDePasse(motDePasse, connexion: true);
+    final erreurMdp =
+        validerMotDePasse(motDePasse, connexion: true, l10n: l10n);
     if (erreurMdp != null) {
-      toastInfo(ref, 'Mot de passe', erreurMdp);
+      toastInfo(ref, l10n.motDePasse, erreurMdp);
       return;
     }
 
@@ -60,12 +63,12 @@ class _IdentificationSourceurScreenState
     try {
       await ref
           .read(authRepositoryProvider)
-          .logIn(email: identifiant, password: motDePasse);
+          .logIn(email: identifiant, password: motDePasse, l10n: l10n);
       if (!mounted) return;
       final user = ref.read(currentUserProvider);
       await ref
           .read(sourceurRepositoryProvider)
-          .chargerProfil(compte: user);
+          .chargerProfil(compte: user, l10n: l10n);
       if (!mounted) return;
       final repo = ref.read(sourceurRepositoryProvider);
       if (!repo.accesAutorisePour(user)) {
@@ -73,8 +76,8 @@ class _IdentificationSourceurScreenState
         setState(() => _enCours = false);
         await dialogueErreur(
           context,
-          'Ce compte n’a pas de fiche sourceuse. Déposez d’abord une adhésion.',
-          titre: 'Pas encore partenaire',
+          l10n.pasDeFicheSourceuse,
+          titre: l10n.pasEncorePartenaireTitre,
         );
         if (!mounted) return;
         context.go('/sourceur/inscription');
@@ -84,15 +87,15 @@ class _IdentificationSourceurScreenState
       setState(() => _enCours = false);
       await dialogueSucces(
         context,
-        titre: 'Identification réussie',
-        message: 'Bienvenue dans l’espace sourceur.',
+        titre: l10n.identificationReussieTitre,
+        message: l10n.bienvenueEspaceSourceur,
       );
       if (!mounted) return;
       context.go('/sourceur/espace');
     } catch (e) {
       if (mounted) {
         setState(() => _enCours = false);
-        await dialogueErreur(context, e, titre: 'Identification impossible');
+        await dialogueErreur(context, e, titre: l10n.identificationImpossibleTitre);
       }
     } finally {
       if (mounted) setState(() => _enCours = false);
@@ -101,6 +104,7 @@ class _IdentificationSourceurScreenState
 
   @override
   Widget build(BuildContext context) {
+    final l10n = ClosetL10n.of(context);
     return Scaffold(
       backgroundColor: ClosetColors.vert,
       body: SafeArea(
@@ -117,12 +121,12 @@ class _IdentificationSourceurScreenState
                   children: [
                       SourceurBoutonRond(
                         icone: Icons.arrow_back_ios_new,
-                        label: 'Retour',
+                        label: l10n.retour,
                         onTap: () => sourceurRetour(context),
                       ),
                     Expanded(
                       child: Text(
-                        'Espace Sourceur ClosET',
+                        l10n.espaceSourceurClosetTitre,
                         textAlign: TextAlign.center,
                         style: ClosetTextStyles.sousTitre.copyWith(
                           color: ClosetColors.blanc,
@@ -142,7 +146,7 @@ class _IdentificationSourceurScreenState
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     Text(
-                      'Accéder à mon espace confié',
+                      l10n.accederEspaceConfie,
                       style: ClosetTextStyles.titreEcran.copyWith(
                         letterSpacing: 0.44,
                         color: ClosetColors.blanc,
@@ -150,7 +154,7 @@ class _IdentificationSourceurScreenState
                     ),
                     const SizedBox(height: AppSpacing.p20),
                     _ChampSourceur(
-                      label: 'Email ou téléphone',
+                      label: l10n.emailOuTelephone,
                       hint: 'Example@email.com',
                       controller: _identifiant,
                       keyboardType: TextInputType.emailAddress,
@@ -159,8 +163,8 @@ class _IdentificationSourceurScreenState
                     ),
                     const SizedBox(height: AppSpacing.p24),
                     _ChampSourceur(
-                      label: 'Mot de passe',
-                      hint: 'Au moins 8 caractères',
+                      label: l10n.motDePasse,
+                      hint: l10n.hintMotDePasse,
                       controller: _motDePasse,
                       obscure: _masque,
                       textInputAction: TextInputAction.done,
@@ -178,7 +182,7 @@ class _IdentificationSourceurScreenState
                     ),
                     const SizedBox(height: AppSpacing.p8),
                     Text(
-                      '8 caractères minimum, dont un chiffre.',
+                      l10n.mdpMin8Chiffre,
                       style: ClosetTextStyles.meta.copyWith(
                         fontWeight: FontWeight.w300,
                         color: ClosetColors.beige,
@@ -207,7 +211,7 @@ class _IdentificationSourceurScreenState
                                     ),
                                   )
                                 : Text(
-                                    'ENTRER dans mon espace',
+                                    l10n.entrerDansMonEspace,
                                     style: ClosetTextStyles.bouton.copyWith(
                                       color: ClosetColors.neutre900,
                                     ),
@@ -224,7 +228,7 @@ class _IdentificationSourceurScreenState
                           emailInitial: _identifiant.text,
                         ),
                         child: Text(
-                          'Mot de passe oublié',
+                          l10n.motDePasseOublie,
                           style: ClosetTextStyles.corps.copyWith(
                             color: ClosetColors.beige,
                           ),
@@ -237,13 +241,13 @@ class _IdentificationSourceurScreenState
                         onPressed: () => context.push('/sourceur/inscription'),
                         child: Text.rich(
                           TextSpan(
-                            text: 'Pas encore membre ? ',
+                            text: '${l10n.pasEncoreMembre} ',
                             style: ClosetTextStyles.corps.copyWith(
                               color: ClosetColors.beige,
                             ),
                             children: [
                               TextSpan(
-                                text: 'Remplir la fiche d’adhésion',
+                                text: l10n.remplirFicheAdhesion,
                                 style: ClosetTextStyles.corps.copyWith(
                                   fontWeight: FontWeight.w600,
                                   color: ClosetColors.fond300,

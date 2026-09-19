@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/l10n/closet_l10n.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/closet_colors.dart';
 import '../../../core/theme/closet_text_styles.dart';
@@ -90,28 +91,29 @@ class _AdresseSheetState extends ConsumerState<_AdresseSheet> {
   Future<void> _supprimer() async {
     final adresse = widget.adresse;
     if (adresse == null) return;
+    final l10n = ClosetL10n.of(context);
 
     final confirme = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: ClosetColors.blanc,
-        title: Text('Supprimer cette adresse ?',
+        title: Text(l10n.supprimerAdresseTitre,
             style: ClosetTextStyles.titreBloc),
         content: Text(
-          'Elle ne sera plus proposée au moment de commander.',
+          l10n.supprimerAdresseCorps,
           style: ClosetTextStyles.corps,
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: Text('Annuler',
+            child: Text(l10n.annulerPaiement,
                 style:
                     ClosetTextStyles.bouton.copyWith(color: ClosetColors.taupe)),
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(true),
             child: Text(
-              'Supprimer',
+              l10n.supprimer,
               style: ClosetTextStyles.bouton.copyWith(
                 color: ClosetColors.erreurCouture,
               ),
@@ -128,6 +130,7 @@ class _AdresseSheetState extends ConsumerState<_AdresseSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = ClosetL10n.of(context);
     return DecoratedBox(
       decoration: const BoxDecoration(
         color: ClosetColors.beige,
@@ -160,32 +163,32 @@ class _AdresseSheetState extends ConsumerState<_AdresseSheet> {
                 ),
                 const SizedBox(height: AppSpacing.p20),
                 Text(
-                  _modification ? 'Modifier l’adresse' : 'Nouvelle adresse',
+                  _modification ? l10n.modifierAdresse : l10n.nouvelleAdresse,
                   style: ClosetTextStyles.titreBloc,
                 ),
                 const SizedBox(height: AppSpacing.p24),
                 ChampCheckout(
-                  label: 'Libellé',
-                  hint: 'Maison',
+                  label: l10n.libelleAdresseLabel,
+                  hint: l10n.libelleAdresseHint,
                   controller: _libelle,
                   textInputAction: TextInputAction.next,
                   validator: (v) => (v == null || v.trim().isEmpty)
-                      ? 'Donnez un nom à cette adresse.'
+                      ? l10n.donnerNomAdresse
                       : null,
                 ),
                 const SizedBox(height: AppSpacing.p20),
                 ChampCheckout(
-                  label: 'Adresse',
-                  hint: 'Yaoundé, Bastos — Rond-point, immeuble Kaba',
+                  label: l10n.adresseLabel,
+                  hint: l10n.adresseHintExemple,
                   controller: _ligne,
                   textInputAction: TextInputAction.done,
                   validator: (v) => (v == null || v.trim().length < 5)
-                      ? 'Précisez la ville et le quartier.'
+                      ? l10n.preciserVilleQuartier
                       : null,
                 ),
                 const SizedBox(height: AppSpacing.p20),
                 Text(
-                  'Type',
+                  l10n.typeLabel,
                   style: ClosetTextStyles.labelChamp.copyWith(
                     fontWeight: FontWeight.w500,
                     color: ClosetColors.vert,
@@ -197,7 +200,7 @@ class _AdresseSheetState extends ConsumerState<_AdresseSheet> {
                   children: [
                     for (final t in TypeAdresse.values)
                       ChoiceChip(
-                        label: Text(_libelleType(t)),
+                        label: Text(_libelleType(t, l10n)),
                         selected: t == _type,
                         onSelected: (_) => setState(() => _type = t),
                       ),
@@ -209,11 +212,11 @@ class _AdresseSheetState extends ConsumerState<_AdresseSheet> {
                   value: _parDefaut,
                   activeThumbColor: ClosetColors.vert,
                   title: Text(
-                    'Adresse par défaut',
+                    l10n.adresseParDefaut,
                     style: ClosetTextStyles.libelle,
                   ),
                   subtitle: Text(
-                    'Proposée en premier au moment de commander.',
+                    l10n.adresseParDefautDetail,
                     style: ClosetTextStyles.meta.copyWith(
                       color: ClosetColors.taupe,
                     ),
@@ -240,7 +243,7 @@ class _AdresseSheetState extends ConsumerState<_AdresseSheet> {
                                 ),
                               )
                             : Text(
-                                'Enregistrer',
+                                l10n.enregistrer,
                                 style: ClosetTextStyles.bouton.copyWith(
                                   color: ClosetColors.blanc,
                                 ),
@@ -254,7 +257,7 @@ class _AdresseSheetState extends ConsumerState<_AdresseSheet> {
                   TextButton(
                     onPressed: _envoiEnCours ? null : _supprimer,
                     child: Text(
-                      'Supprimer cette adresse',
+                      l10n.supprimerCetteAdresse,
                       style: ClosetTextStyles.bouton.copyWith(
                         color: ClosetColors.erreurCouture,
                       ),
@@ -269,10 +272,10 @@ class _AdresseSheetState extends ConsumerState<_AdresseSheet> {
     );
   }
 
-  static String _libelleType(TypeAdresse t) => switch (t) {
-        TypeAdresse.maison => 'Maison',
-        TypeAdresse.bureau => 'Bureau',
-        TypeAdresse.appartement => 'Appartement',
-        TypeAdresse.autre => 'Autre',
+  static String _libelleType(TypeAdresse t, ClosetL10n l10n) => switch (t) {
+        TypeAdresse.maison => l10n.typeAdresseMaison,
+        TypeAdresse.bureau => l10n.typeAdresseBureau,
+        TypeAdresse.appartement => l10n.typeAdresseAppartement,
+        TypeAdresse.autre => l10n.typeAdresseAutre,
       };
 }

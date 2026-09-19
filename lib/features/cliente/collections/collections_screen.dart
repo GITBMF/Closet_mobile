@@ -15,6 +15,7 @@ import '../../../core/widgets/closet_feedback.dart';
 import '../../../core/widgets/closet_sections.dart';
 import '../../../core/widgets/etat_ecran.dart';
 import '../../../core/widgets/piece_card.dart';
+import '../../../core/widgets/spotlight_showcase.dart';
 import '../../../data/models/article.dart';
 import '../../../data/repositories/catalog_repository.dart';
 import 'filtres_sheet.dart';
@@ -233,6 +234,7 @@ class _CollectionsScreenState extends ConsumerState<CollectionsScreen> {
               if (categories.isNotEmpty) ...[
                 const SizedBox(height: AppSpacing.p16),
                 SizedBox(
+                  key: ClosetTourKeys.universKey,
                   height: 42,
                   child: ListView.separated(
                     scrollDirection: Axis.horizontal,
@@ -370,6 +372,7 @@ class _BarreRecherche extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
+      key: ClosetTourKeys.rechercheKey,
       height: 45,
       child: TextField(
         controller: controller,
@@ -406,7 +409,8 @@ class _BarreRecherche extends StatelessWidget {
                   onPressed: onEffacer,
                 ),
               IconButton(
-                tooltip: 'Filtrer',
+                key: ClosetTourKeys.filtresKey,
+                tooltip: ClosetL10n.of(context).filtrer,
                 icon: Icon(
                   Icons.tune,
                   size: 18,

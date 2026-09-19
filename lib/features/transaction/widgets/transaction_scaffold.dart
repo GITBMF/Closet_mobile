@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../core/l10n/closet_l10n.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/closet_colors.dart';
 import '../../../core/theme/closet_text_styles.dart';
@@ -16,7 +17,7 @@ class TransactionScaffold extends StatelessWidget {
     required this.child,
     this.entete,
     this.hautTitre = 124,
-    this.mention = mentionChiffrement,
+    this.mention,
   });
 
   /// Titre d'écran. `null` = pas de titre (cas de `36:2064`).
@@ -33,15 +34,12 @@ class TransactionScaffold extends StatelessWidget {
   final double hautTitre;
 
   /// Mention de pied d'écran, remplaçable (cf. `36:2113`).
-  final String mention;
-
-  /// Mention reprise à l'identique sur les écrans de transaction.
-  static const String mentionChiffrement =
-      'Toutes vos informations sont chiffrées de bout en bout et stockées '
-      'sur des serveurs sécurisés.';
+  /// `null` = mention de chiffrement par défaut, localisée dans [build].
+  final String? mention;
 
   @override
   Widget build(BuildContext context) {
+    final texteMention = mention ?? ClosetL10n.of(context).mentionChiffrementMessage;
     return Scaffold(
       backgroundColor: ClosetColors.vert,
       body: SafeArea(
@@ -74,7 +72,7 @@ class TransactionScaffold extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.fromLTRB(40, 0, 40, AppSpacing.p20),
               child: Text(
-                mention,
+                texteMention,
                 textAlign: TextAlign.center,
                 style: ClosetTextStyles.meta.copyWith(
                   fontSize: 11,

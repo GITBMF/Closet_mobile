@@ -12,18 +12,6 @@ enum StatutCommande {
   devis,
 }
 
-extension LibelleStatutCommande on StatutCommande {
-  String get libelle => switch (this) {
-        StatutCommande.pending => 'En attente',
-        StatutCommande.paid => 'Payée',
-        StatutCommande.preparation => 'Préparation',
-        StatutCommande.enRoute => 'En route',
-        StatutCommande.livree => 'Livrée',
-        StatutCommande.annulee => 'Annulée',
-        StatutCommande.devis => 'Devis',
-      };
-}
-
 StatutCommande statutCommandeDepuis(String brut) {
   return switch (brut) {
     'pending' => StatutCommande.pending,

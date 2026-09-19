@@ -19,33 +19,33 @@ import '../../../data/repositories/catalog_repository.dart';
 import '../../../data/repositories/sourceur_repository.dart';
 
 /// États alignés sur `PieceCondition` : `new` | `very_good` | `good`.
-const List<(String api, String libelle)> etatsPiece = [
-  ('new', 'Neuf'),
-  ('very_good', 'Très bon état'),
-  ('good', 'Bon état'),
-];
+List<(String api, String libelle)> etatsPiecePour(ClosetL10n l10n) => [
+      ('new', l10n.etatNeuf),
+      ('very_good', l10n.etatTresBonEtat),
+      ('good', l10n.etatBonEtat),
+    ];
 
 /// Remise de la pièce — `collection_method` : `drop_off` | `pickup`.
-const List<(String api, String libelle)> methodesCollecte = [
-  ('drop_off', 'Dépôt en boutique'),
-  ('pickup', 'Collecte à domicile'),
-];
+List<(String api, String libelle)> methodesCollectePour(ClosetL10n l10n) => [
+      ('drop_off', l10n.collecteDepot),
+      ('pickup', l10n.collecteDomicile),
+    ];
 
-const typesArticle = [
-  'Robe',
-  'Chemise',
-  'Pantalon',
-  'Veste',
-  'Manteau',
-  'Jupe',
-  'Pull',
-  'T-shirt',
-  'Blouse',
-  'Ensemble',
-  'Sac',
-  'Chaussures',
-  'Accessoire',
-];
+List<String> typesArticlePour(ClosetL10n l10n) => [
+      l10n.typeRobe,
+      l10n.typeChemise,
+      l10n.typePantalon,
+      l10n.typeVeste,
+      l10n.typeManteau,
+      l10n.typeJupe,
+      l10n.typePull,
+      l10n.typeTshirt,
+      l10n.typeBlouse,
+      l10n.typeEnsemble,
+      l10n.typeSac,
+      l10n.typeChaussures,
+      l10n.typeAccessoire,
+    ];
 
 const taillesArticle = [
   'XS',
@@ -85,8 +85,8 @@ class _SourceurNouvellePieceScreenState
   final _recit = TextEditingController();
   final _picker = ImagePicker();
 
-  String _etat = etatsPiece.first.$1;
-  String _methodeCollecte = methodesCollecte.first.$1;
+  String _etat = 'new';
+  String _methodeCollecte = 'drop_off';
   String? _type;
   String? _taille;
   bool _partageAutorise = false;
@@ -157,14 +157,14 @@ class _SourceurNouvellePieceScreenState
 
     try {
       final l10n = ClosetL10n.of(context);
-      final id = await ClosetDialogue.executer(
+      final resultat = await ClosetDialogue.executer(
         context,
         message: l10n.depotEnCours,
         action: () => ref
             .read<SourceurRepository>(sourceurRepositoryProvider)
-            .deposerPiece(piece, medias: medias),
+            .deposerPiece(piece, medias: medias, l10n: l10n),
       );
-      if (!mounted || id == null) return;
+      if (!mounted || resultat == null) return;
       setState(() => _envoiEnCours = false);
       ref.invalidate(mesPiecesProvider);
 
@@ -172,10 +172,12 @@ class _SourceurNouvellePieceScreenState
       await dialogueSucces(
         context,
         titre: l10n.pieceRecue,
-        message: l10n.pieceEnExamen(piece.nom),
+        message: resultat.aDesMediasEnEchec
+            ? '${l10n.pieceEnExamen(piece.nom)}\n\n${l10n.photosNonJointesMessage}'
+            : l10n.pieceEnExamen(piece.nom),
       );
       if (!mounted) return;
-      context.go('/sourceur/piece/$id');
+      context.go('/sourceur/piece/${resultat.id}');
     } catch (e) {
       if (!mounted) return;
       await dialogueErreur(
@@ -195,12 +197,13 @@ class _SourceurNouvellePieceScreenState
 
   @override
   Widget build(BuildContext context) {
+    final l10n = ClosetL10n.of(context);
     final maisons = [
       for (final m in ref.watch(maisonsProvider).value ?? const <Maison>[])
         m.nom,
     ];
     final types = {
-      ...typesArticle,
+      ...typesArticlePour(l10n),
       for (final u in ref.watch(universProvider).value ?? const <Univers>[])
         u.nom,
     }.toList()
@@ -225,13 +228,13 @@ class _SourceurNouvellePieceScreenState
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       _ListeDeroulante(
-                        label: 'Type d’article',
+                        label: l10n.nouvellePieceTypeArticle,
                         valeur: _type,
                         options: types,
-                        hint: 'Veste',
+                        hint: l10n.typeVeste,
                         validator: (v) =>
                             (v == null || v.trim().isEmpty)
-                                ? 'Précisez le type d’article.'
+                                ? l10n.nouvellePiecePreciserType
                                 : null,
                         onChanged: (v) => setState(() => _type = v),
                       ),
@@ -248,13 +251,13 @@ class _SourceurNouvellePieceScreenState
                           const SizedBox(width: AppSpacing.p20),
                           Expanded(
                             child: _ListeDeroulante(
-                              label: 'Taille',
+                              label: l10n.nouvellePieceTaille,
                               valeur: _taille,
                               options: taillesArticle,
                               hint: 'M',
                               validator: (v) =>
                                   (v == null || v.trim().isEmpty)
-                                      ? 'Indiquez la taille.'
+                                      ? l10n.nouvellePieceIndiquerTaille
                                       : null,
                               onChanged: (v) => setState(() => _taille = v),
                             ),
@@ -266,7 +269,7 @@ class _SourceurNouvellePieceScreenState
                         spacing: AppSpacing.p12,
                         runSpacing: AppSpacing.p16,
                         children: [
-                          for (final etat in etatsPiece)
+                          for (final etat in etatsPiecePour(l10n))
                             ClosetChip(
                               label: etat.$2,
                               isActive: etat.$1 == _etat,
@@ -276,18 +279,17 @@ class _SourceurNouvellePieceScreenState
                       ),
                       const SizedBox(height: AppSpacing.p24),
                       _Champ(
-                        label: 'Prix souhaité',
+                        label: l10n.nouvellePiecePrixSouhaite,
                         hint: '30.000',
                         controller: _prix,
                         keyboardType: TextInputType.number,
                         textInputAction: TextInputAction.next,
-                        validator: _validerPrix,
+                        validator: (v) => _validerPrix(v, l10n),
                         inputFormatters: const [_SeparateurMilliers()],
                       ),
                       const SizedBox(height: AppSpacing.p16),
                       Text(
-                        'ClosET valorise chaque pièce selon ses critères de '
-                        'qualité et d’élégance.',
+                        l10n.nouvellePieceValorisation,
                         style: ClosetTextStyles.labelChamp.copyWith(
                           fontWeight: FontWeight.w500,
                           color: ClosetColors.neutre700,
@@ -295,8 +297,8 @@ class _SourceurNouvellePieceScreenState
                       ),
                       const SizedBox(height: AppSpacing.p24),
                       _Champ(
-                        label: 'Récit (facultatif)',
-                        hint: 'D’où vient cette pièce, et pourquoi la confier.',
+                        label: l10n.nouvellePieceRecit,
+                        hint: l10n.nouvellePieceRecitHint,
                         controller: _recit,
                         keyboardType: TextInputType.multiline,
                         textInputAction: TextInputAction.newline,
@@ -308,7 +310,7 @@ class _SourceurNouvellePieceScreenState
                         spacing: AppSpacing.p12,
                         runSpacing: AppSpacing.p16,
                         children: [
-                          for (final methode in methodesCollecte)
+                          for (final methode in methodesCollectePour(l10n))
                             ClosetChip(
                               label: methode.$2,
                               isActive: methode.$1 == _methodeCollecte,
@@ -323,14 +325,14 @@ class _SourceurNouvellePieceScreenState
                         value: _partageAutorise,
                         onChanged: (v) => setState(() => _partageAutorise = v),
                         title: Text(
-                          'Autoriser ClosET à partager cette pièce',
+                          l10n.nouvellePieceAutoriserPartage,
                           style: ClosetTextStyles.labelChamp.copyWith(
                             fontWeight: FontWeight.w500,
                             color: ClosetColors.vert,
                           ),
                         ),
                         subtitle: Text(
-                          'ClosET pourra relayer le visuel et le récit.',
+                          l10n.nouvellePiecePartageDetail,
                           style: ClosetTextStyles.corps.copyWith(
                             color: ClosetColors.neutre700,
                           ),
@@ -370,7 +372,7 @@ class _SourceurNouvellePieceScreenState
                                         ),
                                       )
                                     : Text(
-                                        'Poursuivre',
+                                        l10n.nouvellePiecePoursuivre,
                                         style: ClosetTextStyles.libelleFort
                                             .copyWith(color: ClosetColors.blanc),
                                       ),
@@ -390,11 +392,11 @@ class _SourceurNouvellePieceScreenState
     );
   }
 
-  static String? _validerPrix(String? v) {
+  static String? _validerPrix(String? v, ClosetL10n l10n) {
     final brut = (v ?? '').replaceAll(RegExp(r'[^\d]'), '');
-    if (brut.isEmpty) return 'Indiquez un prix souhaité.';
+    if (brut.isEmpty) return l10n.nouvellePieceIndiquerPrix;
     final montant = int.tryParse(brut);
-    if (montant == null || montant <= 0) return 'Ce prix semble incorrect.';
+    if (montant == null || montant <= 0) return l10n.nouvellePiecePrixIncorrect;
     return null;
   }
 }
@@ -509,11 +511,12 @@ class _ChampMarque extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = ClosetL10n.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Marque (si connue)',
+          l10n.nouvellePieceMarque,
           style: ClosetTextStyles.labelChamp.copyWith(
             fontWeight: FontWeight.w500,
             color: ClosetColors.vert,
@@ -674,6 +677,7 @@ class _ZoneDepotPhotos extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = ClosetL10n.of(context);
     return Container(
       constraints: const BoxConstraints(minHeight: 230),
       padding: const EdgeInsets.symmetric(
@@ -720,8 +724,8 @@ class _ZoneDepotPhotos extends StatelessWidget {
           const SizedBox(height: AppSpacing.p20),
           Text(
             medias.isEmpty
-                ? 'Ajoutez photos et vidéos avant de soumettre. Facultatif.'
-                : '${medias.length} média${medias.length > 1 ? 's' : ''} ajouté${medias.length > 1 ? 's' : ''}. Vous pouvez en joindre d’autres.',
+                ? l10n.nouvellePieceMediasVide
+                : l10n.nouvellePieceMediasAjoutes(medias.length),
             textAlign: TextAlign.center,
             style: ClosetTextStyles.corps.copyWith(
               letterSpacing: 0,
@@ -733,7 +737,7 @@ class _ZoneDepotPhotos extends StatelessWidget {
             children: [
               Expanded(
                 child: _BoutonPhoto(
-                  label: 'Photo',
+                  label: l10n.nouvellePiecePhoto,
                   plein: false,
                   onTap: onPrendre,
                 ),
@@ -741,7 +745,7 @@ class _ZoneDepotPhotos extends StatelessWidget {
               const SizedBox(width: AppSpacing.p8),
               Expanded(
                 child: _BoutonPhoto(
-                  label: 'Vidéo',
+                  label: l10n.nouvellePieceVideo,
                   plein: false,
                   onTap: onFilmer,
                 ),
@@ -749,7 +753,7 @@ class _ZoneDepotPhotos extends StatelessWidget {
               const SizedBox(width: AppSpacing.p8),
               Expanded(
                 child: _BoutonPhoto(
-                  label: 'Importer',
+                  label: l10n.nouvellePieceImporter,
                   plein: true,
                   onTap: onImporter,
                 ),
@@ -795,7 +799,7 @@ class _VignetteMedia extends StatelessWidget {
           right: -6,
           child: Semantics(
             button: true,
-            label: 'Retirer le média',
+            label: ClosetL10n.of(context).nouvellePieceRetirerMedia,
             child: GestureDetector(
               onTap: onRetirer,
               child: Container(

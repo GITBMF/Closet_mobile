@@ -1,3 +1,4 @@
+import 'package:closet/core/l10n/closet_l10n.dart';
 import 'package:closet/data/repositories/sourceur_repository.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -11,7 +12,7 @@ void main() {
           date: date,
           soldeApres: 0,
           moyen: 'orange_money',
-        ).libelle,
+        ).libelle(ClosetL10n.fr),
         'Retrait approuvé',
       );
       expect(
@@ -21,7 +22,7 @@ void main() {
           soldeApres: 0,
           moyen: 'orange_money',
           statut: StatutRetrait.enCours,
-        ).libelle,
+        ).libelle(ClosetL10n.fr),
         'Retrait en cours',
       );
       expect(
@@ -31,7 +32,7 @@ void main() {
           soldeApres: 0,
           moyen: 'orange_money',
           statut: StatutRetrait.refuse,
-        ).libelle,
+        ).libelle(ClosetL10n.fr),
         'Retrait refusé',
       );
     });
@@ -58,19 +59,20 @@ void main() {
     });
 
     test('le profil expose les libellés du backend', () {
-      const profil = SourceurProfile(
+      final profil = SourceurProfile(
         nomAtelier: 'Atelier Lin',
         ville: '',
-        depuis: 'Mars 2026',
+        depuis: DateTime(2026, 3, 1),
         whatsapp: '699000000',
         statutApi: 'approved',
         moyenPaiement: 'orange_money',
         numeroPaiement: '699000000',
         typeCollaboration: 'consignment',
       );
-      expect(profil.libelleStatut, 'Approuvé');
-      expect(profil.libelleCollaboration, 'Dépôt-vente');
-      expect(profil.libelleMoyenPaiement, 'Orange Money');
+      expect(profil.libelleStatut(ClosetL10n.fr), 'Approuvé');
+      expect(profil.libelleCollaboration(ClosetL10n.fr), 'Dépôt-vente');
+      expect(profil.libelleMoyenPaiement(ClosetL10n.fr), 'Orange Money');
+      expect(profil.libelleDepuis, '01/03/2026');
     });
   });
 }

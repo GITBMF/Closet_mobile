@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/l10n/closet_l10n.dart';
@@ -12,16 +13,21 @@ import '../../../data/models/article.dart';
 import '../../../data/repositories/catalog_repository.dart';
 import 'collections_screen.dart';
 
-/// Bornes Figma `14:1514` (10.000 – 45.000 FCFA), alignées sur les prix
-/// réels du catalogue (`GET /pieces` → ~7.000 à 44.000).
-const double prixMinimum = 5000;
+/// Repère affiché en placeholder — alignée sur les prix réels du catalogue
+/// (`GET /pieces` → jusqu'à ~44.000 FCFA).
 const double prixMaximum = 50000;
 
 /// Puces taille de la maquette. Filtre `size_label` (pas de query API).
 const taillesCatalogue = ['XS', 'S', 'M', 'L', 'XL'];
 
 /// `PieceCondition` du backend : `new` / `very_good` / `good`.
-const etatsCatalogue = ['Neuf', 'Très bon état', 'Bon état'];
+const etatsCatalogue = ['new', 'very_good', 'good'];
+
+String libelleEtatCatalogue(String code, ClosetL10n l10n) => switch (code) {
+      'new' => l10n.etatNeuf,
+      'very_good' => l10n.etatTresBonEtat,
+      _ => l10n.etatBonEtat,
+    };
 
 /// Ouvre le panneau de filtres — options en bandes horizontales.
 Future<void> afficherFiltres(BuildContext context) {
@@ -45,7 +51,7 @@ class _FiltresSheetState extends ConsumerState<_FiltresSheet> {
   late Maison? _maison;
   late String? _taille;
   late String? _etat;
-  late RangeValues _fourchette;
+  final _prixMaxController = TextEditingController();
 
   @override
   void initState() {
@@ -54,21 +60,16 @@ class _FiltresSheetState extends ConsumerState<_FiltresSheet> {
     _maison = ref.read(filterBrandProvider);
     _taille = ref.read(filterTailleProvider);
     _etat = ref.read(filterEtatProvider);
-    _fourchette = _fourchetteDepuis(
-      ref.read(filterPrixMinProvider),
-      ref.read(filterPriceProvider),
-    );
+    final prixMax = ref.read(filterPriceProvider);
+    if (prixMax != null) {
+      _prixMaxController.text = _formaterMilliers(prixMax.round());
+    }
   }
 
-  RangeValues _fourchetteDepuis(double? minBrut, double? maxBrut) {
-    final min = (minBrut ?? prixMinimum)
-        .clamp(prixMinimum, prixMaximum)
-        .toDouble();
-    final max = (maxBrut ?? prixMaximum)
-        .clamp(prixMinimum, prixMaximum)
-        .toDouble();
-    if (min > max) return RangeValues(max, min);
-    return RangeValues(min, max);
+  @override
+  void dispose() {
+    _prixMaxController.dispose();
+    super.dispose();
   }
 
   void _toutReinitialiser() {
@@ -77,7 +78,7 @@ class _FiltresSheetState extends ConsumerState<_FiltresSheet> {
       _maison = null;
       _taille = null;
       _etat = null;
-      _fourchette = const RangeValues(prixMinimum, prixMaximum);
+      _prixMaxController.clear();
     });
   }
 
@@ -86,12 +87,11 @@ class _FiltresSheetState extends ConsumerState<_FiltresSheet> {
     ref.read(filterBrandProvider.notifier).setMaison(_maison);
     ref.read(filterTailleProvider.notifier).setTaille(_taille);
     ref.read(filterEtatProvider.notifier).setEtat(_etat);
-    ref.read(filterPrixMinProvider.notifier).setPrice(
-          _fourchette.start <= prixMinimum ? null : _fourchette.start,
-        );
-    ref.read(filterPriceProvider.notifier).setPrice(
-          _fourchette.end >= prixMaximum ? null : _fourchette.end,
-        );
+    // Le prix minimum n'est plus réglable ici (saisie manuelle du maximum
+    // seulement) — on ne touche donc jamais `filterPrixMinProvider`.
+    final chiffres = _prixMaxController.text.replaceAll(RegExp(r'[^\d]'), '');
+    final prixMax = chiffres.isEmpty ? null : double.tryParse(chiffres);
+    ref.read(filterPriceProvider.notifier).setPrice(prixMax);
     Navigator.of(context).pop();
   }
 
@@ -139,7 +139,7 @@ class _FiltresSheetState extends ConsumerState<_FiltresSheet> {
           items: [
             for (final e in etatsCatalogue)
               ClosetChip(
-                label: e,
+                label: libelleEtatCatalogue(e, l10n),
                 isActive: e == _etat,
                 onTap: () => setState(
                   () => _etat = e == _etat ? null : e,
@@ -166,10 +166,7 @@ class _FiltresSheetState extends ConsumerState<_FiltresSheet> {
         ),
       (
         titre: l10n.filtreBudget,
-        corps: _CurseurBudget(
-          fourchette: _fourchette,
-          onChanged: (v) => setState(() => _fourchette = v),
-        ),
+        corps: _ChampBudget(controller: _prixMaxController),
       ),
     ];
 
@@ -284,57 +281,82 @@ class _RangeeCoulissante extends StatelessWidget {
   }
 }
 
-class _CurseurBudget extends StatelessWidget {
-  const _CurseurBudget({
-    required this.fourchette,
-    required this.onChanged,
-  });
+/// Saisie manuelle du prix maximum — remplace la réglette à deux curseurs :
+/// la personne tape directement le montant qu'elle ne veut pas dépasser,
+/// plutôt que de manipuler une plage.
+class _ChampBudget extends StatelessWidget {
+  const _ChampBudget({required this.controller});
 
-  final RangeValues fourchette;
-  final ValueChanged<RangeValues> onChanged;
+  final TextEditingController controller;
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 11),
+      padding: const EdgeInsets.symmetric(horizontal: 23),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  formatPrixFcfa(fourchette.start),
-                  style: ClosetTextStyles.prix.copyWith(
-                    color: ClosetColors.vert,
-                  ),
-                ),
-                Text(
-                  formatPrixFcfa(fourchette.end),
-                  style: ClosetTextStyles.prix.copyWith(
-                    color: ClosetColors.vert,
-                  ),
-                ),
-              ],
-            ),
+          Text(
+            ClosetL10n.of(context).filtreBudget,
+            style: ClosetTextStyles.labelChamp,
           ),
-          RangeSlider(
-            values: fourchette,
-            min: prixMinimum,
-            max: prixMaximum,
-            divisions: 45,
-            activeColor: ClosetColors.vert,
-            inactiveColor: ClosetColors.ligne,
-            labels: RangeLabels(
-              formatPrixFcfa(fourchette.start),
-              formatPrixFcfa(fourchette.end),
+          const SizedBox(height: AppSpacing.p8),
+          TextField(
+            controller: controller,
+            keyboardType: TextInputType.number,
+            inputFormatters: [_SeparateurMilliersBudget()],
+            style: ClosetTextStyles.prix.copyWith(color: ClosetColors.vert),
+            decoration: InputDecoration(
+              hintText: formatPrixFcfa(prixMaximum),
+              suffixText: 'FCFA',
+              isDense: true,
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.p16,
+                vertical: AppSpacing.p12,
+              ),
+              filled: true,
+              fillColor: ClosetColors.champFond,
+              border: _bordureBudget(ClosetColors.champBordure),
+              enabledBorder: _bordureBudget(ClosetColors.champBordure),
+              focusedBorder: _bordureBudget(ClosetColors.vert),
             ),
-            onChanged: onChanged,
           ),
         ],
       ),
     );
   }
+
+  static OutlineInputBorder _bordureBudget(Color couleur) =>
+      OutlineInputBorder(
+        borderRadius: BorderRadius.circular(AppRadius.carte),
+        borderSide: BorderSide(color: couleur, width: AppStroke.fin),
+      );
+}
+
+/// Sépare les milliers par un point pendant la saisie (`45000` → `45.000`).
+class _SeparateurMilliersBudget extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue ancien,
+    TextEditingValue suivant,
+  ) {
+    final chiffres = suivant.text.replaceAll(RegExp(r'[^\d]'), '');
+    if (chiffres.isEmpty) return suivant.copyWith(text: '');
+    final texte = _formaterMilliers(int.parse(chiffres));
+    return TextEditingValue(
+      text: texte,
+      selection: TextSelection.collapsed(offset: texte.length),
+    );
+  }
+}
+
+String _formaterMilliers(int valeur) {
+  final chiffres = valeur.toString();
+  final buffer = StringBuffer();
+  for (var i = 0; i < chiffres.length; i++) {
+    if (i > 0 && (chiffres.length - i) % 3 == 0) buffer.write('.');
+    buffer.write(chiffres[i]);
+  }
+  return buffer.toString();
 }

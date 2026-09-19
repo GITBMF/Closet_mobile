@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 
+import '../../core/l10n/closet_l10n.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/theme/closet_colors.dart';
 import '../../core/theme/closet_text_styles.dart';
+import '../../core/utils/date_format.dart';
 import '../../core/widgets/closet_app_bar.dart';
 import 'transaction_models.dart';
 import 'widgets/transaction_scaffold.dart';
@@ -30,10 +32,11 @@ class RecuScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = ClosetL10n.of(context);
     final d = recu.demande;
 
     return TransactionScaffold(
-      titre: 'Votre reçu de transaction',
+      titre: l10n.transactionRecuTitre,
       hautTitre: 73,
       child: SingleChildScrollView(
         padding: const EdgeInsets.only(top: 26, bottom: AppSpacing.p16),
@@ -42,7 +45,7 @@ class RecuScreen extends StatelessWidget {
             _Ticket(
               children: [
                 Text(
-                  'Transaction numéro #${recu.numero}',
+                  l10n.transactionNumero(recu.numero),
                   style: ClosetTextStyles.meta.copyWith(
                     color: ClosetColors.champPlaceholder,
                   ),
@@ -50,16 +53,16 @@ class RecuScreen extends StatelessWidget {
                 const SizedBox(height: AppSpacing.p16),
                 const Divider(color: ClosetColors.champPlaceholder, height: 1),
                 const SizedBox(height: AppSpacing.p16),
-                _Ligne('Date & heure', _formatDate(recu.horodatage)),
+                _Ligne(l10n.transactionDateHeure, formatDateCommande(recu.horodatage)),
                 if (d.type.afficheReference)
-                  _Ligne('Numéro de référence', recu.reference),
+                  _Ligne(l10n.transactionNumeroReference, recu.reference),
                 for (final ligne in d.lignesRecu)
                   _Ligne(ligne.libelle, ligne.valeur),
                 if (d.note != null && d.note!.isNotEmpty)
-                  _Ligne('Note(s)', d.note!),
+                  _Ligne(l10n.transactionNotes, d.note!),
                 const SizedBox(height: AppSpacing.p20),
                 Text(
-                  'ClosEt vous remercie !',
+                  l10n.transactionMerci,
                   style: ClosetTextStyles.sousTitre.copyWith(
                     color: ClosetColors.vert,
                   ),
@@ -74,7 +77,7 @@ class RecuScreen extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     Text(
-                      d.type.libelleTotal,
+                      d.type.libelleTotal(l10n),
                       style: ClosetTextStyles.corps.copyWith(
                         fontWeight: FontWeight.w700,
                         color: ClosetColors.vert,
@@ -93,13 +96,13 @@ class RecuScreen extends StatelessWidget {
             ),
             const SizedBox(height: 38),
             BoutonTransaction(
-              label: 'Partager Mon Reçu',
+              label: l10n.transactionPartagerRecu,
               dore: false,
               onPressed: onPartager,
             ),
             const SizedBox(height: AppSpacing.p24),
             BoutonTransaction(
-              label: d.type.libelleSortie,
+              label: d.type.libelleSortie(l10n),
               onPressed: onRetour,
             ),
           ],
@@ -108,19 +111,6 @@ class RecuScreen extends StatelessWidget {
     );
   }
 
-  static String _formatDate(DateTime d) {
-    const jours = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
-    const mois = [
-      'Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Jui',
-      'Jul', 'Aoû', 'Sep', 'Oct', 'Nov', 'Déc',
-    ];
-    final h = d.hour % 12 == 0 ? 12 : d.hour % 12;
-    final suffixe = d.hour < 12 ? 'AM' : 'PM';
-    final mm = d.minute.toString().padLeft(2, '0');
-    final ss = d.second.toString().padLeft(2, '0');
-    return '${jours[d.weekday - 1]} ${d.day} ${mois[d.month - 1]}, '
-        '$h:$mm:$ss $suffixe';
-  }
 }
 
 /// Carte blanche du reçu : 310 de large, rayon 30.

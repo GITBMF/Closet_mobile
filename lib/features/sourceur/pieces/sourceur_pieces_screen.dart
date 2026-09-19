@@ -272,20 +272,21 @@ class _CarteDepot extends StatelessWidget {
   /// Le badge suit les statuts de la maquette `36:2063` et
   /// `SubmissionStatus` (`submitted` / `in_review` / `accepted` /
   /// `catalogued` / `refused`).
-  StatusBadge get _badge => switch (piece.statut) {
-        StatutPiece.vendue => StatusBadge.miseEnVente('Vendue'),
-        StatutPiece.retournee => StatusBadge.retournee(),
+  StatusBadge _badge(ClosetL10n l10n) => switch (piece.statut) {
+        StatutPiece.vendue => StatusBadge.miseEnVente(l10n.badgeVendue),
+        StatutPiece.retournee => StatusBadge.retournee(l10n.badgeRetournee),
         _ => switch (piece.statutApi) {
-            'catalogued' => StatusBadge.miseEnVente(),
-            'submitted' => StatusBadge.depotRecu(),
-            'refused' => StatusBadge.refusee(),
-            'accepted' => StatusBadge.miseEnVente('Acceptée'),
-            _ => StatusBadge.enAnalyse(),
+            'catalogued' => StatusBadge.miseEnVente(l10n.badgeMiseEnVente),
+            'submitted' => StatusBadge.depotRecu(l10n.badgeDepotRecu),
+            'refused' => StatusBadge.refusee(l10n.badgeRefusee),
+            'accepted' => StatusBadge.miseEnVente(l10n.badgeAcceptee),
+            _ => StatusBadge.enAnalyse(l10n.badgeEnAnalyse),
           },
       };
 
   @override
   Widget build(BuildContext context) {
+    final l10n = ClosetL10n.of(context);
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -340,7 +341,7 @@ class _CarteDepot extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: AppSpacing.p8),
-                  _badge,
+                  _badge(l10n),
                 ],
               ),
             ),

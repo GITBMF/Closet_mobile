@@ -1,5 +1,7 @@
 import 'package:dio/dio.dart';
 
+import '../../core/l10n/closet_l10n.dart';
+
 /// Nature d'un échec réseau, pour que l'UI choisisse le bon écran.
 enum KindErreurApi {
   horsLigne,
@@ -21,11 +23,18 @@ class ApiException implements Exception {
     required this.message,
     required this.kind,
     this.status,
+    this.code,
   });
 
   final String message;
   final KindErreurApi kind;
   final int? status;
+
+  /// Code d'erreur machine (`error.code` du backend, ex. `email_not_verified`).
+  ///
+  /// À utiliser pour distinguer deux 403 qui se ressemblent — jamais en
+  /// comparant [message], qui est un texte traduit destiné à l'affichage.
+  final String? code;
 
   bool get estHorsLigne =>
       kind == KindErreurApi.horsLigne || kind == KindErreurApi.delaiDepasse;
@@ -40,6 +49,7 @@ class ApiException implements Exception {
       ),
       kind: kind,
       status: status,
+      code: codeDepuisCorps(e.response?.data),
     );
   }
 
@@ -59,6 +69,19 @@ class ApiException implements Exception {
 
   static bool estRepli(String texte) =>
       KindErreurApi.values.any((k) => texte.trim() == repliPour(k));
+
+  /// Version localisée de [repliPour], pour l'affichage une fois la locale
+  /// de l'utilisateur connue (le message construit par [depuisDio] reste en
+  /// français, servant de repère à [estRepli]).
+  static String repliLocalise(KindErreurApi kind, ClosetL10n l10n) => switch (kind) {
+        KindErreurApi.horsLigne => l10n.apiHorsLigneMessage,
+        KindErreurApi.delaiDepasse => l10n.apiDelaiDepasseMessage,
+        KindErreurApi.nonAutorise => l10n.apiNonAutoriseMessage,
+        KindErreurApi.introuvable => l10n.apiIntrouvableMessage,
+        KindErreurApi.validation => l10n.apiValidationMessage,
+        KindErreurApi.serveur => l10n.apiServeurMessage,
+        KindErreurApi.autre => l10n.apiAutreMessage,
+      };
 
   static KindErreurApi _kind(DioException e, int? status) {
     if (_estHorsLigne(e)) return KindErreurApi.horsLigne;
@@ -82,6 +105,19 @@ class ApiException implements Exception {
 
   @override
   String toString() => message;
+}
+
+/// Code machine `error.code` du corps JSON d'API (ex. `email_not_verified`),
+/// ou `null` si le backend n'en fournit pas (validation FastAPI brute, texte
+/// simple, etc.).
+String? codeDepuisCorps(dynamic data) {
+  if (data is! Map) return null;
+  final error = data['error'];
+  if (error is Map) {
+    final code = error['code'];
+    if (code is String && code.trim().isNotEmpty) return code.trim();
+  }
+  return null;
 }
 
 /// Texte utile d'un corps JSON d'API : `detail` (chaîne ou liste FastAPI)
@@ -184,14 +220,17 @@ String messageMelange({required String local, String? backend}) {
 }
 
 /// Extraire le message affichable depuis une erreur levée.
-String messageErreur(Object erreur) {
+String messageErreur(Object erreur, [ClosetL10n? l10n]) {
   if (erreur is ApiException) {
     final texte = erreur.message.trim();
     if (texte.isEmpty || estMessageTechnique(texte)) return '';
+    if (l10n != null && ApiException.estRepli(texte)) {
+      return ApiException.repliLocalise(erreur.kind, l10n);
+    }
     return texte;
   }
   if (erreur is DioException) {
-    return ApiException.depuisDio(erreur).message;
+    return messageErreur(ApiException.depuisDio(erreur), l10n);
   }
   if (erreur is String) {
     final texte = erreur.trim();

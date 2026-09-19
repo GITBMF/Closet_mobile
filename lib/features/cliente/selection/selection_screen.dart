@@ -3,11 +3,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/l10n/closet_l10n.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/closet_colors.dart';
 import '../../../core/theme/closet_text_styles.dart';
 import '../../../core/widgets/closet_app_bar.dart';
 import '../../../core/widgets/closet_feedback.dart';
+import '../../../core/widgets/spotlight_showcase.dart';
 import '../../../core/widgets/toasts.dart';
 import '../../../data/models/article.dart';
 import '../../../data/repositories/cart_repository.dart';
@@ -27,6 +29,7 @@ class SelectionScreen extends ConsumerStatefulWidget {
 class _SelectionScreenState extends ConsumerState<SelectionScreen> {
   @override
   Widget build(BuildContext context) {
+    final l10n = ClosetL10n.of(context);
     final pieces = ref.watch(cartListProvider);
 
     return Scaffold(
@@ -34,9 +37,9 @@ class _SelectionScreenState extends ConsumerState<SelectionScreen> {
       body: SafeArea(
         child: pieces.isEmpty
             ? ClosetListeVide(
-                message: 'Aucune pièce n’a été mise de côté.',
+                message: l10n.selectionVideMessage,
                 action: () => context.go('/collections'),
-                libelleAction: 'Découvrir les collections',
+                libelleAction: l10n.decouvrirCollections,
               )
             : SingleChildScrollView(
                 padding: const EdgeInsets.only(bottom: AppSpacing.p32),
@@ -52,9 +55,8 @@ class _SelectionScreenState extends ConsumerState<SelectionScreen> {
                       ),
                       child: Text(
                         pieces.length == 1
-                            ? '1 pièce unique mise de côté pour vous.'
-                            : '${pieces.length} pièces uniques mises de côté '
-                                'pour vous.',
+                            ? l10n.uneSeulePieceMiseDeCote
+                            : l10n.nPiecesMisesDeCote(pieces.length),
                         style: ClosetTextStyles.citation.copyWith(
                           fontSize: 14,
                           fontWeight: FontWeight.w400,
@@ -78,7 +80,7 @@ class _SelectionScreenState extends ConsumerState<SelectionScreen> {
                             toastActionPiece(
                               ref,
                               nom: piece.title,
-                              resultat: 'a été retirée de votre sélection.',
+                              resultat: l10n.retireeDeSelection,
                               succes: false,
                             );
                           },
@@ -109,6 +111,7 @@ class _LignePiece extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = ClosetL10n.of(context);
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -174,7 +177,7 @@ class _LignePiece extends StatelessWidget {
                       borderRadius: BorderRadius.circular(AppRadius.vignette),
                     ),
                     child: Text(
-                      article.condition,
+                      article.libelleCondition(l10n),
                       style: ClosetTextStyles.attribut.copyWith(
                         color: ClosetColors.emeraude500,
                       ),
@@ -192,7 +195,7 @@ class _LignePiece extends StatelessWidget {
             ),
             Semantics(
               button: true,
-              label: 'Retirer de ma sélection',
+              label: ClosetL10n.of(context).retirerDeSelection,
               child: GestureDetector(
                 onTap: onRetirer,
                 child: const SizedBox(
@@ -226,6 +229,7 @@ class _BoutonFinaliser extends ConsumerWidget {
 
     return Center(
       child: SizedBox(
+        key: ClosetTourKeys.finaliserKey,
         width: 312,
         height: 44,
         child: Material(
@@ -236,7 +240,7 @@ class _BoutonFinaliser extends ConsumerWidget {
             onTap: () => context.push(connectee ? '/checkout' : '/auth'),
             child: Center(
               child: Text(
-                'Finaliser ma sélection',
+                ClosetL10n.of(context).finaliserMaSelection,
                 style: ClosetTextStyles.bouton.copyWith(
                   color: ClosetColors.blanc,
                 ),

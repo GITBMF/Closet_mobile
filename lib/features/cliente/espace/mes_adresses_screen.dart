@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/l10n/closet_l10n.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/closet_colors.dart';
 import '../../../core/theme/closet_text_styles.dart';
@@ -22,6 +23,7 @@ class MesAdressesScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final adresses = ref.watch(mesAdressesProvider);
+    final l10n = ClosetL10n.of(context);
 
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
@@ -48,12 +50,12 @@ class MesAdressesScreen extends ConsumerWidget {
                   children: [
                     SourceurBoutonRond(
                       icone: Icons.arrow_back_ios_new,
-                      label: 'Retour',
+                      label: l10n.retour,
                       onTap: () => context.pop(),
                     ),
                     Expanded(
                       child: Text(
-                        'Mes adresses',
+                        l10n.mesAdressesTitre,
                         textAlign: TextAlign.center,
                         style: ClosetTextStyles.accroche.copyWith(
                           fontFamily: ClosetTextStyles.prix.fontFamily,
@@ -65,7 +67,7 @@ class MesAdressesScreen extends ConsumerWidget {
                     ),
                     SourceurBoutonRond(
                       icone: Icons.add,
-                      label: 'Ajouter une adresse',
+                      label: l10n.ajouterAdresse,
                       onTap: () => _ouvrirFormulaire(context, ref),
                     ),
                   ],
@@ -77,7 +79,7 @@ class MesAdressesScreen extends ConsumerWidget {
                 data: (liste) => liste.isEmpty
                     ? ClosetListeVide(
                         action: () => _ouvrirFormulaire(context, ref),
-                        libelleAction: 'Ajouter une adresse',
+                        libelleAction: l10n.ajouterAdresse,
                       )
                     : ListView.separated(
                         padding: const EdgeInsets.fromLTRB(
@@ -138,6 +140,7 @@ class _LigneAdresse extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = ClosetL10n.of(context);
     return InkWell(
       onTap: onTap,
       child: Row(
@@ -181,7 +184,7 @@ class _LigneAdresse extends StatelessWidget {
                           borderRadius: BorderRadius.circular(2),
                         ),
                         child: Text(
-                          'par Défaut',
+                          l10n.parDefautBadge,
                           style: ClosetTextStyles.attribut.copyWith(
                             color: ClosetColors.emeraude500,
                           ),

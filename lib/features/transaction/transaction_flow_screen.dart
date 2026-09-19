@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../core/l10n/closet_l10n.dart';
 import '../../core/widgets/toasts.dart';
 import 'confirmation_screen.dart';
 import 'pin_screen.dart';
@@ -21,8 +22,9 @@ enum _EtapeTunnel { pin, confirmation, traitement, succes, recu }
 /// paiement acheteuse, qui ne passe pas par un code.
 typedef ExecuteurTransaction = Future<RecuTransaction> Function(
   DemandeTransaction demande,
-  String? pin,
-);
+  String? pin, [
+  ClosetL10n? l10n,
+]);
 
 /// Tunnel de transaction — orchestre `32:704` → `32:756` → `32:813` → `32:865`
 /// côté retrait, et `162:5220` → `162:3351` → `162:3473` côté paiement.
@@ -94,7 +96,11 @@ class _TransactionFlowScreenState extends ConsumerState<TransactionFlowScreen> {
       throw StateError('Code PIN absent : opération refusée.');
     }
     try {
-      _recu = await widget.executer(widget.demande, pin);
+      _recu = await widget.executer(
+        widget.demande,
+        pin,
+        ClosetL10n.of(context),
+      );
     } finally {
       // Le PIN ne survit pas à l'appel, quel qu'en soit le résultat.
       _pin = null;
@@ -106,7 +112,8 @@ class _TransactionFlowScreenState extends ConsumerState<TransactionFlowScreen> {
   void _surEchec(Object erreur) {
     if (!mounted) return;
     _pin = null;
-    final message = messageErreurTransaction(erreur);
+    final l10n = ClosetL10n.of(context);
+    final message = messageErreurTransaction(erreur, l10n);
 
     if (widget.demande.type.exigePin) {
       // Le retrait revient à la saisie du PIN : c'est l'étape rejouable.
@@ -118,7 +125,7 @@ class _TransactionFlowScreenState extends ConsumerState<TransactionFlowScreen> {
       context.pop();
     }
 
-    toastErreur(ref, message, titre: 'Transaction refusée');
+    toastErreur(ref, message, titre: l10n.transactionRefuseeTitre);
   }
 
   void _quitter() => context.go(widget.demande.type.routeRetour);
@@ -156,11 +163,14 @@ class _TransactionFlowScreenState extends ConsumerState<TransactionFlowScreen> {
           ),
         _EtapeTunnel.recu => RecuScreen(
             recu: _recu!,
-            onPartager: () => toastInfo(
-              ref,
-              'Partage indisponible',
-              'Le partage du reçu n’est pas encore proposé par le serveur.',
-            ),
+            onPartager: () {
+              final l10n = ClosetL10n.of(context);
+              toastInfo(
+                ref,
+                l10n.transactionPartageIndisponibleTitre,
+                l10n.transactionPartageIndisponibleCorps,
+              );
+            },
             onRetour: _quitter,
           ),
       },
@@ -172,10 +182,9 @@ class _TransactionFlowScreenState extends ConsumerState<TransactionFlowScreen> {
 ///
 /// Ne rend jamais l'exception brute : elle peut porter une URL interne, une
 /// trace ou un identifiant de compte. L'utilisateur reçoit un message neutre.
-String messageErreurTransaction(Object erreur) {
+String messageErreurTransaction(Object erreur, [ClosetL10n? l10n]) {
   if (erreur is TransactionRefusee) return erreur.message;
-  return "L'opération n'a pas abouti. Aucun montant n'a été débité. "
-      'Veuillez réessayer.';
+  return (l10n ?? ClosetL10n.fr).transactionEchecGenerique;
 }
 
 /// Refus explicite renvoyé par le backend, dont le message est sûr à afficher

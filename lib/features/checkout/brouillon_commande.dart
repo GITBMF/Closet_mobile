@@ -27,6 +27,7 @@ class BrouillonCommande {
     this.ville,
     this.region,
     this.departement,
+    this.arrondissement = '',
     this.quartier = '',
     this.moyen,
     this.numeroPaiement = '',
@@ -50,6 +51,7 @@ class BrouillonCommande {
   // ── Variante cascade (`162:3844`) ───────────────────────────────────────
   final Region? region;
   final Departement? departement;
+  final String arrondissement;
   final String quartier;
 
   // ── Paiement ────────────────────────────────────────────────────────────
@@ -78,10 +80,17 @@ class BrouillonCommande {
   /// Adresse résumée en une ligne, telle que la maquette la replie une fois la
   /// saisie faite (`162:4162` : « Mbalmayo-Centre, Newtown Collège… »).
   String get adresseResumee {
-    if (mode == ModeAdresse.ville) return ville?.nom ?? '';
+    if (mode == ModeAdresse.ville) {
+      final morceaux = [
+        if (ville != null) ville!.nom,
+        if (quartier.trim().isNotEmpty) quartier.trim(),
+      ];
+      return morceaux.join(', ');
+    }
     final morceaux = [
       if (departement != null) departement!.nom,
       if (region != null) region!.nom,
+      if (arrondissement.trim().isNotEmpty) arrondissement.trim(),
       if (quartier.trim().isNotEmpty) quartier.trim(),
     ];
     return morceaux.join(', ');
@@ -93,9 +102,12 @@ class BrouillonCommande {
 
   /// L'adresse est-elle suffisamment renseignée pour commander ?
   bool get adresseComplete => switch (mode) {
-        ModeAdresse.ville => ville != null,
+        ModeAdresse.ville => ville != null && quartier.trim().isNotEmpty,
         ModeAdresse.cascade =>
-          region != null && departement != null && quartier.trim().isNotEmpty,
+          region != null &&
+              departement != null &&
+              arrondissement.trim().isNotEmpty &&
+              quartier.trim().isNotEmpty,
       };
 
   /// Le moyen de paiement est-il utilisable en l'état ?
@@ -121,6 +133,7 @@ class BrouillonCommande {
     Ville? ville,
     Region? region,
     Departement? departement,
+    String? arrondissement,
     String? quartier,
     MoyenPaiement? moyen,
     String? numeroPaiement,
@@ -132,6 +145,7 @@ class BrouillonCommande {
     double? remise,
     bool? coordonneesValidees,
     bool effacerDepartement = false,
+    bool effacerArrondissement = false,
   }) {
     return BrouillonCommande(
       nomComplet: nomComplet ?? this.nomComplet,
@@ -142,6 +156,10 @@ class BrouillonCommande {
       // Changer de région invalide le département : la cascade ne doit jamais
       // laisser un département étranger à la région retenue.
       departement: effacerDepartement ? null : (departement ?? this.departement),
+      // Un arrondissement dépend du département : il tombe avec lui.
+      arrondissement: (effacerDepartement || effacerArrondissement)
+          ? ''
+          : (arrondissement ?? this.arrondissement),
       quartier: quartier ?? this.quartier,
       moyen: moyen ?? this.moyen,
       numeroPaiement: numeroPaiement ?? this.numeroPaiement,
@@ -187,6 +205,14 @@ class BrouillonCommandeNotifier extends Notifier<BrouillonCommande> {
   void choisirDepartement(Departement departement) {
     state = state.copyWith(
       departement: departement,
+      effacerArrondissement: true,
+      coordonneesValidees: false,
+    );
+  }
+
+  void majArrondissement(String arrondissement) {
+    state = state.copyWith(
+      arrondissement: arrondissement,
       coordonneesValidees: false,
     );
   }

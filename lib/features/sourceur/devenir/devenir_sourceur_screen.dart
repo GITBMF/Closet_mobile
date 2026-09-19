@@ -1,6 +1,7 @@
 ﻿import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/l10n/closet_l10n.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/closet_colors.dart';
 import '../../../core/theme/closet_text_styles.dart';
@@ -19,6 +20,7 @@ class DevenirSourceurScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = ClosetL10n.of(context);
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (didPop, _) {
@@ -71,12 +73,12 @@ class DevenirSourceurScreen extends StatelessWidget {
                     children: [
                       SourceurBoutonRond(
                         icone: Icons.arrow_back_ios_new,
-                        label: 'Retour',
+                        label: l10n.retour,
                         onTap: () => sourceurRetour(context),
                       ),
                       Expanded(
                         child: Text(
-                          'Devenir Sourceur ClosET',
+                          l10n.devenirSourceurClosetTitre,
                           textAlign: TextAlign.center,
                           style: ClosetTextStyles.sousTitre.copyWith(
                             color: ClosetColors.blanc,
@@ -99,7 +101,7 @@ class DevenirSourceurScreen extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Programme partenaire',
+                          l10n.programmePartenaire,
                           style: ClosetTextStyles.corpsMedium.copyWith(
                             fontSize: 13,
                             letterSpacing: -0.26,
@@ -108,7 +110,7 @@ class DevenirSourceurScreen extends StatelessWidget {
                         ),
                         const SizedBox(height: AppSpacing.p8),
                         Text(
-                          'Confiez vos pièces, nous les valorisons',
+                          l10n.confiezPiecesValorisons,
                           style: ClosetTextStyles.titreEcran.copyWith(
                             letterSpacing: 0.66,
                             color: ClosetColors.blanc,
@@ -116,25 +118,20 @@ class DevenirSourceurScreen extends StatelessWidget {
                         ),
                         const SizedBox(height: AppSpacing.p12),
                         Text(
-                          'Chaque pièce que vous confiez reste tracée '
-                          'jusqu’à vous. Vous suivez ses statuts en temps réel '
-                          'et vos gains, en toute transparence. Deux formules : '
-                          'vente directe ou dépôt-vente.',
+                          l10n.devenirSourceurCorps,
                           style: ClosetTextStyles.labelChamp.copyWith(
                             color: ClosetColors.blanc,
                           ),
                         ),
                         const SizedBox(height: AppSpacing.p24),
-                        const _Argument(
-                          titre: 'Curation soignée',
-                          detail:
-                              'Chaque pièce est premiumisée avant mise en '
-                              'ligne.',
+                        _Argument(
+                          titre: l10n.curationSoignee,
+                          detail: l10n.curationSoigneeDetail,
                         ),
                         const SizedBox(height: AppSpacing.p20),
-                        const _Argument(
-                          titre: 'Suivi transparent',
-                          detail: 'Six statuts, notifiés à chaque étape',
+                        _Argument(
+                          titre: l10n.suiviTransparent,
+                          detail: l10n.suiviTransparentDetail,
                         ),
                       ],
                     ),
@@ -152,7 +149,7 @@ class DevenirSourceurScreen extends StatelessWidget {
                         onTap: () => context.push('/sourceur/inscription'),
                         child: Center(
                           child: Text(
-                            'Remplir ma fiche d’adhésion',
+                            l10n.remplirMaFicheAdhesion,
                             style: ClosetTextStyles.bouton.copyWith(
                               fontWeight: FontWeight.w600,
                               color: ClosetColors.vert,
@@ -167,13 +164,13 @@ class DevenirSourceurScreen extends StatelessWidget {
                   onPressed: () => context.push('/sourceur/identification'),
                   child: Text.rich(
                     TextSpan(
-                      text: 'Déjà partenaire ? ',
+                      text: '${l10n.dejaPartenaire} ',
                       style: ClosetTextStyles.corps.copyWith(
                         color: ClosetColors.beige,
                       ),
                       children: [
                         TextSpan(
-                          text: 'Accéder à mon espace',
+                          text: l10n.accederMonEspace,
                           style: ClosetTextStyles.corps.copyWith(
                             fontWeight: FontWeight.w600,
                             color: ClosetColors.fond300,

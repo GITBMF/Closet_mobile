@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../l10n/closet_l10n.dart';
 import '../theme/app_spacing.dart';
 import '../theme/closet_colors.dart';
 import '../theme/closet_text_styles.dart';
@@ -107,29 +108,18 @@ class PieceCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 3),
               ],
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  if (etoiles > 0) ...[
-                    EtoilesEtat(etoiles),
-                    const SizedBox(width: 4),
-                  ],
-                  Expanded(
-                    child: Text(
-                      nom,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: ClosetTextStyles.nomProduit,
-                    ),
-                  ),
-                ],
+              Text(
+                nom,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: ClosetTextStyles.nomProduit,
               ),
               const SizedBox(height: 3),
               Row(
                 children: [
                   Expanded(
                     child: Text(
-                      isSold ? 'Indisponible' : prix,
+                      isSold ? ClosetL10n.of(context).indisponibleLabel : prix,
                       style: ClosetTextStyles.prix.copyWith(
                         color: isSold
                             ? ClosetColors.taupe
@@ -146,6 +136,10 @@ class PieceCard extends StatelessWidget {
                     ),
                 ],
               ),
+              if (etoiles > 0) ...[
+                const SizedBox(height: 4),
+                EtoilesEtat(etoiles, taille: 12),
+              ],
               if (attribut != null) ...[
                 const SizedBox(height: AppSpacing.p4),
                 Text(
@@ -217,7 +211,7 @@ class _Visuel extends StatelessWidget {
               child: Padding(
                 padding: const EdgeInsets.symmetric(vertical: AppSpacing.p4),
                 child: Text(
-                  'A trouvé son dressing',
+                  ClosetL10n.of(context).aTrouveSonDressing,
                   textAlign: TextAlign.center,
                   style: ClosetTextStyles.detail.copyWith(
                     color: ClosetColors.creme,

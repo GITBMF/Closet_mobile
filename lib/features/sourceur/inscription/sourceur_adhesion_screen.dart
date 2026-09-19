@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/l10n/closet_l10n.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/closet_colors.dart';
 import '../../../core/theme/closet_text_styles.dart';
+import '../../../core/utils/date_format.dart';
 import '../../../core/widgets/closet_buttons.dart';
 import '../../../core/widgets/status_badge.dart';
 import '../../../data/repositories/sourceur_repository.dart';
@@ -24,6 +26,7 @@ class SourceurAdhesionScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = ClosetL10n.of(context);
     final adhesion =
         ref.watch<SourceurRepository>(sourceurRepositoryProvider).adhesion;
 
@@ -40,7 +43,7 @@ class SourceurAdhesionScreen extends ConsumerWidget {
         child: Column(
           children: [
             SourceurHeader(
-              titre: 'Mon adhésion',
+              titre: l10n.adhesionTitre,
               onRetour: () {
                 if (context.canPop()) {
                   context.pop();
@@ -66,7 +69,7 @@ class SourceurAdhesionScreen extends ConsumerWidget {
                     ),
                     const SizedBox(height: AppSpacing.p32),
                     Text(
-                      'parcours de votre adhesion'.toUpperCase(),
+                      l10n.adhesionParcoursSurtitre.toUpperCase(),
                       style: ClosetTextStyles.corps.copyWith(
                         letterSpacing: 0.96,
                         color: ClosetColors.fond500,
@@ -79,7 +82,7 @@ class SourceurAdhesionScreen extends ConsumerWidget {
                     ),
                     const SizedBox(height: AppSpacing.p24),
                     Text(
-                      'Le dépôt s’ouvrira après validation',
+                      l10n.adhesionDepotOuverture,
                       style: ClosetTextStyles.titreBloc.copyWith(
                         fontFamily: ClosetTextStyles.prix.fontFamily,
                         letterSpacing: -0.30,
@@ -88,8 +91,7 @@ class SourceurAdhesionScreen extends ConsumerWidget {
                     ),
                     const SizedBox(height: AppSpacing.p8),
                     Text(
-                      'C’est notre garantie de qualité : chaque partenaire est '
-                      'validé avant de confier ses pièces.',
+                      l10n.adhesionGarantie,
                       style: ClosetTextStyles.meta.copyWith(
                         letterSpacing: 0.10,
                         color: ClosetColors.taupe,
@@ -113,7 +115,7 @@ class SourceurAdhesionScreen extends ConsumerWidget {
                                   context.go('/sourceur/adhesion/approuvee'),
                               child: Center(
                                 child: Text(
-                                  'Voir ma validation',
+                                  l10n.adhesionVoirValidation,
                                   style: ClosetTextStyles.bouton.copyWith(
                                     fontWeight: FontWeight.w600,
                                     color: ClosetColors.vert,
@@ -131,7 +133,7 @@ class SourceurAdhesionScreen extends ConsumerWidget {
                         width: 312,
                         height: 44,
                         child: ClosetOutlineButton(
-                          label: 'Retour à l’accueil',
+                          label: l10n.retourAccueil,
                           onPressed: () => context.go('/home'),
                         ),
                       ),
@@ -154,13 +156,14 @@ class _AucuneAdhesion extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = ClosetL10n.of(context);
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
         child: Column(
           children: [
             SourceurHeader(
-              titre: 'Mon adhésion',
+              titre: l10n.adhesionTitre,
               onRetour: () {
                 if (context.canPop()) {
                   context.pop();
@@ -183,22 +186,21 @@ class _AucuneAdhesion extends StatelessWidget {
                       ),
                       const SizedBox(height: AppSpacing.p16),
                       Text(
-                        'Aucune adhésion en cours',
+                        l10n.adhesionAucuneTitre,
                         style: ClosetTextStyles.titreBloc
                             .copyWith(color: ClosetColors.vert),
                         textAlign: TextAlign.center,
                       ),
                       const SizedBox(height: AppSpacing.p8),
                       Text(
-                        'Déposez votre candidature pour rejoindre le cercle '
-                        'des sourceuses.',
+                        l10n.adhesionAucuneCorps,
                         style: ClosetTextStyles.meta
                             .copyWith(color: ClosetColors.taupe),
                         textAlign: TextAlign.center,
                       ),
                       const SizedBox(height: AppSpacing.p24),
                       ClosetPrimaryButton(
-                        label: 'Devenir sourceur',
+                        label: l10n.devenirSourceur,
                         dore: true,
                         hauteur: AppSpacing.minTouchTarget,
                         onPressed: () => context.go('/sourceur/inscription'),
@@ -224,25 +226,15 @@ class _CarteStatut extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = ClosetL10n.of(context);
     final (titre, corps) = switch (etape) {
-      EtapeAdhesion.soumise => (
-          'Votre fiche est entre nos mains',
-          'Notre équipe étudie chaque adhésion avec soin — vous serez '
-              'notifiée dès la validation.',
-        ),
-      EtapeAdhesion.enEtude => (
-          'Votre fiche est entre nos mains',
-          'Notre équipe étudie chaque adhésion avec soin — vous serez '
-              'notifiée dès la validation.',
-        ),
-      EtapeAdhesion.validee => (
-          'Bienvenue dans le cercle',
-          'Votre adhésion est validée : votre espace de dépôt est ouvert.',
-        ),
-      EtapeAdhesion.premierePiece => (
-          'À vous de jouer',
-          'Confiez votre première pièce d’exception.',
-        ),
+      EtapeAdhesion.soumise ||
+      EtapeAdhesion.enEtude =>
+        (l10n.adhesionSoumiseTitre, l10n.adhesionSoumiseCorps),
+      EtapeAdhesion.validee =>
+        (l10n.adhesionValideeTitre, l10n.adhesionValideeCorps),
+      EtapeAdhesion.premierePiece =>
+        (l10n.adhesionPremierePieceTitre, l10n.adhesionPremierePieceCorps),
     };
 
     return Container(
@@ -255,7 +247,7 @@ class _CarteStatut extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Statut de votre adhésion',
+            l10n.adhesionStatutLabel,
             style: ClosetTextStyles.corpsMedium.copyWith(
               fontSize: 13,
               letterSpacing: -0.26,
@@ -263,7 +255,7 @@ class _CarteStatut extends StatelessWidget {
             ),
           ),
           const SizedBox(height: AppSpacing.p8),
-          _badge,
+          _badge(l10n),
           const SizedBox(height: AppSpacing.p12),
           Text(
             titre,
@@ -275,7 +267,7 @@ class _CarteStatut extends StatelessWidget {
           ),
           const SizedBox(height: AppSpacing.p8),
           Text(
-            'Soumise le ${_jourMois(dateSoumission)}. $corps',
+            '${l10n.adhesionSoumiseLePrefix} ${formatDateJourMoisAnnee(dateSoumission)}. $corps',
             style: ClosetTextStyles.meta.copyWith(
               letterSpacing: 0.10,
               color: ClosetColors.blanc,
@@ -286,21 +278,14 @@ class _CarteStatut extends StatelessWidget {
     );
   }
 
-  StatusBadge get _badge => switch (etape) {
-        EtapeAdhesion.soumise => StatusBadge.depotRecu('Fiche soumise'),
-        EtapeAdhesion.enEtude => StatusBadge.enAnalyse('En cours d’étude'),
-        EtapeAdhesion.validee => StatusBadge.livree('Adhésion validée'),
+  StatusBadge _badge(ClosetL10n l10n) => switch (etape) {
+        EtapeAdhesion.soumise => StatusBadge.depotRecu(l10n.adhesionBadgeFicheSoumise),
+        EtapeAdhesion.enEtude => StatusBadge.enAnalyse(l10n.adhesionBadgeEnEtude),
+        EtapeAdhesion.validee => StatusBadge.livree(l10n.adhesionBadgeValidee),
         EtapeAdhesion.premierePiece =>
-          StatusBadge.miseEnVente('Dépôt ouvert'),
+          StatusBadge.miseEnVente(l10n.adhesionBadgeDepotOuvert),
       };
 
-  static String _jourMois(DateTime d) {
-    const mois = [
-      'janv.', 'févr.', 'mars', 'avr.', 'mai', 'juin',
-      'juil.', 'août', 'sept.', 'oct.', 'nov.', 'déc.',
-    ];
-    return '${d.day} ${mois[d.month - 1]}';
-  }
 }
 
 /// Frise verticale : pastille par étape, reliée par un trait.
@@ -315,30 +300,31 @@ class _FriseAdhesion extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = ClosetL10n.of(context);
     final etapes = [
       (
         EtapeAdhesion.soumise,
-        'Fiche soumise',
-        _horodatage(dateSoumission),
+        l10n.adhesionBadgeFicheSoumise,
+        formatDateCommande(dateSoumission),
       ),
       (
         EtapeAdhesion.enEtude,
-        'En cours d’étude',
-        'L’administratrice vérifie vos informations',
+        l10n.adhesionBadgeEnEtude,
+        l10n.adhesionFriseAdminVerifie,
       ),
       (
         EtapeAdhesion.validee,
-        'Adhésion validée',
+        l10n.adhesionBadgeValidee,
         etapeCourante.index >= EtapeAdhesion.validee.index
-            ? 'Votre espace de dépôt est ouvert'
-            : 'Votre espace de dépôt s’ouvrira',
+            ? l10n.adhesionFriseEspaceOuvert
+            : l10n.adhesionFriseEspaceOuverture,
       ),
       (
         EtapeAdhesion.premierePiece,
-        'Première pièce confiée',
+        l10n.adhesionFrisePremierePiece,
         etapeCourante == EtapeAdhesion.premierePiece
-            ? 'Votre première pièce nous est confiée'
-            : 'Vous pourrez déposer votre première pièce',
+            ? l10n.adhesionFrisePieceConfiee
+            : l10n.adhesionFriseDeposerPiece,
       ),
     ];
 
@@ -356,15 +342,6 @@ class _FriseAdhesion extends StatelessWidget {
     );
   }
 
-  static String _horodatage(DateTime d) {
-    const mois = [
-      'Janv', 'Févr', 'Mars', 'Avr', 'Mai', 'Juin',
-      'Juil', 'Août', 'Sept', 'Oct', 'Nov', 'Déc',
-    ];
-    final hh = d.hour.toString().padLeft(2, '0');
-    final mm = d.minute.toString().padLeft(2, '0');
-    return '${d.day} ${mois[d.month - 1]}, $hh:$mm';
-  }
 }
 
 class _EtapeFrise extends StatelessWidget {

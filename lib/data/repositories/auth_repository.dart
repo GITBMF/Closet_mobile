@@ -2,11 +2,32 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 
+import '../../core/l10n/closet_l10n.dart';
 import '../api/api_exception.dart';
 import '../api/api_json.dart';
 import '../bff_client/api_client.dart';
 import '../models/user.dart';
 import '../services/auth_storage_service.dart';
+
+/// Levée par [AuthRepository.signUp] quand le compte vient d'être créé mais
+/// que le backend refuse la connexion tant que l'e-mail n'est pas vérifié
+/// (code `email_not_verified`). Porte les identifiants pour que l'écran de
+/// vérification puisse se reconnecter une fois le code validé, sans
+/// redemander le mot de passe.
+class EmailNonVerifieException implements Exception {
+  const EmailNonVerifieException({
+    required this.email,
+    required this.password,
+    required this.message,
+  });
+
+  final String email;
+  final String password;
+  final String message;
+
+  @override
+  String toString() => message;
+}
 
 class AuthRepository {
   AuthRepository(this._ref, this._client);
@@ -81,6 +102,7 @@ class AuthRepository {
     required String password,
     required String phone,
     String city = '',
+    ClosetL10n? l10n,
   }) async {
     _client.clearAccessToken();
 
@@ -94,17 +116,49 @@ class AuthRepository {
     );
     await _client.postJson('/auth/register', data: payload);
 
+    final emailInscrit = payload['email'] as String;
     // L'inscription ne renvoie pas de jeton : on ouvre la session tout de
-    // suite avec les identifiants venant d'être créés.
-    return logIn(
-      email: payload['email'] as String,
-      password: password,
-    );
+    // suite avec les identifiants venant d'être créés. Le backend refuse
+    // toutefois la connexion tant que l'e-mail n'est pas vérifié : l'appelant
+    // doit alors faire vérifier le code avant de retenter `logIn`.
+    try {
+      return await logIn(email: emailInscrit, password: password, l10n: l10n);
+    } on ApiException catch (e) {
+      if (e.code == 'email_not_verified') {
+        throw EmailNonVerifieException(
+          email: emailInscrit,
+          password: password,
+          message: e.message,
+        );
+      }
+      rethrow;
+    }
+  }
+
+  /// `POST /auth/verify-email` — code à 6 chiffres reçu par e-mail.
+  Future<String> verifierEmail({
+    required String email,
+    required String code,
+  }) async {
+    final data = await _client.postJson('/auth/verify-email', data: {
+      'email': email.trim().toLowerCase(),
+      'code': code.trim(),
+    });
+    return messageDepuisCorps(data);
+  }
+
+  /// `POST /auth/verify-email/resend` — renvoie un nouveau code.
+  Future<String> renvoyerCodeVerification(String email) async {
+    final data = await _client.postJson('/auth/verify-email/resend', data: {
+      'email': email.trim().toLowerCase(),
+    });
+    return messageDepuisCorps(data);
   }
 
   Future<ClosetUser> logIn({
     required String email,
     required String password,
+    ClosetL10n? l10n,
   }) async {
     _client.clearAccessToken();
     final data = await _client.postJson('/auth/login', data: {
@@ -115,19 +169,20 @@ class AuthRepository {
     if (booleenDe(data['mfa_required'])) {
       throw ApiException(
         message: messageMelange(
-          local:
-              'Ce compte exige une double authentification, non disponible dans '
-              'l’application pour le moment.',
+          local: l10n?.mfaNonDisponibleMessage ?? ClosetL10n.fr.mfaNonDisponibleMessage,
           backend: messageDepuisCorps(data),
         ),
         kind: KindErreurApi.validation,
       );
     }
 
-    return _ouvrirSession(data);
+    return _ouvrirSession(data, l10n);
   }
 
-  Future<ClosetUser> _ouvrirSession(Map<String, dynamic> data) async {
+  Future<ClosetUser> _ouvrirSession(
+    Map<String, dynamic> data, [
+    ClosetL10n? l10n,
+  ]) async {
     final accessToken = chaineDe(data['access_token']);
     final refreshToken = chaineDe(data['refresh_token']);
     final tokenType = chaineDe(data['token_type'], 'bearer');
@@ -138,7 +193,7 @@ class AuthRepository {
     if (accessToken.isEmpty) {
       throw ApiException(
         message: messageMelange(
-          local: 'Le serveur n’a pas renvoyé de jeton d’accès.',
+          local: l10n?.serveurPasDeJetonMessage ?? ClosetL10n.fr.serveurPasDeJetonMessage,
           backend: messageDepuisCorps(data),
         ),
         kind: KindErreurApi.serveur,

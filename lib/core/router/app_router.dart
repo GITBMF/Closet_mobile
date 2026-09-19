@@ -38,6 +38,7 @@ import '../../features/sourceur/suivi/suivi_piece_screen.dart';
 import '../../features/splash/splash_screen.dart';
 import '../../features/transaction/transaction_flow_screen.dart';
 import '../../features/transaction/transaction_models.dart';
+import '../l10n/closet_l10n.dart';
 
 final appRouterProvider = Provider<GoRouter>((ref) {
   final rootNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'root');
@@ -201,7 +202,13 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: '/checkout',
         pageBuilder: (context, state) => CustomTransitionPage(
           key: state.pageKey,
-          child: const CheckoutScreen(),
+          // `?etape=paiement` ouvre l'écran sur le choix du moyen de paiement,
+          // sans repasser par la saisie des coordonnées : la visite guidée s'en
+          // sert pour montrer cette étape.
+          child: CheckoutScreen(
+            etapeInitiale:
+                state.uri.queryParameters['etape'] == 'paiement' ? 1 : 0,
+          ),
           transitionsBuilder: (context, animation, secondaryAnimation, child) {
             return SlideTransition(
               position: Tween<Offset>(
@@ -228,8 +235,12 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           if (demande == null) {
             return CustomTransitionPage(
               key: state.pageKey,
-              child: const Scaffold(
-                body: Center(child: Text('Transaction introuvable')),
+              child: Scaffold(
+                body: Center(
+                  child: Text(
+                    ClosetL10n.of(context).transactionIntrouvableTitre,
+                  ),
+                ),
               ),
               transitionsBuilder: (context, animation, _, child) =>
                   FadeTransition(opacity: animation, child: child),

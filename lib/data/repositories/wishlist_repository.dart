@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../core/l10n/closet_l10n.dart';
 import '../../core/widgets/toasts.dart';
 import '../api/api_exception.dart';
 import '../api/api_json.dart';
@@ -46,9 +47,8 @@ class WishlistNotifier extends AsyncNotifier<List<Article>> {
 
   Future<String?> toggleWishlist(Article article) async {
     if (!_connectee) {
-      throw const ApiException(
-        message:
-            'Connectez-vous pour enregistrer cette pièce dans vos favoris.',
+      throw ApiException(
+        message: ref.read(l10nProvider).connectezVousFavorisPiece,
         kind: KindErreurApi.nonAutorise,
       );
     }
@@ -60,9 +60,8 @@ class WishlistNotifier extends AsyncNotifier<List<Article>> {
 
   Future<String?> addArticle(Article article) async {
     if (!_connectee) {
-      throw const ApiException(
-        message:
-            'Connectez-vous pour enregistrer cette pièce dans vos favoris.',
+      throw ApiException(
+        message: ref.read(l10nProvider).connectezVousFavorisPiece,
         kind: KindErreurApi.nonAutorise,
       );
     }
@@ -83,8 +82,8 @@ class WishlistNotifier extends AsyncNotifier<List<Article>> {
 
   Future<String?> removeArticle(String id) async {
     if (!_connectee) {
-      throw const ApiException(
-        message: 'Connectez-vous pour modifier vos favoris.',
+      throw ApiException(
+        message: ref.read(l10nProvider).connectezVousModifierFavoris,
         kind: KindErreurApi.nonAutorise,
       );
     }
@@ -115,11 +114,12 @@ final wishlistListProvider = Provider<List<Article>>((ref) {
 
 /// Cœur : `POST` / `DELETE /wishlist/{id}`, puis resynchronise via `GET`.
 Future<void> basculerFavori(WidgetRef ref, Article article) async {
+  final l10n = ref.read(l10nProvider);
   if (ref.read(currentUserProvider) == null) {
     toastInfo(
       ref,
-      'Connexion requise',
-      'Veuillez vous connecter à votre compte pour continuer.',
+      l10n.connexionRequiseTitre,
+      l10n.connectezVousPourContinuer,
     );
     return;
   }
@@ -130,17 +130,17 @@ Future<void> basculerFavori(WidgetRef ref, Article article) async {
       toastActionPiece(
         ref,
         nom: article.title,
-        resultat: 'a été retirée de vos favoris.',
+        resultat: l10n.retireeDesFavorisMessage,
         succes: false,
       );
     } else {
       toastActionPiece(
         ref,
         nom: article.title,
-        resultat: 'a été ajoutée à vos favoris.',
+        resultat: l10n.ajouteeAuxFavorisMessage,
       );
     }
   } catch (e) {
-    toastErreur(ref, e, titre: 'Favoris');
+    toastErreur(ref, e, titre: l10n.favorisTitreCourt);
   }
 }

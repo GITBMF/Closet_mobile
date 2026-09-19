@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../l10n/closet_l10n.dart';
 import '../theme/app_spacing.dart';
 import '../theme/closet_colors.dart';
 import '../theme/closet_text_styles.dart';
@@ -51,9 +52,12 @@ class TelephoneController extends ChangeNotifier {
   void _surNational() {
     if (_ecritureInterne) return;
     final brut = national.text;
-    if (brut.contains('+') ||
-        brut.startsWith('00') ||
-        IndicateurPays.analyser(brut) != null) {
+    // Ne ré-interprète le pays que sur une saisie explicitement
+    // internationale (`+…` ou `00…`) : sans ce garde-fou, un numéro local en
+    // cours de frappe peut coïncider par hasard avec l'indicatif d'un autre
+    // pays et se faire réécrire tout seul sous les yeux de la personne qui
+    // tape encore.
+    if (brut.contains('+') || brut.startsWith('00')) {
       final parse = IndicateurPays.analyser(brut);
       if (parse != null) {
         pays = parse.pays;
@@ -164,7 +168,7 @@ class _ChampTelephoneState extends State<ChampTelephone> {
       validerTelephone(
         _ctrl.e164,
         obligatoire: widget.obligatoire,
-        libelle: 'numéro',
+        l10n: ClosetL10n.of(context),
       );
 
   @override
@@ -464,9 +468,10 @@ class _BoutonIndicateur extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = ClosetL10n.of(context);
     return Semantics(
       button: true,
-      label: 'Indicatif ${pays.nom} ${pays.libelleCourt}',
+      label: l10n.indicatifPaysSemantique(pays.nomAffiche(l10n), pays.libelleCourt),
       child: InkWell(
         onTap: onTap,
         child: Padding(
@@ -531,6 +536,7 @@ class _SelecteurPaysSheetState extends State<_SelecteurPaysSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = ClosetL10n.of(context);
     final liste = IndicateurPays.rechercher(_recherche.text);
     final hauteur = MediaQuery.sizeOf(context).height * 0.72;
     return SizedBox(
@@ -549,7 +555,7 @@ class _SelecteurPaysSheetState extends State<_SelecteurPaysSheet> {
           Padding(
             padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
             child: Text(
-              'Indicatif du pays',
+              l10n.indicatifDuPays,
               style: ClosetTextStyles.titreBloc.copyWith(
                 color: ClosetColors.vert,
               ),
@@ -563,7 +569,7 @@ class _SelecteurPaysSheetState extends State<_SelecteurPaysSheet> {
               onChanged: (_) => setState(() {}),
               style: ClosetTextStyles.saisie,
               decoration: InputDecoration(
-                hintText: 'Pays ou indicatif…',
+                hintText: l10n.paysOuIndicatifHint,
                 prefixIcon: const Icon(Icons.search, size: 20),
                 filled: true,
                 fillColor: ClosetColors.champFond,
@@ -589,7 +595,7 @@ class _SelecteurPaysSheetState extends State<_SelecteurPaysSheet> {
                     p.nom == widget.selection.nom;
                 return ListTile(
                   leading: Text(p.drapeau, style: const TextStyle(fontSize: 22)),
-                  title: Text(p.nom, style: ClosetTextStyles.corps),
+                  title: Text(p.nomAffiche(l10n), style: ClosetTextStyles.corps),
                   trailing: Text(
                     p.libelleCourt,
                     style: ClosetTextStyles.saisie.copyWith(

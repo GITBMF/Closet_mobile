@@ -7,6 +7,7 @@ import '../../../core/l10n/closet_l10n.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/closet_colors.dart';
 import '../../../core/theme/closet_text_styles.dart';
+import '../../../core/utils/date_format.dart';
 import '../../../core/widgets/closet_app_bar.dart';
 import '../../../core/widgets/closet_buttons.dart';
 import '../../../core/widgets/closet_feedback.dart';
@@ -54,14 +55,15 @@ class SourceurRevenusScreen extends ConsumerWidget {
     final revenus = ref.watch(revenusSourceurProvider);
     final filtre = ref.watch(filtreRetraitProvider);
 
+    final l10nEcoute = ClosetL10n.of(context);
     ref.listen(revenusSourceurProvider, (precedent, suivant) {
       signaleTransitionAsync(
         ref: ref,
         context: context,
         precedent: precedent,
         suivant: suivant,
-        titre: 'Historique',
-        messageVide: 'Aucune donnée.',
+        titre: l10nEcoute.historiqueTitre,
+        messageVide: l10nEcoute.aucuneDonneePoint,
         estVide: (r) => r.retraits.isEmpty,
       );
     });
@@ -121,9 +123,9 @@ class SourceurRevenusScreen extends ConsumerWidget {
                       ),
                       const SizedBox(height: AppSpacing.p20),
                       if (lignes.isEmpty)
-                        const ClosetListeVide(
-                          titre: 'Aucune donnée',
-                          message: 'Aucun retrait n’a encore été versé.',
+                        ClosetListeVide(
+                          titre: ClosetL10n.of(context).aucuneDonnee,
+                          message: ClosetL10n.of(context).aucunRetraitVerse,
                         )
                       else
                         for (final retrait in lignes) ...[
@@ -133,7 +135,7 @@ class SourceurRevenusScreen extends ConsumerWidget {
                       const SizedBox(height: AppSpacing.p16),
                       Center(
                         child: ClosetPrimaryButton(
-                          label: 'Effectuer une transaction',
+                          label: ClosetL10n.of(context).effectuerTransaction,
                           dore: true,
                           hauteur: AppSpacing.minTouchTarget,
                           onPressed: () => afficherMethodeRetrait(context),
@@ -216,6 +218,7 @@ class _LigneTransaction extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = ClosetL10n.of(context);
     final refuse = retrait.statut == StatutRetrait.refuse;
     final couleurPastille =
         refuse ? ClosetColors.erreurCouture : ClosetColors.vert;
@@ -253,7 +256,7 @@ class _LigneTransaction extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  retrait.libelle,
+                  retrait.libelle(l10n),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: ClosetTextStyles.corpsMedium.copyWith(
@@ -262,8 +265,8 @@ class _LigneTransaction extends StatelessWidget {
                 ),
                 const SizedBox(height: AppSpacing.p4),
                 Text(
-                  '${refuse ? 'Demandé' : 'Retiré'} le '
-                  '${formatDateCourte(retrait.date)}',
+                  '${refuse ? l10n.demandeLabel : l10n.retireLabel} le '
+                  '${formatDateCommande(retrait.date)}',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: ClosetTextStyles.actionPetite.copyWith(
@@ -289,7 +292,7 @@ class _LigneTransaction extends StatelessWidget {
               if (!refuse) ...[
                 const SizedBox(height: AppSpacing.p4),
                 Text(
-                  'Solde ${formatPrixFcfa(retrait.soldeApres)}',
+                  l10n.soldeMontant(formatPrixFcfa(retrait.soldeApres)),
                   style: ClosetTextStyles.actionPetite.copyWith(
                     letterSpacing: -0.20,
                     color: ClosetColors.champPlaceholder,
@@ -304,15 +307,3 @@ class _LigneTransaction extends StatelessWidget {
   }
 }
 
-/// Date au format de la maquette : « Lun 10 Jui 2026, 10:30 ».
-String formatDateCourte(DateTime d) {
-  const jours = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
-  const mois = [
-    'Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Jui',
-    'Jul', 'Aoû', 'Sep', 'Oct', 'Nov', 'Déc',
-  ];
-  final hh = d.hour.toString().padLeft(2, '0');
-  final mm = d.minute.toString().padLeft(2, '0');
-  return '${jours[d.weekday - 1]} ${d.day} ${mois[d.month - 1]} ${d.year}, '
-      '$hh:$mm';
-}

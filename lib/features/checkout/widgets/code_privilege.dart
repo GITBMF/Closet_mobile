@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/l10n/closet_l10n.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/closet_colors.dart';
 import '../../../core/theme/closet_text_styles.dart';
@@ -21,11 +22,8 @@ class ChampCodePrivilege extends ConsumerWidget {
         ref.read(brouillonCommandeProvider.notifier).appliquerCodePrivilege(code);
 
     if (applique) {
-      toastSucces(
-        ref,
-        'Code enregistré',
-        'La remise sera calculée par ClosET au paiement.',
-      );
+      final l10n = ref.read(l10nProvider);
+      toastSucces(ref, l10n.codeEnregistreTitre, l10n.remiseCalculeeAuPaiementMessage);
     }
   }
 
@@ -36,6 +34,7 @@ class ChampCodePrivilege extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = ClosetL10n.of(context);
     final applique =
         ref.watch(brouillonCommandeProvider).codePrivilege.isNotEmpty;
 
@@ -58,7 +57,7 @@ class ChampCodePrivilege extends ConsumerWidget {
               ),
               const SizedBox(width: AppSpacing.gapChip),
               Text(
-                'Code privilège'.toUpperCase(),
+                l10n.codePrivilegeLabel.toUpperCase(),
                 style: ClosetTextStyles.meta.copyWith(
                   letterSpacing: 1.30,
                   color: ClosetColors.fond500,
@@ -82,7 +81,7 @@ class ChampCodePrivilege extends ConsumerWidget {
                       fontWeight: FontWeight.w300,
                     ),
                     decoration: InputDecoration(
-                      hintText: 'cercle-privilège',
+                      hintText: l10n.cerclePrivilegeHint,
                       hintStyle: ClosetTextStyles.nomProduit.copyWith(
                         fontSize: 14,
                         fontWeight: FontWeight.w300,
@@ -111,7 +110,7 @@ class ChampCodePrivilege extends ConsumerWidget {
                     onTap: applique ? () => _retirer(ref) : () => _appliquer(ref),
                     child: Center(
                       child: Text(
-                        applique ? 'Retirer' : 'Appliquer',
+                        applique ? l10n.retirerLabel : l10n.appliquerLabel,
                         style: ClosetTextStyles.actionPetite.copyWith(
                           color: applique
                               ? ClosetColors.vert

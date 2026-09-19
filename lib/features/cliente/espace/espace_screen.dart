@@ -11,6 +11,7 @@ import '../../../core/theme/theme_provider.dart';
 import '../../../core/widgets/choix_langue.dart';
 import '../../../core/widgets/closet_header_button.dart';
 import '../../../core/widgets/closet_sections.dart';
+import '../../../core/widgets/spotlight_showcase.dart';
 import '../../../data/models/user.dart';
 import '../../../data/repositories/auth_repository.dart';
 import '../../../data/repositories/sourceur_repository.dart';
@@ -51,6 +52,7 @@ class EspaceScreen extends ConsumerWidget {
                   horizontal: AppSpacing.p20,
                 ),
                 child: _EnTeteProfil(
+                  key: ClosetTourKeys.espaceProfilKey,
                   user: user,
                   onEditer: () => context.push(
                     user == null ? '/auth' : '/espace/infos',
@@ -61,6 +63,7 @@ class EspaceScreen extends ConsumerWidget {
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 19),
                 child: _CarteSourceur(
+                  key: ClosetTourKeys.espaceSourceurKey,
                   dejaInscrit: partenaire,
                   onTap: () => context.push(
                     user == null
@@ -73,6 +76,7 @@ class EspaceScreen extends ConsumerWidget {
               ),
               const SizedBox(height: AppSpacing.p24),
               _EntreeEspace(
+                key: ClosetTourKeys.espaceCommandesKey,
                 icone: Icons.receipt_long_outlined,
                 label: l10n.mesCommandes,
                 onTap: () => user == null
@@ -88,6 +92,13 @@ class EspaceScreen extends ConsumerWidget {
               ),
               const _BasculeTheme(),
               const _ChoixLangue(),
+              _EntreeEspace(
+                key: ClosetTourKeys.espaceVisiteKey,
+                icone: Icons.tips_and_updates_outlined,
+                label: l10n.revoirVisiteGuidee,
+                onTap: () =>
+                    ref.read(spotlightTourProvider.notifier).startTour(),
+              ),
               if (user == null)
                 _EntreeEspace(
                   icone: Icons.login_rounded,
@@ -136,7 +147,11 @@ class EspaceBoutonRond extends StatelessWidget {
 
 /// Avatar de 74, nom en Cormorant, ancienneté, et pastille d'édition.
 class _EnTeteProfil extends StatelessWidget {
-  const _EnTeteProfil({required this.user, required this.onEditer});
+  const _EnTeteProfil({
+    super.key,
+    required this.user,
+    required this.onEditer,
+  });
 
   final ClosetUser? user;
   final VoidCallback onEditer;
@@ -242,7 +257,11 @@ class _EnTeteProfil extends StatelessWidget {
 
 /// Carte verte 352 � 97 invitant � rejoindre le programme sourceur.
 class _CarteSourceur extends StatelessWidget {
-  const _CarteSourceur({required this.dejaInscrit, required this.onTap});
+  const _CarteSourceur({
+    super.key,
+    required this.dejaInscrit,
+    required this.onTap,
+  });
 
   final bool dejaInscrit;
   final VoidCallback onTap;
@@ -344,6 +363,7 @@ class _CarteSourceur extends StatelessWidget {
 /// Entrée de liste : tuile verte de 48 (rayon 8), libellé, chevron.
 class _EntreeEspace extends StatelessWidget {
   const _EntreeEspace({
+    super.key,
     required this.icone,
     required this.label,
     required this.onTap,
@@ -453,6 +473,7 @@ class _ChoixLangue extends ConsumerWidget {
     final libelle = libelleLangueCourante(locale, l10n);
 
     return _EntreeEspace(
+      key: ClosetTourKeys.espaceLangueKey,
       icone: Icons.language_outlined,
       label: '${l10n.langue} · $libelle',
       onTap: () => afficherChoixLangue(context, ref),

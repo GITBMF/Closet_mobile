@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../core/l10n/closet_l10n.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/theme/closet_colors.dart';
 import '../../core/theme/closet_layout.dart';
@@ -13,6 +14,7 @@ import '../../data/repositories/cart_repository.dart';
 import '../../data/repositories/wishlist_repository.dart';
 import 'closet_header_button.dart';
 import 'piece_card.dart';
+import 'spotlight_showcase.dart';
 
 /// En-tête principal — transcription de la maquette `11:30`.
 ///
@@ -47,6 +49,7 @@ class ClosetAppBar extends ConsumerWidget implements PreferredSizeWidget {
     final cartCount = ref.watch(cartCountProvider);
     final user = ref.watch(currentUserProvider);
     final layout = ClosetLayout.of(context);
+    final l10n = ClosetL10n.of(context);
 
     return Material(
       color: context.closetFond,
@@ -70,7 +73,7 @@ class ClosetAppBar extends ConsumerWidget implements PreferredSizeWidget {
                   if (showBackButton) ...[
                     ClosetBoutonHeader(
                       icone: Icons.arrow_back_ios_new,
-                      label: 'Retour',
+                      label: l10n.retour,
                       onTap: () => context.pop(),
                     ),
                     SizedBox(width: layout.ecartBoutonsHeader),
@@ -103,17 +106,19 @@ class ClosetAppBar extends ConsumerWidget implements PreferredSizeWidget {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         ClosetBoutonHeader(
+                          key: ClosetTourKeys.selectionKey,
                           icone: Icons.shopping_basket_outlined,
                           label: cartCount > 0
-                              ? 'Sélection, $cartCount pièces'
-                              : 'Ma sélection',
+                              ? l10n.selectionAvecCompte(cartCount)
+                              : l10n.maSelection,
                           pastille: cartCount > 0 ? cartCount : null,
                           onTap: () => context.go('/selection'),
                         ),
                         SizedBox(width: layout.ecartBoutonsHeader),
                         ClosetBoutonHeader(
+                          key: ClosetTourKeys.notificationsKey,
                           icone: Icons.notifications_none_rounded,
-                          label: 'Notifications',
+                          label: l10n.notifications,
                           onTap: () => context.push('/espace/alertes'),
                         ),
                       ],
@@ -141,9 +146,10 @@ class _Salutation extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = ClosetL10n.of(context);
     final nom = subtitle ??
         (user == null
-            ? 'Invité'
+            ? l10n.invite
             : '${user!.firstName} ${user!.lastName.isEmpty ? '' : '${user!.lastName[0]}.'}'
                 .trim());
 
@@ -153,7 +159,7 @@ class _Salutation extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         Text(
-          title ?? 'Bienvenue,',
+          title ?? l10n.bienvenueVirgule,
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
           style: ClosetTextStyles.prix.copyWith(
@@ -215,10 +221,7 @@ class _ArticleCardState extends ConsumerState<ArticleCard> {
       maison: widget.categorieSeule ? '' : article.brand,
       nom: article.title,
       prix: formatPrixFcfa(article.price),
-      attribut: [
-        if (article.size.isNotEmpty) 'T.${article.size}',
-        if (article.material.isNotEmpty) article.material,
-      ].join('. '),
+      attribut: article.material.isNotEmpty ? article.material : null,
       imageUrl: article.imageUrls.isEmpty ? null : article.imageUrls.first,
       etoiles: article.etoilesEtat,
       isFavorite: isWishlisted,

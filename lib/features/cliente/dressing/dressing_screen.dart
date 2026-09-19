@@ -12,6 +12,7 @@ import '../../../core/widgets/closet_app_bar.dart';
 import '../../../core/widgets/closet_feedback.dart';
 import '../../../core/widgets/etat_ecran.dart';
 import '../../../core/widgets/piece_card.dart';
+import '../../../core/widgets/spotlight_showcase.dart';
 import '../../../core/widgets/toasts.dart';
 import '../../../data/models/article.dart';
 import '../../../data/repositories/catalog_repository.dart';
@@ -76,21 +77,23 @@ class _CorpsAccueil extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final featured = accueil.pieceDeLaSemaine;
-    final heroBrut = accueil.hero ?? featured;
-    final hero = featured != null &&
-            (heroBrut?.id == featured.id ||
-                _memeVisuel(featured, heroBrut))
-        ? null
-        : heroBrut;
     final vus = <String>{
       if (featured != null) featured.id,
-      if (hero != null) hero.id,
     };
-    final fil = <Article>[
+    final filBrut = <Article>[
       ...accueil.nouveautes,
       ...accueil.coupsDeCoeur,
     ].where((a) => vus.add(a.id)).toList();
     final marge = ClosetLayout.of(context).gouttiere;
+    // Nombre de colonnes selon la largeur : téléphone, tablette, plus large.
+    final largeur = MediaQuery.sizeOf(context).width;
+    final colonnes = largeur >= 900 ? 4 : (largeur >= 600 ? 3 : 2);
+    // Une ligne incomplète laisse des cartes seules, déséquilibrées : on
+    // arrondit toujours au nombre de cartes inférieur, multiple des colonnes.
+    final resteIncomplet = filBrut.length % colonnes;
+    final fil = resteIncomplet == 0
+        ? filBrut
+        : filBrut.sublist(0, filBrut.length - resteIncomplet);
 
     return SingleChildScrollView(
       padding: const EdgeInsets.only(bottom: AppSpacing.p32),
@@ -102,24 +105,20 @@ class _CorpsAccueil extends StatelessWidget {
             Padding(
               padding: EdgeInsets.symmetric(horizontal: marge),
               child: _CartePieceDeLaSemaine(
+                key: ClosetTourKeys.pieceSemaineKey,
                 article: featured,
                 onTap: () => context.push('/product/${featured.id}'),
               ),
             ),
           ],
-          if (hero != null) ...[
-            const SizedBox(height: AppSpacing.p8),
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: marge),
-              child: _CarteALaUne(
-                article: hero,
-                onTap: () => context.push('/product/${hero.id}'),
-              ),
-            ),
-          ],
           if (fil.isNotEmpty) ...[
             const SizedBox(height: AppSpacing.p20),
-            _GrilleArticles(articles: fil, marge: marge),
+            _GrilleArticles(
+              key: ClosetTourKeys.grilleKey,
+              articles: fil,
+              marge: marge,
+              colonnes: colonnes,
+            ),
           ],
           const SizedBox(height: AppSpacing.p24),
         ],
@@ -138,16 +137,15 @@ const _visuelsHabits = [
 String _visuelHabitPour(Article article) =>
     _visuelsHabits[article.id.hashCode.abs() % _visuelsHabits.length];
 
-bool _memeVisuel(Article a, Article? b) {
-  if (b == null) return false;
-  final ua = a.imageUrls.isEmpty ? _visuelHabitPour(a) : a.imageUrls.first;
-  final ub = b.imageUrls.isEmpty ? _visuelHabitPour(b) : b.imageUrls.first;
-  return ua == ub;
-}
-
-/// Cadre unique : photo de la pièce et informations, sans doublon.
+/// Cadre unique, mis en avant : c'est le premier repère visuel de l'accueil,
+/// il doit capter l'attention avant tout le reste (ombre dorée, photo plus
+/// haute, titre en italique et CTA pleine largeur).
 class _CartePieceDeLaSemaine extends StatelessWidget {
-  const _CartePieceDeLaSemaine({required this.article, required this.onTap});
+  const _CartePieceDeLaSemaine({
+    super.key,
+    required this.article,
+    required this.onTap,
+  });
 
   final Article article;
   final VoidCallback onTap;
@@ -163,11 +161,12 @@ class _CartePieceDeLaSemaine extends StatelessWidget {
       ),
       child: Material(
         color: ClosetColors.vert,
-        elevation: 0,
+        elevation: 10,
+        shadowColor: ClosetColors.fond300.withValues(alpha: 0.45),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppRadius.bloc),
           side: BorderSide(
-            color: ClosetColors.fond300.withValues(alpha: 0.55),
+            color: ClosetColors.fond300.withValues(alpha: 0.65),
             width: AppStroke.fin,
           ),
         ),
@@ -177,60 +176,122 @@ class _CartePieceDeLaSemaine extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              SizedBox(
-                height: ClosetLayout.of(context).hauteurPieceSemaine,
-                width: double.infinity,
-                child: _PhotoPiece(article: article),
+              Stack(
+                children: [
+                  SizedBox(
+                    height: ClosetLayout.of(context).hauteurPieceSemaine,
+                    width: double.infinity,
+                    child: _PhotoPiece(article: article),
+                  ),
+                  // Fondu vers le panneau vert, pour une transition douce
+                  // plutôt qu'une coupure nette entre photo et texte.
+                  Positioned(
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    height: 56,
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [
+                            ClosetColors.vert.withValues(alpha: 0),
+                            ClosetColors.vert,
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                  Positioned(
+                    left: AppSpacing.p12,
+                    top: AppSpacing.p12,
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        color: ClosetColors.vert.withValues(alpha: 0.85),
+                        borderRadius: BorderRadius.circular(AppRadius.cercle),
+                        border: Border.all(
+                          color: ClosetColors.fond300.withValues(alpha: 0.7),
+                        ),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: AppSpacing.p12,
+                          vertical: 5,
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(
+                              Icons.auto_awesome,
+                              size: 12,
+                              color: ClosetColors.fond300,
+                            ),
+                            const SizedBox(width: 5),
+                            Text(
+                              l10n.pieceDeLaSemaine,
+                              style: ClosetTextStyles.surtitre.copyWith(
+                                color: ClosetColors.fond300,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
               Padding(
                 padding: const EdgeInsets.fromLTRB(
                   AppSpacing.p16,
-                  AppSpacing.p12,
+                  AppSpacing.p4,
                   AppSpacing.p16,
-                  AppSpacing.p12,
+                  AppSpacing.p16,
                 ),
                 child: Column(
                   children: [
-                    Text(
-                      l10n.pieceDeLaSemaine,
-                      style: ClosetTextStyles.surtitre.copyWith(
-                        color: ClosetColors.fond300,
-                      ),
-                    ),
-                    const SizedBox(height: AppSpacing.p8),
                     Text(
                       article.libelleCategorie,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       textAlign: TextAlign.center,
-                      style: ClosetTextStyles.accroche.copyWith(
-                        color: ClosetColors.blanc,
-                        fontSize: 16,
-                      ),
+                      style: ClosetTextStyles.titreHero,
                     ),
                     const SizedBox(height: AppSpacing.p4),
                     Text(
                       formatPrixFcfa(article.price),
-                      style: ClosetTextStyles.prix.copyWith(
+                      style: ClosetTextStyles.prixGrand.copyWith(
                         color: ClosetColors.fond300,
                       ),
                     ),
-                    const SizedBox(height: AppSpacing.p8),
+                    const SizedBox(height: AppSpacing.p12),
                     SizedBox(
-                      width: 180,
-                      height: 34,
+                      key: ClosetTourKeys.decouvrirKey,
+                      width: double.infinity,
+                      height: 40,
                       child: DecoratedBox(
                         decoration: BoxDecoration(
                           color: ClosetColors.fond300,
                           borderRadius: BorderRadius.circular(AppRadius.cercle),
                         ),
                         child: Center(
-                          child: Text(
-                            l10n.decouvrir,
-                            style: ClosetTextStyles.actionPetite.copyWith(
-                              color: ClosetColors.neutre1000,
-                              fontWeight: FontWeight.w600,
-                            ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                l10n.decouvrir,
+                                style: ClosetTextStyles.bouton.copyWith(
+                                  color: ClosetColors.neutre1000,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              const SizedBox(width: 6),
+                              const Icon(
+                                Icons.arrow_forward,
+                                size: 15,
+                                color: ClosetColors.neutre1000,
+                              ),
+                            ],
                           ),
                         ),
                       ),
@@ -240,30 +301,6 @@ class _CartePieceDeLaSemaine extends StatelessWidget {
               ),
             ],
           ),
-        ),
-      ),
-    );
-  }
-}
-
-/// Photo de la pièce, pleine largeur — utilisée seulement si le hero
-/// est une autre pièce que celle de la semaine.
-class _CarteALaUne extends StatelessWidget {
-  const _CarteALaUne({required this.article, required this.onTap});
-
-  final Article article;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: SizedBox(
-        width: double.infinity,
-        height: 184,
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(AppRadius.carte),
-          child: _PhotoPiece(article: article),
         ),
       ),
     );
@@ -305,12 +342,19 @@ class _PhotoPiece extends StatelessWidget {
   }
 }
 
-/// Grille de deux colonnes, cartes de 169 × 249 séparées de 12.
+/// Grille responsive (2 colonnes en téléphone, davantage en tablette),
+/// cartes de 169 × 249 séparées de 12.
 class _GrilleArticles extends StatelessWidget {
-  const _GrilleArticles({required this.articles, required this.marge});
+  const _GrilleArticles({
+    super.key,
+    required this.articles,
+    required this.marge,
+    required this.colonnes,
+  });
 
   final List<Article> articles;
   final double marge;
+  final int colonnes;
 
   @override
   Widget build(BuildContext context) {
@@ -320,8 +364,8 @@ class _GrilleArticles extends StatelessWidget {
         shrinkWrap: true,
         physics: const NeverScrollableScrollPhysics(),
         itemCount: articles.length,
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2,
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: colonnes,
           crossAxisSpacing: AppSpacing.p12,
           mainAxisSpacing: AppSpacing.p12,
           childAspectRatio: PieceCard.ratioCarteGrille,
