@@ -170,7 +170,7 @@ class _Salutation extends StatelessWidget {
             fontSize: 14,
             fontWeight: FontWeight.w700,
             letterSpacing: 0.28,
-            color: ClosetColors.doreEncre,
+            color: context.closetDoreTexte,
           ),
         ),
       ],

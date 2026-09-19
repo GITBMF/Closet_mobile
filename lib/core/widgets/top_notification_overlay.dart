@@ -136,19 +136,42 @@ class _TopNotificationOverlayState extends ConsumerState<TopNotificationOverlay>
                                           fontWeight: FontWeight.bold,
                                         ),
                                       ),
-                                      const SizedBox(height: 4),
-                                      Text(
-                                        _cachedNotification!.message,
-                                        style: ClosetTextStyles.corps.copyWith(
-                                          color: _cachedNotification!.type == NotificationType.info 
-                                              ? ClosetColors.creme.withValues(alpha: 0.9)
-                                              : ClosetColors.noir.withValues(alpha: 0.8),
-                                          fontSize: 12,
+                                      if (_afficheMessage(_cachedNotification!)) ...[
+                                        const SizedBox(height: 4),
+                                        Text(
+                                          _cachedNotification!.message,
+                                          style: ClosetTextStyles.corps.copyWith(
+                                            color: _cachedNotification!.type == NotificationType.info
+                                                ? ClosetColors.creme.withValues(alpha: 0.9)
+                                                : ClosetColors.noir.withValues(alpha: 0.8),
+                                            fontSize: 12,
+                                          ),
                                         ),
-                                      ),
+                                      ],
                                     ],
                                   ),
                                 ),
+                                if (_cachedNotification!.actionLabel != null)
+                                  TextButton(
+                                    onPressed: () {
+                                      final action = _cachedNotification!.onAction;
+                                      ref
+                                          .read<NotificationNotifier>(
+                                            notificationProvider.notifier,
+                                          )
+                                          .dismiss();
+                                      action?.call();
+                                    },
+                                    child: Text(
+                                      _cachedNotification!.actionLabel!,
+                                      style: ClosetTextStyles.actionPetite.copyWith(
+                                        color: _getTextColor(
+                                          _cachedNotification!.type,
+                                        ),
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    ),
+                                  ),
                               ],
                             ),
                           ),
@@ -162,6 +185,11 @@ class _TopNotificationOverlayState extends ConsumerState<TopNotificationOverlay>
           ),
       ],
     );
+  }
+
+  bool _afficheMessage(ClosetNotification n) {
+    final message = n.message.trim();
+    return message.isNotEmpty && message != n.title.trim();
   }
 
   Color _getBackgroundColor(NotificationType type) {

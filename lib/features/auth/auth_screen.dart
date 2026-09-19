@@ -11,6 +11,8 @@ import '../../../core/theme/closet_text_styles.dart';
 import '../../../core/validation/formats.dart';
 import '../../../core/validation/indicateurs_pays.dart';
 import '../../../core/widgets/aide_mot_de_passe.dart';
+import '../../../core/widgets/closet_filet.dart';
+import '../../../core/widgets/logo_closet.dart';
 import '../../../core/widgets/champ_telephone.dart';
 import '../../../core/widgets/google_g_icon.dart';
 import '../../../core/widgets/toasts.dart';
@@ -523,13 +525,7 @@ class _HeroLogo extends StatelessWidget {
                 ),
               ),
             ),
-            Image.asset(
-              'assets/logo_fond_vert.png',
-              width: 148,
-              height: 84,
-              fit: BoxFit.contain,
-              errorBuilder: (_, _, _) => const SizedBox(width: 148, height: 84),
-            ),
+            const LogoCloset.auth(),
           ],
         ),
       ),
@@ -702,9 +698,9 @@ class _SeparateurOu extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     const filet = Expanded(
-      child: Divider(
-        color: ClosetColors.filetSeparateur,
-        thickness: AppStroke.fin,
+      child: ClosetFilet(
+        couleur: ClosetColors.filetSeparateur,
+        hauteur: 1,
       ),
     );
     return Row(

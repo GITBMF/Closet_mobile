@@ -5,13 +5,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/theme/closet_colors.dart';
+import '../../../core/widgets/logo_closet.dart';
 import '../../../data/models/user.dart';
 import '../../../data/repositories/auth_repository.dart';
 import '../../../data/repositories/sourceur_repository.dart';
 
 /// Écran d'ouverture — transcription de la maquette Figma `5:1210`.
 ///
-/// Photo de dressing en fond plein cadre, carte verte au logo centrée
+/// Photo de dressing en fond plein cadre, plaque blanche CLOS|ET centrée
 /// (232 × 132), et anneau de points en rotation dans le bas de l'écran.
 class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({super.key});
@@ -96,16 +97,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
               opacity: _fondu,
               child: ScaleTransition(
                 scale: _echelle,
-                child: Image.asset(
-                  'assets/logo_fond_vert.png',
-                  width: 232,
-                  height: 132,
-                  fit: BoxFit.contain,
-                  errorBuilder: (_, _, _) => const SizedBox(
-                    width: 232,
-                    height: 132,
-                  ),
-                ),
+                child: const LogoCloset.splash(),
               ),
             ),
           ),

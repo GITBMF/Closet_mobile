@@ -28,6 +28,10 @@ class FriseTunnel extends StatelessWidget {
 
   static const etapes = ['Livraison', 'Paiement', 'Confirmation'];
 
+  /// « Étape 1/3 » — le dénominateur suit [etapes], jamais un 2/2 fantôme.
+  static String libelleEtape(int courante) =>
+      'Étape $courante/${etapes.length}';
+
   @override
   Widget build(BuildContext context) {
     final couleurAtteinte =

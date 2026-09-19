@@ -2,7 +2,6 @@
 
 import '../theme/closet_colors.dart';
 import '../theme/closet_text_styles.dart';
-import 'spotlight_showcase.dart';
 
 /// En-tête commun : bouton retour, titre serif et actions circulaires
 /// (recherche, wishlist, panier, notifications) avec pastilles de compteur.
@@ -57,13 +56,11 @@ class ClosetHeader extends StatelessWidget {
             ),
           ),
           _ActionCircle(
-            key: ClosetTourKeys.searchKey,
             icon: Icons.search,
             onTap: () {},
           ),
           const SizedBox(width: 8),
           _ActionCircle(
-            key: ClosetTourKeys.wishlistKey,
             icon: Icons.favorite_border,
             badgeCount: wishlistCount,
             badgeColor: ClosetColors.rougeBadge,

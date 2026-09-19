@@ -5,7 +5,9 @@ import '../../../core/l10n/closet_l10n.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/closet_colors.dart';
 import '../../../core/theme/closet_text_styles.dart';
+import '../../../core/widgets/bandeau_defilable.dart';
 import '../../../core/widgets/closet_app_bar.dart';
+import '../../../core/widgets/closet_filet.dart';
 import '../../../core/widgets/closet_chip.dart';
 import '../../../core/widgets/closet_sections.dart';
 import '../../../data/models/article.dart';
@@ -195,18 +197,9 @@ class _FiltresSheetState extends ConsumerState<_FiltresSheet> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const SizedBox(height: AppSpacing.p20),
-                Center(
-                  child: Container(
-                    width: 48,
-                    height: 4,
-                    decoration: BoxDecoration(
-                      color: ClosetColors.fond300,
-                      borderRadius: BorderRadius.circular(2),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: AppSpacing.p20),
+                const SizedBox(height: AppSpacing.p12),
+                const ClosetPoignee(),
+                const SizedBox(height: AppSpacing.p16),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 23),
                   child: ClosetEnTeteSection(
@@ -216,19 +209,11 @@ class _FiltresSheetState extends ConsumerState<_FiltresSheet> {
                   ),
                 ),
                 const SizedBox(height: AppSpacing.p8),
-                TabBar(
-                  isScrollable: true,
-                  tabAlignment: TabAlignment.start,
-                  dividerColor: Colors.transparent,
-                  labelColor: ClosetColors.vert,
-                  unselectedLabelColor: ClosetColors.chipTexteInactif,
-                  indicatorColor: ClosetColors.vert,
-                  labelStyle: ClosetTextStyles.libelle,
-                  unselectedLabelStyle: ClosetTextStyles.libelle,
-                  tabs: [for (final p in pages) Tab(text: p.titre)],
+                _OngletsFiltres(
+                  titres: [for (final p in pages) p.titre],
                 ),
                 SizedBox(
-                  height: 108,
+                  height: 88,
                   child: TabBarView(
                     children: [for (final p in pages) p.corps],
                   ),
@@ -266,7 +251,52 @@ class _FiltresSheetState extends ConsumerState<_FiltresSheet> {
   }
 }
 
-/// Une rangée de puces que l’on fait glisser de droite à gauche.
+/// Onglets Univers / Taille / État / Maison / Budget + flèches.
+class _OngletsFiltres extends StatelessWidget {
+  const _OngletsFiltres({required this.titres});
+
+  final List<String> titres;
+
+  @override
+  Widget build(BuildContext context) {
+    final controller = DefaultTabController.of(context);
+    return AnimatedBuilder(
+      animation: controller,
+      builder: (context, _) {
+        return Row(
+          children: [
+            FlecheBandeau(
+              versLaDroite: false,
+              visible: controller.index > 0,
+              onTap: () => controller.animateTo(controller.index - 1),
+            ),
+            Expanded(
+              child: TabBar(
+                isScrollable: true,
+                tabAlignment: TabAlignment.start,
+                dividerColor: Colors.transparent,
+                indicatorWeight: AppStroke.fin,
+                labelColor: ClosetColors.vert,
+                unselectedLabelColor: ClosetColors.chipTexteInactif,
+                indicatorColor: ClosetColors.vert,
+                labelStyle: ClosetTextStyles.libelle,
+                unselectedLabelStyle: ClosetTextStyles.libelle,
+                tabs: [for (final t in titres) Tab(text: t)],
+              ),
+            ),
+            FlecheBandeau(
+              versLaDroite: true,
+              visible: controller.index < controller.length - 1,
+              onTap: () => controller.animateTo(controller.index + 1),
+            ),
+          ],
+        );
+      },
+    );
+  }
+}
+
+/// Une rangée de puces : glissement + flèches si le contenu déborde.
 class _RangeeCoulissante extends StatelessWidget {
   const _RangeeCoulissante({required this.items});
 
@@ -276,15 +306,10 @@ class _RangeeCoulissante extends StatelessWidget {
   Widget build(BuildContext context) {
     return Align(
       alignment: Alignment.centerLeft,
-      child: SizedBox(
-        height: 42,
-        child: ListView.separated(
-          scrollDirection: Axis.horizontal,
-          padding: const EdgeInsets.symmetric(horizontal: 23, vertical: 2),
-          itemCount: items.length,
-          separatorBuilder: (_, _) => const SizedBox(width: AppSpacing.p12),
-          itemBuilder: (_, i) => items[i],
-        ),
+      child: BandeauDefilable(
+        enfants: items,
+        padding: const EdgeInsets.symmetric(horizontal: 23, vertical: 2),
+        ecart: AppSpacing.p12,
       ),
     );
   }
@@ -326,18 +351,27 @@ class _CurseurBudget extends StatelessWidget {
               ],
             ),
           ),
-          RangeSlider(
-            values: fourchette,
-            min: prixMinimum,
-            max: prixMaximum,
-            divisions: 45,
-            activeColor: ClosetColors.vert,
-            inactiveColor: ClosetColors.ligne,
-            labels: RangeLabels(
-              formatPrixFcfa(fourchette.start),
-              formatPrixFcfa(fourchette.end),
+          SliderTheme(
+            data: SliderTheme.of(context).copyWith(
+              trackHeight: AppStroke.epais,
+              overlayShape: const RoundSliderOverlayShape(overlayRadius: 14),
+              rangeThumbShape: const RoundRangeSliderThumbShape(
+                enabledThumbRadius: 7,
+              ),
             ),
-            onChanged: onChanged,
+            child: RangeSlider(
+              values: fourchette,
+              min: prixMinimum,
+              max: prixMaximum,
+              divisions: 45,
+              activeColor: ClosetColors.vert,
+              inactiveColor: ClosetColors.ligne,
+              labels: RangeLabels(
+                formatPrixFcfa(fourchette.start),
+                formatPrixFcfa(fourchette.end),
+              ),
+              onChanged: onChanged,
+            ),
           ),
         ],
       ),

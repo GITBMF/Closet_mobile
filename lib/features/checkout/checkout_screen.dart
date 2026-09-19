@@ -7,6 +7,7 @@ import '../../core/theme/closet_colors.dart';
 import '../../core/theme/closet_text_styles.dart';
 import '../../core/validation/indicateurs_pays.dart';
 import '../../core/widgets/champ_telephone.dart';
+import '../../core/widgets/marque_paiement.dart';
 import '../../core/widgets/closet_app_bar.dart';
 import '../../core/widgets/closet_sections.dart';
 import '../../core/widgets/frise_tunnel.dart';
@@ -260,7 +261,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
               },
               actions: [
                 Text(
-                  'Étape ${_etape + 1}/2',
+                  FriseTunnel.libelleEtape(_etape == 0 ? 1 : 2),
                   style: ClosetTextStyles.actionPetite.copyWith(
                     letterSpacing: -0.20,
                     color: ClosetColors.fond300,
@@ -283,14 +284,6 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                     const SizedBox(height: AppSpacing.p24),
                     if (_etape == 0) ...[
                       const ClosetEnTeteSection(titre: 'Détails de livraison'),
-                      const SizedBox(height: AppSpacing.p8),
-                      Text(
-                        'Livraison à domicile disponible sous 24h à 48h '
-                        'après la commande *',
-                        style: ClosetTextStyles.meta.copyWith(
-                          color: ClosetColors.taupe,
-                        ),
-                      ),
                       const SizedBox(height: AppSpacing.p20),
                       ChampCheckout(
                         label: 'Nom complet',
@@ -315,6 +308,13 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                           libelle: 'numéro WhatsApp',
                         ),
                       ),
+                      const SizedBox(height: AppSpacing.p8),
+                      Text(
+                        'Nous vous écrirons sur WhatsApp pour suivre votre pièce.',
+                        style: ClosetTextStyles.meta.copyWith(
+                          color: ClosetColors.fond500,
+                        ),
+                      ),
                       const SizedBox(height: AppSpacing.p20),
                       _BlocAdresse(
                         brouillon: brouillon,
@@ -326,6 +326,13 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                       ),
                     ] else ...[
                       const ClosetEnTeteSection(titre: 'Méthode de paiement'),
+                      const SizedBox(height: AppSpacing.p8),
+                      Text(
+                        'Veuillez choisir la méthode de paiement.',
+                        style: ClosetTextStyles.meta.copyWith(
+                          color: ClosetColors.taupe,
+                        ),
+                      ),
                       const SizedBox(height: AppSpacing.p16),
                       for (final m in moyensPaiement)
                         _LignePaiement(
@@ -356,7 +363,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                     child: Center(
                       child: Text(
                         _etape == 0
-                            ? 'Suivant'
+                            ? 'Valider les informations'
                             : total == null
                                 ? 'Poursuivre — Paiement'
                                 : 'Poursuivre — Paiement ${formatPrixFcfa(total)}',
@@ -513,7 +520,7 @@ class _LignePaiement extends StatelessWidget {
                 padding: const EdgeInsets.all(AppSpacing.p12),
                 child: Row(
                   children: [
-                    Icon(moyen.icone, size: 20, color: ClosetColors.vert),
+                    MarquePaiement(id: moyen.id),
                     const SizedBox(width: AppSpacing.p12),
                     Expanded(
                       child: Text(

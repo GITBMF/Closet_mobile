@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/l10n/closet_l10n.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/closet_colors.dart';
 import '../../../core/theme/closet_text_styles.dart';
@@ -104,6 +105,9 @@ class WishlistScreen extends ConsumerWidget {
                                       nom: article.title,
                                       resultat:
                                           'a été ajoutée à votre sélection.',
+                                      actionLabel:
+                                          ClosetL10n.of(context).voirMaSelection,
+                                      onAction: () => context.go('/selection'),
                                     );
                                   }
                                 },

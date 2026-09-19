@@ -158,7 +158,7 @@ class _LigneFiche extends StatelessWidget {
       padding: const EdgeInsets.only(top: 4),
       child: Text(
         '$libelle : $valeur',
-        style: ClosetTextStyles.corps.copyWith(color: ClosetColors.neutre900),
+        style: ClosetTextStyles.corps.copyWith(color: context.closetSecondaire),
       ),
     );
   }
@@ -176,8 +176,8 @@ class _BasculeTheme extends ConsumerWidget {
       child: Row(
         children: [
           Container(
-            width: 48,
-            height: 48,
+            width: 35,
+            height: 35,
             decoration: BoxDecoration(
               color: ClosetColors.vert,
               borderRadius: BorderRadius.circular(AppRadius.carte),
@@ -192,7 +192,9 @@ class _BasculeTheme extends ConsumerWidget {
           Expanded(
             child: Text(
               ClosetL10n.of(context).themeSombre,
-              style: ClosetTextStyles.libelle,
+              style: ClosetTextStyles.libelle.copyWith(
+                color: context.closetEncre,
+              ),
             ),
           ),
           Switch(

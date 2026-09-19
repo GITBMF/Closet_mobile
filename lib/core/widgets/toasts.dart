@@ -26,11 +26,18 @@ void toastActionPiece(
   required String nom,
   required String resultat,
   bool succes = true,
+  String? actionLabel,
+  VoidCallback? onAction,
 }) {
   final l10n = ref.read(l10nProvider);
   final phrase = l10n.toastPiece(nom, resultat);
   if (succes) {
-    toastSucces(ref, nom, phrase);
+    ref.read<NotificationNotifier>(notificationProvider.notifier).showSuccess(
+          nom,
+          phrase,
+          actionLabel: actionLabel,
+          onAction: onAction,
+        );
   } else {
     toastInfo(ref, nom, phrase);
   }

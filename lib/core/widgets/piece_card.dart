@@ -72,11 +72,11 @@ class PieceCard extends StatelessWidget {
         decoration: BoxDecoration(
           color: context.closetSombre
               ? ClosetColors.emeraude400
-              : ClosetColors.carteFond,
+              : ClosetColors.creme,
           border: Border.all(
             color: context.closetSombre
                 ? ClosetColors.emeraude300
-                : ClosetColors.carteBordure,
+                : ClosetColors.fond200,
             width: AppStroke.fin,
           ),
           borderRadius: BorderRadius.circular(AppRadius.carte),
@@ -102,7 +102,7 @@ class PieceCard extends StatelessWidget {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: ClosetTextStyles.microLegende.copyWith(
-                    color: ClosetColors.fond400,
+                    color: context.closetDoreTexte,
                   ),
                 ),
                 const SizedBox(height: 3),
@@ -119,7 +119,9 @@ class PieceCard extends StatelessWidget {
                       nom,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
-                      style: ClosetTextStyles.nomProduit,
+                      style: ClosetTextStyles.nomProduit.copyWith(
+                        color: context.closetEncre,
+                      ),
                     ),
                   ),
                 ],
@@ -132,8 +134,8 @@ class PieceCard extends StatelessWidget {
                       isSold ? 'Indisponible' : prix,
                       style: ClosetTextStyles.prix.copyWith(
                         color: isSold
-                            ? ClosetColors.taupe
-                            : ClosetColors.emeraude400,
+                            ? context.closetSecondaire
+                            : context.closetPrix,
                       ),
                     ),
                   ),
@@ -153,7 +155,7 @@ class PieceCard extends StatelessWidget {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: ClosetTextStyles.micro.copyWith(
-                    color: ClosetColors.neutre600,
+                    color: context.closetSecondaire,
                   ),
                 ),
               ],

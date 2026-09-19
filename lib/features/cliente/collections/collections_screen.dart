@@ -9,6 +9,7 @@ import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/closet_colors.dart';
 import '../../../core/theme/closet_layout.dart';
 import '../../../core/theme/closet_text_styles.dart';
+import '../../../core/widgets/bandeau_defilable.dart';
 import '../../../core/widgets/closet_app_bar.dart';
 import '../../../core/widgets/closet_chip.dart';
 import '../../../core/widgets/closet_feedback.dart';
@@ -348,34 +349,25 @@ class _CollectionsScreenState extends ConsumerState<CollectionsScreen> {
               ),
               if (categories.isNotEmpty) ...[
                 const SizedBox(height: AppSpacing.p16),
-                SizedBox(
-                  height: 42,
-                  child: ListView.separated(
-                    scrollDirection: Axis.horizontal,
-                    padding: EdgeInsets.symmetric(horizontal: marge),
-                    itemCount: categories.length + 1,
-                    separatorBuilder: (_, _) =>
-                        const SizedBox(width: AppSpacing.p8),
-                    itemBuilder: (context, i) {
-                      if (i == 0) {
-                        return ClosetChip(
-                          label: l10n.toutes,
-                          isActive: universActif.isEmpty,
-                          onTap: () => ref
-                              .read(selectedUniverseProvider.notifier)
-                              .setUniverse(''),
-                        );
-                      }
-                      final nom = categories[i - 1];
-                      return ClosetChip(
+                BandeauDefilable(
+                  padding: EdgeInsets.symmetric(horizontal: marge),
+                  enfants: [
+                    ClosetChip(
+                      label: l10n.toutes,
+                      isActive: universActif.isEmpty,
+                      onTap: () => ref
+                          .read(selectedUniverseProvider.notifier)
+                          .setUniverse(''),
+                    ),
+                    for (final nom in categories)
+                      ClosetChip(
                         label: nom,
                         isActive: nom == universActif,
                         onTap: () => ref
                             .read(selectedUniverseProvider.notifier)
                             .setUniverse(nom == universActif ? '' : nom),
-                      );
-                    },
-                  ),
+                      ),
+                  ],
                 ),
               ],
               const SizedBox(height: AppSpacing.p16),

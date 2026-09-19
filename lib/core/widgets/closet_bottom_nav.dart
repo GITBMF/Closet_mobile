@@ -5,6 +5,7 @@ import '../theme/app_spacing.dart';
 import '../theme/closet_colors.dart';
 import '../theme/closet_layout.dart';
 import '../theme/closet_text_styles.dart';
+import 'spotlight_showcase.dart';
 
 /// Une entrée de la barre de navigation.
 ///
@@ -71,26 +72,31 @@ class ClosetBottomNav extends StatelessWidget {
           icone: Icons.home_outlined,
           iconeActive: Icons.home,
           label: l10n.navDressing,
+          cle: ClosetTourKeys.dressing,
         ),
         ClosetNavItem(
           icone: Icons.grid_view_outlined,
           iconeActive: Icons.grid_view,
           label: l10n.navCollections,
+          cle: ClosetTourKeys.collections,
         ),
         ClosetNavItem(
           icone: Icons.favorite_border,
           iconeActive: Icons.favorite,
           label: l10n.navWishlist,
+          cle: ClosetTourKeys.wishlist,
         ),
         ClosetNavItem(
           icone: Icons.shopping_bag_outlined,
           iconeActive: Icons.shopping_bag,
           label: l10n.navSelection,
+          cle: ClosetTourKeys.selection,
         ),
         ClosetNavItem(
           icone: Icons.person_outline,
           iconeActive: Icons.person,
           label: l10n.navEspace,
+          cle: ClosetTourKeys.espace,
         ),
       ];
 
@@ -140,6 +146,7 @@ class ClosetBottomNav extends StatelessWidget {
             child: SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               child: Container(
+                key: ClosetTourKeys.barre,
                 padding: const EdgeInsets.all(AppSpacing.p8),
                 decoration: BoxDecoration(
                   color: ClosetColors.navigationFond,

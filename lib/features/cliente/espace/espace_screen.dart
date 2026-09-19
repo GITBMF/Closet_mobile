@@ -11,6 +11,7 @@ import '../../../core/theme/theme_provider.dart';
 import '../../../core/widgets/choix_langue.dart';
 import '../../../core/widgets/closet_header_button.dart';
 import '../../../core/widgets/closet_sections.dart';
+import '../../../core/widgets/spotlight_showcase.dart';
 import '../../../data/models/user.dart';
 import '../../../data/repositories/auth_repository.dart';
 import '../../../data/repositories/sourceur_repository.dart';
@@ -85,6 +86,14 @@ class EspaceScreen extends ConsumerWidget {
                 onTap: () => context.push(
                   user == null ? '/auth' : '/espace/infos',
                 ),
+              ),
+              _EntreeEspace(
+                icone: Icons.auto_awesome_outlined,
+                label: l10n.visiteGuidee,
+                onTap: () {
+                  ref.read(spotlightTourProvider.notifier).startTour();
+                  context.go('/home');
+                },
               ),
               const _BasculeTheme(),
               const _ChoixLangue(),
@@ -187,7 +196,9 @@ class _EnTeteProfil extends StatelessWidget {
                       nom,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: ClosetTextStyles.titreSection,
+                      style: ClosetTextStyles.titreSection.copyWith(
+                        color: context.closetEncre,
+                      ),
                     ),
                   ),
                   if (user != null) ...[
@@ -209,7 +220,7 @@ class _EnTeteProfil extends StatelessWidget {
                 overflow: TextOverflow.ellipsis,
                 style: ClosetTextStyles.meta.copyWith(
                   letterSpacing: -0.20,
-                  color: ClosetColors.neutre900,
+                  color: context.closetSecondaire,
                 ),
               ),
             ],
@@ -294,7 +305,7 @@ class _CarteSourceur extends StatelessWidget {
                   style: ClosetTextStyles.prix.copyWith(
                     fontWeight: FontWeight.w600,
                     letterSpacing: 0,
-                    color: ClosetColors.neutre300,
+                    color: ClosetColors.texteSurVert,
                   ),
                 ),
                 const SizedBox(height: 2),
@@ -312,22 +323,25 @@ class _CarteSourceur extends StatelessWidget {
             ),
           ),
           const SizedBox(width: AppSpacing.p12),
-          SizedBox(
-            width: 130,
-            height: 44,
-            child: Material(
-              color: ClosetColors.fond300,
+          Material(
+            color: ClosetColors.creme,
+            borderRadius: BorderRadius.circular(AppRadius.cercle),
+            child: InkWell(
               borderRadius: BorderRadius.circular(AppRadius.cercle),
-              child: InkWell(
-                borderRadius: BorderRadius.circular(AppRadius.cercle),
-                onTap: onTap,
-                child: Center(
-                  child: Text(
-                    dejaInscrit ? l10n.monEspaceCourt : l10n.rejoindreCercleCourt,
-                    textAlign: TextAlign.center,
-                    style: ClosetTextStyles.actionPetite.copyWith(
-                      color: ClosetColors.neutre1000,
-                    ),
+              onTap: onTap,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.p16,
+                  vertical: AppSpacing.p12,
+                ),
+                child: Text(
+                  dejaInscrit
+                      ? l10n.monEspaceCourt
+                      : l10n.rejoindreCercleCourt,
+                  textAlign: TextAlign.center,
+                  style: ClosetTextStyles.actionPetite.copyWith(
+                    color: ClosetColors.vert,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
               ),
@@ -367,8 +381,8 @@ class _EntreeEspace extends StatelessWidget {
         child: Row(
           children: [
             Container(
-              width: 48,
-              height: 48,
+              width: 35,
+              height: 35,
               decoration: BoxDecoration(
                 color: ClosetColors.vert,
                 borderRadius: BorderRadius.circular(AppRadius.carte),
@@ -379,7 +393,9 @@ class _EntreeEspace extends StatelessWidget {
             Expanded(
               child: Text(
                 label,
-                style: ClosetTextStyles.libelle,
+                style: ClosetTextStyles.libelle.copyWith(
+                  color: context.closetEncre,
+                ),
               ),
             ),
             const Icon(
@@ -411,8 +427,8 @@ class _BasculeTheme extends ConsumerWidget {
       child: Row(
         children: [
           Container(
-            width: 48,
-            height: 48,
+            width: 35,
+            height: 35,
             decoration: BoxDecoration(
               color: ClosetColors.vert,
               borderRadius: BorderRadius.circular(AppRadius.carte),
@@ -427,7 +443,9 @@ class _BasculeTheme extends ConsumerWidget {
           Expanded(
             child: Text(
               ClosetL10n.of(context).themeSombre,
-              style: ClosetTextStyles.libelle,
+              style: ClosetTextStyles.libelle.copyWith(
+                color: context.closetEncre,
+              ),
             ),
           ),
           Switch(
