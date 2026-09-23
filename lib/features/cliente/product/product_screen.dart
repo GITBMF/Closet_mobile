@@ -386,14 +386,16 @@ class _BarreAjout extends ConsumerWidget {
                             succes: false,
                           );
                         } else {
+                          final router = GoRouter.of(context);
                           cart.addArticle(article);
                           toastActionPiece(
                             ref,
                             nom: article.title,
                             resultat: 'a été ajoutée à votre sélection.',
                             actionLabel: ClosetL10n.of(context).voirMaSelection,
-                            onAction: () => context.go('/selection'),
+                            onAction: () => router.go('/selection'),
                           );
+                          if (context.canPop()) context.pop();
                         }
                       },
                 child: Center(
