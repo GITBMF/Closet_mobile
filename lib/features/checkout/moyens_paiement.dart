@@ -70,7 +70,6 @@ const List<MoyenPaiement> moyensPaiement = [
     libelle: 'Visa Card',
     libelleCourt: 'VISA',
     icone: Icons.credit_card_rounded,
-    compteMasque: '**** 4864',
     saisie: SaisieMoyen.carte,
   ),
 ];

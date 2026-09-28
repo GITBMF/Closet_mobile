@@ -77,6 +77,31 @@ class ClosetTourKeys {
   );
   static final checkoutRecapKey = GlobalKey(debugLabel: 'tour_checkout_recap');
   static final checkoutPayerKey = GlobalKey(debugLabel: 'tour_checkout_payer');
+
+  // ── Parcours sourceur ──
+  static final sourceurFicheKey = GlobalKey(debugLabel: 'tour_sourceur_fiche');
+  static final sourceurDepotsNavKey = GlobalKey(
+    debugLabel: 'tour_sourceur_depots_nav',
+  );
+  static final sourceurTableauBordKey = GlobalKey(
+    debugLabel: 'tour_sourceur_tableau_bord',
+  );
+  static final sourceurFiltresKey = GlobalKey(
+    debugLabel: 'tour_sourceur_filtres',
+  );
+  static final sourceurConfierNavKey = GlobalKey(
+    debugLabel: 'tour_sourceur_confier_nav',
+  );
+  static final sourceurEtapesKey = GlobalKey(
+    debugLabel: 'tour_sourceur_etapes',
+  );
+  static final sourceurGainsNavKey = GlobalKey(
+    debugLabel: 'tour_sourceur_gains_nav',
+  );
+  static final sourceurSoldeKey = GlobalKey(debugLabel: 'tour_sourceur_solde');
+  static final sourceurEspaceNavKey = GlobalKey(
+    debugLabel: 'tour_sourceur_espace_nav',
+  );
 }
 
 /// Geste que la cliente doit faire sur la zone éclairée : la visite le mime
@@ -123,6 +148,7 @@ class SpotlightTourState {
     required this.isActive,
     required this.currentStep,
     this.sens = 1,
+    this.pourSourceur = false,
   });
 
   final bool isActive;
@@ -133,11 +159,21 @@ class SpotlightTourState {
   /// rebondisse pas sur elle.
   final int sens;
 
-  SpotlightTourState copyWith({bool? isActive, int? currentStep, int? sens}) {
+  /// `true` pour la visite du parcours sourceur, `false` pour celle de la
+  /// cliente — détermine quel itinéraire [SpotlightShowcase] rejoue.
+  final bool pourSourceur;
+
+  SpotlightTourState copyWith({
+    bool? isActive,
+    int? currentStep,
+    int? sens,
+    bool? pourSourceur,
+  }) {
     return SpotlightTourState(
       isActive: isActive ?? this.isActive,
       currentStep: currentStep ?? this.currentStep,
       sens: sens ?? this.sens,
+      pourSourceur: pourSourceur ?? this.pourSourceur,
     );
   }
 }
@@ -148,8 +184,12 @@ class SpotlightTourNotifier extends Notifier<SpotlightTourState> {
     return const SpotlightTourState(isActive: false, currentStep: 0);
   }
 
-  void startTour() {
-    state = const SpotlightTourState(isActive: true, currentStep: 0);
+  void startTour({bool pourSourceur = false}) {
+    state = SpotlightTourState(
+      isActive: true,
+      currentStep: 0,
+      pourSourceur: pourSourceur,
+    );
   }
 
   void nextStep(int maxSteps) {

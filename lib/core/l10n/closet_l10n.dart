@@ -41,6 +41,7 @@ class ClosetL10n extends InheritedWidget {
   // ─── Dressing / Accueil ─────────────────────────────────────────────────────
   String get dressingVide => t('Votre dressing est vide.', 'Your wardrobe is empty.');
   String get pieceDeLaSemaine => t('Pièce de la semaine', 'Item of the week');
+  String get recemmentVues => t('Récemment vues', 'Recently viewed');
   String get decouvrir => t('Découvrir', 'Discover');
   String pieceSemaineSemantics(String titre, String prix) =>
       t('Pièce de la semaine : $titre — $prix', 'Item of the week: $titre — $prix');
@@ -86,7 +87,7 @@ class ClosetL10n extends InheritedWidget {
   String get checkoutLivraisonTitre => t('Livraison', 'Delivery');
   String get checkoutPaiementTitre => t('Paiement', 'Payment');
   String get checkoutFinaliserCommande => t('Finaliser ma commande', 'Finalize my order');
-  String checkoutEtapeSur2(int n) => t('Étape $n/2', 'Step $n/2');
+  String checkoutEtapeSur2(int n) => t('Étape $n/3', 'Step $n/3');
   String get checkoutDetailsLivraison => t('Détails de livraison', 'Delivery details');
   String get checkoutDelaiLivraison => t(
         'Livraison à domicile disponible sous 24h à 48h après la commande *',
@@ -177,6 +178,10 @@ class ClosetL10n extends InheritedWidget {
       );
   String get espaceGroupeAffichage => t('Affichage et langue', 'Display and language');
   String get espaceGroupeAide => t('Aide et visite guidée', 'Help and guided tour');
+  String get espaceGroupeAideDetailGenerale => t(
+        'FAQ, confidentialité et visite guidée',
+        'FAQ, privacy and guided tour',
+      );
   String get espaceGroupeAideDetail => t(
         'Découvrez l’application pas à pas',
         'Discover the app step by step',
@@ -237,6 +242,9 @@ class ClosetL10n extends InheritedWidget {
   String get revenirEspaceClient => t('Basculer vers le compte Client', 'Switch to Client account');
   String get policesConfidentialite => t('Confidentialité & CGU', 'Privacy & Terms');
   String get ajouterCompteSourceur => t('Ajouter un compte sourceur', 'Add a sourcer account');
+  String get sourceurGroupeCompte => t('Mon compte', 'My account');
+  String get sourceurGroupeAffichage => t('Affichage et langue', 'Display and language');
+  String get sourceurGroupeConfidentialite => t('Aide', 'Help');
   String get statut => t('Statut', 'Status');
   String get telephone => t('Téléphone', 'Phone');
   String get collaboration => t('Collaboration', 'Collaboration');
@@ -263,6 +271,19 @@ class ClosetL10n extends InheritedWidget {
         'Une photo nette suffit pour commencer. Vous pourrez en ajouter.',
         'One clear photo is enough to start. You can add more later.',
       );
+  String get depotEtatAide => t(
+        'Neuf : jamais porté, étiquette encore présente. Très bon état : '
+            'quelques traces d’usage discrètes. Bon état : porté, sans défaut '
+            'majeur.',
+        'New: never worn, tag still attached. Very good: light, discreet '
+            'signs of wear. Good: worn, no major flaw.',
+      );
+  String depotCommissionEstimee(String montant) => t(
+        'Vous recevrez environ $montant, une fois la commission ClosET de '
+            '25% déduite.',
+        'You’ll receive about $montant, once the 25% ClosET commission is '
+            'deducted.',
+      );
   String get aucunePieceFiltre => t('Aucune pièce pour ce filtre.', 'No items for this filter.');
   String get enVente => t('En vente', 'For sale');
   String get enLigne => t('En ligne', 'Online');
@@ -280,6 +301,14 @@ class ClosetL10n extends InheritedWidget {
   String get effectuerRetrait => t('Effectuer un retrait', 'Request withdrawal');
   String get soldeDisponible => t('Solde disponible', 'Available balance');
   String get soldeEnAttente => t('En attente', 'Pending');
+  String get ventesBrutes => t('Ventes brutes', 'Gross sales');
+  String get commissionClosetLabel => t('Commission ClosET', 'ClosET commission');
+  String get soldeExpliqueMessage => t(
+        'Ce que vous avez gagné, moins la commission ClosET, moins ce qui '
+            'est déjà en cours de virement.',
+        'What you earned, minus the ClosET commission, minus what is '
+            'already being transferred.',
+      );
 
   // ─── Sourceur — Formulaire ──────────────────────────────────────────────────
   String get photosInaccessibles =>
@@ -376,6 +405,10 @@ class ClosetL10n extends InheritedWidget {
   String get etapeIdentite => t('IDENTITÉ', 'IDENTITY');
   String get etapeContact => t('CONTACT', 'CONTACT');
   String get etapeSecurite => t('SÉCURITÉ', 'SECURITY');
+  String get acceptationConditionsTexte =>
+      t('J’ai lu et j’accepte la ', 'I have read and accept the ');
+  String get acceptationConditionsLien =>
+      t('Politique de confidentialité et les CGU', 'Privacy Policy and Terms');
 
   // ─── Connexion requise ──────────────────────────────────────────────────────
   String get connexionRequise => t('Connexion requise', 'Sign in required');
@@ -400,6 +433,9 @@ class ClosetL10n extends InheritedWidget {
   String get filtreEtat => t('État', 'Condition');
   String get filtreMaison => t('Maison', 'House');
   String get filtreBudget => t('Budget', 'Budget');
+  String get prixMaximalLabel => t('Prix maximal', 'Maximum price');
+  String get prixMaximalHint =>
+      t('Aucun maximum', 'No maximum');
   String get filtresPrecedents => t('Filtres précédents', 'Previous filters');
   String get filtresSuivants => t('Filtres suivants', 'More filters');
 
@@ -762,7 +798,7 @@ class ClosetL10n extends InheritedWidget {
   String get transactionTotalPaye => t('Total payé', 'Total paid');
   String get transactionRetourEspace => t('Retour dans Mon Espace', 'Back to My Space');
   String get transactionPoursuivreVisite => t('Poursuivre ma visite', 'Continue browsing');
-  String get transactionDontLivraison => t('Dont livraison', 'Including delivery');
+  String get transactionDontLivraison => t('Livraison', 'Delivery');
   String get transactionMoyen => t('Moyen', 'Method');
   String get transactionCompte => t('Compte', 'Account');
   String get transactionRecuTitre => t('Votre reçu de transaction', 'Your transaction receipt');
@@ -797,7 +833,7 @@ class ClosetL10n extends InheritedWidget {
       );
   String get identifiantLabel => t('Identifiant', 'Username');
   String get pasDeFicheSourceuse => t(
-        'Ce compte n’a pas de fiche sourceuse. Déposez d’abord une adhésion.',
+        'Ce compte n’a pas de fiche sourceur. Déposez d’abord une adhésion.',
         'This account doesn’t have a sourcer profile. Submit a membership '
             'application first.',
       );
@@ -915,6 +951,14 @@ class ClosetL10n extends InheritedWidget {
       t('Ce $libelle semble incorrect.', 'This $libelle looks incorrect.');
   String libelleSembleIncomplet(String libelle) =>
       t('Ce $libelle semble incomplet.', 'This $libelle looks incomplete.');
+  String libelleChiffresExact(String libelle, int n) => t(
+        '$libelle doit compter exactement $n chiffres.',
+        '$libelle must have exactly $n digits.',
+      );
+  String libelleChiffresPlage(String libelle, int min, int max) => t(
+        '$libelle doit compter entre $min et $max chiffres.',
+        '$libelle must have between $min and $max digits.',
+      );
   String get numero => t('numéro', 'number');
   String get indicatifDuPays => t('Indicatif du pays', 'Country code');
   String get aTrouveSonDressing =>
@@ -1122,6 +1166,10 @@ class ClosetL10n extends InheritedWidget {
       );
   String get supprimer => t('Supprimer', 'Delete');
   String get filtrer => t('Filtrer', 'Filter');
+  String get trierPar => t('Trier par', 'Sort by');
+  String get triPertinence => t('Pertinence', 'Relevance');
+  String get triPrixCroissant => t('Prix croissant', 'Price: low to high');
+  String get triPrixDecroissant => t('Prix décroissant', 'Price: high to low');
   String get mesAdressesTitre => t('Mes adresses', 'My addresses');
   String get ajouterAdresse => t('Ajouter une adresse', 'Add an address');
   String get modifierAdresse => t('Modifier l’adresse', 'Edit address');
@@ -1149,7 +1197,7 @@ class ClosetL10n extends InheritedWidget {
   String get typeAdresseAppartement => t('Appartement', 'Apartment');
   String get typeAdresseAutre => t('Autre', 'Other');
   String get deconnexionConfirmation =>
-      t('Êtes vous sûre de vouloir vous\ndéconnecter ?', 'Are you sure you want to\nsign out?');
+      t('Vous déconnecter\nvraiment ?', 'Sign out for\nreal?');
   String get ouiMeDeconnecter => t('Oui, me déconnecter', 'Yes, sign me out');
   String get nonRetourEspace => t('Non, Retour dans Mon Espace', 'No, back to My Space');
   String get parIciLaSortie => t('Par ici la sortie', 'This way out');
@@ -1264,7 +1312,8 @@ class ClosetL10n extends InheritedWidget {
   String get espaceEnvoyerEmail => t('Nous envoyer un e-mail', 'Send us an email');
   String get espaceDisponibilite =>
       t('DISPONIBLE 7J/7 · 9H00 À 19H00', 'AVAILABLE 7 DAYS A WEEK · 9AM TO 7PM');
-  String get espaceConfidentialite => t('Confidentialité', 'Privacy');
+  String get espaceConfidentialite =>
+      t('Confidentialité & CGU', 'Privacy & Terms');
   String get espaceProtectionDonnees =>
       t('PROTECTION DES DONNÉES CLOSET', 'CLOSET DATA PROTECTION');
   String get espacePolicy1Titre => t('1. Collecte des données', '1. Data collection');
@@ -1297,6 +1346,34 @@ class ClosetL10n extends InheritedWidget {
         'At ClosET, we scrupulously respect our customers’ privacy. Your '
             'style choices and search preferences are never sold or '
             'shared with third parties.',
+      );
+  String get espaceReglesTitre =>
+      t('RÈGLES & PROPRIÉTÉ INTELLECTUELLE', 'RULES & INTELLECTUAL PROPERTY');
+  String get espacePolicy4Titre =>
+      t('4. Propriété des contenus', '4. Content ownership');
+  String get espacePolicy4Corps => t(
+        'Les photos et descriptions déposées par les sourceurs restent '
+            'leur propriété, mais leur mise en ligne accorde à ClosET le '
+            'droit de les afficher et de les promouvoir sur l’application. '
+            'Le nom, le logo et la charte ClosET restent la propriété '
+            'exclusive de ClosET.',
+        'Photos and descriptions submitted by sourcers remain their '
+            'property, but publishing them grants ClosET the right to '
+            'display and promote them within the app. The ClosET name, '
+            'logo and brand identity remain the exclusive property of '
+            'ClosET.',
+      );
+  String get espacePolicy5Titre =>
+      t('5. Conditions générales d’utilisation', '5. Terms of use');
+  String get espacePolicy5Corps => t(
+        'En utilisant ClosET, chaque personne s’engage à fournir des '
+            'informations exactes, à respecter les autres membres et à ne '
+            'déposer que des pièces authentiques et légalement possédées. '
+            'Tout manquement peut entraîner la suspension du compte.',
+        'By using ClosET, everyone agrees to provide accurate information, '
+            'to respect other members, and to submit only authentic, '
+            'legally owned items. Any breach may lead to account '
+            'suspension.',
       );
   String get espaceEvaluerTitre => t('Nous évaluer', 'Rate us');
   String get espacePartagezExperience =>
@@ -1341,7 +1418,7 @@ class ClosetL10n extends InheritedWidget {
   String get adhesionAucuneTitre =>
       t('Aucune adhésion en cours', 'No membership in progress');
   String get adhesionAucuneCorps => t(
-        'Déposez votre candidature pour rejoindre le cercle des sourceuses.',
+        'Déposez votre candidature pour rejoindre le cercle des sourceurs.',
         'Submit your application to join the circle of sourcers.',
       );
   String get adhesionStatutLabel =>
@@ -1667,7 +1744,7 @@ class ClosetL10n extends InheritedWidget {
             'privilege code.',
       );
   String get tourSourceurTitre =>
-      t('Devenir sourceuse', 'Becoming a sourcer');
+      t('Devenir sourceur', 'Becoming a sourcer');
   String get tourSourceurCorps => t(
         'Confier vos propres pièces au dressing : cette carte ouvre le '
             'programme sourceur et son parcours d’adhésion.',
@@ -1685,6 +1762,78 @@ class ClosetL10n extends InheritedWidget {
   String get tourRevoirCorps => t(
         'Relancez la visite quand vous voulez. Bonne découverte !',
         'Restart the tour whenever you like. Enjoy exploring!',
+      );
+
+  // ── Visite guidée sourceur ──
+  String get tourEcranEspaceSourceur =>
+      t('ESPACE SOURCEUR', 'SOURCER SPACE');
+  String get tourEcranDepots => t('MES DÉPÔTS', 'MY SUBMISSIONS');
+  String get tourEcranConfier => t('CONFIER UNE PIÈCE', 'SUBMIT AN ITEM');
+  String get tourEcranGains => t('MES GAINS', 'MY EARNINGS');
+  String get tourSourceurFicheTitre =>
+      t('Votre atelier', 'Your workshop');
+  String get tourSourceurFicheCorps => t(
+        'Coordonnées, statut d’adhésion et moyen de paiement : tout ce qui '
+            'vous concerne, réuni en un coup d’œil.',
+        'Contact details, membership status and payout method: everything '
+            'about you, gathered at a glance.',
+      );
+  String get tourSourceurDepotsNavTitre => t('Mes dépôts', 'My submissions');
+  String get tourSourceurDepotsNavCorps => t(
+        'Retrouvez ici toutes les pièces déposées et leur statut : en '
+            'vente, en cours d’analyse ou vendue.',
+        'Find every submitted item here, with its status: on sale, under '
+            'review or sold.',
+      );
+  String get tourSourceurTableauBordTitre =>
+      t('Le tableau de bord', 'The dashboard');
+  String get tourSourceurTableauBordCorps => t(
+        'D’un coup d’œil : combien de pièces sont en ligne, combien sont '
+            'vendues, et le chiffre d’affaires généré.',
+        'At a glance: how many items are live, how many are sold, and the '
+            'revenue generated so far.',
+      );
+  String get tourSourceurFiltresTitre => t('Filtrer la liste', 'Filter the list');
+  String get tourSourceurFiltresCorps => t(
+        'Toutes, en vente ou en cours d’analyse : ces filtres réduisent la '
+            'liste à ce qui vous intéresse.',
+        'All, on sale, or under review: these filters narrow the list down '
+            'to what matters to you.',
+      );
+  String get tourSourceurConfierNavTitre =>
+      t('Confier une pièce', 'Submit an item');
+  String get tourSourceurConfierNavCorps => t(
+        'Déposez une nouvelle pièce en trois étapes : photos, type, puis '
+            'détails et prix.',
+        'Submit a new item in three steps: photos, type, then details and '
+            'price.',
+      );
+  String get tourSourceurEtapesTitre => t('Votre progression', 'Your progress');
+  String get tourSourceurEtapesCorps => t(
+        'Cette jauge indique où vous en êtes dans le dépôt, et une '
+            'estimation de votre gain apparaît dès que le prix est saisi.',
+        'This gauge shows where you are in the submission, and an earnings '
+            'estimate appears as soon as you enter a price.',
+      );
+  String get tourSourceurGainsNavTitre => t('Mes gains', 'My earnings');
+  String get tourSourceurGainsNavCorps => t(
+        'Suivez ici votre solde disponible et l’historique de chaque '
+            'vente.',
+        'Track your available balance and the history of every sale here.',
+      );
+  String get tourSourceurSoldeTitre => t('Votre solde', 'Your balance');
+  String get tourSourceurSoldeCorps => t(
+        'Le montant disponible, puis le détail : ventes brutes, commission '
+            'ClosET et sommes encore en attente.',
+        'The available amount, then the breakdown: gross sales, ClosET '
+            'commission and amounts still pending.',
+      );
+  String get tourSourceurFinTitre => t('À vous de jouer !', 'Your turn!');
+  String get tourSourceurFinCorps => t(
+        'Vous savez tout faire : déposer, suivre et encaisser. Retrouvez '
+            'cette visite depuis Mon espace, dans « Aide ».',
+        'You know it all: submit, track and cash out. Find this tour again '
+            'from My space, under “Help”.',
       );
 }
 

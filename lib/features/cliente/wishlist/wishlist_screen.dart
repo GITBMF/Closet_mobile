@@ -9,19 +9,19 @@ import '../../../core/theme/closet_colors.dart';
 import '../../../core/theme/closet_text_styles.dart';
 import '../../../core/widgets/closet_app_bar.dart';
 import '../../../core/widgets/closet_feedback.dart';
+import '../../../core/widgets/closet_pressable.dart';
 import '../../../core/widgets/closet_sections.dart';
 import '../../../core/widgets/etat_ecran.dart';
 import '../../../core/widgets/spotlight_showcase.dart';
 import '../../../data/models/article.dart';
 import '../../../data/repositories/auth_repository.dart';
-import '../../../data/repositories/cart_repository.dart';
 import '../../../data/repositories/wishlist_repository.dart';
 
 /// Mes favoris — transcription de la maquette `25:924`.
 ///
-/// Cartes vert profond de 352 × 97 : visuel 77 × 78 à gauche, maison, titre
-/// Cormorant, prix EB Garamond doré, cœur en haut à droite et bouton
-/// « Ajouter au panier » de 116 × 33.
+/// Cartes vert profond : grande photo à gauche, maison, titre Cormorant, prix
+/// EB Garamond doré et cœur pour retirer le favori. La pièce s'ouvre au tap
+/// sur la carte — plus de bouton d'ajout à la sélection ici.
 class WishlistScreen extends ConsumerWidget {
   const WishlistScreen({super.key});
 
@@ -78,7 +78,7 @@ class WishlistScreen extends ConsumerWidget {
                                 final article = liste[i];
                                 return _CarteFavori(
                                   // La visite guidée éclaire la première carte.
-                                  cleAjout: i == 0
+                                  cleCoeur: i == 0
                                       ? ClosetTourKeys.wishlistAjoutKey
                                       : null,
                                   article: article,
@@ -86,8 +86,6 @@ class WishlistScreen extends ConsumerWidget {
                                       context.push('/product/${article.id}'),
                                   onRetirer: () =>
                                       basculerFavori(context, ref, article),
-                                  onAjouter: () =>
-                                      basculerSelection(context, ref, article),
                                 );
                               },
                             ),
@@ -100,187 +98,126 @@ class WishlistScreen extends ConsumerWidget {
   }
 }
 
-class _CarteFavori extends ConsumerWidget {
+class _CarteFavori extends StatelessWidget {
   const _CarteFavori({
     required this.article,
     required this.onTap,
     required this.onRetirer,
-    required this.onAjouter,
-    this.cleAjout,
+    this.cleCoeur,
   });
 
   final Article article;
   final VoidCallback onTap;
   final VoidCallback onRetirer;
-  final VoidCallback onAjouter;
 
-  /// Clé de la visite guidée, posée sur le bouton d'ajout de la première carte.
-  final Key? cleAjout;
+  /// Clé de la visite guidée, posée sur le cœur de la première carte.
+  final Key? cleCoeur;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final dejaAjoute = ref
-        .watch(cartListProvider)
-        .any((a) => a.id == article.id);
-
-    return GestureDetector(
+  Widget build(BuildContext context) {
+    return ClosetPressable(
       onTap: onTap,
       child: Container(
-        constraints: const BoxConstraints(minHeight: 97),
-        padding: const EdgeInsets.all(AppSpacing.p8),
+        constraints: const BoxConstraints(minHeight: 128),
         decoration: BoxDecoration(
           color: ClosetColors.vert,
           borderRadius: BorderRadius.circular(AppRadius.carte),
+          boxShadow: [
+            BoxShadow(
+              color: ClosetColors.vertFonce.withValues(alpha: 0.28),
+              blurRadius: 16,
+              offset: const Offset(0, 8),
+            ),
+          ],
         ),
+        clipBehavior: Clip.antiAlias,
         child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            ClipRRect(
-              borderRadius: BorderRadius.circular(5),
-              child: SizedBox(
-                width: 77,
-                height: 78,
-                child: article.imageUrls.isEmpty
-                    ? const ColoredBox(color: ClosetColors.gabaritImage)
-                    : CachedNetworkImage(
-                        imageUrl: article.imageUrls.first,
-                        fit: BoxFit.cover,
-                        placeholder: (_, _) =>
-                            const ColoredBox(color: ClosetColors.gabaritImage),
-                        errorWidget: (_, _, _) =>
-                            const ColoredBox(color: ClosetColors.gabaritImage),
-                      ),
-              ),
+            SizedBox(
+              width: 128,
+              child: article.imageUrls.isEmpty
+                  ? const ColoredBox(color: ClosetColors.gabaritImage)
+                  : CachedNetworkImage(
+                      imageUrl: article.imageUrls.first,
+                      fit: BoxFit.cover,
+                      placeholder: (_, _) =>
+                          const ColoredBox(color: ClosetColors.gabaritImage),
+                      errorWidget: (_, _, _) =>
+                          const ColoredBox(color: ClosetColors.gabaritImage),
+                    ),
             ),
-            const SizedBox(width: AppSpacing.p12),
             Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const SizedBox(height: 2),
-                  Text(
-                    article.brand.toUpperCase(),
-                    style: ClosetTextStyles.attribut.copyWith(
-                      fontWeight: FontWeight.w500,
-                      letterSpacing: 0,
-                      color: ClosetColors.neutre300,
-                    ),
-                  ),
-                  const SizedBox(height: AppSpacing.p4),
-                  Text(
-                    article.title,
-                    style: ClosetTextStyles.citation.copyWith(
-                      fontSize: 14,
-                      color: ClosetColors.blanc,
-                    ),
-                  ),
-                  const SizedBox(height: AppSpacing.p8),
-                  Wrap(
-                    alignment: WrapAlignment.spaceBetween,
-                    crossAxisAlignment: WrapCrossAlignment.center,
-                    spacing: AppSpacing.p8,
-                    runSpacing: AppSpacing.p8,
-                    children: [
-                      Text(
-                        formatPrixFcfa(article.price),
-                        style: ClosetTextStyles.prix.copyWith(
-                          fontSize: 17,
-                          fontWeight: FontWeight.w600,
-                          letterSpacing: 0.34,
-                          color: ClosetColors.fond200,
-                        ),
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(
+                  AppSpacing.p16,
+                  AppSpacing.p12,
+                  AppSpacing.p12,
+                  AppSpacing.p12,
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      article.brand.toUpperCase(),
+                      style: ClosetTextStyles.attribut.copyWith(
+                        fontWeight: FontWeight.w500,
+                        letterSpacing: 0,
+                        color: ClosetColors.neutre300,
                       ),
-                      _BoutonAjouter(
-                        key: cleAjout,
-                        dejaAjoute: dejaAjoute,
-                        indisponible: article.isSoldOut,
-                        onTap: onAjouter,
+                    ),
+                    const SizedBox(height: AppSpacing.p4),
+                    Text(
+                      article.title,
+                      style: ClosetTextStyles.citation.copyWith(
+                        fontSize: 16,
+                        color: ClosetColors.blanc,
                       ),
-                    ],
-                  ),
-                  const SizedBox(height: 2),
-                ],
+                    ),
+                    const SizedBox(height: AppSpacing.p8),
+                    Text(
+                      formatPrixFcfa(article.price),
+                      style: ClosetTextStyles.prix.copyWith(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                        letterSpacing: 0.34,
+                        color: ClosetColors.fond200,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
-            const SizedBox(width: AppSpacing.p8),
-            Semantics(
-              button: true,
-              label: ClosetL10n.of(context).retirerDesFavoris,
-              child: GestureDetector(
-                onTap: onRetirer,
-                child: Container(
-                  width: 19,
-                  height: 19,
-                  decoration: BoxDecoration(
-                    color: ClosetColors.carteFond,
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: ClosetColors.fond300,
-                      width: AppStroke.fin,
+            Padding(
+              padding: const EdgeInsets.all(AppSpacing.p8),
+              child: Semantics(
+                button: true,
+                label: ClosetL10n.of(context).retirerDesFavoris,
+                child: GestureDetector(
+                  key: cleCoeur,
+                  onTap: onRetirer,
+                  child: Container(
+                    width: 30,
+                    height: 30,
+                    decoration: BoxDecoration(
+                      color: ClosetColors.carteFond,
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: ClosetColors.fond300,
+                        width: AppStroke.fin,
+                      ),
                     ),
-                  ),
-                  child: const Icon(
-                    Icons.favorite,
-                    size: 10,
-                    color: ClosetColors.erreurCouture,
+                    child: const Icon(
+                      Icons.favorite,
+                      size: 15,
+                      color: ClosetColors.erreurCouture,
+                    ),
                   ),
                 ),
               ),
             ),
           ],
-        ),
-      ),
-    );
-  }
-}
-
-/// Bouton doré « Ajouter au panier » : 116 × 33, rayon 100.
-class _BoutonAjouter extends StatelessWidget {
-  const _BoutonAjouter({
-    super.key,
-    required this.dejaAjoute,
-    required this.indisponible,
-    required this.onTap,
-  });
-
-  final bool dejaAjoute;
-  final bool indisponible;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final actif = !indisponible;
-    return ConstrainedBox(
-      constraints: const BoxConstraints(minWidth: 116, minHeight: 33),
-      child: Material(
-        color: indisponible ? ClosetColors.doreDesactive : ClosetColors.fond300,
-        borderRadius: BorderRadius.circular(AppRadius.cercle),
-        child: InkWell(
-          borderRadius: BorderRadius.circular(AppRadius.cercle),
-          onTap: actif ? onTap : null,
-          child: Center(
-            widthFactor: 1,
-            heightFactor: 1,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppSpacing.p12,
-                vertical: AppSpacing.p8,
-              ),
-              child: Text(
-                indisponible
-                    ? ClosetL10n.of(context).indisponibleLabel
-                    : dejaAjoute
-                    ? ClosetL10n.of(context).retirerCourt
-                    : ClosetL10n.of(context).ajouterCourt,
-                textAlign: TextAlign.center,
-                style: ClosetTextStyles.attribut.copyWith(
-                  fontWeight: FontWeight.w500,
-                  letterSpacing: 0,
-                  color: ClosetColors.neutre1000,
-                ),
-              ),
-            ),
-          ),
         ),
       ),
     );

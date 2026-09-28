@@ -21,6 +21,7 @@ import '../../../data/models/article.dart';
 import '../../../data/repositories/cart_repository.dart';
 import '../../../data/repositories/catalog_repository.dart';
 import '../../../data/repositories/wishlist_repository.dart';
+import '../../../data/services/historique_visionnage_service.dart';
 
 final productDetailProvider =
     FutureProvider.family<Article?, String>((ref, id) {
@@ -40,11 +41,21 @@ class ProductScreen extends ConsumerStatefulWidget {
 class _ProductScreenState extends ConsumerState<ProductScreen> {
   final _pageController = PageController();
   int _imageCourante = 0;
+  bool _vueEnregistree = false;
 
   @override
   void dispose() {
     _pageController.dispose();
     super.dispose();
+  }
+
+  void _enregistrerVue(Article article) {
+    if (_vueEnregistree) return;
+    _vueEnregistree = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      ref.read(historiqueVisionnageProvider.notifier).enregistrer(article);
+    });
   }
 
   @override
@@ -65,6 +76,7 @@ class _ProductScreenState extends ConsumerState<ProductScreen> {
               libelleAction: l10n.retour,
             );
           }
+          _enregistrerVue(article);
           return Stack(
             children: [
               _Corps(

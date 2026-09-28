@@ -6,6 +6,7 @@ import '../l10n/closet_l10n.dart';
 import '../theme/app_spacing.dart';
 import '../theme/closet_colors.dart';
 import '../theme/closet_text_styles.dart';
+import 'closet_pressable.dart';
 
 /// Carte produit — transcription du composant « Product Card » de `11:30`.
 ///
@@ -67,7 +68,7 @@ class PieceCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
+    return ClosetPressable(
       onTap: onTap,
       child: DecoratedBox(
         decoration: BoxDecoration(
@@ -81,6 +82,14 @@ class PieceCard extends StatelessWidget {
             width: AppStroke.fin,
           ),
           borderRadius: BorderRadius.circular(AppRadius.carte),
+          boxShadow: [
+            BoxShadow(
+              color: (context.closetSombre ? Colors.black : ClosetColors.fond400)
+                  .withValues(alpha: context.closetSombre ? 0.28 : 0.10),
+              blurRadius: 14,
+              offset: const Offset(0, 6),
+            ),
+          ],
         ),
         child: Padding(
           padding: const EdgeInsets.all(_retrait),

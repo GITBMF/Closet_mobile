@@ -12,6 +12,7 @@ import '../../../core/widgets/closet_app_bar.dart';
 import '../../../core/widgets/closet_buttons.dart';
 import '../../../core/widgets/closet_feedback.dart';
 import '../../../core/widgets/etat_ecran.dart';
+import '../../../core/widgets/spotlight_showcase.dart';
 import '../../../core/widgets/toasts.dart';
 import '../../../data/repositories/sourceur_repository.dart';
 import '../../checkout/widgets/checkout_widgets.dart';
@@ -98,11 +99,16 @@ class SourceurRevenusScreen extends ConsumerWidget {
                   return ListView(
                     padding: const EdgeInsets.fromLTRB(
                       AppSpacing.p20,
-                      29,
+                      AppSpacing.p20,
                       AppSpacing.p20,
                       AppSpacing.p32,
                     ),
                     children: [
+                      _CarteSolde(
+                        key: ClosetTourKeys.sourceurSoldeKey,
+                        revenus: r,
+                      ),
+                      const SizedBox(height: AppSpacing.p24),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
@@ -176,6 +182,149 @@ class SourceurRevenusScreen extends ConsumerWidget {
   }
 }
 
+/// Résumé financier en tête d'écran : solde à retirer, puis d'où il vient
+/// (ventes brutes, commission ClosET, montants déjà en cours de virement).
+///
+/// Avant cet ajout, l'écran n'affichait que l'historique des retraits : la
+/// sourceuse devait faire le calcul elle-même pour savoir ce qu'il lui
+/// restait à toucher.
+class _CarteSolde extends StatelessWidget {
+  const _CarteSolde({super.key, required this.revenus});
+
+  final RevenusSourceur revenus;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = ClosetL10n.of(context);
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.fromLTRB(20, 22, 20, 20),
+      decoration: BoxDecoration(
+        color: ClosetColors.vert,
+        borderRadius: BorderRadius.circular(AppRadius.bloc),
+        boxShadow: [
+          BoxShadow(
+            color: ClosetColors.vertFonce.withValues(alpha: 0.32),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            l10n.soldeDisponible.toUpperCase(),
+            style: ClosetTextStyles.badgePill.copyWith(
+              color: ClosetColors.fond300,
+            ),
+          ),
+          const SizedBox(height: AppSpacing.p8),
+          Text(
+            formatPrixFcfa(revenus.solde.toDouble()),
+            style: ClosetTextStyles.montantHero.copyWith(
+              color: ClosetColors.blanc,
+            ),
+          ),
+          const SizedBox(height: AppSpacing.p12),
+          Text(
+            l10n.soldeExpliqueMessage,
+            style: ClosetTextStyles.meta.copyWith(
+              color: ClosetColors.fond200,
+              height: 1.4,
+            ),
+          ),
+          const SizedBox(height: AppSpacing.p20),
+          Container(height: 1, color: ClosetColors.emeraude300),
+          const SizedBox(height: AppSpacing.p16),
+          Row(
+            children: [
+              Expanded(
+                child: _StatSolde(
+                  icone: Icons.trending_up_rounded,
+                  libelle: l10n.ventesBrutes,
+                  valeur: formatPrixFcfa(revenus.brut.toDouble()),
+                ),
+              ),
+              Container(
+                width: 1,
+                height: 34,
+                color: ClosetColors.emeraude300,
+              ),
+              Expanded(
+                child: _StatSolde(
+                  icone: Icons.percent_rounded,
+                  libelle: l10n.commissionClosetLabel,
+                  valeur: '- ${formatPrixFcfa(revenus.commission.toDouble())}',
+                ),
+              ),
+              Container(
+                width: 1,
+                height: 34,
+                color: ClosetColors.emeraude300,
+              ),
+              Expanded(
+                child: _StatSolde(
+                  icone: Icons.hourglass_top_rounded,
+                  libelle: l10n.soldeEnAttente,
+                  valeur: formatPrixFcfa(revenus.enAttente.toDouble()),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _StatSolde extends StatelessWidget {
+  const _StatSolde({
+    required this.icone,
+    required this.libelle,
+    required this.valeur,
+  });
+
+  final IconData icone;
+  final String libelle;
+  final String valeur;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.p8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icone, size: 15, color: ClosetColors.fond300),
+          const SizedBox(height: AppSpacing.p8),
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: Text(
+              valeur,
+              maxLines: 1,
+              style: ClosetTextStyles.corpsMedium.copyWith(
+                color: ClosetColors.blanc,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            libelle,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: ClosetTextStyles.detail.copyWith(
+              color: ClosetColors.fond200,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 /// Pastille « Voir tout » de la maquette, qui porte aussi le filtre actif.
 class _PastilleFiltre extends StatelessWidget {
   const _PastilleFiltre({required this.libelle, required this.onTap});
@@ -233,6 +382,14 @@ class _LigneTransaction extends StatelessWidget {
         color: context.closetCarte,
         border: Border.all(color: context.closetBordure, width: AppStroke.fin),
         borderRadius: BorderRadius.circular(AppRadius.carte),
+        boxShadow: [
+          BoxShadow(
+            color: (context.closetSombre ? Colors.black : ClosetColors.fond400)
+                .withValues(alpha: context.closetSombre ? 0.2 : 0.06),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Row(
         children: [

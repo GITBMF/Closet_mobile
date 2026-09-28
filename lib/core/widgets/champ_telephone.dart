@@ -31,7 +31,7 @@ class TelephoneController extends ChangeNotifier {
   }
 
   bool get estValide =>
-      validerTelephone(e164, obligatoire: true) == null;
+      validerTelephone(e164, obligatoire: true, pays: pays) == null;
 
   void choisirPays(IndicateurPays suivant) {
     if (pays.iso == suivant.iso && pays.nom == suivant.nom) return;
@@ -88,6 +88,33 @@ class TelephoneController extends ChangeNotifier {
 }
 
 /// Téléphone : indicateur (drapeau + code) + numéro national + recherche.
+/// Plafonne la saisie au nombre de chiffres du pays sélectionné — sans quoi
+/// rien n'empêche de taper plus de chiffres que le numéro n'en compte.
+///
+/// Laisse passer une saisie internationale (`+…`/`00…`) sans y toucher : ce
+/// texte est repris par [TelephoneController] pour reconnaître le pays et
+/// réécrire le numéro, un plafond appliqué trop tôt le tronquerait avant.
+class _LimiteChiffresPays extends TextInputFormatter {
+  const _LimiteChiffresPays(this.maxChiffres);
+
+  final int maxChiffres;
+
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue ancien,
+    TextEditingValue suivant,
+  ) {
+    final texte = suivant.text;
+    if (texte.contains('+') || texte.startsWith('00')) return suivant;
+    if (texte.length <= maxChiffres) return suivant;
+    final tronque = texte.substring(0, maxChiffres);
+    return TextEditingValue(
+      text: tronque,
+      selection: TextSelection.collapsed(offset: tronque.length),
+    );
+  }
+}
+
 class ChampTelephone extends StatefulWidget {
   const ChampTelephone({
     super.key,
@@ -170,6 +197,7 @@ class _ChampTelephoneState extends State<ChampTelephone> {
         _ctrl.e164,
         obligatoire: widget.obligatoire,
         l10n: ClosetL10n.of(context),
+        pays: _ctrl.pays,
       );
 
   @override
@@ -357,6 +385,7 @@ class _ChampEncadreTel extends StatelessWidget {
       textInputAction: textInputAction,
       inputFormatters: [
         FilteringTextInputFormatter.allow(RegExp(r'[\d+\s]')),
+        _LimiteChiffresPays(ctrl.pays.maxChiffres),
       ],
       onChanged: (_) => onChanged(),
       style: ClosetTextStyles.saisie.copyWith(color: context.closetEncre),
@@ -427,6 +456,7 @@ class _ChampSourceurTel extends StatelessWidget {
         textInputAction: textInputAction,
         inputFormatters: [
           FilteringTextInputFormatter.allow(RegExp(r'[\d+\s]')),
+          _LimiteChiffresPays(ctrl.pays.maxChiffres),
         ],
         onChanged: (_) => onChanged(),
         style: ClosetTextStyles.saisie.copyWith(color: cs.onSurface),

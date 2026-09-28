@@ -13,6 +13,7 @@ import '../../../core/widgets/bandeau_defilable.dart';
 import '../../../core/widgets/closet_app_bar.dart';
 import '../../../core/widgets/closet_chip.dart';
 import '../../../core/widgets/closet_feedback.dart';
+import '../../../core/widgets/closet_filet.dart';
 import '../../../core/widgets/closet_sections.dart';
 import '../../../core/widgets/etat_ecran.dart';
 import '../../../core/widgets/piece_card.dart';
@@ -91,8 +92,21 @@ class EtatFilterNotifier extends Notifier<String?> {
   void setEtat(String? val) => state = val;
 }
 
+/// Ordre d'affichage du catalogue — remplace le bouton de filtre de la barre
+/// de recherche par un tri explicite.
+enum TriCatalogue { pertinence, prixCroissant, prixDecroissant }
+
+class TriNotifier extends Notifier<TriCatalogue> {
+  @override
+  TriCatalogue build() => TriCatalogue.pertinence;
+  void choisir(TriCatalogue val) => state = val;
+}
+
 final selectedUniverseProvider = NotifierProvider<UniverseNotifier, String>(
   UniverseNotifier.new,
+);
+final triProvider = NotifierProvider<TriNotifier, TriCatalogue>(
+  TriNotifier.new,
 );
 final searchQueryProvider = NotifierProvider<SearchQueryNotifier, String>(
   SearchQueryNotifier.new,
@@ -123,6 +137,7 @@ final filteredArticlesProvider = FutureProvider<List<Article>>((ref) async {
   final prixMax = ref.watch<double?>(filterPriceProvider);
   final taille = ref.watch<String?>(filterTailleProvider);
   final etat = ref.watch<String?>(filterEtatProvider);
+  final tri = ref.watch<TriCatalogue>(triProvider);
 
   final retenus = await ref
       .watch<CatalogRepository>(catalogRepositoryProvider)
@@ -136,7 +151,7 @@ final filteredArticlesProvider = FutureProvider<List<Article>>((ref) async {
         ),
       );
 
-  return [
+  final resultat = [
     for (final a in retenus)
       if ((universe.isEmpty || a.correspondUnivers(universe)) &&
           (maison == null || a.correspondMaison(maison.nom)) &&
@@ -144,6 +159,16 @@ final filteredArticlesProvider = FutureProvider<List<Article>>((ref) async {
           (etat == null || a.correspondEtat(etat)))
         a,
   ];
+
+  switch (tri) {
+    case TriCatalogue.pertinence:
+      break;
+    case TriCatalogue.prixCroissant:
+      resultat.sort((a, b) => a.price.compareTo(b.price));
+    case TriCatalogue.prixDecroissant:
+      resultat.sort((a, b) => b.price.compareTo(a.price));
+  }
+  return resultat;
 });
 
 /// Collections — transcription des maquettes `14:1281` et `16:2260`.
@@ -328,15 +353,12 @@ class _CollectionsScreenState extends ConsumerState<CollectionsScreen> {
               child: _BarreRecherche(
                 controller: _recherche,
                 focusNode: _focus,
-                filtresActifs:
-                    _filtresActifs || _recherche.text.trim().isNotEmpty,
                 onChanged: (v) {
                   setState(() {});
                   _appliquerTexte(v);
                 },
                 onSubmitted: (v) => _appliquerTexte(v, immediat: true),
                 onEffacer: _effacerRecherche,
-                onFiltres: () => _ouvrirFiltres(context),
               ),
             ),
             Expanded(
@@ -385,6 +407,15 @@ class _CollectionsScreenState extends ConsumerState<CollectionsScreen> {
                         ),
                       ],
                       const SizedBox(height: AppSpacing.p16),
+                      Padding(
+                        padding: EdgeInsets.symmetric(horizontal: marge),
+                        child: _RangeeTriEtFiltres(
+                          filtresActifs: _filtresActifs,
+                          onTrier: () => _ouvrirTri(context),
+                          onFiltres: () => _ouvrirFiltres(context),
+                        ),
+                      ),
+                      const SizedBox(height: AppSpacing.p12),
                       catalogue.when(
                         skipLoadingOnReload: true,
                         data: (articles) => _Resultats(
@@ -420,6 +451,124 @@ class _CollectionsScreenState extends ConsumerState<CollectionsScreen> {
   }
 
   void _ouvrirFiltres(BuildContext context) => afficherFiltres(context);
+
+  Future<void> _ouvrirTri(BuildContext context) {
+    final l10n = ClosetL10n.of(context);
+    final options = {
+      TriCatalogue.pertinence: l10n.triPertinence,
+      TriCatalogue.prixCroissant: l10n.triPrixCroissant,
+      TriCatalogue.prixDecroissant: l10n.triPrixDecroissant,
+    };
+    return showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        final actif = ref.watch(triProvider);
+        return Container(
+          decoration: BoxDecoration(
+            color: Theme.of(context).scaffoldBackgroundColor,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+          ),
+          padding: const EdgeInsets.fromLTRB(
+            AppSpacing.p24,
+            AppSpacing.p20,
+            AppSpacing.p24,
+            AppSpacing.p32,
+          ),
+          child: SafeArea(
+            top: false,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const ClosetPoignee(),
+                const SizedBox(height: AppSpacing.p20),
+                Text(l10n.trierPar, style: ClosetTextStyles.titreSection),
+                const SizedBox(height: AppSpacing.p12),
+                for (final entree in options.entries)
+                  RadioListTile<TriCatalogue>(
+                    value: entree.key,
+                    // ignore: deprecated_member_use
+                    groupValue: actif,
+                    contentPadding: EdgeInsets.zero,
+                    activeColor: context.closetVert,
+                    title: Text(entree.value, style: ClosetTextStyles.libelle),
+                    // ignore: deprecated_member_use
+                    onChanged: (val) {
+                      if (val == null) return;
+                      ref.read(triProvider.notifier).choisir(val);
+                      Navigator.of(context).pop();
+                    },
+                  ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+/// Compte de résultats à gauche, tri explicite et accès aux filtres à
+/// droite — remplace l'icône « filtre » qui vivait dans la barre de
+/// recherche : plus lisible, et n'encombre plus le champ de saisie.
+class _RangeeTriEtFiltres extends StatelessWidget {
+  const _RangeeTriEtFiltres({
+    required this.filtresActifs,
+    required this.onTrier,
+    required this.onFiltres,
+  });
+
+  final bool filtresActifs;
+  final VoidCallback onTrier;
+  final VoidCallback onFiltres;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = ClosetL10n.of(context);
+    return Row(
+      children: [
+        Expanded(
+          child: InkWell(
+            onTap: onTrier,
+            borderRadius: BorderRadius.circular(AppRadius.bouton),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: AppSpacing.p4),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    Icons.swap_vert_rounded,
+                    size: 18,
+                    color: context.closetSecondaire,
+                  ),
+                  const SizedBox(width: AppSpacing.p4),
+                  Text(
+                    l10n.trierPar,
+                    style: ClosetTextStyles.libelle.copyWith(
+                      color: context.closetSecondaire,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+        IconButton(
+          key: ClosetTourKeys.filtresKey,
+          tooltip: l10n.filtrer,
+          onPressed: onFiltres,
+          icon: Icon(
+            Icons.tune,
+            size: 18,
+            color: filtresActifs
+                ? context.closetVert
+                : context.closetSecondaire,
+          ),
+        ),
+      ],
+    );
+  }
 }
 
 class _Resultats extends StatelessWidget {
@@ -483,8 +632,6 @@ class _BarreRecherche extends StatelessWidget {
     required this.onChanged,
     required this.onSubmitted,
     required this.onEffacer,
-    required this.onFiltres,
-    required this.filtresActifs,
   });
 
   final TextEditingController controller;
@@ -492,8 +639,6 @@ class _BarreRecherche extends StatelessWidget {
   final ValueChanged<String> onChanged;
   final ValueChanged<String> onSubmitted;
   final VoidCallback onEffacer;
-  final VoidCallback onFiltres;
-  final bool filtresActifs;
 
   @override
   Widget build(BuildContext context) {
@@ -526,29 +671,13 @@ class _BarreRecherche extends StatelessWidget {
             size: 16,
             color: context.closetSecondaire,
           ),
-          suffixIcon: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              if (controller.text.isNotEmpty)
-                IconButton(
+          suffixIcon: controller.text.isEmpty
+              ? null
+              : IconButton(
                   icon: const Icon(Icons.close, size: 16),
                   color: context.closetSecondaire,
                   onPressed: onEffacer,
                 ),
-              IconButton(
-                key: ClosetTourKeys.filtresKey,
-                tooltip: ClosetL10n.of(context).filtrer,
-                icon: Icon(
-                  Icons.tune,
-                  size: 18,
-                  color: filtresActifs
-                      ? context.closetVert
-                      : context.closetSecondaire,
-                ),
-                onPressed: onFiltres,
-              ),
-            ],
-          ),
           suffixIconConstraints: const BoxConstraints(
             minWidth: 0,
             minHeight: 0,

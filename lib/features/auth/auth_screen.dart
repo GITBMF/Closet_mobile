@@ -1,3 +1,4 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -87,6 +88,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
   final _phone = TelephoneController();
   bool _obscurePassword = true;
   bool _isLoading = false;
+  bool _accepteConditions = false;
   int _etape = 0;
   late AnimationController _animController;
   late Animation<double> _fadeAnim;
@@ -127,7 +129,8 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
             _phone.estValide;
       default:
         return _passwordController.text.length >= 8 &&
-            RegExp(r'\d').hasMatch(_passwordController.text);
+            RegExp(r'\d').hasMatch(_passwordController.text) &&
+            _accepteConditions;
     }
   }
 
@@ -192,7 +195,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
         toastInfo(ref, l10n.nomTropLong, l10n.max150);
         return;
       }
-      final erreurTel = validerTelephone(phone, obligatoire: true, l10n: l10n);
+      final erreurTel = validerTelephone(phone, obligatoire: true, l10n: l10n, pays: _phone.pays);
       if (erreurTel != null) {
         toastInfo(ref, l10n.telephone, erreurTel);
         return;
@@ -546,7 +549,13 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
           style: StyleChampTelephone.auth,
           validerAvecLeFormulaire: false,
           textInputAction: TextInputAction.next,
-          validator: (v) => _validerTelephone(v, l10n),
+          validator: (v) => validerTelephone(
+            v,
+            obligatoire: true,
+            libelle: l10n.telephone,
+            l10n: l10n,
+            pays: _phone.pays,
+          ),
         ),
         const SizedBox(height: AppSpacing.p16),
         _ChampAuth(
@@ -579,6 +588,11 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
             saisie: _passwordController.text,
             surFondSombre: true,
           ),
+        ),
+        const SizedBox(height: AppSpacing.p16),
+        _CaseAcceptation(
+          value: _accepteConditions,
+          onChanged: (v) => setState(() => _accepteConditions = v),
         ),
       ];
 
@@ -647,14 +661,6 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
     return null;
   }
 
-  static String? _validerTelephone(String? v, ClosetL10n l10n) {
-    final valeur = (v ?? '').replaceAll(RegExp(r'[\s.\-]'), '');
-    if (valeur.isEmpty) return l10n.renseignerNumero;
-    if (!RegExp(r'^\+?\d{8,15}$').hasMatch(valeur)) {
-      return l10n.numeroIncorrect;
-    }
-    return null;
-  }
 }
 
 /// Carte photo de 352 × 210 (rayon 19) surmontée de la plaque au logo.
@@ -687,9 +693,83 @@ class _HeroLogo extends StatelessWidget {
                 ),
               ),
             ),
-            const LogoCloset.auth(),
+            Image.asset(
+              'assets/logo_fond_vert.png',
+              width: 148,
+              height: 84,
+              fit: BoxFit.contain,
+              errorBuilder: (_, _, _) => const LogoCloset.auth(),
+            ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+/// Case à cocher d'acceptation des règles légales, dernière étape de
+/// l'inscription : tant qu'elle n'est pas cochée, le compte ne peut pas être
+/// créé (voir `_etapeValide`). Le lien ouvre l'écran partagé Confidentialité
+/// & CGU, qui réunit aussi la propriété intellectuelle.
+class _CaseAcceptation extends StatelessWidget {
+  const _CaseAcceptation({required this.value, required this.onChanged});
+
+  final bool value;
+  final ValueChanged<bool> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = ClosetL10n.of(context);
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: () => onChanged(!value),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: 22,
+            height: 22,
+            child: Checkbox(
+              value: value,
+              onChanged: (v) => onChanged(v ?? false),
+              side: const BorderSide(color: ClosetColors.champPlaceholder),
+              checkColor: ClosetColors.vert,
+              fillColor: WidgetStateProperty.resolveWith(
+                (states) => states.contains(WidgetState.selected)
+                    ? ClosetColors.dore
+                    : Colors.transparent,
+              ),
+            ),
+          ),
+          const SizedBox(width: AppSpacing.p12),
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.only(top: 2),
+              child: Text.rich(
+                TextSpan(
+                  children: [
+                    TextSpan(
+                      text: l10n.acceptationConditionsTexte,
+                      style: ClosetTextStyles.corps.copyWith(
+                        color: ClosetColors.neutre200,
+                      ),
+                    ),
+                    TextSpan(
+                      text: l10n.acceptationConditionsLien,
+                      style: ClosetTextStyles.corps.copyWith(
+                        color: ClosetColors.dore,
+                        decoration: TextDecoration.underline,
+                        decorationColor: ClosetColors.dore,
+                      ),
+                      recognizer: TapGestureRecognizer()
+                        ..onTap = () => context.push('/espace/confidentialite'),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

@@ -69,13 +69,13 @@ class DressingScreen extends ConsumerWidget {
   }
 }
 
-class _CorpsAccueil extends StatelessWidget {
+class _CorpsAccueil extends ConsumerWidget {
   const _CorpsAccueil({required this.accueil});
 
   final AccueilDressing accueil;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final featured = accueil.pieceDeLaSemaine;
     final vus = <String>{
       if (featured != null) featured.id,
@@ -307,38 +307,61 @@ class _CartePieceDeLaSemaine extends StatelessWidget {
   }
 }
 
-class _PhotoPiece extends StatelessWidget {
+/// Photo de la pièce à la une, avec un lent zoom continu (Ken Burns) : la
+/// carte la plus en vue de l'accueil ne doit jamais paraître figée.
+class _PhotoPiece extends StatefulWidget {
   const _PhotoPiece({required this.article});
 
   final Article article;
 
   @override
+  State<_PhotoPiece> createState() => _PhotoPieceState();
+}
+
+class _PhotoPieceState extends State<_PhotoPiece>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controleur = AnimationController(
+    vsync: this,
+    duration: const Duration(seconds: 14),
+  )..repeat(reverse: true);
+  late final Animation<double> _echelle = Tween<double>(
+    begin: 1.0,
+    end: 1.06,
+  ).animate(CurvedAnimation(parent: _controleur, curve: Curves.easeInOut));
+
+  @override
+  void dispose() {
+    _controleur.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final local = _visuelHabitPour(article);
-    if (article.imageUrls.isEmpty) {
-      return Image.asset(
-        local,
-        fit: BoxFit.cover,
-        width: double.infinity,
-        height: double.infinity,
-        errorBuilder: (_, _, _) =>
-            const ColoredBox(color: ClosetColors.gabaritImageClair),
-      );
-    }
-    return CachedNetworkImage(
-      imageUrl: article.imageUrls.first,
-      fit: BoxFit.cover,
-      width: double.infinity,
-      height: double.infinity,
-      placeholder: (context, url) =>
-          const ColoredBox(color: ClosetColors.gabaritImageClair),
-      errorWidget: (context, url, error) => Image.asset(
-        local,
-        fit: BoxFit.cover,
-        width: double.infinity,
-        height: double.infinity,
-      ),
-    );
+    final local = _visuelHabitPour(widget.article);
+    final image = widget.article.imageUrls.isEmpty
+        ? Image.asset(
+            local,
+            fit: BoxFit.cover,
+            width: double.infinity,
+            height: double.infinity,
+            errorBuilder: (_, _, _) =>
+                const ColoredBox(color: ClosetColors.gabaritImageClair),
+          )
+        : CachedNetworkImage(
+            imageUrl: widget.article.imageUrls.first,
+            fit: BoxFit.cover,
+            width: double.infinity,
+            height: double.infinity,
+            placeholder: (context, url) =>
+                const ColoredBox(color: ClosetColors.gabaritImageClair),
+            errorWidget: (context, url, error) => Image.asset(
+              local,
+              fit: BoxFit.cover,
+              width: double.infinity,
+              height: double.infinity,
+            ),
+          );
+    return ScaleTransition(scale: _echelle, child: image);
   }
 }
 

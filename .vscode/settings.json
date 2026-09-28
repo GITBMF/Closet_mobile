@@ -1,3 +1,4 @@
 {
-    "cmake.sourceDirectory": "F:/Closet_mobile/linux"
+    "cmake.sourceDirectory": "F:/Closet_mobile/linux",
+    "java.compile.nullAnalysis.mode": "automatic"
 }

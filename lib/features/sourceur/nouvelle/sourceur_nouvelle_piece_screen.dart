@@ -11,9 +11,11 @@ import '../../../core/l10n/closet_l10n.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/closet_colors.dart';
 import '../../../core/theme/closet_text_styles.dart';
+import '../../../core/widgets/closet_app_bar.dart';
 import '../../../core/widgets/closet_chip.dart';
 import '../../../core/widgets/closet_feedback.dart';
 import '../../../core/widgets/closet_sections.dart';
+import '../../../core/widgets/spotlight_showcase.dart';
 import '../../../core/widgets/toasts.dart';
 import '../../../data/models/article.dart';
 import '../../../data/repositories/catalog_repository.dart';
@@ -245,7 +247,11 @@ class _SourceurNouvellePieceScreenState
               afficherRetour: _etape > 0,
               onRetour: _revenir,
             ),
-            _BarreEtapes(etape: _etape),
+            _BarreEtapes(
+              key: ClosetTourKeys.sourceurEtapesKey,
+              etape: _etape,
+              titres: _titresEtape,
+            ),
             Expanded(
               child: Form(
                 key: _formKey,
@@ -365,37 +371,108 @@ class _SeparateurMilliers extends TextInputFormatter {
   }
 }
 
+/// Sur trois pastilles numérotées, avec coche sur les étapes déjà passées :
+/// on voit d'un coup d'œil où on en est et ce qu'il reste à faire, plutôt
+/// qu'un simple trait de progression sans repère.
 class _BarreEtapes extends StatelessWidget {
-  const _BarreEtapes({required this.etape});
+  const _BarreEtapes({super.key, required this.etape, required this.titres});
 
   final int etape;
+  final List<String> titres;
 
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(
-        AppSpacing.p20,
-        AppSpacing.p12,
-        AppSpacing.p20,
-        0,
+        AppSpacing.p24,
+        AppSpacing.p16,
+        AppSpacing.p24,
+        AppSpacing.p16,
       ),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          for (var i = 0; i < 3; i++) ...[
-            if (i > 0) const SizedBox(width: AppSpacing.p8),
-            Expanded(
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 200),
-                height: 3,
-                decoration: BoxDecoration(
-                  color: i <= etape
-                      ? ClosetColors.vert
-                      : ClosetColors.fond300.withValues(alpha: 0.45),
-                  borderRadius: BorderRadius.circular(2),
+          for (var i = 0; i < titres.length; i++) ...[
+            _PastilleEtape(
+              numero: i + 1,
+              label: titres[i],
+              atteinte: i <= etape,
+              courante: i == etape,
+            ),
+            if (i < titres.length - 1)
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.only(top: 13),
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    height: 2,
+                    decoration: BoxDecoration(
+                      color: i < etape
+                          ? context.closetVert
+                          : context.closetLigne,
+                      borderRadius: BorderRadius.circular(1),
+                    ),
+                  ),
                 ),
               ),
-            ),
           ],
+        ],
+      ),
+    );
+  }
+}
+
+class _PastilleEtape extends StatelessWidget {
+  const _PastilleEtape({
+    required this.numero,
+    required this.label,
+    required this.atteinte,
+    required this.courante,
+  });
+
+  final int numero;
+  final String label;
+  final bool atteinte;
+  final bool courante;
+
+  @override
+  Widget build(BuildContext context) {
+    final couleur = atteinte ? context.closetVert : context.closetLigne;
+    return SizedBox(
+      width: 76,
+      child: Column(
+        children: [
+          AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            width: 26,
+            height: 26,
+            decoration: BoxDecoration(
+              color: atteinte ? context.closetVert : context.closetCarte,
+              shape: BoxShape.circle,
+              border: Border.all(color: couleur, width: AppStroke.moyen),
+            ),
+            alignment: Alignment.center,
+            child: atteinte && !courante
+                ? const Icon(Icons.check, size: 14, color: ClosetColors.blanc)
+                : Text(
+                    '$numero',
+                    style: ClosetTextStyles.corps.copyWith(
+                      fontWeight: FontWeight.w700,
+                      color: atteinte ? ClosetColors.blanc : couleur,
+                    ),
+                  ),
+          ),
+          const SizedBox(height: AppSpacing.p4),
+          Text(
+            label,
+            textAlign: TextAlign.center,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: ClosetTextStyles.detail.copyWith(
+              fontWeight: courante ? FontWeight.w700 : FontWeight.w400,
+              color: atteinte ? context.closetVert : context.closetSecondaire,
+            ),
+          ),
         ],
       ),
     );
@@ -453,11 +530,12 @@ class _EtapeType extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = ClosetL10n.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        ClosetSurtitre(ClosetL10n.of(context).depotEtapeType),
-        const SizedBox(height: AppSpacing.p12),
+        ClosetSurtitre(l10n.depotEtapeType),
+        const SizedBox(height: AppSpacing.p16),
         Wrap(
           spacing: AppSpacing.p8,
           runSpacing: AppSpacing.p8,
@@ -518,6 +596,14 @@ class _EtapeDetails extends StatelessWidget {
         ),
         const SizedBox(height: AppSpacing.p24),
         ClosetSurtitre(l10n.etatPiece),
+        const SizedBox(height: AppSpacing.p8),
+        Text(
+          l10n.depotEtatAide,
+          style: ClosetTextStyles.corps.copyWith(
+            color: context.closetSecondaire,
+            height: 1.4,
+          ),
+        ),
         const SizedBox(height: AppSpacing.p12),
         Wrap(
           spacing: AppSpacing.p8,
@@ -541,7 +627,57 @@ class _EtapeDetails extends StatelessWidget {
           validator: (v) => _SourceurNouvellePieceScreenState._validerPrix(v, l10n),
           inputFormatters: const [_SeparateurMilliers()],
         ),
+        const SizedBox(height: AppSpacing.p8),
+        _EstimationCommission(prix: prix),
       ],
+    );
+  }
+}
+
+/// Ce que la sourceuse touchera réellement une fois la commission ClosET
+/// déduite — calculé au fil de la saisie, pour qu'elle fixe un prix en
+/// connaissance de cause plutôt que de le découvrir à la vente.
+class _EstimationCommission extends StatelessWidget {
+  const _EstimationCommission({required this.prix});
+
+  final TextEditingController prix;
+
+  static const _tauxCommission = 0.25;
+
+  @override
+  Widget build(BuildContext context) {
+    return ValueListenableBuilder<TextEditingValue>(
+      valueListenable: prix,
+      builder: (context, valeur, _) {
+        final chiffres = valeur.text.replaceAll(RegExp(r'[^\d]'), '');
+        final montant = double.tryParse(chiffres) ?? 0;
+        if (montant <= 0) return const SizedBox.shrink();
+        final l10n = ClosetL10n.of(context);
+        final net = montant * (1 - _tauxCommission);
+        return Padding(
+          padding: const EdgeInsets.only(top: AppSpacing.p4),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Icon(
+                Icons.info_outline_rounded,
+                size: 14,
+                color: context.closetSecondaire,
+              ),
+              const SizedBox(width: AppSpacing.p8),
+              Expanded(
+                child: Text(
+                  l10n.depotCommissionEstimee(formatPrixFcfa(net)),
+                  style: ClosetTextStyles.meta.copyWith(
+                    color: context.closetSecondaire,
+                    height: 1.35,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 }

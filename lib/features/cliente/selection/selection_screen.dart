@@ -9,6 +9,7 @@ import '../../../core/theme/closet_colors.dart';
 import '../../../core/theme/closet_text_styles.dart';
 import '../../../core/widgets/closet_app_bar.dart';
 import '../../../core/widgets/closet_feedback.dart';
+import '../../../core/widgets/closet_pressable.dart';
 import '../../../core/widgets/spotlight_showcase.dart';
 import '../../../core/widgets/toasts.dart';
 import '../../../data/models/article.dart';
@@ -121,7 +122,7 @@ class _LignePiece extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = ClosetL10n.of(context);
-    return GestureDetector(
+    return ClosetPressable(
       onTap: onTap,
       child: Container(
         constraints: const BoxConstraints(minHeight: 146),
@@ -130,6 +131,14 @@ class _LignePiece extends StatelessWidget {
           color: context.closetCarte,
           border: Border.all(color: context.closetBordure, width: AppStroke.fin),
           borderRadius: BorderRadius.circular(AppRadius.carte),
+          boxShadow: [
+            BoxShadow(
+              color: (context.closetSombre ? Colors.black : ClosetColors.fond400)
+                  .withValues(alpha: context.closetSombre ? 0.24 : 0.08),
+              blurRadius: 12,
+              offset: const Offset(0, 5),
+            ),
+          ],
         ),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,

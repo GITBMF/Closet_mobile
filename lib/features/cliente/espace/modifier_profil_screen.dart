@@ -142,6 +142,7 @@ class _ModifierProfilScreenState
                           obligatoire: false,
                           libelle: l10n.numeroWhatsapp,
                           l10n: l10n,
+                          pays: _telephone.pays,
                         ),
                       ),
                       const SizedBox(height: 47),

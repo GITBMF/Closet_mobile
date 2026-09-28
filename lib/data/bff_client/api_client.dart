@@ -16,7 +16,7 @@ class BffClient {
     _dio = dio ??
         Dio(
           BaseOptions(
-            baseUrl: 'https://closet-backend-be8g.onrender.com/api/v1',
+            baseUrl: 'https://apicloset.koungstudio.ca/api/v1',
             connectTimeout: const Duration(seconds: 45),
             receiveTimeout: const Duration(seconds: 45),
             sendTimeout: const Duration(seconds: 45),

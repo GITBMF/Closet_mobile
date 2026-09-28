@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -9,10 +9,14 @@ import '../../../core/theme/closet_text_styles.dart';
 import '../../../core/theme/locale_provider.dart';
 import '../../../core/theme/theme_provider.dart';
 import '../../../core/widgets/choix_langue.dart';
+import '../../../core/widgets/closet_reglages.dart';
+import '../../../core/widgets/spotlight_showcase.dart';
 import '../../../data/repositories/sourceur_repository.dart';
 import '../widgets/sourceur_header.dart';
 
-/// Espace sourceur restreint : coordonnées, bascule cliente, paramètres.
+/// Espace sourceur restreint : coordonnées, bascule cliente, paramètres —
+/// mêmes cartes de réglages groupées que l'espace cliente, pour que les deux
+/// se lisent comme une seule application.
 class SourceurEspaceScreen extends ConsumerWidget {
   const SourceurEspaceScreen({super.key});
 
@@ -21,6 +25,7 @@ class SourceurEspaceScreen extends ConsumerWidget {
     final repo = ref.watch(sourceurRepositoryProvider);
     final profil = repo.profile;
     final l10n = ClosetL10n.of(context);
+    final locale = ref.watch(localeProvider);
 
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
@@ -32,53 +37,80 @@ class SourceurEspaceScreen extends ConsumerWidget {
               afficherRetour: false,
             ),
             Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(
-                  AppSpacing.p20,
-                  AppSpacing.p20,
-                  AppSpacing.p20,
-                  AppSpacing.p24,
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    if (profil != null) ...[
-                      _FicheSourceur(
+              child: ListView(
+                padding: const EdgeInsets.symmetric(vertical: AppSpacing.p20),
+                children: [
+                  if (profil != null) ...[
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppSpacing.p20,
+                      ),
+                      child: _FicheSourceur(
+                        key: ClosetTourKeys.sourceurFicheKey,
                         profile: profil,
                         raisonRefus: repo.adhesion?.raisonRefus,
                       ),
-                      const SizedBox(height: AppSpacing.p16),
-                    ],
-                    SourceurEntree(
-                      premier: true,
-                      icone: Icons.person_outline,
-                      label: l10n.mesInformations,
-                      onTap: () => context.go('/espace/infos'),
                     ),
-                    SourceurEntree(
-                      icone: Icons.home_outlined,
-                      label: l10n.revenirEspaceClient,
-                      onTap: () => context.go('/espace'),
-                    ),
-                    SourceurEntree(
-                      icone: Icons.shield_outlined,
-                      label: l10n.policesConfidentialite,
-                      onTap: () => context.go('/espace/confidentialite'),
-                    ),
-                    const _BasculeTheme(),
-                    const _ChoixLangue(),
-                    SourceurEntree(
-                      icone: Icons.person_add_outlined,
-                      label: l10n.ajouterCompteSourceur,
-                      onTap: () => context.push('/sourceur/identification'),
-                    ),
-                    SourceurEntree(
-                      icone: Icons.logout_rounded,
-                      label: l10n.deconnexion,
-                      onTap: () => context.go('/espace/deconnexion'),
-                    ),
+                    const SizedBox(height: AppSpacing.p20),
                   ],
-                ),
+                  ClosetSurtitreReglages(l10n.sourceurGroupeCompte),
+                  ClosetCarteReglages(
+                    children: [
+                      ClosetEntreeReglages(
+                        icone: Icons.person_outline,
+                        label: l10n.mesInformations,
+                        onTap: () => context.go('/espace/infos'),
+                      ),
+                      ClosetEntreeReglages(
+                        icone: Icons.person_add_outlined,
+                        label: l10n.ajouterCompteSourceur,
+                        onTap: () => context.push('/sourceur/identification'),
+                      ),
+                      ClosetEntreeReglages(
+                        icone: Icons.home_outlined,
+                        label: l10n.revenirEspaceClient,
+                        onTap: () => context.go('/espace'),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: AppSpacing.p20),
+                  ClosetSurtitreReglages(l10n.sourceurGroupeAffichage),
+                  ClosetCarteReglages(
+                    children: [
+                      _EntreeTheme(),
+                      ClosetEntreeReglages(
+                        icone: Icons.language_outlined,
+                        label:
+                            '${l10n.langue} · ${libelleLangueCourante(locale, l10n)}',
+                        onTap: () => afficherChoixLangue(context, ref),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: AppSpacing.p20),
+                  ClosetSurtitreReglages(l10n.sourceurGroupeConfidentialite),
+                  ClosetCarteReglages(
+                    children: [
+                      ClosetEntreeReglages(
+                        icone: Icons.help_outline_rounded,
+                        label: l10n.espaceGroupeAide,
+                        sousTitre: l10n.espaceGroupeAideDetailGenerale,
+                        onTap: () =>
+                            context.push('/espace/reglages/aide-sourceur'),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: AppSpacing.p20),
+                  ClosetCarteReglages(
+                    children: [
+                      ClosetEntreeReglages(
+                        icone: Icons.logout_rounded,
+                        label: l10n.deconnexion,
+                        couleurTuile: ClosetColors.erreurCouture,
+                        onTap: () => context.go('/espace/deconnexion'),
+                      ),
+                    ],
+                  ),
+                ],
               ),
             ),
           ],
@@ -90,7 +122,7 @@ class SourceurEspaceScreen extends ConsumerWidget {
 
 /// Fiche `GET /sourcing/me` : nom, téléphone, statut, collaboration, paiement.
 class _FicheSourceur extends StatelessWidget {
-  const _FicheSourceur({required this.profile, this.raisonRefus});
+  const _FicheSourceur({super.key, required this.profile, this.raisonRefus});
 
   final SourceurProfile profile;
   final String? raisonRefus;
@@ -98,6 +130,7 @@ class _FicheSourceur extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = ClosetL10n.of(context);
+    final sombre = context.closetSombre;
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.fromLTRB(20, 18, 20, 18),
@@ -105,23 +138,45 @@ class _FicheSourceur extends StatelessWidget {
         color: context.closetCarte,
         border: Border.all(color: context.closetBordure, width: AppStroke.fin),
         borderRadius: BorderRadius.circular(AppRadius.carte),
+        boxShadow: [
+          BoxShadow(
+            color: (sombre ? Colors.black : ClosetColors.fond400)
+                .withValues(alpha: sombre ? 0.22 : 0.07),
+            blurRadius: 14,
+            offset: const Offset(0, 6),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            profile.nomAtelier,
-            style: ClosetTextStyles.libelleFort.copyWith(color: context.closetVert),
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  profile.nomAtelier,
+                  style: ClosetTextStyles.libelleFort.copyWith(
+                    color: context.closetVert,
+                  ),
+                ),
+              ),
+              _PastilleStatut(profile: profile, l10n: l10n),
+            ],
           ),
-          const SizedBox(height: AppSpacing.p8),
-          _LigneFiche(libelle: l10n.statut, valeur: profile.libelleStatut(l10n)),
+          const SizedBox(height: AppSpacing.p12),
           if (profile.whatsapp.isNotEmpty)
-            _LigneFiche(libelle: l10n.telephone, valeur: profile.whatsapp),
+            _LigneFiche(
+              icone: Icons.phone_outlined,
+              libelle: l10n.telephone,
+              valeur: profile.whatsapp,
+            ),
           _LigneFiche(
+            icone: Icons.handshake_outlined,
             libelle: l10n.collaboration,
             valeur: profile.libelleCollaboration(l10n),
           ),
           _LigneFiche(
+            icone: Icons.payments_outlined,
             libelle: l10n.paiement,
             valeur: profile.numeroPaiement.isEmpty
                 ? profile.libelleMoyenPaiement(l10n)
@@ -129,6 +184,7 @@ class _FicheSourceur extends StatelessWidget {
           ),
           if (profile.depuis != null)
             _LigneFiche(
+              icone: Icons.event_outlined,
               libelle: l10n.membreDepuis,
               valeur: profile.libelleDepuis,
             ),
@@ -147,40 +203,102 @@ class _FicheSourceur extends StatelessWidget {
   }
 }
 
-class _LigneFiche extends StatelessWidget {
-  const _LigneFiche({required this.libelle, required this.valeur});
+class _PastilleStatut extends StatelessWidget {
+  const _PastilleStatut({required this.profile, required this.l10n});
 
+  final SourceurProfile profile;
+  final ClosetL10n l10n;
+
+  @override
+  Widget build(BuildContext context) {
+    final valide = profile.statutApi == 'approved';
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.p12,
+        vertical: 4,
+      ),
+      decoration: BoxDecoration(
+        color: valide
+            ? ClosetColors.emeraude100
+            : ClosetColors.fondsAlerte,
+        borderRadius: BorderRadius.circular(AppRadius.vignette),
+      ),
+      child: Text(
+        profile.libelleStatut(l10n),
+        style: ClosetTextStyles.attribut.copyWith(
+          color: valide ? ClosetColors.emeraude500 : ClosetColors.alerte,
+        ),
+      ),
+    );
+  }
+}
+
+class _LigneFiche extends StatelessWidget {
+  const _LigneFiche({
+    required this.icone,
+    required this.libelle,
+    required this.valeur,
+  });
+
+  final IconData icone;
   final String libelle;
   final String valeur;
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(top: 4),
-      child: Text(
-        '$libelle : $valeur',
-        style: ClosetTextStyles.corps.copyWith(color: context.closetSecondaire),
+      padding: const EdgeInsets.only(top: AppSpacing.p8),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icone, size: 15, color: context.closetSecondaire),
+          const SizedBox(width: AppSpacing.p8),
+          Expanded(
+            child: Text.rich(
+              TextSpan(
+                children: [
+                  TextSpan(
+                    text: '$libelle : ',
+                    style: ClosetTextStyles.corps.copyWith(
+                      color: context.closetSecondaire,
+                    ),
+                  ),
+                  TextSpan(
+                    text: valeur,
+                    style: ClosetTextStyles.corps.copyWith(
+                      color: context.closetEncre,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
 }
 
-class _BasculeTheme extends ConsumerWidget {
-  const _BasculeTheme();
-
+class _EntreeTheme extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final sombre = ref.watch<ThemeMode>(themeModeProvider) == ThemeMode.dark;
 
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: AppSpacing.p12),
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.p16,
+        vertical: AppSpacing.p12,
+      ),
       child: Row(
         children: [
           Container(
             width: 35,
             height: 35,
             decoration: BoxDecoration(
-              color: ClosetColors.vert,
+              color: context.closetSombre
+                  ? ClosetColors.emeraude300
+                  : ClosetColors.vert,
               borderRadius: BorderRadius.circular(AppRadius.carte),
             ),
             child: Icon(
@@ -200,30 +318,13 @@ class _BasculeTheme extends ConsumerWidget {
           ),
           Switch(
             value: sombre,
-            activeThumbColor: ClosetColors.vert,
+            activeThumbColor: context.closetVert,
             onChanged: (_) => ref
                 .read<ThemeModeNotifier>(themeModeProvider.notifier)
                 .toggleTheme(),
           ),
         ],
       ),
-    );
-  }
-}
-
-class _ChoixLangue extends ConsumerWidget {
-  const _ChoixLangue();
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final locale = ref.watch(localeProvider);
-    final l10n = ClosetL10n.of(context);
-    final libelle = libelleLangueCourante(locale, l10n);
-
-    return SourceurEntree(
-      icone: Icons.language_outlined,
-      label: '${l10n.langue} · $libelle',
-      onTap: () => afficherChoixLangue(context, ref),
     );
   }
 }

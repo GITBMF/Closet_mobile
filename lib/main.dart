@@ -13,6 +13,7 @@ import 'core/widgets/spotlight_showcase.dart';
 import 'core/widgets/top_notification_overlay.dart';
 import 'core/widgets/veille_reseau.dart';
 import 'features/onboarding/visite_guidee.dart';
+import 'features/onboarding/visite_guidee_sourceur.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -34,6 +35,7 @@ class ClosetApp extends ConsumerWidget {
     final themeMode = ref.watch<ThemeMode>(themeModeProvider);
     final locale = ref.watch<Locale>(localeProvider);
     final police = ref.watch(policeProvider);
+    final pourSourceur = ref.watch(spotlightTourProvider).pourSourceur;
 
     return MaterialApp.router(
       title: 'ClosET',
@@ -65,7 +67,9 @@ class ClosetApp extends ConsumerWidget {
                     child: VeilleReseau(
                       child: TopNotificationOverlay(
                         child: SpotlightShowcase(
-                          steps: visiteGuidee(l10n),
+                          steps: pourSourceur
+                              ? visiteGuideeSourceur(l10n)
+                              : visiteGuidee(l10n),
                           child: child!,
                         ),
                       ),

@@ -2,7 +2,7 @@
 
 Application mobile Flutter de ClosET — dressing de pièces de seconde main (Cameroun). Deux espaces : **cliente** (découverte, sélection, commande) et **sourceur** (adhésion, dépôt de pièces, suivi).
 
-La maquette Figma est la source de vérité visuelle. L’app parle à l’API publique `https://closet-backend-be8g.onrender.com/api/v1`.
+La maquette Figma est la source de vérité visuelle. L’app parle à l’API publique `https://apicloset.koungstudio.ca/api/v1`.
 
 ## Stack
 
@@ -79,8 +79,9 @@ Routes protégées côté client : `/checkout`, `/transaction`, `/sourceur/*` (s
 
 ## API
 
-Base : `https://closet-backend-be8g.onrender.com/api/v1`  
-Swagger : [closet-backend-be8g.onrender.com/docs](https://closet-backend-be8g.onrender.com/docs)
+Base : `https://apicloset.koungstudio.ca/api/v1`  
+Documentation : [apicloset.koungstudio.ca/docs](https://apicloset.koungstudio.ca/docs)  
+Administration : [apicloset.koungstudio.ca/ops](https://apicloset.koungstudio.ca/ops)
 
 | Domaine | Endpoints |
 |---|---|

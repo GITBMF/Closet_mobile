@@ -11,8 +11,8 @@ import '../../../core/theme/police_provider.dart';
 import '../../../core/theme/theme_provider.dart';
 import '../../../core/widgets/choix_langue.dart';
 import '../../../core/widgets/choix_police.dart';
-import '../../../core/widgets/closet_filet.dart';
 import '../../../core/widgets/closet_header_button.dart';
+import '../../../core/widgets/closet_reglages.dart';
 import '../../../core/widgets/closet_sections.dart';
 import '../../../core/widgets/spotlight_showcase.dart';
 import '../../../data/models/user.dart';
@@ -80,16 +80,16 @@ class EspaceScreen extends ConsumerWidget {
                 ),
               ),
               const SizedBox(height: AppSpacing.p24),
-              _CarteReglages(
+              ClosetCarteReglages(
                 children: [
-                  _EntreeEspace(
+                  ClosetEntreeReglages(
                     key: ClosetTourKeys.espaceCommandesKey,
                     icone: Icons.person_outline,
                     label: l10n.espaceGroupeCompte,
                     sousTitre: l10n.espaceGroupeCompteDetail,
                     onTap: () => context.push('/espace/reglages/compte'),
                   ),
-                  _EntreeEspace(
+                  ClosetEntreeReglages(
                     key: ClosetTourKeys.espaceLangueKey,
                     icone: Icons.palette_outlined,
                     label: l10n.espaceGroupeAffichage,
@@ -98,26 +98,26 @@ class EspaceScreen extends ConsumerWidget {
                         ' · ${libelleTaillePolice(ref.watch(policeProvider), l10n)}',
                     onTap: () => context.push('/espace/reglages/affichage'),
                   ),
-                  _EntreeEspace(
+                  ClosetEntreeReglages(
                     key: ClosetTourKeys.espaceVisiteKey,
                     icone: Icons.help_outline_rounded,
                     label: l10n.espaceGroupeAide,
-                    sousTitre: l10n.espaceGroupeAideDetail,
+                    sousTitre: l10n.espaceGroupeAideDetailGenerale,
                     onTap: () => context.push('/espace/reglages/aide'),
                   ),
                 ],
               ),
               const SizedBox(height: AppSpacing.p16),
-              _CarteReglages(
+              ClosetCarteReglages(
                 children: [
                   if (user == null)
-                    _EntreeEspace(
+                    ClosetEntreeReglages(
                       icone: Icons.login_rounded,
                       label: l10n.seConnecterInscrire,
                       onTap: () => context.push('/auth'),
                     )
                   else
-                    _EntreeEspace(
+                    ClosetEntreeReglages(
                       icone: Icons.logout_rounded,
                       label: l10n.logout,
                       onTap: () => context.push('/espace/deconnexion'),
@@ -376,79 +376,6 @@ class _CarteSourceur extends StatelessWidget {
   }
 }
 
-/// Entrée de liste : tuile verte de 48 (rayon 8), libellé, chevron.
-class _EntreeEspace extends StatelessWidget {
-  const _EntreeEspace({
-    super.key,
-    required this.icone,
-    required this.label,
-    required this.onTap,
-    this.sousTitre,
-  });
-
-  final IconData icone;
-  final String label;
-  final String? sousTitre;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-      onTap: onTap,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.p16,
-          vertical: AppSpacing.p12,
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 35,
-              height: 35,
-              decoration: BoxDecoration(
-                color: context.closetSombre ? ClosetColors.emeraude300 : ClosetColors.vert,
-                borderRadius: BorderRadius.circular(AppRadius.carte),
-              ),
-              child: Icon(icone, size: 18, color: ClosetColors.blanc),
-            ),
-            const SizedBox(width: AppSpacing.p16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    label,
-                    style: ClosetTextStyles.libelle.copyWith(
-                      color: context.closetEncre,
-                    ),
-                  ),
-                  if (sousTitre != null) ...[
-                    const SizedBox(height: 2),
-                    Text(
-                      sousTitre!,
-                      style: ClosetTextStyles.meta.copyWith(
-                        color: context.closetSecondaire,
-                      ),
-                    ),
-                  ],
-                ],
-              ),
-            ),
-            Icon(
-              Icons.chevron_right,
-              size: 18,
-              color: context.closetSecondaire,
-            ),
-          ],
-        ),
-      ),
-      ),
-    );
-  }
-}
-
 /// Interrupteur clair / sombre — demandé côté cliente, hors maquette Figma.
 class _BasculeTheme extends ConsumerWidget {
   const _BasculeTheme();
@@ -508,7 +435,7 @@ class _ChoixLangue extends ConsumerWidget {
     final l10n = ClosetL10n.of(context);
     final libelle = libelleLangueCourante(locale, l10n);
 
-    return _EntreeEspace(
+    return ClosetEntreeReglages(
       icone: Icons.language_outlined,
       label: '${l10n.langue} · $libelle',
       onTap: () => afficherChoixLangue(context, ref),
@@ -524,49 +451,10 @@ class _ChoixPolice extends ConsumerWidget {
     final l10n = ClosetL10n.of(context);
     final libelle = libelleTaillePolice(ref.watch(policeProvider), l10n);
 
-    return _EntreeEspace(
+    return ClosetEntreeReglages(
       icone: Icons.text_fields_rounded,
       label: '${l10n.taillePolice} · $libelle',
       onTap: () => afficherChoixPolice(context),
-    );
-  }
-}
-
-/// Carte arrondie regroupant des entrées, à la manière des réglages d'un
-/// téléphone : un fond unique, des filets fins entre les lignes.
-class _CarteReglages extends StatelessWidget {
-  const _CarteReglages({required this.children});
-
-  final List<Widget> children;
-
-  @override
-  Widget build(BuildContext context) {
-    final sombre = context.closetSombre;
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.p20),
-      child: Container(
-        clipBehavior: Clip.antiAlias,
-        decoration: BoxDecoration(
-          color: sombre ? ClosetColors.emeraude500 : ClosetColors.creme,
-          border: Border.all(
-            color: sombre ? ClosetColors.emeraude400 : ClosetColors.fond200,
-            width: AppStroke.fin,
-          ),
-          borderRadius: BorderRadius.circular(AppRadius.carte),
-        ),
-        child: Column(
-          children: [
-            for (var i = 0; i < children.length; i++) ...[
-              if (i > 0)
-                const Padding(
-                  padding: EdgeInsets.only(left: 67),
-                  child: ClosetFilet(epaisseur: 0.5),
-                ),
-              children[i],
-            ],
-          ],
-        ),
-      ),
     );
   }
 }
@@ -590,7 +478,27 @@ class EspaceGroupeScreen extends ConsumerWidget {
       'aide' => (
           l10n.espaceGroupeAide,
           [
-            _EntreeEspace(
+            ClosetEntreeReglages(
+              icone: Icons.quiz_outlined,
+              label: l10n.espaceFaqTitre,
+              onTap: () => context.push('/espace/faq'),
+            ),
+            ClosetEntreeReglages(
+              icone: Icons.privacy_tip_outlined,
+              label: l10n.espaceConfidentialite,
+              onTap: () => context.push('/espace/confidentialite'),
+            ),
+            ClosetEntreeReglages(
+              icone: Icons.chat_bubble_outline,
+              label: l10n.espaceNousContacter,
+              onTap: () => context.push('/espace/contact'),
+            ),
+            ClosetEntreeReglages(
+              icone: Icons.star_outline,
+              label: l10n.espaceEvaluerTitre,
+              onTap: () => context.push('/espace/evaluation'),
+            ),
+            ClosetEntreeReglages(
               icone: Icons.auto_awesome_outlined,
               label: l10n.visiteGuidee,
               sousTitre: l10n.espaceGroupeAideDetail,
@@ -601,24 +509,55 @@ class EspaceGroupeScreen extends ConsumerWidget {
             ),
           ],
         ),
+      'aide-sourceur' => (
+          l10n.espaceGroupeAide,
+          [
+            ClosetEntreeReglages(
+              icone: Icons.quiz_outlined,
+              label: l10n.espaceFaqTitre,
+              onTap: () => context.push('/espace/faq'),
+            ),
+            ClosetEntreeReglages(
+              icone: Icons.privacy_tip_outlined,
+              label: l10n.espaceConfidentialite,
+              onTap: () => context.push('/espace/confidentialite'),
+            ),
+            ClosetEntreeReglages(
+              icone: Icons.chat_bubble_outline,
+              label: l10n.espaceNousContacter,
+              onTap: () => context.push('/espace/contact'),
+            ),
+            ClosetEntreeReglages(
+              icone: Icons.auto_awesome_outlined,
+              label: l10n.visiteGuidee,
+              sousTitre: l10n.espaceGroupeAideDetail,
+              onTap: () {
+                ref
+                    .read(spotlightTourProvider.notifier)
+                    .startTour(pourSourceur: true);
+                context.go('/sourceur/espace');
+              },
+            ),
+          ],
+        ),
       _ => (
           l10n.espaceGroupeCompte,
           [
-            _EntreeEspace(
+            ClosetEntreeReglages(
               icone: Icons.receipt_long_outlined,
               label: l10n.mesCommandes,
               onTap: () => user == null
                   ? context.push('/auth')
                   : context.push('/espace/commandes'),
             ),
-            _EntreeEspace(
+            ClosetEntreeReglages(
               icone: Icons.person_outline,
               label: l10n.mesInformations,
               onTap: () => context.push(
                 user == null ? '/auth' : '/espace/infos',
               ),
             ),
-            _EntreeEspace(
+            ClosetEntreeReglages(
               icone: Icons.local_activity_outlined,
               label: l10n.codePrivilegeLabel,
               onTap: () => afficherCodePrivilege(context),
@@ -633,7 +572,7 @@ class EspaceGroupeScreen extends ConsumerWidget {
       body: SafeArea(
         child: ListView(
           padding: const EdgeInsets.symmetric(vertical: AppSpacing.p20),
-          children: [_CarteReglages(children: entrees)],
+          children: [ClosetCarteReglages(children: entrees)],
         ),
       ),
     );

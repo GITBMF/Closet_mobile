@@ -337,6 +337,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                           obligatoire: true,
                           libelle: l10n.checkoutNumeroWhatsapp,
                           l10n: l10n,
+                          pays: _telephone.pays,
                         ),
                       ),
                       const SizedBox(height: AppSpacing.p8),

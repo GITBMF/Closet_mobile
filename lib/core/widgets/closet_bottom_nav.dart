@@ -106,21 +106,25 @@ class ClosetBottomNav extends StatelessWidget {
       icone: Icons.inventory_2_outlined,
       iconeActive: Icons.inventory_2,
       label: l10n.navDepots,
+      cle: ClosetTourKeys.sourceurDepotsNavKey,
     ),
     ClosetNavItem(
       icone: Icons.add_circle_outline,
       iconeActive: Icons.add_circle,
       label: l10n.navConfier,
+      cle: ClosetTourKeys.sourceurConfierNavKey,
     ),
     ClosetNavItem(
       icone: Icons.account_balance_wallet_outlined,
       iconeActive: Icons.account_balance_wallet,
       label: l10n.navGains,
+      cle: ClosetTourKeys.sourceurGainsNavKey,
     ),
     ClosetNavItem(
       icone: Icons.person_outline,
       iconeActive: Icons.person,
       label: l10n.navEspace,
+      cle: ClosetTourKeys.sourceurEspaceNavKey,
     ),
   ];
 

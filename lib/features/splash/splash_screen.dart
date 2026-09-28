@@ -108,7 +108,13 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
               opacity: _fondu,
               child: ScaleTransition(
                 scale: _echelle,
-                child: const LogoCloset.splash(),
+                child: Image.asset(
+                  'assets/logo_fond_vert.png',
+                  width: 232,
+                  height: 132,
+                  fit: BoxFit.contain,
+                  errorBuilder: (_, _, _) => const LogoCloset.splash(),
+                ),
               ),
             ),
           ),

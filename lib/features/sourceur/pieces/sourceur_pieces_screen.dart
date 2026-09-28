@@ -1,4 +1,4 @@
-﻿import 'package:cached_network_image/cached_network_image.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -10,7 +10,9 @@ import '../../../core/theme/closet_text_styles.dart';
 import '../../../core/widgets/closet_app_bar.dart';
 import '../../../core/widgets/closet_chip.dart';
 import '../../../core/widgets/closet_feedback.dart';
+import '../../../core/widgets/closet_pressable.dart';
 import '../../../core/widgets/etat_ecran.dart';
+import '../../../core/widgets/spotlight_showcase.dart';
 import '../../../core/widgets/status_badge.dart';
 import '../../../core/widgets/toasts.dart';
 import '../../../data/repositories/sourceur_repository.dart';
@@ -91,14 +93,17 @@ class _SourceurPiecesScreenState
                     ),
                     children: [
                       _TableauBord(
+                        key: ClosetTourKeys.sourceurTableauBordKey,
                         pieces: liste,
                         revenus: revenus,
                       ),
                       const SizedBox(height: AppSpacing.p16),
-                      SizedBox(
-                        height: 30,
-                        child: ListView(
-                          scrollDirection: Axis.horizontal,
+                      Center(
+                        child: Wrap(
+                          key: ClosetTourKeys.sourceurFiltresKey,
+                          alignment: WrapAlignment.center,
+                          spacing: 11,
+                          runSpacing: 8,
                           children: [
                             ClosetChip(
                               label: l10n.toutes,
@@ -107,7 +112,6 @@ class _SourceurPiecesScreenState
                                 () => _filtre = _FiltreDepot.toutes,
                               ),
                             ),
-                            const SizedBox(width: 11),
                             ClosetChip(
                               label: l10n.enVente,
                               isActive: _filtre == _FiltreDepot.enVente,
@@ -115,7 +119,6 @@ class _SourceurPiecesScreenState
                                 () => _filtre = _FiltreDepot.enVente,
                               ),
                             ),
-                            const SizedBox(width: 11),
                             ClosetChip(
                               label: l10n.enCoursAnalyse,
                               isActive: _filtre == _FiltreDepot.enAnalyse,
@@ -170,7 +173,7 @@ class _SourceurPiecesScreenState
 
 /// Tableau de bord : vendues, en ligne, chiffre d'affaires.
 class _TableauBord extends StatelessWidget {
-  const _TableauBord({required this.pieces, required this.revenus});
+  const _TableauBord({super.key, required this.pieces, required this.revenus});
 
   final List<PieceDeposee> pieces;
   final AsyncValue<RevenusSourceur> revenus;
@@ -193,6 +196,13 @@ class _TableauBord extends StatelessWidget {
       decoration: BoxDecoration(
         color: ClosetColors.vert,
         borderRadius: BorderRadius.circular(AppRadius.carte),
+        boxShadow: [
+          BoxShadow(
+            color: ClosetColors.vertFonce.withValues(alpha: 0.28),
+            blurRadius: 16,
+            offset: const Offset(0, 8),
+          ),
+        ],
       ),
       child: Row(
         children: [
@@ -287,7 +297,7 @@ class _CarteDepot extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = ClosetL10n.of(context);
-    return GestureDetector(
+    return ClosetPressable(
       onTap: onTap,
       child: Container(
         constraints: const BoxConstraints(minHeight: 106),
@@ -296,6 +306,14 @@ class _CarteDepot extends StatelessWidget {
           color: context.closetCarte,
           border: Border.all(color: context.closetBordure, width: AppStroke.fin),
           borderRadius: BorderRadius.circular(AppRadius.carte),
+          boxShadow: [
+            BoxShadow(
+              color: (context.closetSombre ? Colors.black : ClosetColors.fond400)
+                  .withValues(alpha: context.closetSombre ? 0.2 : 0.06),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
         ),
         child: Row(
           children: [

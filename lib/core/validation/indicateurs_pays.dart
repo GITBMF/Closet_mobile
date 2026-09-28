@@ -332,11 +332,16 @@ class SaisieTelephone {
   final String national;
 }
 
+/// [pays] force la validation sur le pays réellement choisi dans le
+/// sélecteur, plutôt que de le redeviner depuis l'indicatif — sans quoi un
+/// numéro trop long pour ce pays peut être jugé « incorrect » au lieu de
+/// signaler clairement le nombre de chiffres attendu.
 String? validerTelephone(
   String? e164, {
   required bool obligatoire,
   String? libelle,
   ClosetL10n? l10n,
+  IndicateurPays? pays,
 }) {
   final mots = l10n ?? ClosetL10n.fr;
   final saisie = (e164 ?? '').trim();
@@ -344,10 +349,20 @@ String? validerTelephone(
   if (saisie.isEmpty) {
     return obligatoire ? mots.indiquerUnLibelle(texteLibelle) : null;
   }
-  final parse = IndicateurPays.analyser(saisie);
-  if (parse == null) return mots.libelleSembleIncorrect(texteLibelle);
-  if (parse.national.length < parse.pays.minChiffres) {
-    return mots.libelleSembleIncomplet(texteLibelle);
+  final digits = saisie.replaceAll(RegExp(r'\D'), '');
+  final cible = pays ?? IndicateurPays.analyser(saisie)?.pays;
+  if (cible == null || !digits.startsWith(cible.indicatif)) {
+    return mots.libelleSembleIncorrect(texteLibelle);
+  }
+  final national = digits.substring(cible.indicatif.length);
+  if (national.length < cible.minChiffres || national.length > cible.maxChiffres) {
+    return cible.minChiffres == cible.maxChiffres
+        ? mots.libelleChiffresExact(texteLibelle, cible.minChiffres)
+        : mots.libelleChiffresPlage(
+            texteLibelle,
+            cible.minChiffres,
+            cible.maxChiffres,
+          );
   }
   return null;
 }
