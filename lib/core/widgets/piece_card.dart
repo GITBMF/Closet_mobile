@@ -2,9 +2,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../l10n/closet_l10n.dart';
 import '../theme/app_spacing.dart';
 import '../theme/closet_colors.dart';
 import '../theme/closet_text_styles.dart';
+import 'closet_pressable.dart';
 
 /// Carte produit — transcription du composant « Product Card » de `11:30`.
 ///
@@ -66,7 +68,7 @@ class PieceCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
+    return ClosetPressable(
       onTap: onTap,
       child: DecoratedBox(
         decoration: BoxDecoration(
@@ -80,6 +82,14 @@ class PieceCard extends StatelessWidget {
             width: AppStroke.fin,
           ),
           borderRadius: BorderRadius.circular(AppRadius.carte),
+          boxShadow: [
+            BoxShadow(
+              color: (context.closetSombre ? Colors.black : ClosetColors.fond400)
+                  .withValues(alpha: context.closetSombre ? 0.28 : 0.10),
+              blurRadius: 14,
+              offset: const Offset(0, 6),
+            ),
+          ],
         ),
         child: Padding(
           padding: const EdgeInsets.all(_retrait),
@@ -107,31 +117,20 @@ class PieceCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 3),
               ],
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  if (etoiles > 0) ...[
-                    EtoilesEtat(etoiles),
-                    const SizedBox(width: 4),
-                  ],
-                  Expanded(
-                    child: Text(
-                      nom,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: ClosetTextStyles.nomProduit.copyWith(
-                        color: context.closetEncre,
-                      ),
-                    ),
-                  ),
-                ],
+              Text(
+                nom,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: ClosetTextStyles.nomProduit.copyWith(
+                  color: context.closetEncre,
+                ),
               ),
               const SizedBox(height: 3),
               Row(
                 children: [
                   Expanded(
                     child: Text(
-                      isSold ? 'Indisponible' : prix,
+                      isSold ? ClosetL10n.of(context).indisponibleLabel : prix,
                       style: ClosetTextStyles.prix.copyWith(
                         color: isSold
                             ? context.closetSecondaire
@@ -148,6 +147,10 @@ class PieceCard extends StatelessWidget {
                     ),
                 ],
               ),
+              if (etoiles > 0) ...[
+                const SizedBox(height: 4),
+                EtoilesEtat(etoiles, taille: 12),
+              ],
               if (attribut != null) ...[
                 const SizedBox(height: AppSpacing.p4),
                 Text(
@@ -219,7 +222,7 @@ class _Visuel extends StatelessWidget {
               child: Padding(
                 padding: const EdgeInsets.symmetric(vertical: AppSpacing.p4),
                 child: Text(
-                  'A trouvé son dressing',
+                  ClosetL10n.of(context).aTrouveSonDressing,
                   textAlign: TextAlign.center,
                   style: ClosetTextStyles.detail.copyWith(
                     color: ClosetColors.creme,

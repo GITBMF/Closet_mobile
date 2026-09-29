@@ -26,21 +26,21 @@ class StatusBadge extends StatelessWidget {
   // ── Statuts de commande (`26:1255`) ───────────────────────────────────
 
   /// Commande livrée — vert d'eau
-  factory StatusBadge.livree([String text = 'Livrée']) => StatusBadge(
+  factory StatusBadge.livree(String text) => StatusBadge(
         text: text,
         backgroundColor: ClosetColors.emeraude100,
         textColor: ClosetColors.emeraude500,
       );
 
   /// Commande en route — encre sur crème
-  factory StatusBadge.enRoute([String text = 'EN route']) => StatusBadge(
+  factory StatusBadge.enRoute(String text) => StatusBadge(
         text: text,
         backgroundColor: ClosetColors.neutre900,
         textColor: ClosetColors.neutre300,
       );
 
   /// Commande en préparation — sable
-  factory StatusBadge.preparation([String text = 'Préparation']) => StatusBadge(
+  factory StatusBadge.preparation(String text) => StatusBadge(
         text: text,
         backgroundColor: ClosetColors.fond200,
         textColor: ClosetColors.neutre800,
@@ -49,37 +49,35 @@ class StatusBadge extends StatelessWidget {
   // ── Statuts de pièce sourceur (`36:2063`) ─────────────────────────────
 
   /// Pièce mise en vente — doré sur encre
-  factory StatusBadge.miseEnVente([String text = 'Mis en vente']) =>
-      StatusBadge(
+  factory StatusBadge.miseEnVente(String text) => StatusBadge(
         text: text,
         backgroundColor: ClosetColors.neutre1000,
         textColor: ClosetColors.fond400,
       );
 
   /// Pièce en cours d'analyse
-  factory StatusBadge.enAnalyse([String text = 'En cours d’analyse']) =>
-      StatusBadge(
+  factory StatusBadge.enAnalyse(String text) => StatusBadge(
         text: text,
         backgroundColor: ClosetColors.neutre400,
         textColor: ClosetColors.neutre900,
       );
 
   /// Dépôt reçu
-  factory StatusBadge.depotRecu([String text = 'dépôt reçu']) => StatusBadge(
+  factory StatusBadge.depotRecu(String text) => StatusBadge(
         text: text,
         backgroundColor: ClosetColors.fond200,
         textColor: ClosetColors.fond500,
       );
 
   /// Pièce refusée — seul statut à sortir des rampes de la palette
-  factory StatusBadge.refusee([String text = 'refusé']) => StatusBadge(
+  factory StatusBadge.refusee(String text) => StatusBadge(
         text: text,
         backgroundColor: ClosetColors.refusFond,
         textColor: ClosetColors.refusTexte,
       );
 
   /// Pièce retournée
-  factory StatusBadge.retournee([String text = 'Retourné']) => StatusBadge(
+  factory StatusBadge.retournee(String text) => StatusBadge(
         text: text,
         backgroundColor: ClosetColors.neutre300,
         textColor: ClosetColors.neutre800,

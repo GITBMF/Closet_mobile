@@ -139,7 +139,7 @@ class _PuceGrille extends StatelessWidget {
       color: context.closetSombre
           ? ClosetColors.emeraude400
           : ClosetColors.carteFond,
-      shape: StadiumBorder(
+      shape: const StadiumBorder(
         side: BorderSide(color: ClosetColors.fond300, width: AppStroke.fin),
       ),
       clipBehavior: Clip.antiAlias,

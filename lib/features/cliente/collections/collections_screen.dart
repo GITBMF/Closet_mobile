@@ -13,9 +13,11 @@ import '../../../core/widgets/bandeau_defilable.dart';
 import '../../../core/widgets/closet_app_bar.dart';
 import '../../../core/widgets/closet_chip.dart';
 import '../../../core/widgets/closet_feedback.dart';
+import '../../../core/widgets/closet_filet.dart';
 import '../../../core/widgets/closet_sections.dart';
 import '../../../core/widgets/etat_ecran.dart';
 import '../../../core/widgets/piece_card.dart';
+import '../../../core/widgets/spotlight_showcase.dart';
 import '../../../data/models/article.dart';
 import '../../../data/recherche/suggestion_recherche.dart';
 import '../../../data/repositories/catalog_repository.dart';
@@ -90,20 +92,40 @@ class EtatFilterNotifier extends Notifier<String?> {
   void setEtat(String? val) => state = val;
 }
 
-final selectedUniverseProvider =
-    NotifierProvider<UniverseNotifier, String>(UniverseNotifier.new);
-final searchQueryProvider =
-    NotifierProvider<SearchQueryNotifier, String>(SearchQueryNotifier.new);
-final filterBrandProvider =
-    NotifierProvider<BrandFilterNotifier, Maison?>(BrandFilterNotifier.new);
-final filterPrixMinProvider =
-    NotifierProvider<PrixMinFilterNotifier, double?>(PrixMinFilterNotifier.new);
-final filterPriceProvider =
-    NotifierProvider<PrixMaxFilterNotifier, double?>(PrixMaxFilterNotifier.new);
-final filterTailleProvider =
-    NotifierProvider<TailleFilterNotifier, String?>(TailleFilterNotifier.new);
-final filterEtatProvider =
-    NotifierProvider<EtatFilterNotifier, String?>(EtatFilterNotifier.new);
+/// Ordre d'affichage du catalogue — remplace le bouton de filtre de la barre
+/// de recherche par un tri explicite.
+enum TriCatalogue { pertinence, prixCroissant, prixDecroissant }
+
+class TriNotifier extends Notifier<TriCatalogue> {
+  @override
+  TriCatalogue build() => TriCatalogue.pertinence;
+  void choisir(TriCatalogue val) => state = val;
+}
+
+final selectedUniverseProvider = NotifierProvider<UniverseNotifier, String>(
+  UniverseNotifier.new,
+);
+final triProvider = NotifierProvider<TriNotifier, TriCatalogue>(
+  TriNotifier.new,
+);
+final searchQueryProvider = NotifierProvider<SearchQueryNotifier, String>(
+  SearchQueryNotifier.new,
+);
+final filterBrandProvider = NotifierProvider<BrandFilterNotifier, Maison?>(
+  BrandFilterNotifier.new,
+);
+final filterPrixMinProvider = NotifierProvider<PrixMinFilterNotifier, double?>(
+  PrixMinFilterNotifier.new,
+);
+final filterPriceProvider = NotifierProvider<PrixMaxFilterNotifier, double?>(
+  PrixMaxFilterNotifier.new,
+);
+final filterTailleProvider = NotifierProvider<TailleFilterNotifier, String?>(
+  TailleFilterNotifier.new,
+);
+final filterEtatProvider = NotifierProvider<EtatFilterNotifier, String?>(
+  EtatFilterNotifier.new,
+);
 
 /// `GET /pieces` (q, house_id, universe_id, min/max_price) puis filtres
 /// locaux sur `size_label` et `condition` — absents de la query API.
@@ -115,19 +137,21 @@ final filteredArticlesProvider = FutureProvider<List<Article>>((ref) async {
   final prixMax = ref.watch<double?>(filterPriceProvider);
   final taille = ref.watch<String?>(filterTailleProvider);
   final etat = ref.watch<String?>(filterEtatProvider);
+  final tri = ref.watch<TriCatalogue>(triProvider);
 
-  final retenus =
-      await ref.watch<CatalogRepository>(catalogRepositoryProvider).getCatalog(
-            universe: universe.isEmpty ? null : universe,
-            filtres: FiltresCatalogue(
-              maisonId: estIdentifiantApi(maison?.id) ? maison!.id : null,
-              recherche: query.isEmpty ? null : query,
-              prixMin: prixMin,
-              prixMax: prixMax,
-            ),
-          );
+  final retenus = await ref
+      .watch<CatalogRepository>(catalogRepositoryProvider)
+      .getCatalog(
+        universe: universe.isEmpty ? null : universe,
+        filtres: FiltresCatalogue(
+          maisonId: estIdentifiantApi(maison?.id) ? maison!.id : null,
+          recherche: query.isEmpty ? null : query,
+          prixMin: prixMin,
+          prixMax: prixMax,
+        ),
+      );
 
-  return [
+  final resultat = [
     for (final a in retenus)
       if ((universe.isEmpty || a.correspondUnivers(universe)) &&
           (maison == null || a.correspondMaison(maison.nom)) &&
@@ -135,6 +159,16 @@ final filteredArticlesProvider = FutureProvider<List<Article>>((ref) async {
           (etat == null || a.correspondEtat(etat)))
         a,
   ];
+
+  switch (tri) {
+    case TriCatalogue.pertinence:
+      break;
+    case TriCatalogue.prixCroissant:
+      resultat.sort((a, b) => a.price.compareTo(b.price));
+    case TriCatalogue.prixDecroissant:
+      resultat.sort((a, b) => b.price.compareTo(a.price));
+  }
+  return resultat;
 });
 
 /// Collections — transcription des maquettes `14:1281` et `16:2260`.
@@ -231,9 +265,9 @@ class _CollectionsScreenState extends ConsumerState<CollectionsScreen> {
     _inscrireChamp(s.libelle);
     switch (s.categorie) {
       case CategorieSuggestion.marque:
-        ref.read(filterBrandProvider.notifier).setMaison(
-              s.maison ?? Maison(id: s.libelle, nom: s.libelle),
-            );
+        ref
+            .read(filterBrandProvider.notifier)
+            .setMaison(s.maison ?? Maison(id: s.libelle, nom: s.libelle));
         ref.read(searchQueryProvider.notifier).clear();
       case CategorieSuggestion.type:
         ref.read(selectedUniverseProvider.notifier).setUniverse(s.libelle);
@@ -251,10 +285,9 @@ class _CollectionsScreenState extends ConsumerState<CollectionsScreen> {
   }
 
   Future<void> _choisirMarqueTendance(String nom) async {
-    final index = ref.read(indexRechercheProvider).maybeWhen(
-          data: (i) => i,
-          orElse: () => IndexRecherche.vide,
-        );
+    final index = ref
+        .read(indexRechercheProvider)
+        .maybeWhen(data: (i) => i, orElse: () => IndexRecherche.vide);
     Maison? maison;
     for (final m in index.maisons) {
       if (m.nom.toLowerCase() == nom.toLowerCase()) {
@@ -296,14 +329,12 @@ class _CollectionsScreenState extends ConsumerState<CollectionsScreen> {
       }
     });
 
-    final index = ref.watch(indexRechercheProvider).maybeWhen(
-          data: (i) => i,
-          orElse: () => IndexRecherche.vide,
-        );
-    final historique = ref.watch(historiqueRechercheProvider).maybeWhen(
-          data: (h) => h,
-          orElse: () => const <String>[],
-        );
+    final index = ref
+        .watch(indexRechercheProvider)
+        .maybeWhen(data: (i) => i, orElse: () => IndexRecherche.vide);
+    final historique = ref
+        .watch(historiqueRechercheProvider)
+        .maybeWhen(data: (h) => h, orElse: () => const <String>[]);
     final panneau = construirePanneau(
       requete: _recherche.text,
       index: index,
@@ -313,110 +344,246 @@ class _CollectionsScreenState extends ConsumerState<CollectionsScreen> {
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.only(bottom: AppSpacing.p32),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const SizedBox(height: AppSpacing.p12),
-              Padding(
-                padding: EdgeInsets.symmetric(horizontal: marge),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const SizedBox(height: AppSpacing.p12),
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: marge),
+              child: _BarreRecherche(
+                controller: _recherche,
+                focusNode: _focus,
+                onChanged: (v) {
+                  setState(() {});
+                  _appliquerTexte(v);
+                },
+                onSubmitted: (v) => _appliquerTexte(v, immediat: true),
+                onEffacer: _effacerRecherche,
+              ),
+            ),
+            Expanded(
+              child: SingleChildScrollView(
+                keyboardDismissBehavior:
+                    ScrollViewKeyboardDismissBehavior.onDrag,
+                padding: const EdgeInsets.only(bottom: AppSpacing.p32),
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _BarreRecherche(
-                      controller: _recherche,
-                      focusNode: _focus,
-                      filtresActifs: _filtresActifs ||
-                          _recherche.text.trim().isNotEmpty,
-                      onChanged: (v) {
-                        setState(() {});
-                        _appliquerTexte(v);
-                      },
-                      onSubmitted: (v) => _appliquerTexte(v, immediat: true),
-                      onEffacer: _effacerRecherche,
-                      onFiltres: () => _ouvrirFiltres(context),
-                    ),
                     if (_champActif)
-                      PanneauSuggestionsRecherche(
-                        panneau: panneau,
-                        onPopulaire: _choisirTexte,
-                        onMarqueTendance: _choisirMarqueTendance,
-                        onSuggestion: _choisirSuggestion,
+                      Padding(
+                        padding: EdgeInsets.symmetric(horizontal: marge),
+                        child: PanneauSuggestionsRecherche(
+                          panneau: panneau,
+                          onPopulaire: _choisirTexte,
+                          onMarqueTendance: _choisirMarqueTendance,
+                          onSuggestion: _choisirSuggestion,
+                        ),
+                      )
+                    else ...[
+                      if (categories.isNotEmpty) ...[
+                        const SizedBox(height: AppSpacing.p16),
+                        BandeauDefilable(
+                          key: ClosetTourKeys.universKey,
+                          padding: EdgeInsets.symmetric(horizontal: marge),
+                          enfants: [
+                            ClosetChip(
+                              label: l10n.toutes,
+                              isActive: universActif.isEmpty,
+                              onTap: () => ref
+                                  .read(selectedUniverseProvider.notifier)
+                                  .setUniverse(''),
+                            ),
+                            for (final nom in categories)
+                              ClosetChip(
+                                label: nom,
+                                isActive: nom == universActif,
+                                onTap: () => ref
+                                    .read(selectedUniverseProvider.notifier)
+                                    .setUniverse(
+                                      nom == universActif ? '' : nom,
+                                    ),
+                              ),
+                          ],
+                        ),
+                      ],
+                      const SizedBox(height: AppSpacing.p16),
+                      Padding(
+                        padding: EdgeInsets.symmetric(horizontal: marge),
+                        child: _RangeeTriEtFiltres(
+                          filtresActifs: _filtresActifs,
+                          onTrier: () => _ouvrirTri(context),
+                          onFiltres: () => _ouvrirFiltres(context),
+                        ),
                       ),
+                      const SizedBox(height: AppSpacing.p12),
+                      catalogue.when(
+                        skipLoadingOnReload: true,
+                        data: (articles) => _Resultats(
+                          articles: articles,
+                          onAccueil: () {
+                            _reinitialiserFiltres();
+                            context.go('/home');
+                          },
+                        ),
+                        loading: () => const SizedBox(
+                          height: 280,
+                          child: EtatEcran.chargement(),
+                        ),
+                        error: (e, _) => SizedBox(
+                          height: 280,
+                          child: EtatEcran.erreur(
+                            erreur: e,
+                            onRetry: () =>
+                                ref.invalidate(filteredArticlesProvider),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: AppSpacing.p24),
+                    ],
                   ],
                 ),
               ),
-              if (categories.isNotEmpty) ...[
-                const SizedBox(height: AppSpacing.p16),
-                BandeauDefilable(
-                  padding: EdgeInsets.symmetric(horizontal: marge),
-                  enfants: [
-                    ClosetChip(
-                      label: l10n.toutes,
-                      isActive: universActif.isEmpty,
-                      onTap: () => ref
-                          .read(selectedUniverseProvider.notifier)
-                          .setUniverse(''),
-                    ),
-                    for (final nom in categories)
-                      ClosetChip(
-                        label: nom,
-                        isActive: nom == universActif,
-                        onTap: () => ref
-                            .read(selectedUniverseProvider.notifier)
-                            .setUniverse(nom == universActif ? '' : nom),
-                      ),
-                  ],
-                ),
-              ],
-              const SizedBox(height: AppSpacing.p16),
-              catalogue.when(
-                skipLoadingOnReload: true,
-                data: (articles) => _Resultats(
-                  articles: articles,
-                  onReinitialiser: _filtresActifs ? _reinitialiserFiltres : null,
-                ),
-                loading: () => const SizedBox(
-                  height: 280,
-                  child: EtatEcran.chargement(),
-                ),
-                error: (e, _) => SizedBox(
-                  height: 280,
-                  child: EtatEcran.erreur(
-                    erreur: e,
-                    onRetry: () => ref.invalidate(filteredArticlesProvider),
-                  ),
-                ),
-              ),
-              const SizedBox(height: AppSpacing.p24),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
   }
 
   void _ouvrirFiltres(BuildContext context) => afficherFiltres(context);
+
+  Future<void> _ouvrirTri(BuildContext context) {
+    final l10n = ClosetL10n.of(context);
+    final options = {
+      TriCatalogue.pertinence: l10n.triPertinence,
+      TriCatalogue.prixCroissant: l10n.triPrixCroissant,
+      TriCatalogue.prixDecroissant: l10n.triPrixDecroissant,
+    };
+    return showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        final actif = ref.watch(triProvider);
+        return Container(
+          decoration: BoxDecoration(
+            color: Theme.of(context).scaffoldBackgroundColor,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+          ),
+          padding: const EdgeInsets.fromLTRB(
+            AppSpacing.p24,
+            AppSpacing.p20,
+            AppSpacing.p24,
+            AppSpacing.p32,
+          ),
+          child: SafeArea(
+            top: false,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const ClosetPoignee(),
+                const SizedBox(height: AppSpacing.p20),
+                Text(l10n.trierPar, style: ClosetTextStyles.titreSection),
+                const SizedBox(height: AppSpacing.p12),
+                for (final entree in options.entries)
+                  RadioListTile<TriCatalogue>(
+                    value: entree.key,
+                    // ignore: deprecated_member_use
+                    groupValue: actif,
+                    contentPadding: EdgeInsets.zero,
+                    activeColor: context.closetVert,
+                    title: Text(entree.value, style: ClosetTextStyles.libelle),
+                    // ignore: deprecated_member_use
+                    onChanged: (val) {
+                      if (val == null) return;
+                      ref.read(triProvider.notifier).choisir(val);
+                      Navigator.of(context).pop();
+                    },
+                  ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+/// Compte de résultats à gauche, tri explicite et accès aux filtres à
+/// droite — remplace l'icône « filtre » qui vivait dans la barre de
+/// recherche : plus lisible, et n'encombre plus le champ de saisie.
+class _RangeeTriEtFiltres extends StatelessWidget {
+  const _RangeeTriEtFiltres({
+    required this.filtresActifs,
+    required this.onTrier,
+    required this.onFiltres,
+  });
+
+  final bool filtresActifs;
+  final VoidCallback onTrier;
+  final VoidCallback onFiltres;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = ClosetL10n.of(context);
+    return Row(
+      children: [
+        Expanded(
+          child: InkWell(
+            onTap: onTrier,
+            borderRadius: BorderRadius.circular(AppRadius.bouton),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: AppSpacing.p4),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    Icons.swap_vert_rounded,
+                    size: 18,
+                    color: context.closetSecondaire,
+                  ),
+                  const SizedBox(width: AppSpacing.p4),
+                  Text(
+                    l10n.trierPar,
+                    style: ClosetTextStyles.libelle.copyWith(
+                      color: context.closetSecondaire,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+        IconButton(
+          key: ClosetTourKeys.filtresKey,
+          tooltip: l10n.filtrer,
+          onPressed: onFiltres,
+          icon: Icon(
+            Icons.tune,
+            size: 18,
+            color: filtresActifs
+                ? context.closetVert
+                : context.closetSecondaire,
+          ),
+        ),
+      ],
+    );
+  }
 }
 
 class _Resultats extends StatelessWidget {
-  const _Resultats({
-    required this.articles,
-    this.onReinitialiser,
-  });
+  const _Resultats({required this.articles, required this.onAccueil});
 
   final List<Article> articles;
-  final VoidCallback? onReinitialiser;
+  final VoidCallback onAccueil;
 
   @override
   Widget build(BuildContext context) {
     if (articles.isEmpty) {
       return ClosetListeVide(
         message: ClosetL10n.of(context).aucunePieceRecherche,
-        action: onReinitialiser,
-        libelleAction:
-            onReinitialiser == null ? null : ClosetL10n.of(context).effacerRecherche,
+        action: onAccueil,
+        libelleAction: ClosetL10n.of(context).revenirAccueil,
       );
     }
 
@@ -465,8 +632,6 @@ class _BarreRecherche extends StatelessWidget {
     required this.onChanged,
     required this.onSubmitted,
     required this.onEffacer,
-    required this.onFiltres,
-    required this.filtresActifs,
   });
 
   final TextEditingController controller;
@@ -474,12 +639,11 @@ class _BarreRecherche extends StatelessWidget {
   final ValueChanged<String> onChanged;
   final ValueChanged<String> onSubmitted;
   final VoidCallback onEffacer;
-  final VoidCallback onFiltres;
-  final bool filtresActifs;
 
   @override
   Widget build(BuildContext context) {
     return SizedBox(
+      key: ClosetTourKeys.rechercheKey,
       height: 45,
       child: TextField(
         controller: controller,
@@ -488,48 +652,36 @@ class _BarreRecherche extends StatelessWidget {
         onSubmitted: onSubmitted,
         textInputAction: TextInputAction.search,
         maxLength: 120,
-        buildCounter: (
-          context, {
-          required currentLength,
-          required isFocused,
-          maxLength,
-        }) =>
-            null,
+        buildCounter:
+            (
+              context, {
+              required currentLength,
+              required isFocused,
+              maxLength,
+            }) => null,
         style: ClosetTextStyles.saisie.copyWith(color: context.closetEncre),
-        cursorColor: ClosetColors.vert,
+        cursorColor: context.closetVert,
         decoration: InputDecoration(
           hintText: ClosetL10n.of(context).rechercherPiece,
           hintStyle: ClosetTextStyles.saisie.copyWith(
-            color: ClosetColors.chipTexteInactif,
+            color: context.closetSecondaire,
           ),
-          prefixIcon: const Icon(
+          prefixIcon: Icon(
             Icons.search,
             size: 16,
-            color: ClosetColors.chipTexteInactif,
+            color: context.closetSecondaire,
           ),
-          suffixIcon: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              if (controller.text.isNotEmpty)
-                IconButton(
+          suffixIcon: controller.text.isEmpty
+              ? null
+              : IconButton(
                   icon: const Icon(Icons.close, size: 16),
-                  color: ClosetColors.chipTexteInactif,
+                  color: context.closetSecondaire,
                   onPressed: onEffacer,
                 ),
-              IconButton(
-                tooltip: 'Filtrer',
-                icon: Icon(
-                  Icons.tune,
-                  size: 18,
-                  color: filtresActifs
-                      ? ClosetColors.vert
-                      : ClosetColors.chipTexteInactif,
-                ),
-                onPressed: onFiltres,
-              ),
-            ],
+          suffixIconConstraints: const BoxConstraints(
+            minWidth: 0,
+            minHeight: 0,
           ),
-          suffixIconConstraints: const BoxConstraints(minWidth: 0, minHeight: 0),
           counterText: '',
           filled: true,
           fillColor: context.closetChamp,
@@ -538,16 +690,16 @@ class _BarreRecherche extends StatelessWidget {
             horizontal: AppSpacing.p16,
             vertical: AppSpacing.p12,
           ),
-          border: _bordure(ClosetColors.carteBordure),
-          enabledBorder: _bordure(ClosetColors.carteBordure),
-          focusedBorder: _bordure(ClosetColors.fond300),
+          border: _bordure(context.closetBordure),
+          enabledBorder: _bordure(context.closetBordure),
+          focusedBorder: _bordure(context.closetVert),
         ),
       ),
     );
   }
 
   static OutlineInputBorder _bordure(Color couleur) => OutlineInputBorder(
-        borderRadius: BorderRadius.circular(AppRadius.bouton),
-        borderSide: BorderSide(color: couleur, width: AppStroke.fin),
-      );
+    borderRadius: BorderRadius.circular(AppRadius.bouton),
+    borderSide: BorderSide(color: couleur, width: AppStroke.fin),
+  );
 }

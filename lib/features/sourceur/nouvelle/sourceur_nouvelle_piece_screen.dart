@@ -11,9 +11,11 @@ import '../../../core/l10n/closet_l10n.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/closet_colors.dart';
 import '../../../core/theme/closet_text_styles.dart';
+import '../../../core/widgets/closet_app_bar.dart';
 import '../../../core/widgets/closet_chip.dart';
 import '../../../core/widgets/closet_feedback.dart';
 import '../../../core/widgets/closet_sections.dart';
+import '../../../core/widgets/spotlight_showcase.dart';
 import '../../../core/widgets/toasts.dart';
 import '../../../data/models/article.dart';
 import '../../../data/repositories/catalog_repository.dart';
@@ -21,27 +23,27 @@ import '../../../data/repositories/sourceur_repository.dart';
 import '../widgets/sourceur_header.dart';
 
 /// États alignés sur `PieceCondition` : `new` | `very_good` | `good`.
-const List<(String api, String libelle)> etatsPiece = [
-  ('new', 'Neuf'),
-  ('very_good', 'Très bon état'),
-  ('good', 'Bon état'),
-];
+List<(String api, String libelle)> etatsPiecePour(ClosetL10n l10n) => [
+      ('new', l10n.etatNeuf),
+      ('very_good', l10n.etatTresBonEtat),
+      ('good', l10n.etatBonEtat),
+    ];
 
-const typesArticle = [
-  'Robe',
-  'Chemise',
-  'Pantalon',
-  'Veste',
-  'Manteau',
-  'Jupe',
-  'Pull',
-  'T-shirt',
-  'Blouse',
-  'Ensemble',
-  'Sac',
-  'Chaussures',
-  'Accessoire',
-];
+List<String> typesArticlePour(ClosetL10n l10n) => [
+      l10n.typeRobe,
+      l10n.typeChemise,
+      l10n.typePantalon,
+      l10n.typeVeste,
+      l10n.typeManteau,
+      l10n.typeJupe,
+      l10n.typePull,
+      l10n.typeTshirt,
+      l10n.typeBlouse,
+      l10n.typeEnsemble,
+      l10n.typeSac,
+      l10n.typeChaussures,
+      l10n.typeAccessoire,
+    ];
 
 const taillesArticle = [
   'XS',
@@ -147,14 +149,14 @@ class _SourceurNouvellePieceScreenState
 
     try {
       final l10n = ClosetL10n.of(context);
-      final id = await ClosetDialogue.executer(
+      final resultat = await ClosetDialogue.executer(
         context,
         message: l10n.depotEnCours,
         action: () => ref
             .read<SourceurRepository>(sourceurRepositoryProvider)
-            .deposerPiece(piece, medias: medias),
+            .deposerPiece(piece, medias: medias, l10n: l10n),
       );
-      if (!mounted || id == null) return;
+      if (!mounted || resultat == null) return;
       setState(() => _envoiEnCours = false);
       ref.invalidate(mesPiecesProvider);
 
@@ -162,10 +164,12 @@ class _SourceurNouvellePieceScreenState
       await dialogueSucces(
         context,
         titre: l10n.pieceRecue,
-        message: l10n.pieceEnExamen(piece.nom),
+        message: resultat.aDesMediasEnEchec
+            ? '${l10n.pieceEnExamen(piece.nom)}\n\n${l10n.photosNonJointesMessage}'
+            : l10n.pieceEnExamen(piece.nom),
       );
       if (!mounted) return;
-      context.go('/sourceur/piece/$id');
+      context.go('/sourceur/piece/${resultat.id}');
     } catch (e) {
       if (!mounted) return;
       await dialogueErreur(
@@ -226,7 +230,7 @@ class _SourceurNouvellePieceScreenState
         m.nom,
     ];
     final types = {
-      ...typesArticle,
+      ...typesArticlePour(l10n),
       for (final u in ref.watch(universProvider).value ?? const <Univers>[])
         u.nom,
     }.toList()
@@ -243,7 +247,11 @@ class _SourceurNouvellePieceScreenState
               afficherRetour: _etape > 0,
               onRetour: _revenir,
             ),
-            _BarreEtapes(etape: _etape),
+            _BarreEtapes(
+              key: ClosetTourKeys.sourceurEtapesKey,
+              etape: _etape,
+              titres: _titresEtape,
+            ),
             Expanded(
               child: Form(
                 key: _formKey,
@@ -329,11 +337,11 @@ class _SourceurNouvellePieceScreenState
     );
   }
 
-  static String? _validerPrix(String? v) {
+  static String? _validerPrix(String? v, ClosetL10n l10n) {
     final brut = (v ?? '').replaceAll(RegExp(r'[^\d]'), '');
-    if (brut.isEmpty) return 'Indiquez un prix souhaité.';
+    if (brut.isEmpty) return l10n.nouvellePieceIndiquerPrix;
     final montant = int.tryParse(brut);
-    if (montant == null || montant <= 0) return 'Ce prix semble incorrect.';
+    if (montant == null || montant <= 0) return l10n.nouvellePiecePrixIncorrect;
     return null;
   }
 }
@@ -363,37 +371,108 @@ class _SeparateurMilliers extends TextInputFormatter {
   }
 }
 
+/// Sur trois pastilles numérotées, avec coche sur les étapes déjà passées :
+/// on voit d'un coup d'œil où on en est et ce qu'il reste à faire, plutôt
+/// qu'un simple trait de progression sans repère.
 class _BarreEtapes extends StatelessWidget {
-  const _BarreEtapes({required this.etape});
+  const _BarreEtapes({super.key, required this.etape, required this.titres});
 
   final int etape;
+  final List<String> titres;
 
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(
-        AppSpacing.p20,
-        AppSpacing.p12,
-        AppSpacing.p20,
-        0,
+        AppSpacing.p24,
+        AppSpacing.p16,
+        AppSpacing.p24,
+        AppSpacing.p16,
       ),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          for (var i = 0; i < 3; i++) ...[
-            if (i > 0) const SizedBox(width: AppSpacing.p8),
-            Expanded(
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 200),
-                height: 3,
-                decoration: BoxDecoration(
-                  color: i <= etape
-                      ? ClosetColors.vert
-                      : ClosetColors.fond300.withValues(alpha: 0.45),
-                  borderRadius: BorderRadius.circular(2),
+          for (var i = 0; i < titres.length; i++) ...[
+            _PastilleEtape(
+              numero: i + 1,
+              label: titres[i],
+              atteinte: i <= etape,
+              courante: i == etape,
+            ),
+            if (i < titres.length - 1)
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.only(top: 13),
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    height: 2,
+                    decoration: BoxDecoration(
+                      color: i < etape
+                          ? context.closetVert
+                          : context.closetLigne,
+                      borderRadius: BorderRadius.circular(1),
+                    ),
+                  ),
                 ),
               ),
-            ),
           ],
+        ],
+      ),
+    );
+  }
+}
+
+class _PastilleEtape extends StatelessWidget {
+  const _PastilleEtape({
+    required this.numero,
+    required this.label,
+    required this.atteinte,
+    required this.courante,
+  });
+
+  final int numero;
+  final String label;
+  final bool atteinte;
+  final bool courante;
+
+  @override
+  Widget build(BuildContext context) {
+    final couleur = atteinte ? context.closetVert : context.closetLigne;
+    return SizedBox(
+      width: 76,
+      child: Column(
+        children: [
+          AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            width: 26,
+            height: 26,
+            decoration: BoxDecoration(
+              color: atteinte ? context.closetVert : context.closetCarte,
+              shape: BoxShape.circle,
+              border: Border.all(color: couleur, width: AppStroke.moyen),
+            ),
+            alignment: Alignment.center,
+            child: atteinte && !courante
+                ? const Icon(Icons.check, size: 14, color: ClosetColors.blanc)
+                : Text(
+                    '$numero',
+                    style: ClosetTextStyles.corps.copyWith(
+                      fontWeight: FontWeight.w700,
+                      color: atteinte ? ClosetColors.blanc : couleur,
+                    ),
+                  ),
+          ),
+          const SizedBox(height: AppSpacing.p4),
+          Text(
+            label,
+            textAlign: TextAlign.center,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: ClosetTextStyles.detail.copyWith(
+              fontWeight: courante ? FontWeight.w700 : FontWeight.w400,
+              color: atteinte ? context.closetVert : context.closetSecondaire,
+            ),
+          ),
         ],
       ),
     );
@@ -451,11 +530,12 @@ class _EtapeType extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = ClosetL10n.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        ClosetSurtitre(ClosetL10n.of(context).depotEtapeType),
-        const SizedBox(height: AppSpacing.p12),
+        ClosetSurtitre(l10n.depotEtapeType),
+        const SizedBox(height: AppSpacing.p16),
         Wrap(
           spacing: AppSpacing.p8,
           runSpacing: AppSpacing.p8,
@@ -516,12 +596,20 @@ class _EtapeDetails extends StatelessWidget {
         ),
         const SizedBox(height: AppSpacing.p24),
         ClosetSurtitre(l10n.etatPiece),
+        const SizedBox(height: AppSpacing.p8),
+        Text(
+          l10n.depotEtatAide,
+          style: ClosetTextStyles.corps.copyWith(
+            color: context.closetSecondaire,
+            height: 1.4,
+          ),
+        ),
         const SizedBox(height: AppSpacing.p12),
         Wrap(
           spacing: AppSpacing.p8,
           runSpacing: AppSpacing.p8,
           children: [
-            for (final e in etatsPiece)
+            for (final e in etatsPiecePour(l10n))
               ClosetChip(
                 label: e.$2,
                 isActive: e.$1 == etat,
@@ -531,15 +619,65 @@ class _EtapeDetails extends StatelessWidget {
         ),
         const SizedBox(height: AppSpacing.p24),
         _Champ(
-          label: 'Prix souhaité',
+          label: l10n.nouvellePiecePrixSouhaite,
           hint: '30.000',
           controller: prix,
           keyboardType: TextInputType.number,
           textInputAction: TextInputAction.done,
-          validator: _SourceurNouvellePieceScreenState._validerPrix,
+          validator: (v) => _SourceurNouvellePieceScreenState._validerPrix(v, l10n),
           inputFormatters: const [_SeparateurMilliers()],
         ),
+        const SizedBox(height: AppSpacing.p8),
+        _EstimationCommission(prix: prix),
       ],
+    );
+  }
+}
+
+/// Ce que la sourceuse touchera réellement une fois la commission ClosET
+/// déduite — calculé au fil de la saisie, pour qu'elle fixe un prix en
+/// connaissance de cause plutôt que de le découvrir à la vente.
+class _EstimationCommission extends StatelessWidget {
+  const _EstimationCommission({required this.prix});
+
+  final TextEditingController prix;
+
+  static const _tauxCommission = 0.25;
+
+  @override
+  Widget build(BuildContext context) {
+    return ValueListenableBuilder<TextEditingValue>(
+      valueListenable: prix,
+      builder: (context, valeur, _) {
+        final chiffres = valeur.text.replaceAll(RegExp(r'[^\d]'), '');
+        final montant = double.tryParse(chiffres) ?? 0;
+        if (montant <= 0) return const SizedBox.shrink();
+        final l10n = ClosetL10n.of(context);
+        final net = montant * (1 - _tauxCommission);
+        return Padding(
+          padding: const EdgeInsets.only(top: AppSpacing.p4),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Icon(
+                Icons.info_outline_rounded,
+                size: 14,
+                color: context.closetSecondaire,
+              ),
+              const SizedBox(width: AppSpacing.p8),
+              Expanded(
+                child: Text(
+                  l10n.depotCommissionEstimee(formatPrixFcfa(net)),
+                  style: ClosetTextStyles.meta.copyWith(
+                    color: context.closetSecondaire,
+                    height: 1.35,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 }
@@ -555,14 +693,15 @@ class _ChampMarque extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = ClosetL10n.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Marque (si connue)',
+          l10n.nouvellePieceMarque,
           style: ClosetTextStyles.labelChamp.copyWith(
             fontWeight: FontWeight.w500,
-            color: ClosetColors.vert,
+            color: context.closetVert,
           ),
         ),
         const SizedBox(height: AppSpacing.p8),
@@ -587,8 +726,8 @@ class _ChampMarque extends StatelessWidget {
               maxLength: 120,
               textCapitalization: TextCapitalization.words,
               onChanged: (v) => controller.text = v,
-              style: ClosetTextStyles.saisie.copyWith(color: ClosetColors.noir),
-              cursorColor: ClosetColors.vert,
+              style: ClosetTextStyles.saisie.copyWith(color: context.closetEncre),
+              cursorColor: context.closetVert,
               decoration: InputDecoration(
                 hintText: 'Lin & Co',
                 hintStyle: ClosetTextStyles.saisie.copyWith(
@@ -596,15 +735,15 @@ class _ChampMarque extends StatelessWidget {
                 ),
                 counterText: '',
                 filled: true,
-                fillColor: ClosetColors.blanc,
+                fillColor: context.closetChamp,
                 isDense: true,
                 contentPadding: const EdgeInsets.symmetric(
                   horizontal: AppSpacing.p16,
                   vertical: AppSpacing.p12,
                 ),
-                border: _Champ._bordure(ClosetColors.fond300),
-                enabledBorder: _Champ._bordure(ClosetColors.fond300),
-                focusedBorder: _Champ._bordure(ClosetColors.vert),
+                border: _Champ._bordure(context.closetBordure),
+                enabledBorder: _Champ._bordure(context.closetBordure),
+                focusedBorder: _Champ._bordure(context.closetVert),
               ),
             );
           },
@@ -643,7 +782,7 @@ class _Champ extends StatelessWidget {
           label,
           style: ClosetTextStyles.labelChamp.copyWith(
             fontWeight: FontWeight.w500,
-            color: ClosetColors.vert,
+            color: context.closetVert,
           ),
         ),
         const SizedBox(height: AppSpacing.p8),
@@ -654,8 +793,8 @@ class _Champ extends StatelessWidget {
           validator: validator,
           inputFormatters: inputFormatters,
           textCapitalization: TextCapitalization.sentences,
-          style: ClosetTextStyles.saisie.copyWith(color: ClosetColors.noir),
-          cursorColor: ClosetColors.vert,
+          style: ClosetTextStyles.saisie.copyWith(color: context.closetEncre),
+          cursorColor: context.closetVert,
           decoration: InputDecoration(
             hintText: hint,
             hintStyle: ClosetTextStyles.saisie.copyWith(
@@ -663,15 +802,15 @@ class _Champ extends StatelessWidget {
             ),
             counterText: '',
             filled: true,
-            fillColor: ClosetColors.blanc,
+            fillColor: context.closetChamp,
             isDense: true,
             contentPadding: const EdgeInsets.symmetric(
               horizontal: AppSpacing.p16,
               vertical: AppSpacing.p12,
             ),
-            border: _bordure(ClosetColors.fond300),
-            enabledBorder: _bordure(ClosetColors.fond300),
-            focusedBorder: _bordure(ClosetColors.vert),
+            border: _bordure(context.closetBordure),
+            enabledBorder: _bordure(context.closetBordure),
+            focusedBorder: _bordure(context.closetVert),
             errorBorder: _bordure(ClosetColors.erreurCouture),
             focusedErrorBorder: _bordure(ClosetColors.erreurCouture),
           ),
@@ -714,6 +853,7 @@ class _ZoneDepotPhotos extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = ClosetL10n.of(context);
     return Container(
       constraints: const BoxConstraints(minHeight: 230),
       padding: const EdgeInsets.symmetric(
@@ -760,8 +900,8 @@ class _ZoneDepotPhotos extends StatelessWidget {
           const SizedBox(height: AppSpacing.p20),
           Text(
             medias.isEmpty
-                ? 'Prenez une photo ou importez-en une depuis la galerie.'
-                : '${medias.length} média${medias.length > 1 ? 's' : ''} — vous pouvez en ajouter.',
+                ? l10n.nouvellePieceMediasVide
+                : l10n.nouvellePieceMediasAjoutes(medias.length),
             textAlign: TextAlign.center,
             style: ClosetTextStyles.corps.copyWith(
               letterSpacing: 0,
@@ -773,7 +913,7 @@ class _ZoneDepotPhotos extends StatelessWidget {
             children: [
               Expanded(
                 child: _BoutonPhoto(
-                  label: 'Photo',
+                  label: l10n.nouvellePiecePhoto,
                   plein: false,
                   onTap: onPrendre,
                 ),
@@ -781,7 +921,7 @@ class _ZoneDepotPhotos extends StatelessWidget {
               const SizedBox(width: AppSpacing.p8),
               Expanded(
                 child: _BoutonPhoto(
-                  label: 'Vidéo',
+                  label: l10n.nouvellePieceVideo,
                   plein: false,
                   onTap: onFilmer,
                 ),
@@ -789,7 +929,7 @@ class _ZoneDepotPhotos extends StatelessWidget {
               const SizedBox(width: AppSpacing.p8),
               Expanded(
                 child: _BoutonPhoto(
-                  label: 'Importer',
+                  label: l10n.nouvellePieceImporter,
                   plein: true,
                   onTap: onImporter,
                 ),
@@ -835,7 +975,7 @@ class _VignetteMedia extends StatelessWidget {
           right: -6,
           child: Semantics(
             button: true,
-            label: 'Retirer le média',
+            label: ClosetL10n.of(context).nouvellePieceRetirerMedia,
             child: GestureDetector(
               onTap: onRetirer,
               child: Container(

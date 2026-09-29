@@ -2,6 +2,8 @@ import 'dart:async';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../utils/texte.dart';
+
 /// Type de notification
 enum NotificationType { info, success, error }
 
@@ -47,8 +49,8 @@ class NotificationNotifier extends Notifier<ClosetNotification?> {
     HapticFeedback.lightImpact();
     
     state = ClosetNotification(
-      title: title,
-      message: message,
+      title: avecMajuscule(title),
+      message: avecMajuscule(message),
       type: type,
       actionLabel: actionLabel,
       onAction: onAction,

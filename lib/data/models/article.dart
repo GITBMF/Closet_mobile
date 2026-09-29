@@ -1,3 +1,4 @@
+import '../../core/l10n/closet_l10n.dart';
 import '../api/api_json.dart';
 import 'etat_piece.dart';
 
@@ -58,7 +59,13 @@ class Article {
     String? nomMaison,
     String? nomUnivers,
   }) {
-    final images = chainesDe(json['images']);
+    // `imageUrls` : clé écrite par [toJson] pour la sélection et les favoris
+    // stockés sur l'appareil — sans elle, les photos disparaissaient au
+    // rechargement.
+    final images = [
+      ...chainesDe(json['images']),
+      ...chainesDe(json['imageUrls']),
+    ];
     final couverture = chaineDe(json['image_url']);
     final urls = <String>[
       if (couverture.isNotEmpty) couverture,
@@ -174,6 +181,18 @@ class Article {
     ).hasMatch(title);
   }
 
+  /// Libellé localisé de [condition] (`new` / `very_good` / `good` /
+  /// `excellent` du backend).
+  String libelleCondition(ClosetL10n l10n) {
+    return switch (condition) {
+      'new' => l10n.etatNeuf,
+      'very_good' => l10n.etatTresBonEtat,
+      'good' => l10n.etatBonEtat,
+      'excellent' => l10n.etatExcellent,
+      _ => condition,
+    };
+  }
+
   Map<String, dynamic> toJson() => {
         'id': id,
         'title': title,
@@ -260,18 +279,18 @@ class Article {
       condition.trim().isEmpty ? 0 : niveauEtat.etoiles;
 
   /// Conseil d'entretien dérivé de la matière renvoyée par le catalogue.
-  String get conseilsLavage {
+  String conseilsLavage(ClosetL10n l10n) {
     final m = material.toLowerCase();
     if (m.contains('soie') || m.contains('silk')) {
-      return 'Nettoyage à sec recommandé';
+      return l10n.conseilNettoyageSec;
     }
     if (m.contains('laine') || m.contains('wool') || m.contains('cachemire')) {
-      return 'Lavage à la main, à froid';
+      return l10n.conseilLavageMain;
     }
     if (m.contains('cuir') || m.contains('leather')) {
-      return 'Entretien cuir, pas de lavage en machine';
+      return l10n.conseilEntretienCuir;
     }
-    return 'Lavage délicat. Suivre l’étiquette d’entretien.';
+    return l10n.conseilLavageDelicat;
   }
 }
 

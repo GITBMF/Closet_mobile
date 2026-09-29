@@ -9,9 +9,13 @@ class ClosetFilet extends StatelessWidget {
     super.key,
     this.couleur = ClosetColors.ligne,
     this.hauteur = AppStroke.filet,
+    this.epaisseur = AppStroke.filet,
   });
 
   final Color couleur;
+
+  /// Épaisseur du trait dessiné.
+  final double epaisseur;
 
   /// Hauteur du widget. Le trait reste [AppStroke.filet].
   final double hauteur;
@@ -20,7 +24,7 @@ class ClosetFilet extends StatelessWidget {
   Widget build(BuildContext context) {
     return Divider(
       color: couleur,
-      thickness: AppStroke.filet,
+      thickness: epaisseur,
       height: hauteur,
     );
   }

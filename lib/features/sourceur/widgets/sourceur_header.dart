@@ -174,10 +174,10 @@ class SourceurEntree extends StatelessWidget {
                 Expanded(
                   child: Text(label, style: ClosetTextStyles.libelle),
                 ),
-                const Icon(
+                Icon(
                 Icons.chevron_right,
                 size: 18,
-                color: ClosetColors.taupe,
+                color: context.closetSecondaire,
               ),
               ],
             ),

@@ -2,6 +2,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 
+import '../../core/l10n/closet_l10n.dart';
+import '../../core/utils/date_format.dart';
 import '../api/api_exception.dart';
 import '../api/api_json.dart';
 import '../bff_client/api_client.dart';
@@ -57,19 +59,21 @@ String conditionApiDepuis(String? etat) {
   };
 }
 
-String libelleCondition(String? etat) {
+String libelleCondition(String? etat, [ClosetL10n? l10n]) {
   if (etat == null || etat.trim().isEmpty) return '';
+  final l = l10n ?? ClosetL10n.fr;
   return switch (conditionApiDepuis(etat)) {
-    'new' => 'Neuf',
-    'very_good' => 'Très bon état',
-    _ => 'Bon état',
+    'new' => l.etatNeuf,
+    'very_good' => l.etatTresBonEtat,
+    _ => l.etatBonEtat,
   };
 }
 
-String libelleMethodeCollecte(String? methode) {
+String libelleMethodeCollecte(String? methode, [ClosetL10n? l10n]) {
+  final l = l10n ?? ClosetL10n.fr;
   return switch ((methode ?? '').trim()) {
-    'pickup' => 'Collecte à domicile',
-    'drop_off' => 'Dépôt en boutique',
+    'pickup' => l.collecteDomicile,
+    'drop_off' => l.collecteDepot,
     _ => '',
   };
 }
@@ -123,10 +127,10 @@ class RetraitSourceur {
   final String moyen;
   final StatutRetrait statut;
 
-  String get libelle => switch (statut) {
-        StatutRetrait.approuve => 'Retrait approuvé',
-        StatutRetrait.enCours => 'Retrait en cours',
-        StatutRetrait.refuse => 'Retrait refusé',
+  String libelle(ClosetL10n l10n) => switch (statut) {
+        StatutRetrait.approuve => l10n.retraitApprouveLabel,
+        StatutRetrait.enCours => l10n.retraitEnCoursLabel,
+        StatutRetrait.refuse => l10n.retraitRefuseLabel,
       };
 }
 
@@ -155,7 +159,9 @@ class SourceurInscriptionData {
 class SourceurProfile {
   final String nomAtelier;
   final String ville;
-  final String depuis;
+
+  /// `null` = pas de date connue (compte créé sans fiche `/sourcing/me`).
+  final DateTime? depuis;
   final String whatsapp;
   final String univers;
   final String statutApi;
@@ -175,28 +181,31 @@ class SourceurProfile {
     this.typeCollaboration = '',
   });
 
-  String get libelleStatut => switch (statutApi) {
-        'approved' => 'Approuvé',
-        'rejected' => 'Refusé',
-        'suspended' => 'Suspendu',
-        _ => 'En étude',
+  String libelleStatut(ClosetL10n l10n) => switch (statutApi) {
+        'approved' => l10n.statutApprouve,
+        'rejected' => l10n.statutRefuse,
+        'suspended' => l10n.statutSuspendu,
+        _ => l10n.statutEnEtude,
       };
 
-  String get libelleCollaboration => switch (typeCollaboration) {
-        'direct_sale' => 'Vente directe',
-        'consignment' => 'Dépôt-vente',
-        _ => typeCollaboration.isEmpty ? 'Non renseigné' : typeCollaboration,
+  String libelleCollaboration(ClosetL10n l10n) => switch (typeCollaboration) {
+        'direct_sale' => l10n.collaborationVenteDirecte,
+        'consignment' => l10n.collaborationDepotVente,
+        _ => typeCollaboration.isEmpty ? l10n.nonRenseigne : typeCollaboration,
       };
 
-  String get libelleMoyenPaiement {
-    if (moyenPaiement.isEmpty) return 'Non renseigné';
+  String libelleMoyenPaiement(ClosetL10n l10n) {
+    if (moyenPaiement.isEmpty) return l10n.nonRenseigne;
     final v = moyenPaiement.toLowerCase();
-    if (v.contains('mtn')) return 'MTN Mobile Money';
-    if (v.contains('orange')) return 'Orange Money';
-    if (v.contains('visa') || v.contains('carte')) return 'Carte Visa';
-    if (v.contains('virement')) return 'Virement bancaire';
+    if (v.contains('mtn')) return l10n.moyenMtnMobileMoney;
+    if (v.contains('orange')) return l10n.moyenOrangeMoney;
+    if (v.contains('visa') || v.contains('carte')) return l10n.moyenCarteVisa;
+    if (v.contains('virement')) return l10n.moyenVirementBancaire;
     return moyenPaiement[0].toUpperCase() + moyenPaiement.substring(1);
   }
+
+  String get libelleDepuis =>
+      depuis == null ? '' : formatDateJourMoisAnnee(depuis!);
 }
 
 enum EtapeAdhesion { soumise, enEtude, validee, premierePiece }
@@ -215,6 +224,17 @@ class AdhesionSourceur {
 
   bool get estValidee =>
       etape == EtapeAdhesion.validee || etape == EtapeAdhesion.premierePiece;
+}
+
+/// Résultat d'un dépôt : l'identifiant créé, et le nombre de médias qui
+/// n'ont pas pu être joints (le dépôt lui-même n'est jamais annulé pour ça).
+class ResultatDepot {
+  const ResultatDepot({required this.id, this.mediasEchoues = 0});
+
+  final String id;
+  final int mediasEchoues;
+
+  bool get aDesMediasEnEchec => mediasEchoues > 0;
 }
 
 class SourceurRepository extends ChangeNotifier {
@@ -239,16 +259,16 @@ class SourceurRepository extends ChangeNotifier {
   bool accesAutorisePour(ClosetUser? user) =>
       (user?.estSourceur ?? false) || estInscrit;
 
-  Future<void> chargerProfil({ClosetUser? compte}) async {
+  Future<void> chargerProfil({ClosetUser? compte, ClosetL10n? l10n}) async {
     try {
       final json = await _client.getJson('/sourcing/me');
-      _appliquerProfil(json);
-      await Future.wait<void>([_chargerPieces(), _chargerRetraits()]);
+      _appliquerProfil(json, l10n);
+      await Future.wait<void>([_chargerPieces(l10n), _chargerRetraits()]);
       notifyListeners();
     } on ApiException catch (e) {
       if (!_estAbsenceDeFiche(e)) rethrow;
       if (compte?.estSourceur == true) {
-        _appliquerCompteSourceur(compte!);
+        _appliquerCompteSourceur(compte!, l10n);
         notifyListeners();
         return;
       }
@@ -268,12 +288,14 @@ class SourceurRepository extends ChangeNotifier {
     return e.kind == KindErreurApi.nonAutorise && e.status == 403;
   }
 
-  void _appliquerCompteSourceur(ClosetUser user) {
+  void _appliquerCompteSourceur(ClosetUser user, [ClosetL10n? l10n]) {
     _ficheServeur = false;
     _profile = SourceurProfile(
-      nomAtelier: user.nomComplet.isEmpty ? 'Mon atelier' : user.nomComplet,
+      nomAtelier: user.nomComplet.isEmpty
+          ? (l10n ?? ClosetL10n.fr).monAtelierLabel
+          : user.nomComplet,
       ville: user.city,
-      depuis: '',
+      depuis: null,
       whatsapp: user.phone,
       statutApi: 'approved',
     );
@@ -283,14 +305,17 @@ class SourceurRepository extends ChangeNotifier {
     );
   }
 
-  void _appliquerProfil(Map<String, dynamic> json) {
+  void _appliquerProfil(Map<String, dynamic> json, [ClosetL10n? l10n]) {
     _ficheServeur = true;
     final statut = chaineDe(json['status']);
     final cree = dateDe(json['created_at']) ?? DateTime.now();
     _profile = SourceurProfile(
-      nomAtelier: chaineDe(json['display_name'], 'Mon atelier'),
+      nomAtelier: chaineDe(
+        json['display_name'],
+        (l10n ?? ClosetL10n.fr).monAtelierLabel,
+      ),
       ville: '',
-      depuis: _moisAnnee(cree),
+      depuis: cree,
       whatsapp: chaineDe(json['phone']),
       statutApi: statut,
       moyenPaiement: chaineDe(json['payout_method']),
@@ -313,14 +338,15 @@ class SourceurRepository extends ChangeNotifier {
     };
   }
 
-  Future<void> _chargerPieces() async {
+  Future<void> _chargerPieces([ClosetL10n? l10n]) async {
     try {
       final page = await _client.getJson('/sourcing/submissions', query: {
         'limit': 50,
         'offset': 0,
       });
       _pieces = [
-        for (final o in objetsDe(listeDe(page))) _pieceDepuisSoumission(o),
+        for (final o in objetsDe(listeDe(page)))
+          _pieceDepuisSoumission(o, l10n),
       ];
       if (_adhesion != null && _profile?.statutApi == 'approved') {
         _adhesion = AdhesionSourceur(
@@ -332,12 +358,19 @@ class SourceurRepository extends ChangeNotifier {
         );
       }
     } on ApiException catch (e) {
-      if (e.kind != KindErreurApi.introuvable) rethrow;
+      // 404 : rien à lister. 403 : une fiche « pending » n'a pas encore le
+      // droit `submission:read:own` — ce n'est pas une absence de fiche, la
+      // méprise faisait perdre tout le profil au niveau de [chargerProfil].
+      if (!_estPasEncoreAutorise(e)) rethrow;
       _pieces = const [];
     }
   }
 
-  PieceDeposee _pieceDepuisSoumission(Map<String, dynamic> json) {
+  bool _estPasEncoreAutorise(ApiException e) =>
+      e.kind == KindErreurApi.introuvable ||
+      (e.kind == KindErreurApi.nonAutorise && e.status == 403);
+
+  PieceDeposee _pieceDepuisSoumission(Map<String, dynamic> json, [ClosetL10n? l10n]) {
     final statutApi = chaineDe(json['status']);
     final medias = objetsDe(json['media']);
     String? imageUrl;
@@ -352,7 +385,10 @@ class SourceurRepository extends ChangeNotifier {
     );
     return PieceDeposee(
       id: chaineDe(json['id']),
-      nom: chaineDe(json['item_type'], chaineDe(json['brand'], 'Pièce')),
+      nom: chaineDe(
+        json['item_type'],
+        chaineDe(json['brand'], (l10n ?? ClosetL10n.fr).checkoutRecuPiece),
+      ),
       univers: chaineDe(json['brand']),
       prix: montantDe(json['desired_price']),
       imageUrl: imageUrl,
@@ -389,7 +425,7 @@ class SourceurRepository extends ChangeNotifier {
           if (o is Map<String, dynamic>) _retraitDepuis(o),
       ];
     } on ApiException catch (e) {
-      if (e.kind != KindErreurApi.introuvable) rethrow;
+      if (!_estPasEncoreAutorise(e)) rethrow;
       _retraits = const [];
     }
   }
@@ -409,36 +445,35 @@ class SourceurRepository extends ChangeNotifier {
     );
   }
 
-  Future<List<PieceDeposee>> getMesPieces() async {
-    await _chargerPieces();
+  Future<List<PieceDeposee>> getMesPieces([ClosetL10n? l10n]) async {
+    await _chargerPieces(l10n);
     return List.unmodifiable(_pieces);
   }
 
-  Future<String> deposerPiece(
+  Future<ResultatDepot> deposerPiece(
     PieceDeposee piece, {
     List<FichierMedia> medias = const [],
+    ClosetL10n? l10n,
   }) async {
+    final l = l10n ?? ClosetL10n.fr;
     if (!_ficheServeur) {
-      throw const ApiException(
-        message:
-            'Aucune fiche sourceur n’est enregistrée pour ce compte. Terminez l’adhésion avant de confier une pièce.',
+      throw ApiException(
+        message: l.ficheSourceurAbsenteMessage,
         kind: KindErreurApi.introuvable,
         status: 404,
       );
     }
     final statut = _profile?.statutApi ?? '';
     if (statut == 'pending') {
-      throw const ApiException(
-        message:
-            'Votre adhésion est encore à l’étude. Le dépôt s’ouvrira après validation.',
+      throw ApiException(
+        message: l.adhesionEncoreALetudeMessage,
         kind: KindErreurApi.nonAutorise,
         status: 403,
       );
     }
     if (statut == 'rejected' || statut == 'suspended') {
-      throw const ApiException(
-        message:
-            'Votre fiche sourceur n’est plus active. Contactez ClosET avant de confier une pièce.',
+      throw ApiException(
+        message: l.ficheSourceurInactiveMessage,
         kind: KindErreurApi.nonAutorise,
         status: 403,
       );
@@ -468,7 +503,7 @@ class SourceurRepository extends ChangeNotifier {
     } on ApiException catch (e) {
       if (e.kind == KindErreurApi.introuvable) {
         throw ApiException(
-          message: _messageDepotIntrouvable(e),
+          message: _messageDepotIntrouvable(e, l),
           kind: e.kind,
           status: e.status,
         );
@@ -477,56 +512,56 @@ class SourceurRepository extends ChangeNotifier {
     }
     final id = chaineDe(creee['id']);
     if (id.isEmpty) {
-      throw const ApiException(
-        message: 'Le dépôt n’a pas renvoyé d’identifiant.',
+      throw ApiException(
+        message: l.depotPasIdentifiantMessage,
         kind: KindErreurApi.serveur,
       );
     }
 
+    var mediasEchoues = 0;
     for (var i = 0; i < medias.length; i++) {
       try {
-        await ajouterMedia(id, medias[i], position: i);
+        await ajouterMedia(id, medias[i], position: i, l10n: l);
       } on ApiException {
-        // Le dépôt est déjà créé : un média refusé ne l’annule pas.
+        // Le dépôt est déjà créé : un média refusé ne l’annule pas, mais on
+        // compte l’échec pour prévenir la personne au lieu de le taire.
+        mediasEchoues++;
       }
     }
 
     try {
-      await _chargerPieces();
+      await _chargerPieces(l);
     } on ApiException {
       // La soumission existe déjà côté serveur.
     }
     notifyListeners();
-    return id;
+    return ResultatDepot(id: id, mediasEchoues: mediasEchoues);
   }
 
   /// `POST /sourcing/submissions/{id}/media`.
   ///
-  /// URL distante → JSON `MediaIn`. Fichier local → `multipart` (`file`),
-  /// comme le catalogue admin.
+  /// N'accepte qu'une URL déjà hébergée (`MediaIn` JSON) : le schéma OpenAPI
+  /// de cette route ne déclare aucun `multipart/form-data`, contrairement à
+  /// `POST /admin/pieces/{id}/media` (réservée au back-office). Un fichier
+  /// local ne peut donc pas être envoyé tant que le serveur n'expose pas de
+  /// route d'upload dédiée — on le signale clairement plutôt que de tenter
+  /// un envoi voué à l'échec.
   Future<void> ajouterMedia(
     String submissionId,
     FichierMedia media, {
     int position = 0,
+    ClosetL10n? l10n,
   }) async {
-    final chemin = '/sourcing/submissions/$submissionId/media';
-    if (media.estUrlDistante) {
-      await _client.postJson(chemin, data: {
-        'url': media.chemin,
-        'position': position,
-      });
-      return;
+    if (!media.estUrlDistante) {
+      throw ApiException(
+        message: (l10n ?? ClosetL10n.fr).envoiDirectPhotosNonPrisEnChargeMessage,
+        kind: KindErreurApi.autre,
+      );
     }
-    final nom = media.nom.isNotEmpty
-        ? media.nom
-        : media.chemin.split(RegExp(r'[\\/]')).last;
-    await _client.postFichier(
-      chemin,
-      champ: 'file',
-      cheminFichier: media.chemin,
-      nomFichier: nom,
-      champs: {'position': '$position'},
-    );
+    await _client.postJson('/sourcing/submissions/$submissionId/media', data: {
+      'url': media.chemin,
+      'position': position,
+    });
   }
 
   /// `GET /sourcing/submissions/{id}`
@@ -591,25 +626,7 @@ class SourceurRepository extends ChangeNotifier {
     notifyListeners();
   }
 
-  static String _moisAnnee(DateTime d) {
-    const mois = [
-      'Janvier',
-      'Février',
-      'Mars',
-      'Avril',
-      'Mai',
-      'Juin',
-      'Juillet',
-      'Août',
-      'Septembre',
-      'Octobre',
-      'Novembre',
-      'Décembre',
-    ];
-    return '${mois[d.month - 1]} ${d.year}';
-  }
-
-  static String _messageDepotIntrouvable(ApiException e) {
+  static String _messageDepotIntrouvable(ApiException e, [ClosetL10n? l10n]) {
     final brut = e.message.trim();
     final minuscule = brut.toLowerCase();
     if (minuscule.contains('sourceur') ||
@@ -618,8 +635,7 @@ class SourceurRepository extends ChangeNotifier {
         minuscule.contains('profile')) {
       return brut;
     }
-    return 'Aucune fiche sourceur n’est liée à ce compte. '
-        'Le serveur refuse le dépôt tant que l’adhésion n’est pas enregistrée.';
+    return (l10n ?? ClosetL10n.fr).ficheSourceurNonLieeMessage;
   }
 }
 
@@ -629,7 +645,9 @@ final sourceurRepositoryProvider =
 });
 
 final mesPiecesProvider = FutureProvider<List<PieceDeposee>>((ref) {
-  return ref.read(sourceurRepositoryProvider).getMesPieces();
+  return ref
+      .read(sourceurRepositoryProvider)
+      .getMesPieces(ref.watch(l10nProvider));
 });
 
 final revenusSourceurProvider = FutureProvider<RevenusSourceur>((ref) {

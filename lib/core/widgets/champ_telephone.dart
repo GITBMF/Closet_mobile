@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../l10n/closet_l10n.dart';
 import '../theme/app_spacing.dart';
 import '../theme/closet_colors.dart';
 import '../theme/closet_text_styles.dart';
@@ -30,7 +31,7 @@ class TelephoneController extends ChangeNotifier {
   }
 
   bool get estValide =>
-      validerTelephone(e164, obligatoire: true) == null;
+      validerTelephone(e164, obligatoire: true, pays: pays) == null;
 
   void choisirPays(IndicateurPays suivant) {
     if (pays.iso == suivant.iso && pays.nom == suivant.nom) return;
@@ -52,9 +53,12 @@ class TelephoneController extends ChangeNotifier {
   void _surNational() {
     if (_ecritureInterne) return;
     final brut = national.text;
-    if (brut.contains('+') ||
-        brut.startsWith('00') ||
-        IndicateurPays.analyser(brut) != null) {
+    // Ne ré-interprète le pays que sur une saisie explicitement
+    // internationale (`+…` ou `00…`) : sans ce garde-fou, un numéro local en
+    // cours de frappe peut coïncider par hasard avec l'indicatif d'un autre
+    // pays et se faire réécrire tout seul sous les yeux de la personne qui
+    // tape encore.
+    if (brut.contains('+') || brut.startsWith('00')) {
       final parse = IndicateurPays.analyser(brut);
       if (parse != null) {
         pays = parse.pays;
@@ -84,6 +88,33 @@ class TelephoneController extends ChangeNotifier {
 }
 
 /// Téléphone : indicateur (drapeau + code) + numéro national + recherche.
+/// Plafonne la saisie au nombre de chiffres du pays sélectionné — sans quoi
+/// rien n'empêche de taper plus de chiffres que le numéro n'en compte.
+///
+/// Laisse passer une saisie internationale (`+…`/`00…`) sans y toucher : ce
+/// texte est repris par [TelephoneController] pour reconnaître le pays et
+/// réécrire le numéro, un plafond appliqué trop tôt le tronquerait avant.
+class _LimiteChiffresPays extends TextInputFormatter {
+  const _LimiteChiffresPays(this.maxChiffres);
+
+  final int maxChiffres;
+
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue ancien,
+    TextEditingValue suivant,
+  ) {
+    final texte = suivant.text;
+    if (texte.contains('+') || texte.startsWith('00')) return suivant;
+    if (texte.length <= maxChiffres) return suivant;
+    final tronque = texte.substring(0, maxChiffres);
+    return TextEditingValue(
+      text: tronque,
+      selection: TextSelection.collapsed(offset: tronque.length),
+    );
+  }
+}
+
 class ChampTelephone extends StatefulWidget {
   const ChampTelephone({
     super.key,
@@ -165,7 +196,8 @@ class _ChampTelephoneState extends State<ChampTelephone> {
       validerTelephone(
         _ctrl.e164,
         obligatoire: widget.obligatoire,
-        libelle: 'numéro',
+        l10n: ClosetL10n.of(context),
+        pays: _ctrl.pays,
       );
 
   @override
@@ -255,8 +287,8 @@ class _HabillageTelephone extends StatelessWidget {
           onPays: onPays,
           onChanged: onChanged,
           fond: context.closetChamp,
-          bordure: ClosetColors.fond300,
-          focus: ClosetColors.vert,
+          bordure: context.closetBordure,
+          focus: context.closetVert,
           hauteur: 42,
         ),
       StyleChampTelephone.checkout => _ChampEncadreTel(
@@ -266,8 +298,8 @@ class _HabillageTelephone extends StatelessWidget {
           onPays: onPays,
           onChanged: onChanged,
           fond: context.closetChamp,
-          bordure: ClosetColors.fond300,
-          focus: ClosetColors.vert,
+          bordure: context.closetBordure,
+          focus: context.closetVert,
           hauteur: null,
         ),
     };
@@ -297,7 +329,7 @@ class _HabillageTelephone extends StatelessWidget {
           label,
           style: ClosetTextStyles.labelChamp.copyWith(
             fontWeight: FontWeight.w500,
-            color: ClosetColors.vert,
+            color: context.closetLabel,
           ),
         ),
     };
@@ -353,6 +385,7 @@ class _ChampEncadreTel extends StatelessWidget {
       textInputAction: textInputAction,
       inputFormatters: [
         FilteringTextInputFormatter.allow(RegExp(r'[\d+\s]')),
+        _LimiteChiffresPays(ctrl.pays.maxChiffres),
       ],
       onChanged: (_) => onChanged(),
       style: ClosetTextStyles.saisie.copyWith(color: context.closetEncre),
@@ -423,6 +456,7 @@ class _ChampSourceurTel extends StatelessWidget {
         textInputAction: textInputAction,
         inputFormatters: [
           FilteringTextInputFormatter.allow(RegExp(r'[\d+\s]')),
+          _LimiteChiffresPays(ctrl.pays.maxChiffres),
         ],
         onChanged: (_) => onChanged(),
         style: ClosetTextStyles.saisie.copyWith(color: cs.onSurface),
@@ -465,9 +499,10 @@ class _BoutonIndicateur extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = ClosetL10n.of(context);
     return Semantics(
       button: true,
-      label: 'Indicatif ${pays.nom} ${pays.libelleCourt}',
+      label: l10n.indicatifPaysSemantique(pays.nomAffiche(l10n), pays.libelleCourt),
       child: InkWell(
         onTap: onTap,
         child: Padding(
@@ -532,6 +567,7 @@ class _SelecteurPaysSheetState extends State<_SelecteurPaysSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = ClosetL10n.of(context);
     final liste = IndicateurPays.rechercher(_recherche.text);
     final hauteur = MediaQuery.sizeOf(context).height * 0.72;
     return SizedBox(
@@ -550,9 +586,9 @@ class _SelecteurPaysSheetState extends State<_SelecteurPaysSheet> {
           Padding(
             padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
             child: Text(
-              'Indicatif du pays',
+              l10n.indicatifDuPays,
               style: ClosetTextStyles.titreBloc.copyWith(
-                color: ClosetColors.vert,
+                color: context.closetVert,
               ),
             ),
           ),
@@ -564,7 +600,7 @@ class _SelecteurPaysSheetState extends State<_SelecteurPaysSheet> {
               onChanged: (_) => setState(() {}),
               style: ClosetTextStyles.saisie,
               decoration: InputDecoration(
-                hintText: 'Pays ou indicatif…',
+                hintText: l10n.paysOuIndicatifHint,
                 prefixIcon: const Icon(Icons.search, size: 20),
                 filled: true,
                 fillColor: ClosetColors.champFond,
@@ -590,12 +626,12 @@ class _SelecteurPaysSheetState extends State<_SelecteurPaysSheet> {
                     p.nom == widget.selection.nom;
                 return ListTile(
                   leading: DrapeauPays(iso: p.iso, largeur: 28, hauteur: 20),
-                  title: Text(p.nom, style: ClosetTextStyles.corps),
+                  title: Text(p.nomAffiche(l10n), style: ClosetTextStyles.corps),
                   trailing: Text(
                     p.libelleCourt,
                     style: ClosetTextStyles.saisie.copyWith(
                       fontWeight: FontWeight.w600,
-                      color: ClosetColors.vert,
+                      color: context.closetVert,
                     ),
                   ),
                   selected: choisi,

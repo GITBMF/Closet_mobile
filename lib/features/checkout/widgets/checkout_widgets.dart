@@ -15,6 +15,7 @@ class ChampCheckout extends StatelessWidget {
     required this.label,
     required this.hint,
     this.controller,
+    this.initialValue,
     this.keyboardType,
     this.textInputAction,
     this.validator,
@@ -26,6 +27,9 @@ class ChampCheckout extends StatelessWidget {
   final String label;
   final String hint;
   final TextEditingController? controller;
+
+  /// Ignoré si [controller] est fourni (limite de `TextFormField`).
+  final String? initialValue;
   final TextInputType? keyboardType;
   final TextInputAction? textInputAction;
   final FormFieldValidator<String>? validator;
@@ -42,12 +46,13 @@ class ChampCheckout extends StatelessWidget {
           label,
           style: ClosetTextStyles.labelChamp.copyWith(
             fontWeight: FontWeight.w500,
-            color: ClosetColors.vert,
+            color: context.closetLabel,
           ),
         ),
         const SizedBox(height: AppSpacing.p8),
         TextFormField(
           controller: controller,
+          initialValue: controller == null ? initialValue : null,
           keyboardType: keyboardType,
           textInputAction: textInputAction,
           validator: validator,
@@ -55,7 +60,7 @@ class ChampCheckout extends StatelessWidget {
           maxLength: maxLength,
           textCapitalization: textCapitalization,
           style: ClosetTextStyles.saisie.copyWith(color: context.closetEncre),
-          cursorColor: ClosetColors.vert,
+          cursorColor: context.closetVert,
           decoration: InputDecoration(
             hintText: hint,
             counterText: '',
@@ -69,9 +74,9 @@ class ChampCheckout extends StatelessWidget {
               horizontal: AppSpacing.p16,
               vertical: AppSpacing.p12,
             ),
-            border: bordureChamp(ClosetColors.fond300),
-            enabledBorder: bordureChamp(ClosetColors.fond300),
-            focusedBorder: bordureChamp(ClosetColors.vert),
+            border: bordureChamp(context.closetBordure),
+            enabledBorder: bordureChamp(context.closetBordure),
+            focusedBorder: bordureChamp(context.closetVert),
             errorBorder: bordureChamp(ClosetColors.erreurCouture),
             focusedErrorBorder: bordureChamp(ClosetColors.erreurCouture),
           ),
@@ -126,7 +131,7 @@ class ChampSelecteur extends StatelessWidget {
           label,
           style: ClosetTextStyles.labelChamp.copyWith(
             fontWeight: FontWeight.w500,
-            color: actif ? ClosetColors.vert : ClosetColors.taupe,
+            color: actif ? context.closetVert : context.closetSecondaire,
           ),
         ),
         const SizedBox(height: AppSpacing.p8),
@@ -168,7 +173,7 @@ class ChampSelecteur extends StatelessWidget {
                   Icon(
                     Icons.keyboard_arrow_down_rounded,
                     size: 20,
-                    color: actif ? ClosetColors.vert : ClosetColors.ligne,
+                    color: actif ? context.closetVert : context.closetLigne,
                   ),
                 ],
               ),
@@ -179,7 +184,7 @@ class ChampSelecteur extends StatelessWidget {
           const SizedBox(height: AppSpacing.p8),
           Text(
             sousTexte!,
-            style: ClosetTextStyles.meta.copyWith(color: ClosetColors.taupe),
+            style: ClosetTextStyles.meta.copyWith(color: context.closetSecondaire),
           ),
         ],
       ],
@@ -300,7 +305,7 @@ Future<T?> afficherSelecteur<T>({
                             : Text(
                                 sousTitre(option),
                                 style: ClosetTextStyles.meta.copyWith(
-                                  color: ClosetColors.taupe,
+                                  color: context.closetSecondaire,
                                 ),
                               ),
                         trailing: Icon(
@@ -308,7 +313,7 @@ Future<T?> afficherSelecteur<T>({
                               ? Icons.radio_button_checked
                               : Icons.radio_button_unchecked,
                           size: 20,
-                          color: choisi ? ClosetColors.vert : ClosetColors.ligne,
+                          color: choisi ? context.closetVert : context.closetLigne,
                         ),
                         onTap: () => Navigator.of(context).pop(option),
                       );

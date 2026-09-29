@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../core/l10n/closet_l10n.dart';
 import '../../core/widgets/closet_bottom_nav.dart';
+import '../../core/widgets/closet_shell_transition.dart';
 
 /// Indices des onglets sourceur, dans l'ordre de [ClosetBottomNav.itemsSourceur].
 abstract final class OngletSourceur {
@@ -46,7 +47,10 @@ class SourceurLayout extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
-      body: navigationShell,
+      body: ClosetShellTransition(
+        index: navigationShell.currentIndex,
+        child: navigationShell,
+      ),
       extendBody: false,
       bottomNavigationBar: ClosetBottomNav(
         items: ClosetBottomNav.itemsSourceurPour(ClosetL10n.of(context)),

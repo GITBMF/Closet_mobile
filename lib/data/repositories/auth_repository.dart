@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 
+import '../../core/l10n/closet_l10n.dart';
 import '../api/api_exception.dart';
 import '../api/api_json.dart';
 import '../bff_client/api_client.dart';
@@ -81,6 +82,7 @@ class AuthRepository {
     required String password,
     required String phone,
     String city = '',
+    ClosetL10n? l10n,
   }) async {
     _client.clearAccessToken();
 
@@ -104,27 +106,30 @@ class AuthRepository {
     throw EmailAVerifier(email: payload['email'] as String);
   }
 
-  /// `POST /auth/verify-email` — code reçu dans la boîte mail.
-  Future<void> verifierEmail({
+  /// `POST /auth/verify-email` — code à 6 chiffres reçu par e-mail.
+  Future<String> verifierEmail({
     required String email,
     required String code,
   }) async {
-    await _client.postJson('/auth/verify-email', data: {
-      'email': email.toLowerCase().trim(),
+    final data = await _client.postJson('/auth/verify-email', data: {
+      'email': email.trim().toLowerCase(),
       'code': code.trim(),
     });
+    return messageDepuisCorps(data);
   }
 
-  /// `POST /auth/verify-email/resend`
-  Future<void> renvoyerCodeVerification(String email) async {
-    await _client.postJson('/auth/verify-email/resend', data: {
-      'email': email.toLowerCase().trim(),
+  /// `POST /auth/verify-email/resend` — renvoie un nouveau code.
+  Future<String> renvoyerCodeVerification(String email) async {
+    final data = await _client.postJson('/auth/verify-email/resend', data: {
+      'email': email.trim().toLowerCase(),
     });
+    return messageDepuisCorps(data);
   }
 
   Future<ClosetUser> logIn({
     required String email,
     required String password,
+    ClosetL10n? l10n,
   }) async {
     _client.clearAccessToken();
     final adresse = email.toLowerCase().trim();
@@ -156,22 +161,26 @@ class AuthRepository {
       );
     }
 
-    return _ouvrirSession(data);
+    return _ouvrirSession(data, l10n);
   }
 
   /// `POST /auth/login/mfa` — code TOTP + jeton de défi renvoyé par `/auth/login`.
   Future<ClosetUser> validerMfa({
     required String challengeToken,
     required String code,
+    ClosetL10n? l10n,
   }) async {
     final data = await _client.postJson('/auth/login/mfa', data: {
       'challenge_token': challengeToken,
       'code': code.trim(),
     });
-    return _ouvrirSession(data);
+    return _ouvrirSession(data, l10n);
   }
 
-  Future<ClosetUser> _ouvrirSession(Map<String, dynamic> data) async {
+  Future<ClosetUser> _ouvrirSession(
+    Map<String, dynamic> data, [
+    ClosetL10n? l10n,
+  ]) async {
     final accessToken = chaineDe(data['access_token']);
     final refreshToken = chaineDe(data['refresh_token']);
     final tokenType = chaineDe(data['token_type'], 'bearer');
@@ -182,7 +191,7 @@ class AuthRepository {
     if (accessToken.isEmpty) {
       throw ApiException(
         message: messageMelange(
-          local: 'Le serveur n’a pas renvoyé de jeton d’accès.',
+          local: l10n?.serveurPasDeJetonMessage ?? ClosetL10n.fr.serveurPasDeJetonMessage,
           backend: messageDepuisCorps(data),
         ),
         kind: KindErreurApi.serveur,

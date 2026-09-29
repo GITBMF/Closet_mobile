@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/l10n/closet_l10n.dart';
+import '../../../core/services/premiere_utilisation_service.dart';
 import '../../../core/theme/closet_colors.dart';
 import '../../../core/widgets/logo_closet.dart';
 import '../../../data/models/user.dart';
@@ -59,7 +61,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
         try {
           await ref
               .read(sourceurRepositoryProvider)
-              .chargerProfil(compte: user);
+              .chargerProfil(compte: user, l10n: ref.read(l10nProvider));
         } catch (_) {
           // Un échec sourcing ne doit pas bloquer l'entrée cliente.
         }
@@ -69,7 +71,16 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
     }
     await minimum;
     if (!mounted) return;
-    context.go(user != null ? '/home' : '/onboarding');
+    if (user != null) {
+      context.go('/home');
+      return;
+    }
+    // Sans compte, l'accueil de première utilisation ne se rejoue qu'une
+    // fois : les lancements suivants vont directement au dressing, comme
+    // le permet déjà « Continuer sans compte ».
+    final dejaVue = await PremiereUtilisationService.dejaVue();
+    if (!mounted) return;
+    context.go(dejaVue ? '/home' : '/onboarding');
   }
 
   @override
@@ -97,7 +108,13 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
               opacity: _fondu,
               child: ScaleTransition(
                 scale: _echelle,
-                child: const LogoCloset.splash(),
+                child: Image.asset(
+                  'assets/logo_fond_vert.png',
+                  width: 232,
+                  height: 132,
+                  fit: BoxFit.contain,
+                  errorBuilder: (_, _, _) => const LogoCloset.splash(),
+                ),
               ),
             ),
           ),

@@ -1,3 +1,5 @@
+import '../l10n/closet_l10n.dart';
+
 /// Indicatifs téléphoniques proposés dans le sélecteur (drapeau + recherche).
 class IndicateurPays {
   const IndicateurPays({
@@ -26,6 +28,8 @@ class IndicateurPays {
   }
 
   String get libelleCourt => '+$indicatif';
+
+  String nomAffiche(ClosetL10n l10n) => l10n.nomPays(iso, nom);
 
   static const cameroun = IndicateurPays(
     iso: 'CM',
@@ -328,19 +332,37 @@ class SaisieTelephone {
   final String national;
 }
 
+/// [pays] force la validation sur le pays réellement choisi dans le
+/// sélecteur, plutôt que de le redeviner depuis l'indicatif — sans quoi un
+/// numéro trop long pour ce pays peut être jugé « incorrect » au lieu de
+/// signaler clairement le nombre de chiffres attendu.
 String? validerTelephone(
   String? e164, {
   required bool obligatoire,
-  String libelle = 'numéro',
+  String? libelle,
+  ClosetL10n? l10n,
+  IndicateurPays? pays,
 }) {
+  final mots = l10n ?? ClosetL10n.fr;
   final saisie = (e164 ?? '').trim();
+  final texteLibelle = libelle ?? mots.numero;
   if (saisie.isEmpty) {
-    return obligatoire ? 'Indiquez un $libelle.' : null;
+    return obligatoire ? mots.indiquerUnLibelle(texteLibelle) : null;
   }
-  final parse = IndicateurPays.analyser(saisie);
-  if (parse == null) return 'Ce $libelle semble incorrect.';
-  if (parse.national.length < parse.pays.minChiffres) {
-    return 'Ce $libelle semble incomplet.';
+  final digits = saisie.replaceAll(RegExp(r'\D'), '');
+  final cible = pays ?? IndicateurPays.analyser(saisie)?.pays;
+  if (cible == null || !digits.startsWith(cible.indicatif)) {
+    return mots.libelleSembleIncorrect(texteLibelle);
+  }
+  final national = digits.substring(cible.indicatif.length);
+  if (national.length < cible.minChiffres || national.length > cible.maxChiffres) {
+    return cible.minChiffres == cible.maxChiffres
+        ? mots.libelleChiffresExact(texteLibelle, cible.minChiffres)
+        : mots.libelleChiffresPlage(
+            texteLibelle,
+            cible.minChiffres,
+            cible.maxChiffres,
+          );
   }
   return null;
 }

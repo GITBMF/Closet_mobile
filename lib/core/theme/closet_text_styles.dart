@@ -38,9 +38,9 @@ class ClosetTextStyles {
     height: 26.6 / 22,
   );
 
-  /// Titre hero sur fond vert — EB Garamond 600 / 24 pt italique
+  /// Titre hero sur fond vert — EB Garamond 600 / 28 pt italique
   static TextStyle titreHero = GoogleFonts.ebGaramond(
-    fontSize: _s(24),
+    fontSize: _s(28),
     fontWeight: FontWeight.w600,
     fontStyle: FontStyle.italic,
     color: ClosetColors.texteSurVert,
@@ -52,12 +52,12 @@ class ClosetTextStyles {
     fontWeight: FontWeight.w700,
   );
 
-  /// Accroche produit — EB Garamond 600 / 18 pt
+  /// Accroche produit — EB Garamond 600 / 22 pt
   static TextStyle accroche = GoogleFonts.ebGaramond(
-    fontSize: _s(18),
+    fontSize: _s(22),
     fontWeight: FontWeight.w600,
-    letterSpacing: 0.36,
-    height: 21.8 / 18,
+    letterSpacing: 0.3,
+    height: 26 / 22,
   );
 
   /// Titre de bloc — EB Garamond 600 / 15 pt

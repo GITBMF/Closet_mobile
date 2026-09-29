@@ -2,15 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../core/l10n/closet_l10n.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/theme/closet_colors.dart';
 import '../../core/theme/closet_text_styles.dart';
 import '../../core/validation/indicateurs_pays.dart';
 import '../../core/widgets/champ_telephone.dart';
-import '../../core/widgets/marque_paiement.dart';
 import '../../core/widgets/closet_app_bar.dart';
 import '../../core/widgets/closet_sections.dart';
 import '../../core/widgets/frise_tunnel.dart';
+import '../../core/widgets/marque_paiement.dart';
+import '../../core/widgets/spotlight_showcase.dart';
 import '../../core/widgets/toasts.dart';
 import '../../data/models/geo.dart';
 import '../../data/models/user.dart';
@@ -23,7 +25,6 @@ import 'brouillon_commande.dart';
 import 'montants.dart';
 import 'moyens_paiement.dart';
 import 'widgets/checkout_widgets.dart';
-import 'widgets/code_privilege.dart';
 
 /// Finalisation de la sélection — transcription de la maquette `56:11462`.
 ///
@@ -35,7 +36,14 @@ import 'widgets/code_privilege.dart';
 /// de l'écran : l'exécuteur du tunnel a besoin de l'adresse pour créer la
 /// commande, et le récapitulatif de la sélection a besoin de la remise.
 class CheckoutScreen extends ConsumerStatefulWidget {
-  const CheckoutScreen({super.key});
+  const CheckoutScreen({super.key, this.etapeInitiale = 0});
+
+  /// Étape ouverte à l'arrivée : 0 = livraison, 1 = paiement.
+  ///
+  /// Le paiement ne s'atteint normalement qu'en validant les coordonnées ; la
+  /// visite guidée l'ouvre directement, pour montrer les moyens de paiement
+  /// sans faire remplir le formulaire.
+  final int etapeInitiale;
 
   @override
   ConsumerState<CheckoutScreen> createState() => _CheckoutScreenState();
@@ -44,9 +52,8 @@ class CheckoutScreen extends ConsumerStatefulWidget {
 class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
   final _formKey = GlobalKey<FormState>();
   final _nom = TextEditingController();
-  final _codePrivilege = TextEditingController();
   late final TelephoneController _telephone;
-  int _etape = 0;
+  late int _etape = widget.etapeInitiale;
 
   @override
   void initState() {
@@ -66,16 +73,28 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
     );
   }
 
+  /// La visite guidée passe de `/checkout` à `/checkout?etape=paiement` : si
+  /// go_router réutilise la même page plutôt que d'en construire une neuve,
+  /// `initState` ne rejoue pas et l'écran resterait sur la livraison.
+  @override
+  void didUpdateWidget(CheckoutScreen ancien) {
+    super.didUpdateWidget(ancien);
+    if (ancien.etapeInitiale != widget.etapeInitiale) {
+      setState(() => _etape = widget.etapeInitiale);
+    }
+  }
+
   @override
   void dispose() {
     _nom.dispose();
     _telephone.dispose();
-    _codePrivilege.dispose();
     super.dispose();
   }
 
   BrouillonCommandeNotifier get _brouillon =>
       ref.read(brouillonCommandeProvider.notifier);
+
+  ClosetL10n get _l10n => ClosetL10n.of(context);
 
   void _validerCoordonnees() {
     if (!(_formKey.currentState?.validate() ?? false)) return;
@@ -84,8 +103,8 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
     if (!brouillon.adresseComplete) {
       _signaler(
         brouillon.mode == ModeAdresse.ville
-            ? 'Choisissez votre ville de livraison.'
-            : 'Complétez région, département et quartier.',
+            ? _l10n.checkoutChoisirVilleLivraison
+            : _l10n.checkoutCompleterAdresseCascade,
       );
       return;
     }
@@ -109,15 +128,15 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
 
       final choix = await afficherSelecteur<Ville>(
         context: context,
-        titre: 'Ville de livraison',
+        titre: _l10n.checkoutVilleLivraisonTitre,
         options: villes,
         libelle: (v) => v.nom,
-        sousTitre: (v) => v.delaiAnnonce,
+        sousTitre: (v) => v.libelleDelai(_l10n),
         selection: ref.read(brouillonCommandeProvider).ville,
       );
       if (choix != null) _brouillon.choisirVille(choix);
     } catch (e) {
-      if (mounted) toastErreur(ref, e, titre: 'Villes indisponibles');
+      if (mounted) toastErreur(ref, e, titre: _l10n.checkoutVillesIndisponibles);
     }
   }
 
@@ -128,14 +147,14 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
 
       final choix = await afficherSelecteur<Region>(
         context: context,
-        titre: 'Région',
+        titre: _l10n.checkoutRegionTitre,
         options: regions,
         libelle: (r) => r.nom,
         selection: ref.read(brouillonCommandeProvider).region,
       );
       if (choix != null) _brouillon.choisirRegion(choix);
     } catch (e) {
-      if (mounted) toastErreur(ref, e, titre: 'Régions indisponibles');
+      if (mounted) toastErreur(ref, e, titre: _l10n.checkoutRegionsIndisponibles);
     }
   }
 
@@ -150,14 +169,16 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
 
       final choix = await afficherSelecteur<Departement>(
         context: context,
-        titre: 'Département',
+        titre: _l10n.checkoutDepartementTitre,
         options: departements,
         libelle: (d) => d.nom,
         selection: ref.read(brouillonCommandeProvider).departement,
       );
       if (choix != null) _brouillon.choisirDepartement(choix);
     } catch (e) {
-      if (mounted) toastErreur(ref, e, titre: 'Départements indisponibles');
+      if (mounted) {
+        toastErreur(ref, e, titre: _l10n.checkoutDepartementsIndisponibles);
+      }
     }
   }
 
@@ -170,23 +191,23 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
 
     final pieces = ref.read(cartListProvider);
     if (pieces.isEmpty) {
-      _signaler('Votre sélection est vide.');
+      _signaler(_l10n.selectionVide);
       return;
     }
 
     final brouillon = ref.read(brouillonCommandeProvider);
     if (!brouillon.adresseComplete) {
-      _signaler('Complétez votre adresse de livraison.');
+      _signaler(_l10n.checkoutCompleterAdresseLivraison);
       return;
     }
 
     final moyen = brouillon.moyen;
     if (moyen == null) {
-      _signaler('Choisissez un moyen de paiement.');
+      _signaler(_l10n.checkoutChoisirMoyenPaiement);
       return;
     }
     if (!brouillon.paiementComplet) {
-      _signaler('Complétez les informations de paiement.');
+      _signaler(_l10n.checkoutCompleterInfosPaiement);
       return;
     }
 
@@ -195,10 +216,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
     if (devis == null || total == null) {
       // Zone à devis : la maquette laisse le total « à determiner ». Aucune
       // somme ne peut être prélevée sans montant connu.
-      _signaler(
-        'La livraison vers cette zone est à devis. Nous vous contacterons '
-        'sur WhatsApp pour la confirmer.',
-      );
+      _signaler(_l10n.checkoutZoneDevis);
       return;
     }
 
@@ -225,15 +243,18 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
         // moyen employé et l'adresse retenue.
         lignesRecu: [
           LigneRecu(
-            pieces.length == 1 ? 'Pièce' : 'Pièces',
+            pieces.length == 1 ? _l10n.checkoutRecuPiece : _l10n.checkoutRecuPieces,
             pieces.length == 1
                 ? pieces.first.title
-                : '${pieces.length} pièces',
+                : _l10n.checkoutRecuNPieces(pieces.length),
           ),
-          LigneRecu('Moyen de paiement', moyen.libelle),
-          LigneRecu('Livraison', brouillon.adresseResumee),
+          LigneRecu(_l10n.checkoutRecuMoyenPaiement, moyen.libelleCourt),
+          LigneRecu(_l10n.checkoutLivraisonTitre, brouillon.adresseResumee),
           if (brouillon.remise > 0)
-            LigneRecu('Code privilège', '- ${formatPrixFcfa(brouillon.remise)}'),
+            LigneRecu(
+              _l10n.checkoutRecuCodePrivilege,
+              '- ${formatPrixFcfa(brouillon.remise)}',
+            ),
         ],
       ),
     );
@@ -241,8 +262,8 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = ClosetL10n.of(context);
     final brouillon = ref.watch(brouillonCommandeProvider);
-    final total = ref.watch(totalAReglerProvider);
 
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
@@ -250,8 +271,8 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
         child: Column(
           children: [
             SourceurHeader(
-              titre: _etape == 0 ? 'Livraison' : 'Paiement',
-              surtitre: 'Finaliser ma commande',
+              titre: _etape == 0 ? l10n.checkoutLivraisonTitre : l10n.checkoutPaiementTitre,
+              surtitre: l10n.checkoutFinaliserCommande,
               onRetour: () {
                 if (_etape == 1) {
                   _retourLivraison();
@@ -261,7 +282,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
               },
               actions: [
                 Text(
-                  FriseTunnel.libelleEtape(_etape == 0 ? 1 : 2),
+                  l10n.checkoutEtapeSur2(_etape + 1),
                   style: ClosetTextStyles.actionPetite.copyWith(
                     letterSpacing: -0.20,
                     color: ClosetColors.fond300,
@@ -283,21 +304,30 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                     FriseTunnel(etapeCourante: _etape == 0 ? 1 : 2),
                     const SizedBox(height: AppSpacing.p24),
                     if (_etape == 0) ...[
-                      const ClosetEnTeteSection(titre: 'Détails de livraison'),
+                      ClosetEnTeteSection(titre: l10n.checkoutDetailsLivraison),
+                      const SizedBox(height: AppSpacing.p8),
+                      Text(
+                        l10n.checkoutDelaiLivraison,
+                        style: ClosetTextStyles.meta.copyWith(
+                          color: context.closetSecondaire,
+                        ),
+                      ),
                       const SizedBox(height: AppSpacing.p20),
                       ChampCheckout(
-                        label: 'Nom complet',
-                        hint: 'Marie Dupont',
+                        key: ClosetTourKeys.checkoutNomKey,
+                        label: l10n.checkoutNomComplet,
+                        hint: l10n.checkoutNomCompletHint,
                         controller: _nom,
                         textInputAction: TextInputAction.next,
                         textCapitalization: TextCapitalization.words,
                         validator: (v) => (v == null || v.trim().length < 2)
-                            ? 'Indiquez votre nom complet.'
+                            ? l10n.checkoutIndiquerNomComplet
                             : null,
                       ),
                       const SizedBox(height: AppSpacing.p20),
                       ChampTelephone(
-                        label: 'Téléphone (WhatsApp)',
+                        key: ClosetTourKeys.checkoutTelKey,
+                        label: l10n.checkoutTelephoneWhatsapp,
                         controller: _telephone,
                         hint: '6 90 12 34 56',
                         style: StyleChampTelephone.checkout,
@@ -305,7 +335,9 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                         validator: (v) => validerTelephone(
                           v,
                           obligatoire: true,
-                          libelle: 'numéro WhatsApp',
+                          libelle: l10n.checkoutNumeroWhatsapp,
+                          l10n: l10n,
+                          pays: _telephone.pays,
                         ),
                       ),
                       const SizedBox(height: AppSpacing.p8),
@@ -321,55 +353,49 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                         onVille: _choisirVille,
                         onRegion: _choisirRegion,
                         onDepartement: _choisirDepartement,
+                        onArrondissement: _brouillon.majArrondissement,
                         onQuartier: _brouillon.majQuartier,
                         onMode: _brouillon.choisirMode,
                       ),
                     ] else ...[
-                      const ClosetEnTeteSection(titre: 'Méthode de paiement'),
-                      const SizedBox(height: AppSpacing.p8),
-                      Text(
-                        'Veuillez choisir la méthode de paiement.',
-                        style: ClosetTextStyles.meta.copyWith(
-                          color: ClosetColors.taupe,
-                        ),
+                      Column(
+                        key: ClosetTourKeys.checkoutMoyensKey,
+                        children: [
+                          for (final m in moyensPaiement)
+                            _LignePaiement(
+                              moyen: m,
+                              choisi: m.id == brouillon.moyen?.id,
+                              onTap: () => _brouillon.choisirMoyen(m),
+                              onSaisie: _brouillon.majPaiement,
+                            ),
+                        ],
                       ),
-                      const SizedBox(height: AppSpacing.p16),
-                      for (final m in moyensPaiement)
-                        _LignePaiement(
-                          moyen: m,
-                          choisi: m.id == brouillon.moyen?.id,
-                          onTap: () => _brouillon.choisirMoyen(m),
-                          onSaisie: _brouillon.majPaiement,
-                        ),
                       const SizedBox(height: AppSpacing.p24),
-                      ChampCodePrivilege(controller: _codePrivilege),
-                      const SizedBox(height: AppSpacing.p24),
-                      const RecapMontants(),
+                      RecapMontants(key: ClosetTourKeys.checkoutRecapKey),
                     ],
                   ],
                 ),
               ),
             ),
             Padding(
-              padding: const EdgeInsets.fromLTRB(39, 0, 39, AppSpacing.p12),
+              padding: const EdgeInsets.fromLTRB(AppSpacing.p24, 0, AppSpacing.p24, AppSpacing.p12),
               child: SizedBox(
+                key: _etape == 0
+                    ? ClosetTourKeys.checkoutSuivantKey
+                    : ClosetTourKeys.checkoutPayerKey,
                 height: 44,
                 child: Material(
-                  color: ClosetColors.vert,
+                  color: context.closetAction,
                   borderRadius: BorderRadius.circular(AppRadius.cercle),
                   child: InkWell(
                     borderRadius: BorderRadius.circular(AppRadius.cercle),
                     onTap: _etape == 0 ? _validerCoordonnees : _poursuivre,
                     child: Center(
                       child: Text(
-                        _etape == 0
-                            ? 'Valider les informations'
-                            : total == null
-                                ? 'Poursuivre — Paiement'
-                                : 'Poursuivre — Paiement ${formatPrixFcfa(total)}',
+                        l10n.valider,
                         style: ClosetTextStyles.bouton.copyWith(
                           fontWeight: FontWeight.w600,
-                          color: ClosetColors.blanc,
+                          color: context.closetActionTexte,
                         ),
                       ),
                     ),
@@ -396,6 +422,7 @@ class _BlocAdresse extends StatelessWidget {
     required this.onVille,
     required this.onRegion,
     required this.onDepartement,
+    required this.onArrondissement,
     required this.onQuartier,
     required this.onMode,
   });
@@ -404,45 +431,64 @@ class _BlocAdresse extends StatelessWidget {
   final VoidCallback onVille;
   final VoidCallback onRegion;
   final VoidCallback onDepartement;
+  final ValueChanged<String> onArrondissement;
   final ValueChanged<String> onQuartier;
   final ValueChanged<ModeAdresse> onMode;
 
   @override
   Widget build(BuildContext context) {
+    final l10n = ClosetL10n.of(context);
     final enCascade = brouillon.mode == ModeAdresse.cascade;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        if (!enCascade)
+        if (!enCascade) ...[
           ChampSelecteur(
-            label: 'Ville de livraison',
-            placeholder: 'Choisir ma ville',
+            key: ClosetTourKeys.checkoutVilleKey,
+            label: l10n.checkoutVilleLivraisonTitre,
+            placeholder: l10n.checkoutChoisirMaVille,
             valeur: brouillon.ville?.nom,
-            sousTexte: brouillon.ville?.delaiAnnonce,
+            sousTexte: brouillon.ville?.libelleDelai(l10n),
             onTap: onVille,
-          )
-        else ...[
+          ),
+          const SizedBox(height: AppSpacing.p20),
+          ChampCheckout(
+            key: ClosetTourKeys.checkoutQuartierKey,
+            label: l10n.checkoutQuartierLabel,
+            hint: l10n.checkoutQuartierHint,
+            initialValue: brouillon.quartier,
+            onChanged: onQuartier,
+          ),
+        ] else ...[
           ChampSelecteur(
-            label: 'Région',
-            placeholder: 'Choisir ma région',
+            label: l10n.checkoutRegionTitre,
+            placeholder: l10n.checkoutChoisirMaRegion,
             valeur: brouillon.region?.nom,
             onTap: onRegion,
           ),
           const SizedBox(height: AppSpacing.p20),
           ChampSelecteur(
-            label: 'Département',
+            label: l10n.checkoutDepartementTitre,
             placeholder: brouillon.region == null
-                ? "Choisissez d'abord une région"
-                : 'Choisir mon département',
+                ? l10n.checkoutChoisirDabordRegion
+                : l10n.checkoutChoisirMonDepartement,
             valeur: brouillon.departement?.nom,
             actif: brouillon.region != null,
             onTap: onDepartement,
           ),
           const SizedBox(height: AppSpacing.p20),
           ChampCheckout(
-            label: 'Quartier',
-            hint: 'Newtown Collège, face pharmacie',
+            label: l10n.checkoutArrondissementLabel,
+            hint: l10n.checkoutArrondissementHint,
+            initialValue: brouillon.arrondissement,
+            onChanged: onArrondissement,
+          ),
+          const SizedBox(height: AppSpacing.p20),
+          ChampCheckout(
+            label: l10n.checkoutQuartierLabel,
+            hint: l10n.checkoutQuartierHint,
+            initialValue: brouillon.quartier,
             onChanged: onQuartier,
           ),
         ],
@@ -450,13 +496,14 @@ class _BlocAdresse extends StatelessWidget {
         Semantics(
           button: true,
           child: GestureDetector(
+            key: ClosetTourKeys.checkoutDetailleeKey,
             onTap: () => onMode(
               enCascade ? ModeAdresse.ville : ModeAdresse.cascade,
             ),
             child: Text(
               enCascade
-                  ? 'Revenir au choix par ville'
-                  : 'Saisir une adresse détaillée',
+                  ? l10n.checkoutRevenirChoixVille
+                  : l10n.checkoutSaisirAdresseDetaillee,
               style: ClosetTextStyles.meta.copyWith(
                 color: ClosetColors.fond400,
                 decoration: TextDecoration.underline,
@@ -498,13 +545,14 @@ class _LignePaiement extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = ClosetL10n.of(context);
     return Container(
       margin: const EdgeInsets.only(bottom: AppSpacing.p12),
       decoration: BoxDecoration(
         color: context.closetCarte,
         borderRadius: BorderRadius.circular(AppRadius.carte),
         border: Border.all(
-          color: choisi ? ClosetColors.vert : ClosetColors.fond300,
+          color: choisi ? context.closetVert : context.closetBordure,
           width: choisi ? AppStroke.moyen : AppStroke.fin,
         ),
       ),
@@ -520,7 +568,7 @@ class _LignePaiement extends StatelessWidget {
                 padding: const EdgeInsets.all(AppSpacing.p12),
                 child: Row(
                   children: [
-                    MarquePaiement(id: moyen.id),
+                    MarquePaiement(id: moyen.id, largeur: 52, hauteur: 34),
                     const SizedBox(width: AppSpacing.p12),
                     Expanded(
                       child: Text(
@@ -532,7 +580,7 @@ class _LignePaiement extends StatelessWidget {
                       Text(
                         moyen.compteMasque,
                         style: ClosetTextStyles.meta.copyWith(
-                          color: ClosetColors.taupe,
+                          color: context.closetSecondaire,
                         ),
                       ),
                       const SizedBox(width: AppSpacing.p8),
@@ -542,7 +590,7 @@ class _LignePaiement extends StatelessWidget {
                           ? Icons.radio_button_checked
                           : Icons.radio_button_unchecked,
                       size: 20,
-                      color: choisi ? ClosetColors.vert : ClosetColors.ligne,
+                      color: choisi ? context.closetVert : context.closetLigne,
                     ),
                   ],
                 ),
@@ -560,7 +608,7 @@ class _LignePaiement extends StatelessWidget {
               child: switch (moyen.saisie) {
                 SaisieMoyen.telephone => ChampTelephone(
                     key: ValueKey('tel-${moyen.id}'),
-                    label: 'Numéro ${moyen.libelle}',
+                    label: l10n.checkoutNumeroMoyen(moyen.libelle),
                     hint: '6 90 12 34 56',
                     style: StyleChampTelephone.checkout,
                     validerAvecLeFormulaire: false,
@@ -569,14 +617,14 @@ class _LignePaiement extends StatelessWidget {
                 SaisieMoyen.carte => Column(
                     children: [
                       ChampCheckout(
-                        label: 'Nom du porteur',
-                        hint: 'MARIE DUPONT',
+                        label: l10n.checkoutNomPorteur,
+                        hint: 'JANE DOE',
                         textCapitalization: TextCapitalization.characters,
                         onChanged: (v) => onSaisie(porteurCarte: v),
                       ),
                       const SizedBox(height: AppSpacing.p16),
                       ChampCheckout(
-                        label: 'Numéro de carte',
+                        label: l10n.checkoutNumeroCarte,
                         hint: '4864 0000 0000 0000',
                         keyboardType: TextInputType.number,
                         maxLength: 19,
@@ -588,8 +636,8 @@ class _LignePaiement extends StatelessWidget {
                         children: [
                           Expanded(
                             child: ChampCheckout(
-                              label: 'Expiration',
-                              hint: 'MM/AA',
+                              label: l10n.checkoutExpiration,
+                              hint: 'MM/YY',
                               keyboardType: TextInputType.datetime,
                               maxLength: 5,
                               onChanged: (v) => onSaisie(expiration: v),

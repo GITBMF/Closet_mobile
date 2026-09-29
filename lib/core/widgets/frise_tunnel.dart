@@ -34,12 +34,22 @@ class FriseTunnel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final couleurAtteinte =
-        surFondSombre ? ClosetColors.fond300 : ClosetColors.vert;
-    final couleurRestante =
-        surFondSombre ? ClosetColors.emeraude400 : ClosetColors.ligne;
-    final fondPastilleVide =
-        surFondSombre ? ClosetColors.vert : ClosetColors.blanc;
+    final themeSombre = context.closetSombre;
+    final couleurAtteinte = surFondSombre
+        ? ClosetColors.fond300
+        : themeSombre
+            ? ClosetColors.doreClair
+            : ClosetColors.vert;
+    final couleurRestante = surFondSombre
+        ? ClosetColors.emeraude400
+        : themeSombre
+            ? ClosetColors.emeraude200
+            : ClosetColors.ligne;
+    final fondPastilleVide = surFondSombre
+        ? ClosetColors.vert
+        : themeSombre
+            ? context.closetFond
+            : ClosetColors.blanc;
 
     return Row(
       children: [
