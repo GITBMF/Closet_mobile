@@ -45,6 +45,11 @@ class ClosetL10n extends InheritedWidget {
   String get pieceDeLaSemaine => t('Pièce de la semaine', 'Item of the week');
   String get recemmentVues => t('Récemment vues', 'Recently viewed');
   String get decouvrir => t('Découvrir', 'Discover');
+  String get qualiteVerifiee => t('Qualité vérifiée', 'Quality checked');
+  String get qualiteVerifieeDetail => t(
+        'Chaque pièce est contrôlée avant d’être mise en ligne.',
+        'Every piece is inspected before it goes live.',
+      );
   String pieceSemaineSemantics(String titre, String prix) =>
       t('Pièce de la semaine : $titre — $prix', 'Item of the week: $titre — $prix');
   String get libelleCategorie => t('Catégorie', 'Category');
@@ -431,6 +436,34 @@ class ClosetL10n extends InheritedWidget {
   // ─── Erreurs ────────────────────────────────────────────────────────────────
   String get erreurTitre => t('Une erreur est survenue', 'An error occurred');
   String get erreurGenerique => t('Veuillez réessayer.', 'Please try again.');
+
+  String messageDepuisErreur(Object erreur) {
+    final s = erreur.toString();
+    if (s.contains('SocketException') || s.contains('NetworkException')) {
+      return t(
+        'Vérifiez votre connexion internet.',
+        'Check your internet connection.',
+      );
+    }
+    if (s.contains('401') || s.contains('Unauthorized')) {
+      return t(
+        'Session expirée, veuillez vous reconnecter.',
+        'Session expired, please sign in again.',
+      );
+    }
+    if (s.contains('404')) {
+      return t('Contenu introuvable.', 'Content not found.');
+    }
+    if (s.contains('500') || s.contains('502') || s.contains('503')) {
+      return t(
+        'Problème serveur. Réessayez plus tard.',
+        'Server error. Please try again later.',
+      );
+    }
+    final match = RegExp(r'"([^"]{4,120})"').firstMatch(s);
+    if (match != null) return match.group(1)!;
+    return '';
+  }
 
   // ─── Toasts ─────────────────────────────────────────────────────────────────
   String toastPiece(String nom, String resultat) => '$nom $resultat';

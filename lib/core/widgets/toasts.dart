@@ -20,26 +20,36 @@ void toastSucces(WidgetRef ref, String titre, [String? message]) {
 }
 
 /// Confirmation compacte d'une action sur une pièce, avec [Annuler] optionnel.
+///
+/// Deux formes acceptées après le merge : `message` (écrans Amina) ou
+/// `nom` + `resultat` (dépôts GitHub).
 void toastActionPiece(
   WidgetRef ref, {
-  required String message,
+  String? message,
+  String? nom,
+  String? resultat,
   bool succes = true,
   VoidCallback? onAnnuler,
+  String? actionLabel,
+  VoidCallback? onAction,
 }) {
   final l10n = ref.read(l10nProvider);
+  final phrase = message ?? l10n.toastPiece(nom ?? '', resultat ?? '');
+  final titre = nom ?? phrase;
+  final action = onAnnuler ?? onAction;
+  final label = actionLabel ?? (onAnnuler == null ? null : l10n.annulerAction);
   final notifier = ref.read<NotificationNotifier>(
     notificationProvider.notifier,
   );
-  final label = onAnnuler == null ? null : l10n.annulerAction;
   if (succes) {
     notifier.showSuccess(
-      message,
-      message,
+      titre,
+      phrase,
       actionLabel: label,
-      onAction: onAnnuler,
+      onAction: action,
     );
   } else {
-    notifier.show(message, message, actionLabel: label, onAction: onAnnuler);
+    notifier.show(titre, phrase, actionLabel: label, onAction: action);
   }
 }
 

@@ -76,6 +76,7 @@ class AccueilDressing {
     required this.coupsDeCoeur,
     required this.univers,
     required this.maisons,
+    this.hero,
   });
 
   final Article? pieceDeLaSemaine;
@@ -83,6 +84,9 @@ class AccueilDressing {
   final List<Article> coupsDeCoeur;
   final List<String> univers;
   final List<String> maisons;
+
+  /// Visuel à la une distinct de [pieceDeLaSemaine], s'il est configuré.
+  final Article? hero;
 
   /// Aucune pièce ni vitrine renvoyée par le backend.
   bool get estVide =>
@@ -292,6 +296,7 @@ class CatalogRepository {
       // éditoriale ; « piece_of_the_week » ne sert de repli que si aucun
       // « hero » n'est configuré côté back.
       pieceDeLaSemaine: hero,
+      hero: dernierSlot('hero', featured),
       nouveautes: horsUne.take(4).toList(),
       coupsDeCoeur: favoris.take(4).toList(),
       univers: universNoms,

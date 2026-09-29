@@ -36,7 +36,14 @@ import 'widgets/code_privilege.dart';
 /// de l'écran : l'exécuteur du tunnel a besoin de l'adresse pour créer la
 /// commande, et le récapitulatif de la sélection a besoin de la remise.
 class CheckoutScreen extends ConsumerStatefulWidget {
-  const CheckoutScreen({super.key});
+  const CheckoutScreen({super.key, this.etapeInitiale = 0});
+
+  /// Étape ouverte à l'arrivée : 0 = livraison, 1 = paiement.
+  ///
+  /// Le paiement ne s'atteint normalement qu'en validant les coordonnées ; la
+  /// visite guidée l'ouvre directement, pour montrer les moyens de paiement
+  /// sans faire remplir le formulaire.
+  final int etapeInitiale;
 
   @override
   ConsumerState<CheckoutScreen> createState() => _CheckoutScreenState();
@@ -47,7 +54,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
   final _nom = TextEditingController();
   final _codePrivilege = TextEditingController();
   late final TelephoneController _telephone;
-  int _etape = 0;
+  late int _etape = widget.etapeInitiale;
 
   @override
   void initState() {
@@ -65,6 +72,17 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
           ? brouillon.telephone
           : user?.phone,
     );
+  }
+
+  /// La visite guidée passe de `/checkout` à `/checkout?etape=paiement` : si
+  /// go_router réutilise la même page plutôt que d'en construire une neuve,
+  /// `initState` ne rejoue pas et l'écran resterait sur la livraison.
+  @override
+  void didUpdateWidget(CheckoutScreen ancien) {
+    super.didUpdateWidget(ancien);
+    if (ancien.etapeInitiale != widget.etapeInitiale) {
+      setState(() => _etape = widget.etapeInitiale);
+    }
   }
 
   @override
@@ -113,7 +131,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
         titre: 'Ville de livraison',
         options: villes,
         libelle: (v) => v.nom,
-        sousTitre: (v) => v.delaiAnnonce,
+        sousTitre: (v) => v.delaiAnnonce ?? '',
         selection: ref.read(brouillonCommandeProvider).ville,
         recherchable: true,
       );
