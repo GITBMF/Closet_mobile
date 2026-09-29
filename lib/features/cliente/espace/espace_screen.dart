@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -7,14 +7,19 @@ import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/closet_colors.dart';
 import '../../../core/theme/closet_text_styles.dart';
 import '../../../core/theme/locale_provider.dart';
+import '../../../core/theme/police_provider.dart';
 import '../../../core/theme/theme_provider.dart';
 import '../../../core/widgets/choix_langue.dart';
+import '../../../core/widgets/choix_police.dart';
 import '../../../core/widgets/closet_header_button.dart';
+import '../../../core/widgets/closet_reglages.dart';
 import '../../../core/widgets/closet_sections.dart';
 import '../../../core/widgets/spotlight_showcase.dart';
 import '../../../data/models/user.dart';
 import '../../../data/repositories/auth_repository.dart';
 import '../../../data/repositories/sourceur_repository.dart';
+import '../../checkout/widgets/code_privilege.dart';
+import 'espace_sub_screens.dart';
 
 /// Mon espace � transcription de la maquette `24:39`.
 ///
@@ -26,9 +31,8 @@ class EspaceScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final ClosetUser? user = ref.watch<ClosetUser?>(currentUserProvider);
-    final sourceurRepo = ref.watch<SourceurRepository>(
-      sourceurRepositoryProvider,
-    );
+    final sourceurRepo =
+        ref.watch<SourceurRepository>(sourceurRepositoryProvider);
     final partenaire = sourceurRepo.accesAutorisePour(user);
     final l10n = ClosetL10n.of(context);
 
@@ -42,80 +46,91 @@ class EspaceScreen extends ConsumerWidget {
             children: [
               const SizedBox(height: AppSpacing.p8),
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.p20),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.p20,
+                ),
                 child: ClosetTitreEcran(l10n.monEspace),
               ),
               const SizedBox(height: AppSpacing.p24),
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.p20),
-                child: _EnTeteProfil(
-                  user: user,
-                  onEditer: () =>
-                      context.push(user == null ? '/auth' : '/espace/infos'),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.p20,
                 ),
-              ),
-              const SizedBox(height: AppSpacing.p24),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 19),
-                child: KeyedSubtree(
-                  key: ClosetTourKeys.sourceur,
-                  child: _CarteSourceur(
-                    dejaInscrit: partenaire,
-                    onTap: () => context.push(
-                      user == null
-                          ? '/auth'
-                          : partenaire
-                          ? '/sourceur/espace'
-                          : '/sourceur/devenir',
-                    ),
+                child: _EnTeteProfil(
+                  key: ClosetTourKeys.espaceProfilKey,
+                  user: user,
+                  onEditer: () => context.push(
+                    user == null ? '/auth' : '/espace/infos',
                   ),
                 ),
               ),
               const SizedBox(height: AppSpacing.p24),
-              KeyedSubtree(
-                key: ClosetTourKeys.commandes,
-                child: _EntreeEspace(
-                  icone: Icons.receipt_long_outlined,
-                  label: l10n.mesCommandes,
-                  onTap: () => user == null
-                      ? context.push('/auth')
-                      : context.push('/espace/commandes'),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.p20),
+                child: _CarteSourceur(
+                  key: ClosetTourKeys.espaceSourceurKey,
+                  dejaInscrit: partenaire,
+                  onTap: () => context.push(
+                    user == null
+                        ? '/auth'
+                        : partenaire
+                            ? '/sourceur/espace'
+                            : '/sourceur/devenir',
+                  ),
                 ),
               ),
-              _EntreeEspace(
-                icone: Icons.person_outline,
-                label: l10n.mesInformations,
-                onTap: () =>
-                    context.push(user == null ? '/auth' : '/espace/infos'),
+              const SizedBox(height: AppSpacing.p24),
+              ClosetCarteReglages(
+                children: [
+                  ClosetEntreeReglages(
+                    key: ClosetTourKeys.espaceCommandesKey,
+                    icone: Icons.person_outline,
+                    label: l10n.espaceGroupeCompte,
+                    sousTitre: l10n.espaceGroupeCompteDetail,
+                    onTap: () => context.push('/espace/reglages/compte'),
+                  ),
+                  ClosetEntreeReglages(
+                    key: ClosetTourKeys.espaceLangueKey,
+                    icone: Icons.palette_outlined,
+                    label: l10n.espaceGroupeAffichage,
+                    sousTitre:
+                        '${libelleLangueCourante(ref.watch(localeProvider), l10n)}'
+                        ' · ${libelleTaillePolice(ref.watch(policeProvider), l10n)}',
+                    onTap: () => context.push('/espace/reglages/affichage'),
+                  ),
+                  ClosetEntreeReglages(
+                    key: ClosetTourKeys.espaceVisiteKey,
+                    icone: Icons.help_outline_rounded,
+                    label: l10n.espaceGroupeAide,
+                    sousTitre: l10n.espaceGroupeAideDetailGenerale,
+                    onTap: () => context.push('/espace/reglages/aide'),
+                  ),
+                ],
               ),
-              _EntreeEspace(
-                icone: Icons.auto_awesome_outlined,
-                label: l10n.visiteGuidee,
-                onTap: () {
-                  context.go('/home');
-                  ref.read(spotlightTourProvider.notifier).startTour();
-                },
+              const SizedBox(height: AppSpacing.p16),
+              ClosetCarteReglages(
+                children: [
+                  if (user == null)
+                    ClosetEntreeReglages(
+                      icone: Icons.login_rounded,
+                      label: l10n.seConnecterInscrire,
+                      onTap: () => context.push('/auth'),
+                    )
+                  else
+                    ClosetEntreeReglages(
+                      icone: Icons.logout_rounded,
+                      label: l10n.logout,
+                      onTap: () => context.push('/espace/deconnexion'),
+                    ),
+                ],
               ),
-              const _BasculeTheme(),
-              const _ChoixLangue(),
-              if (user == null)
-                _EntreeEspace(
-                  icone: Icons.login_rounded,
-                  label: l10n.seConnecterInscrire,
-                  onTap: () => context.push('/auth'),
-                )
-              else
-                _EntreeEspace(
-                  icone: Icons.logout_rounded,
-                  label: l10n.logout,
-                  onTap: () => context.push('/espace/deconnexion'),
-                ),
             ],
           ),
         ),
       ),
     );
   }
+
 }
 
 /// Bouton rond de r�glages, en haut � droite.
@@ -145,7 +160,11 @@ class EspaceBoutonRond extends StatelessWidget {
 
 /// Avatar de 74, nom en Cormorant, ancienneté, et pastille d'édition.
 class _EnTeteProfil extends StatelessWidget {
-  const _EnTeteProfil({required this.user, required this.onEditer});
+  const _EnTeteProfil({
+    super.key,
+    required this.user,
+    required this.onEditer,
+  });
 
   final ClosetUser? user;
   final VoidCallback onEditer;
@@ -163,7 +182,7 @@ class _EnTeteProfil extends StatelessWidget {
     final nom = user == null
         ? l10n.invite
         : '${user!.firstName} ${user!.lastName.isEmpty ? '' : '${user!.lastName[0]}.'}'
-              .trim();
+            .trim();
 
     return Row(
       children: [
@@ -176,12 +195,10 @@ class _EnTeteProfil extends StatelessWidget {
             shape: BoxShape.circle,
           ),
           child: user == null
-              ? const Icon(Icons.person, size: 34, color: ClosetColors.taupe)
+              ? Icon(Icons.person, size: 34, color: context.closetSecondaire)
               : Text(
                   _initiales(user!),
-                  style: ClosetTextStyles.titreSection.copyWith(
-                    color: ClosetColors.vert,
-                  ),
+                  style: ClosetTextStyles.titreSection.copyWith(color: ClosetColors.vert),
                 ),
         ),
         const SizedBox(width: AppSpacing.p16),
@@ -213,7 +230,9 @@ class _EnTeteProfil extends StatelessWidget {
               ),
               const SizedBox(height: AppSpacing.p4),
               Text(
-                user == null ? l10n.connectezVousPieces : l10n.membreDressing,
+                user == null
+                    ? l10n.connectezVousPieces
+                    : l10n.membreDressing,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: ClosetTextStyles.meta.copyWith(
@@ -251,7 +270,11 @@ class _EnTeteProfil extends StatelessWidget {
 
 /// Carte verte 352 � 97 invitant � rejoindre le programme sourceur.
 class _CarteSourceur extends StatelessWidget {
-  const _CarteSourceur({required this.dejaInscrit, required this.onTap});
+  const _CarteSourceur({
+    super.key,
+    required this.dejaInscrit,
+    required this.onTap,
+  });
 
   final bool dejaInscrit;
   final VoidCallback onTap;
@@ -266,144 +289,87 @@ class _CarteSourceur extends StatelessWidget {
         onTap: onTap,
         borderRadius: BorderRadius.circular(AppRadius.carte),
         child: Container(
-          constraints: const BoxConstraints(minHeight: 97),
-          padding: const EdgeInsets.all(AppSpacing.p20),
-          child: Row(
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    if (!dejaInscrit)
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: AppSpacing.p12,
-                          vertical: 2,
-                        ),
-                        decoration: BoxDecoration(
-                          color: ClosetColors.emeraude100,
-                          borderRadius: BorderRadius.circular(
-                            AppRadius.vignette,
-                          ),
-                        ),
-                        child: Text(
-                          l10n.nouveau,
-                          style: ClosetTextStyles.attribut.copyWith(
-                            color: ClosetColors.emeraude500,
-                          ),
-                        ),
-                      ),
-                    const SizedBox(height: AppSpacing.p4),
-                    Text(
-                      dejaInscrit
-                          ? l10n.monEspaceSourceur
-                          : l10n.devenirSourceur,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: ClosetTextStyles.prix.copyWith(
-                        fontWeight: FontWeight.w600,
-                        letterSpacing: 0,
-                        color: ClosetColors.texteSurVert,
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      l10n.carteSourceurCorps,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: ClosetTextStyles.attribut.copyWith(
-                        fontWeight: FontWeight.w300,
-                        letterSpacing: 0.16,
-                        color: ClosetColors.blanc,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: AppSpacing.p12),
-              Material(
-                color: ClosetColors.creme,
-                borderRadius: BorderRadius.circular(AppRadius.cercle),
-                child: InkWell(
-                  borderRadius: BorderRadius.circular(AppRadius.cercle),
-                  onTap: onTap,
-                  child: Padding(
+      constraints: const BoxConstraints(minHeight: 97),
+      padding: const EdgeInsets.all(AppSpacing.p20),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                if (!dejaInscrit)
+                  Container(
                     padding: const EdgeInsets.symmetric(
-                      horizontal: AppSpacing.p16,
-                      vertical: AppSpacing.p12,
+                      horizontal: AppSpacing.p12,
+                      vertical: 2,
+                    ),
+                    decoration: BoxDecoration(
+                      color: ClosetColors.emeraude100,
+                      borderRadius:
+                          BorderRadius.circular(AppRadius.vignette),
                     ),
                     child: Text(
-                      dejaInscrit
-                          ? l10n.monEspaceCourt
-                          : l10n.rejoindreCercleCourt,
-                      textAlign: TextAlign.center,
-                      style: ClosetTextStyles.actionPetite.copyWith(
-                        color: ClosetColors.vert,
-                        fontWeight: FontWeight.w600,
+                      l10n.nouveau,
+                      style: ClosetTextStyles.attribut.copyWith(
+                        color: ClosetColors.emeraude500,
                       ),
                     ),
                   ),
+                const SizedBox(height: AppSpacing.p4),
+                Text(
+                  dejaInscrit
+                      ? l10n.monEspaceSourceur
+                      : l10n.devenirSourceur,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: ClosetTextStyles.prix.copyWith(
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: 0,
+                    color: ClosetColors.texteSurVert,
+                  ),
                 ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-/// Entrée de liste : tuile verte de 48 (rayon 8), libellé, chevron.
-class _EntreeEspace extends StatelessWidget {
-  const _EntreeEspace({
-    required this.icone,
-    required this.label,
-    required this.onTap,
-  });
-
-  final IconData icone;
-  final String label;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppSpacing.p24,
-            vertical: AppSpacing.p12,
-          ),
-          child: Row(
-            children: [
-              Container(
-                width: 35,
-                height: 35,
-                decoration: BoxDecoration(
-                  color: ClosetColors.vert,
-                  borderRadius: BorderRadius.circular(AppRadius.carte),
+                const SizedBox(height: 2),
+                Text(
+                  l10n.carteSourceurCorps,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: ClosetTextStyles.attribut.copyWith(
+                    fontWeight: FontWeight.w300,
+                    letterSpacing: 0.16,
+                    color: ClosetColors.blanc,
+                  ),
                 ),
-                child: Icon(icone, size: 18, color: ClosetColors.blanc),
-              ),
-              const SizedBox(width: AppSpacing.p16),
-              Expanded(
+              ],
+            ),
+          ),
+          const SizedBox(width: AppSpacing.p12),
+          Material(
+            color: ClosetColors.creme,
+            borderRadius: BorderRadius.circular(AppRadius.cercle),
+            child: InkWell(
+              borderRadius: BorderRadius.circular(AppRadius.cercle),
+              onTap: onTap,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.p16,
+                  vertical: AppSpacing.p12,
+                ),
                 child: Text(
-                  label,
-                  style: ClosetTextStyles.libelle.copyWith(
-                    color: context.closetEncre,
+                  dejaInscrit
+                      ? l10n.monEspaceCourt
+                      : l10n.rejoindreCercleCourt,
+                  textAlign: TextAlign.center,
+                  style: ClosetTextStyles.actionPetite.copyWith(
+                    color: ClosetColors.vert,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
               ),
-              const Icon(
-                Icons.chevron_right,
-                size: 18,
-                color: ClosetColors.taupe,
-              ),
-            ],
+            ),
           ),
+        ],
+      ),
         ),
       ),
     );
@@ -420,7 +386,7 @@ class _BasculeTheme extends ConsumerWidget {
 
     return Padding(
       padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.p24,
+        horizontal: AppSpacing.p16,
         vertical: AppSpacing.p12,
       ),
       child: Row(
@@ -429,7 +395,7 @@ class _BasculeTheme extends ConsumerWidget {
             width: 35,
             height: 35,
             decoration: BoxDecoration(
-              color: ClosetColors.vert,
+              color: context.closetSombre ? ClosetColors.emeraude300 : ClosetColors.vert,
               borderRadius: BorderRadius.circular(AppRadius.carte),
             ),
             child: Icon(
@@ -449,7 +415,7 @@ class _BasculeTheme extends ConsumerWidget {
           ),
           Switch(
             value: sombre,
-            activeThumbColor: ClosetColors.vert,
+            activeThumbColor: context.closetVert,
             onChanged: (_) => ref
                 .read<ThemeModeNotifier>(themeModeProvider.notifier)
                 .toggleTheme(),
@@ -469,10 +435,146 @@ class _ChoixLangue extends ConsumerWidget {
     final l10n = ClosetL10n.of(context);
     final libelle = libelleLangueCourante(locale, l10n);
 
-    return _EntreeEspace(
+    return ClosetEntreeReglages(
       icone: Icons.language_outlined,
       label: '${l10n.langue} · $libelle',
       onTap: () => afficherChoixLangue(context, ref),
+    );
+  }
+}
+
+class _ChoixPolice extends ConsumerWidget {
+  const _ChoixPolice();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = ClosetL10n.of(context);
+    final libelle = libelleTaillePolice(ref.watch(policeProvider), l10n);
+
+    return ClosetEntreeReglages(
+      icone: Icons.text_fields_rounded,
+      label: '${l10n.taillePolice} · $libelle',
+      onTap: () => afficherChoixPolice(context),
+    );
+  }
+}
+
+/// Page d'un groupe de réglages : `compte`, `affichage` ou `aide`.
+class EspaceGroupeScreen extends ConsumerWidget {
+  const EspaceGroupeScreen({super.key, required this.groupe});
+
+  final String groupe;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = ClosetL10n.of(context);
+    final user = ref.watch<ClosetUser?>(currentUserProvider);
+
+    final (String titre, List<Widget> entrees) = switch (groupe) {
+      'affichage' => (
+          l10n.espaceGroupeAffichage,
+          [const _BasculeTheme(), const _ChoixLangue(), const _ChoixPolice()],
+        ),
+      'aide' => (
+          l10n.espaceGroupeAide,
+          [
+            ClosetEntreeReglages(
+              icone: Icons.quiz_outlined,
+              label: l10n.espaceFaqTitre,
+              onTap: () => context.push('/espace/faq'),
+            ),
+            ClosetEntreeReglages(
+              icone: Icons.privacy_tip_outlined,
+              label: l10n.espaceConfidentialite,
+              onTap: () => context.push('/espace/confidentialite'),
+            ),
+            ClosetEntreeReglages(
+              icone: Icons.chat_bubble_outline,
+              label: l10n.espaceNousContacter,
+              onTap: () => context.push('/espace/contact'),
+            ),
+            ClosetEntreeReglages(
+              icone: Icons.star_outline,
+              label: l10n.espaceEvaluerTitre,
+              onTap: () => context.push('/espace/evaluation'),
+            ),
+            ClosetEntreeReglages(
+              icone: Icons.auto_awesome_outlined,
+              label: l10n.visiteGuidee,
+              sousTitre: l10n.espaceGroupeAideDetail,
+              onTap: () {
+                ref.read(spotlightTourProvider.notifier).startTour();
+                context.go('/home');
+              },
+            ),
+          ],
+        ),
+      'aide-sourceur' => (
+          l10n.espaceGroupeAide,
+          [
+            ClosetEntreeReglages(
+              icone: Icons.quiz_outlined,
+              label: l10n.espaceFaqTitre,
+              onTap: () => context.push('/espace/faq'),
+            ),
+            ClosetEntreeReglages(
+              icone: Icons.privacy_tip_outlined,
+              label: l10n.espaceConfidentialite,
+              onTap: () => context.push('/espace/confidentialite'),
+            ),
+            ClosetEntreeReglages(
+              icone: Icons.chat_bubble_outline,
+              label: l10n.espaceNousContacter,
+              onTap: () => context.push('/espace/contact'),
+            ),
+            ClosetEntreeReglages(
+              icone: Icons.auto_awesome_outlined,
+              label: l10n.visiteGuidee,
+              sousTitre: l10n.espaceGroupeAideDetail,
+              onTap: () {
+                ref
+                    .read(spotlightTourProvider.notifier)
+                    .startTour(pourSourceur: true);
+                context.go('/sourceur/espace');
+              },
+            ),
+          ],
+        ),
+      _ => (
+          l10n.espaceGroupeCompte,
+          [
+            ClosetEntreeReglages(
+              icone: Icons.receipt_long_outlined,
+              label: l10n.mesCommandes,
+              onTap: () => user == null
+                  ? context.push('/auth')
+                  : context.push('/espace/commandes'),
+            ),
+            ClosetEntreeReglages(
+              icone: Icons.person_outline,
+              label: l10n.mesInformations,
+              onTap: () => context.push(
+                user == null ? '/auth' : '/espace/infos',
+              ),
+            ),
+            ClosetEntreeReglages(
+              icone: Icons.local_activity_outlined,
+              label: l10n.codePrivilegeLabel,
+              onTap: () => afficherCodePrivilege(context),
+            ),
+          ],
+        ),
+    };
+
+    return Scaffold(
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      appBar: EspaceSubAppBar(title: titre),
+      body: SafeArea(
+        child: ListView(
+          padding: const EdgeInsets.symmetric(vertical: AppSpacing.p20),
+          children: [ClosetCarteReglages(children: entrees)],
+        ),
+      ),
     );
   }
 }

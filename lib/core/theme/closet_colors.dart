@@ -286,4 +286,28 @@ extension ClosetThemeX on BuildContext {
 
   Color get closetDoreTexte =>
       closetSombre ? ClosetColors.doreClair : ClosetColors.doreEncre;
+
+  /// Vert de marque en texte, icône ou trait : doré clair sur fond nuit, où le
+  /// vert profond se confondrait avec le fond.
+  Color get closetVert =>
+      closetSombre ? ClosetColors.doreClair : ClosetColors.vert;
+
+  /// Fond d'un bouton principal et couleur de son libellé.
+  Color get closetAction =>
+      closetSombre ? ClosetColors.doreClair : ClosetColors.vert;
+
+  Color get closetActionTexte =>
+      closetSombre ? ClosetColors.noir : ClosetColors.blanc;
+
+  /// Libellés de champs et titres de section.
+  Color get closetLabel =>
+      closetSombre ? ClosetColors.neutre200 : ClosetColors.vert;
+
+  /// Bordures des champs et des cartes.
+  Color get closetBordure =>
+      closetSombre ? ClosetColors.emeraude300 : ClosetColors.fond300;
+
+  /// Filets et séparateurs.
+  Color get closetLigne =>
+      closetSombre ? ClosetColors.emeraude400 : ClosetColors.ligne;
 }

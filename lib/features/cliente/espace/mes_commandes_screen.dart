@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/l10n/closet_l10n.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/closet_colors.dart';
 import '../../../core/theme/closet_text_styles.dart';
+import '../../../core/utils/date_format.dart';
 import '../../../core/widgets/closet_feedback.dart';
 import '../../../core/widgets/etat_ecran.dart';
 import '../../../core/widgets/status_badge.dart';
@@ -21,6 +23,7 @@ class MesCommandesScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = ClosetL10n.of(context);
     final commandes = ref.watch(mesCommandesProvider);
 
     return Scaffold(
@@ -33,7 +36,7 @@ class MesCommandesScreen extends ConsumerWidget {
               onRetour: () => context.pop(),
               action: SourceurBoutonRond(
                 icone: Icons.notifications_none_rounded,
-                label: 'Notifications',
+                label: l10n.notifications,
                 onTap: () => context.push('/espace/alertes'),
               ),
             ),
@@ -81,14 +84,15 @@ class _CarteCommande extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = ClosetL10n.of(context);
     return GestureDetector(
       onTap: onTap,
       child: Container(
         constraints: const BoxConstraints(minHeight: 80),
         padding: const EdgeInsets.symmetric(horizontal: AppSpacing.p16),
         decoration: BoxDecoration(
-          color: ClosetColors.blanc,
-          border: Border.all(color: ClosetColors.fond300, width: AppStroke.fin),
+          color: context.closetCarte,
+          border: Border.all(color: context.closetBordure, width: AppStroke.fin),
           borderRadius: BorderRadius.circular(AppRadius.carte),
         ),
         child: Column(
@@ -104,20 +108,20 @@ class _CarteCommande extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                     style: ClosetTextStyles.libelleFort.copyWith(
                       letterSpacing: -0.28,
-                      color: ClosetColors.vert,
+                      color: context.closetVert,
                     ),
                   ),
                 ),
-                badgeStatutCommande(commande.statut),
+                badgeStatutCommande(commande.statut, l10n),
               ],
             ),
             const SizedBox(height: AppSpacing.p12),
             Text(
-              ligneDateCommande(commande),
+              ligneDateCommande(commande, l10n),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: ClosetTextStyles.corps.copyWith(
-                color: ClosetColors.neutre900,
+                color: context.closetEncre,
               ),
             ),
           ],
@@ -128,35 +132,23 @@ class _CarteCommande extends StatelessWidget {
 }
 
 /// Badge correspondant au statut, d'après la maquette `26:1255`.
-StatusBadge badgeStatutCommande(StatutCommande statut) => switch (statut) {
-      StatutCommande.livree => StatusBadge.livree(),
-      StatutCommande.enRoute => StatusBadge.enRoute(),
+StatusBadge badgeStatutCommande(StatutCommande statut, ClosetL10n l10n) => switch (statut) {
+      StatutCommande.livree => StatusBadge.livree(l10n.badgeLivree),
+      StatutCommande.enRoute => StatusBadge.enRoute(l10n.badgeEnRoute),
       StatutCommande.preparation ||
       StatutCommande.paid ||
       StatutCommande.pending =>
-        StatusBadge.preparation(),
-      StatutCommande.annulee => StatusBadge.refusee(),
-      StatutCommande.devis => StatusBadge.enAnalyse(),
+        StatusBadge.preparation(l10n.badgePreparation),
+      StatutCommande.annulee => StatusBadge.refusee(l10n.badgeRefusee),
+      StatutCommande.devis => StatusBadge.enAnalyse(l10n.badgeEnAnalyse),
     };
 
 /// « Déposé le… » pour une commande livrée, estimation sinon.
-String ligneDateCommande(Commande c) {
+String ligneDateCommande(Commande c, ClosetL10n l10n) {
   if (c.statut == StatutCommande.livree) {
-    return 'Déposé le : ${formatDateCommande(c.dateDepot)}';
+    return '${l10n.adhesionSoumiseLePrefix} : ${formatDateCommande(c.dateDepot)}';
   }
   return c.estimation == null
-      ? 'Temps d’estimation : En cours'
-      : 'Temps d’estimation : ${formatDateCommande(c.estimation!)}';
-}
-
-/// Format de la maquette : « Mer 8 Juil, 15:30 ».
-String formatDateCommande(DateTime d) {
-  const jours = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
-  const mois = [
-    'Janv', 'Févr', 'Mars', 'Avr', 'Mai', 'Juin',
-    'Juil', 'Août', 'Sept', 'Oct', 'Nov', 'Déc',
-  ];
-  final hh = d.hour.toString().padLeft(2, '0');
-  final mm = d.minute.toString().padLeft(2, '0');
-  return '${jours[d.weekday - 1]} ${d.day} ${mois[d.month - 1]}, $hh:$mm';
+      ? '${l10n.tempsEstimationLabel} : ${l10n.tempsEstimationEnCours}'
+      : '${l10n.tempsEstimationLabel} : ${formatDateCommande(c.estimation!)}';
 }

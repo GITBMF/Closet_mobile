@@ -13,6 +13,7 @@ import '../../../core/widgets/closet_app_bar.dart';
 import '../../../core/widgets/closet_filet.dart';
 import '../../../core/widgets/closet_header_button.dart';
 import '../../../core/widgets/etat_ecran.dart';
+import '../../../core/widgets/icone_panier.dart';
 import '../../../core/widgets/jauge_etat.dart';
 import '../../../core/widgets/piece_card.dart';
 import '../../../core/widgets/status_badge.dart';
@@ -497,9 +498,12 @@ class _BoutonsFiche extends ConsumerWidget {
         ),
         const Spacer(),
         ClosetBoutonHeader(
-          icone: dansSelection
-              ? Icons.shopping_basket
-              : Icons.shopping_basket_outlined,
+          icone: Icons.shopping_basket_outlined,
+          dessin: (t, c) => IconePanier(
+            taille: t,
+            couleur: c,
+            rempli: dansSelection,
+          ),
           label: dansSelection
               ? 'Dans ma sélection, $nbSelection pièce${nbSelection > 1 ? 's' : ''}'
               : 'Ma sélection',

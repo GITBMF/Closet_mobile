@@ -7,7 +7,7 @@ import '../l10n/closet_l10n.dart';
 import '../theme/closet_colors.dart';
 import '../theme/closet_text_styles.dart';
 
-/// Cibles de la visite — onglets toujours visibles, et contrôles d’écran.
+/// Cibles de la visite — onglets, contrôles d’écran, et cibles du parcours distant.
 class ClosetTourKeys {
   static final dressing = GlobalKey();
   static final collections = GlobalKey();
@@ -18,6 +18,49 @@ class ClosetTourKeys {
   static final filtres = GlobalKey();
   static final commandes = GlobalKey();
   static final sourceur = GlobalKey();
+
+  static final accueilKey = GlobalKey();
+  static final pieceSemaineKey = GlobalKey();
+  static final decouvrirKey = GlobalKey();
+  static final grilleKey = GlobalKey();
+  static final selectionKey = GlobalKey();
+  static final notificationsKey = GlobalKey();
+  static final dressingNavKey = dressing;
+  static final collectionsNavKey = collections;
+  static final wishlistNavKey = wishlist;
+  static final selectionNavKey = selection;
+  static final espaceNavKey = espace;
+  static final rechercheKey = GlobalKey();
+  static final universKey = GlobalKey();
+  static final filtresKey = filtres;
+  static final produitCarrouselKey = GlobalKey();
+  static final produitFavoriKey = GlobalKey();
+  static final produitAjoutKey = GlobalKey();
+  static final wishlistAjoutKey = GlobalKey();
+  static final finaliserKey = GlobalKey();
+  static final checkoutNomKey = GlobalKey();
+  static final checkoutTelKey = GlobalKey();
+  static final checkoutVilleKey = GlobalKey();
+  static final checkoutQuartierKey = GlobalKey();
+  static final checkoutDetailleeKey = GlobalKey();
+  static final checkoutSuivantKey = GlobalKey();
+  static final checkoutMoyensKey = GlobalKey();
+  static final checkoutRecapKey = GlobalKey();
+  static final checkoutPayerKey = GlobalKey();
+  static final espaceProfilKey = GlobalKey();
+  static final espaceSourceurKey = sourceur;
+  static final espaceCommandesKey = commandes;
+  static final espaceLangueKey = GlobalKey();
+  static final espaceVisiteKey = GlobalKey();
+  static final sourceurFicheKey = GlobalKey();
+  static final sourceurDepotsNavKey = GlobalKey();
+  static final sourceurTableauBordKey = GlobalKey();
+  static final sourceurFiltresKey = GlobalKey();
+  static final sourceurConfierNavKey = GlobalKey();
+  static final sourceurEtapesKey = GlobalKey();
+  static final sourceurGainsNavKey = GlobalKey();
+  static final sourceurSoldeKey = GlobalKey();
+  static final sourceurEspaceNavKey = GlobalKey();
 }
 
 class SpotlightStep {
@@ -108,7 +151,7 @@ class SpotlightTourNotifier extends Notifier<SpotlightTourState> {
   SpotlightTourState build() =>
       const SpotlightTourState(isActive: false, currentStep: 0);
 
-  void startTour() {
+  void startTour({bool pourSourceur = false}) {
     state = const SpotlightTourState(isActive: true, currentStep: 0);
   }
 

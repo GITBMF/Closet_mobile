@@ -27,8 +27,8 @@ class SourceurCadrePhoto extends StatelessWidget {
       height: hauteur,
       clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
-        color: ClosetColors.blanc,
-        border: Border.all(color: ClosetColors.fond300, width: AppStroke.fin),
+        color: context.closetCarte,
+        border: Border.all(color: context.closetBordure, width: AppStroke.fin),
         borderRadius: rayon,
       ),
       child: Image.asset(

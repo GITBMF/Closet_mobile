@@ -2,6 +2,7 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../l10n/closet_l10n.dart';
 import 'toasts.dart';
 
 final connectiviteProvider = StreamProvider<List<ConnectivityResult>>((ref) {
@@ -23,6 +24,7 @@ class _VeilleReseauState extends ConsumerState<VeilleReseau> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = ClosetL10n.of(context);
     ref.listen(connectiviteProvider, (precedent, suivant) {
       suivant.whenData((resultats) {
         final horsLigne = resultats.isEmpty ||
@@ -30,11 +32,11 @@ class _VeilleReseauState extends ConsumerState<VeilleReseau> {
         if (horsLigne && !_dejaHorsLigne) {
           toastInfo(
             ref,
-            'Hors connexion',
-            'Certaines actions seront indisponibles jusqu’au retour du réseau.',
+            l10n.horsConnexionTitre,
+            l10n.actionsIndisponiblesHorsLigne,
           );
         } else if (!horsLigne && _dejaHorsLigne) {
-          toastSucces(ref, 'Connexion rétablie');
+          toastSucces(ref, l10n.connexionRetablie);
         }
         _dejaHorsLigne = horsLigne;
       });

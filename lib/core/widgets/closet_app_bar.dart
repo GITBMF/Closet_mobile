@@ -12,6 +12,7 @@ import '../../data/repositories/auth_repository.dart';
 import '../../data/repositories/cart_repository.dart';
 import '../../data/repositories/wishlist_repository.dart';
 import 'closet_header_button.dart';
+import 'icone_panier.dart';
 import 'piece_card.dart';
 
 /// En-tête principal — transcription de la maquette `11:30`.
@@ -104,6 +105,11 @@ class ClosetAppBar extends ConsumerWidget implements PreferredSizeWidget {
                       children: [
                         ClosetBoutonHeader(
                           icone: Icons.shopping_basket_outlined,
+                          dessin: (t, c) => IconePanier(
+                            taille: t,
+                            couleur: c,
+                            rempli: cartCount > 0,
+                          ),
                           label: cartCount > 0
                               ? 'Sélection, $cartCount pièces'
                               : 'Ma sélection',

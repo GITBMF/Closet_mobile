@@ -93,25 +93,29 @@ class ClosetBottomNav extends StatelessWidget {
   /// Entrées du parcours sourceur.
   static List<ClosetNavItem> itemsSourceurPour(ClosetL10n l10n) => [
     ClosetNavItem(
-      icone: Icons.inventory_2_outlined,
-      iconeActive: Icons.inventory_2,
-      label: l10n.navDepotsCourt,
-    ),
-    ClosetNavItem(
-      icone: Icons.add_circle_outline,
-      iconeActive: Icons.add_circle,
-      label: l10n.navConfier,
-    ),
-    ClosetNavItem(
-      icone: Icons.account_balance_wallet_outlined,
-      iconeActive: Icons.account_balance_wallet,
-      label: l10n.navGains,
-    ),
-    ClosetNavItem(
-      icone: Icons.person_outline,
-      iconeActive: Icons.person,
-      label: l10n.navEspace,
-    ),
+          icone: Icons.inventory_2_outlined,
+          iconeActive: Icons.inventory_2,
+          label: l10n.navDepotsCourt,
+          cle: ClosetTourKeys.sourceurDepotsNavKey,
+        ),
+        ClosetNavItem(
+          icone: Icons.add_circle_outline,
+          iconeActive: Icons.add_circle,
+          label: l10n.navConfier,
+          cle: ClosetTourKeys.sourceurConfierNavKey,
+        ),
+        ClosetNavItem(
+          icone: Icons.account_balance_wallet_outlined,
+          iconeActive: Icons.account_balance_wallet,
+          label: l10n.navGains,
+          cle: ClosetTourKeys.sourceurGainsNavKey,
+        ),
+        ClosetNavItem(
+          icone: Icons.person_outline,
+          iconeActive: Icons.person,
+          label: l10n.navEspace,
+          cle: ClosetTourKeys.sourceurEspaceNavKey,
+        ),
   ];
 
   /// Compatibilité tests / appels historiques (français).
@@ -122,38 +126,43 @@ class ClosetBottomNav extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: Theme.of(context).scaffoldBackgroundColor,
-      child: SafeArea(
-        top: false,
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(
-            AppSpacing.p8,
-            AppSpacing.p4,
-            AppSpacing.p8,
-            AppSpacing.p4,
-          ),
-          child: Container(
-            key: ClosetTourKeys.barre,
-            height: hauteurOnglets,
-            padding: const EdgeInsets.symmetric(horizontal: 4),
-            decoration: BoxDecoration(
-              color: ClosetColors.navigationFond,
-              borderRadius: BorderRadius.circular(AppRadius.cercle),
+    return MediaQuery(
+      data: MediaQuery.of(context).copyWith(
+        textScaler: MediaQuery.textScalerOf(context).clamp(maxScaleFactor: 1.1),
+      ),
+      child: Material(
+        color: Theme.of(context).scaffoldBackgroundColor,
+        child: SafeArea(
+          top: false,
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(
+              AppSpacing.p8,
+              AppSpacing.p4,
+              AppSpacing.p8,
+              AppSpacing.p4,
             ),
-            child: Row(
-              children: [
-                for (var i = 0; i < items.length; i++)
-                  Expanded(
-                    child: _Onglet(
-                      key: items[i].cle,
-                      item: items[i],
-                      actif: i == indexActif,
-                      compteur: compteurs[i],
-                      onTap: onTap == null ? null : () => onTap!(i),
+            child: Container(
+              key: ClosetTourKeys.barre,
+              height: hauteurOnglets,
+              padding: const EdgeInsets.symmetric(horizontal: 4),
+              decoration: BoxDecoration(
+                color: ClosetColors.navigationFond,
+                borderRadius: BorderRadius.circular(AppRadius.cercle),
+              ),
+              child: Row(
+                children: [
+                  for (var i = 0; i < items.length; i++)
+                    Expanded(
+                      child: _Onglet(
+                        key: items[i].cle,
+                        item: items[i],
+                        actif: i == indexActif,
+                        compteur: compteurs[i],
+                        onTap: onTap == null ? null : () => onTap!(i),
+                      ),
                     ),
-                  ),
-              ],
+                ],
+              ),
             ),
           ),
         ),

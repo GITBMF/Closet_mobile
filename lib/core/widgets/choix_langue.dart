@@ -16,6 +16,7 @@ String libelleLangueCourante(Locale locale, ClosetL10n l10n) {
 void afficherChoixLangue(BuildContext context, WidgetRef ref) {
   showModalBottomSheet<void>(
     context: context,
+    useRootNavigator: true,
     backgroundColor: Colors.transparent,
     builder: (_) => _ChoixLangueSheet(ref: ref),
   );
@@ -122,7 +123,12 @@ class _TuileLangue extends StatelessWidget {
               Text(drapeau, style: const TextStyle(fontSize: 24)),
               const SizedBox(width: AppSpacing.p16),
               Expanded(
-                child: Text(libelle, style: ClosetTextStyles.libelle),
+                child: Text(
+                  libelle,
+                  style: ClosetTextStyles.libelle.copyWith(
+                    color: actif ? ClosetColors.noir : context.closetEncre,
+                  ),
+                ),
               ),
               if (actif)
                 const Icon(

@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 
+import '../../core/l10n/closet_l10n.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/theme/closet_colors.dart';
 import '../../core/theme/closet_text_styles.dart';
 import '../../core/widgets/closet_app_bar.dart';
 import '../../core/widgets/frise_tunnel.dart';
+import '../checkout/moyens_paiement.dart';
 import 'transaction_models.dart';
 import 'widgets/transaction_scaffold.dart';
 
@@ -32,25 +34,26 @@ class ConfirmationScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = ClosetL10n.of(context);
     return TransactionScaffold(
-      titre: demande.type.titreConfirmation,
+      titre: demande.type.titreConfirmation(l10n),
       entete: demande.type.afficheFrise
           ? const FriseTunnel(etapeCourante: 2, surFondSombre: true)
           : null,
       child: Column(
         children: [
           const SizedBox(height: 44),
-          TexteTransaction(demande.type.messageConfirmation),
+          TexteTransaction(demande.type.messageConfirmation(l10n)),
           const SizedBox(height: AppSpacing.p32),
           _Recapitulatif(demande: demande),
           const Spacer(),
           BoutonTransaction(
-            label: demande.type.libelleConfirmer,
+            label: demande.type.libelleConfirmer(l10n),
             onPressed: onConfirmer,
           ),
           const SizedBox(height: AppSpacing.p16),
           BoutonTransaction(
-            label: 'Retour',
+            label: l10n.retour,
             dore: false,
             onPressed: onAnnuler,
           ),
@@ -69,6 +72,7 @@ class _Recapitulatif extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = ClosetL10n.of(context);
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.p24),
       child: Column(
@@ -81,18 +85,21 @@ class _Recapitulatif extends StatelessWidget {
           ),
           const SizedBox(height: AppSpacing.p4),
           Text(
-            demande.type.libelleTotal,
+            demande.type.libelleTotal(l10n),
             style: ClosetTextStyles.meta.copyWith(color: ClosetColors.beige),
           ),
           const SizedBox(height: AppSpacing.p24),
           if (demande.fraisLivraison > 0)
             _Ligne(
-              label: 'Dont livraison',
+              label: l10n.transactionDontLivraison,
               valeur: formatPrixFcfa(demande.fraisLivraison),
             ),
-          _Ligne(label: 'Moyen', valeur: demande.moyen),
+          _Ligne(
+            label: l10n.transactionMoyen,
+            valeur: _libelleMoyen(demande.moyen),
+          ),
           // Jamais le numéro complet : cet écran peut être capturé.
-          _Ligne(label: 'Compte', valeur: demande.compteMasque),
+          _Ligne(label: l10n.transactionCompte, valeur: demande.compteMasque),
         ],
       ),
     );
@@ -132,4 +139,12 @@ class _Ligne extends StatelessWidget {
       ),
     );
   }
+}
+
+/// Nom lisible d'un moyen de paiement (`mtn_momo` → « MTN MOMO »).
+String _libelleMoyen(String id) {
+  for (final m in moyensPaiement) {
+    if (m.id == id) return m.libelleCourt;
+  }
+  return id.replaceAll('_', ' ').toUpperCase();
 }

@@ -72,7 +72,6 @@ class FiltresCatalogue {
 class AccueilDressing {
   const AccueilDressing({
     required this.pieceDeLaSemaine,
-    required this.hero,
     required this.nouveautes,
     required this.coupsDeCoeur,
     required this.univers,
@@ -80,7 +79,6 @@ class AccueilDressing {
   });
 
   final Article? pieceDeLaSemaine;
-  final Article? hero;
   final List<Article> nouveautes;
   final List<Article> coupsDeCoeur;
   final List<String> univers;
@@ -89,7 +87,6 @@ class AccueilDressing {
   /// Aucune pièce ni vitrine renvoyée par le backend.
   bool get estVide =>
       pieceDeLaSemaine == null &&
-      hero == null &&
       nouveautes.isEmpty &&
       coupsDeCoeur.isEmpty;
 }
@@ -165,10 +162,7 @@ class CatalogRepository {
     await _chargerReferentiels();
 
     String? universId = filtres.universId;
-    if (universId == null &&
-        universe != null &&
-        universe != "Tout l'univers" &&
-        universe != 'Tout l’univers') {
+    if (universId == null && universe != null && universe.isNotEmpty) {
       for (final u in _univers) {
         if (u.nom.toLowerCase() == universe.toLowerCase()) {
           universId = u.id;
@@ -259,9 +253,13 @@ class CatalogRepository {
       // L'accueil reste utilisable avec le catalogue seul.
     }
 
-    // Uniquement les slots renvoyés par le back — jamais de pièce inventée.
+    // Les slots de la vitrine passent d'abord. À défaut, l'accueil ne doit pas
+    // perdre son cadre principal : on retient une pièce du catalogue plutôt que
+    // d'afficher une page qui commence par une grille.
     final pieceSemaine = dernierSlot('piece_of_the_week', featured);
-    final hero = dernierSlot('hero', featured) ?? pieceSemaine;
+    final hero = dernierSlot('hero', featured) ??
+        pieceSemaine ??
+        _pieceAMettreEnAvant(catalogue);
     final favoris = tousSlots('favourite', featured);
 
     final horsUne = [
@@ -290,13 +288,27 @@ class CatalogRepository {
     }
 
     return AccueilDressing(
-      pieceDeLaSemaine: pieceSemaine,
-      hero: hero,
+      // Le slot « hero » est la vitrine principale voulue par l'équipe
+      // éditoriale ; « piece_of_the_week » ne sert de repli que si aucun
+      // « hero » n'est configuré côté back.
+      pieceDeLaSemaine: hero,
       nouveautes: horsUne.take(4).toList(),
       coupsDeCoeur: favoris.take(4).toList(),
       univers: universNoms,
       maisons: maisonsNoms,
     );
+  }
+
+  /// Repli quand `/showcasing/home` ne configure aucun slot : une pièce signalée
+  /// comme mise en avant, sinon la première encore disponible.
+  static Article? _pieceAMettreEnAvant(List<Article> catalogue) {
+    for (final a in catalogue) {
+      if (a.isFeatured && !a.isSoldOut) return a;
+    }
+    for (final a in catalogue) {
+      if (!a.isSoldOut) return a;
+    }
+    return catalogue.isEmpty ? null : catalogue.first;
   }
 
   Future<Article?> getById(String id) async {

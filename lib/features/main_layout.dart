@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../core/l10n/closet_l10n.dart';
 import '../core/widgets/closet_bottom_nav.dart';
+import '../core/widgets/closet_shell_transition.dart';
 import '../core/widgets/spotlight_showcase.dart';
 
 class MainLayout extends ConsumerWidget {
@@ -41,7 +42,10 @@ class MainLayout extends ConsumerWidget {
     return SpotlightShowcase(
       steps: etapes,
       child: Scaffold(
-        body: navigationShell,
+        body: ClosetShellTransition(
+          index: navigationShell.currentIndex,
+          child: navigationShell,
+        ),
         extendBody: false,
         bottomNavigationBar: ClosetBottomNav(
           items: ClosetBottomNav.itemsClientePour(l10n),
