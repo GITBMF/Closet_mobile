@@ -16,6 +16,7 @@ import '../../../core/widgets/closet_feedback.dart';
 import '../../../core/widgets/closet_sections.dart';
 import '../../../core/widgets/etat_ecran.dart';
 import '../../../core/widgets/piece_card.dart';
+import '../../../core/widgets/spotlight_showcase.dart';
 import '../../../data/models/article.dart';
 import '../../../data/recherche/suggestion_recherche.dart';
 import '../../../data/repositories/catalog_repository.dart';
@@ -90,20 +91,27 @@ class EtatFilterNotifier extends Notifier<String?> {
   void setEtat(String? val) => state = val;
 }
 
-final selectedUniverseProvider =
-    NotifierProvider<UniverseNotifier, String>(UniverseNotifier.new);
-final searchQueryProvider =
-    NotifierProvider<SearchQueryNotifier, String>(SearchQueryNotifier.new);
-final filterBrandProvider =
-    NotifierProvider<BrandFilterNotifier, Maison?>(BrandFilterNotifier.new);
-final filterPrixMinProvider =
-    NotifierProvider<PrixMinFilterNotifier, double?>(PrixMinFilterNotifier.new);
-final filterPriceProvider =
-    NotifierProvider<PrixMaxFilterNotifier, double?>(PrixMaxFilterNotifier.new);
-final filterTailleProvider =
-    NotifierProvider<TailleFilterNotifier, String?>(TailleFilterNotifier.new);
-final filterEtatProvider =
-    NotifierProvider<EtatFilterNotifier, String?>(EtatFilterNotifier.new);
+final selectedUniverseProvider = NotifierProvider<UniverseNotifier, String>(
+  UniverseNotifier.new,
+);
+final searchQueryProvider = NotifierProvider<SearchQueryNotifier, String>(
+  SearchQueryNotifier.new,
+);
+final filterBrandProvider = NotifierProvider<BrandFilterNotifier, Maison?>(
+  BrandFilterNotifier.new,
+);
+final filterPrixMinProvider = NotifierProvider<PrixMinFilterNotifier, double?>(
+  PrixMinFilterNotifier.new,
+);
+final filterPriceProvider = NotifierProvider<PrixMaxFilterNotifier, double?>(
+  PrixMaxFilterNotifier.new,
+);
+final filterTailleProvider = NotifierProvider<TailleFilterNotifier, String?>(
+  TailleFilterNotifier.new,
+);
+final filterEtatProvider = NotifierProvider<EtatFilterNotifier, String?>(
+  EtatFilterNotifier.new,
+);
 
 /// `GET /pieces` (q, house_id, universe_id, min/max_price) puis filtres
 /// locaux sur `size_label` et `condition` — absents de la query API.
@@ -116,16 +124,17 @@ final filteredArticlesProvider = FutureProvider<List<Article>>((ref) async {
   final taille = ref.watch<String?>(filterTailleProvider);
   final etat = ref.watch<String?>(filterEtatProvider);
 
-  final retenus =
-      await ref.watch<CatalogRepository>(catalogRepositoryProvider).getCatalog(
-            universe: universe.isEmpty ? null : universe,
-            filtres: FiltresCatalogue(
-              maisonId: estIdentifiantApi(maison?.id) ? maison!.id : null,
-              recherche: query.isEmpty ? null : query,
-              prixMin: prixMin,
-              prixMax: prixMax,
-            ),
-          );
+  final retenus = await ref
+      .watch<CatalogRepository>(catalogRepositoryProvider)
+      .getCatalog(
+        universe: universe.isEmpty ? null : universe,
+        filtres: FiltresCatalogue(
+          maisonId: estIdentifiantApi(maison?.id) ? maison!.id : null,
+          recherche: query.isEmpty ? null : query,
+          prixMin: prixMin,
+          prixMax: prixMax,
+        ),
+      );
 
   return [
     for (final a in retenus)
@@ -231,9 +240,9 @@ class _CollectionsScreenState extends ConsumerState<CollectionsScreen> {
     _inscrireChamp(s.libelle);
     switch (s.categorie) {
       case CategorieSuggestion.marque:
-        ref.read(filterBrandProvider.notifier).setMaison(
-              s.maison ?? Maison(id: s.libelle, nom: s.libelle),
-            );
+        ref
+            .read(filterBrandProvider.notifier)
+            .setMaison(s.maison ?? Maison(id: s.libelle, nom: s.libelle));
         ref.read(searchQueryProvider.notifier).clear();
       case CategorieSuggestion.type:
         ref.read(selectedUniverseProvider.notifier).setUniverse(s.libelle);
@@ -251,10 +260,9 @@ class _CollectionsScreenState extends ConsumerState<CollectionsScreen> {
   }
 
   Future<void> _choisirMarqueTendance(String nom) async {
-    final index = ref.read(indexRechercheProvider).maybeWhen(
-          data: (i) => i,
-          orElse: () => IndexRecherche.vide,
-        );
+    final index = ref
+        .read(indexRechercheProvider)
+        .maybeWhen(data: (i) => i, orElse: () => IndexRecherche.vide);
     Maison? maison;
     for (final m in index.maisons) {
       if (m.nom.toLowerCase() == nom.toLowerCase()) {
@@ -296,14 +304,12 @@ class _CollectionsScreenState extends ConsumerState<CollectionsScreen> {
       }
     });
 
-    final index = ref.watch(indexRechercheProvider).maybeWhen(
-          data: (i) => i,
-          orElse: () => IndexRecherche.vide,
-        );
-    final historique = ref.watch(historiqueRechercheProvider).maybeWhen(
-          data: (h) => h,
-          orElse: () => const <String>[],
-        );
+    final index = ref
+        .watch(indexRechercheProvider)
+        .maybeWhen(data: (i) => i, orElse: () => IndexRecherche.vide);
+    final historique = ref
+        .watch(historiqueRechercheProvider)
+        .maybeWhen(data: (h) => h, orElse: () => const <String>[]);
     final panneau = construirePanneau(
       requete: _recherche.text,
       index: index,
@@ -324,18 +330,21 @@ class _CollectionsScreenState extends ConsumerState<CollectionsScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    _BarreRecherche(
-                      controller: _recherche,
-                      focusNode: _focus,
-                      filtresActifs: _filtresActifs ||
-                          _recherche.text.trim().isNotEmpty,
-                      onChanged: (v) {
-                        setState(() {});
-                        _appliquerTexte(v);
-                      },
-                      onSubmitted: (v) => _appliquerTexte(v, immediat: true),
-                      onEffacer: _effacerRecherche,
-                      onFiltres: () => _ouvrirFiltres(context),
+                    KeyedSubtree(
+                      key: ClosetTourKeys.filtres,
+                      child: _BarreRecherche(
+                        controller: _recherche,
+                        focusNode: _focus,
+                        filtresActifs:
+                            _filtresActifs || _recherche.text.trim().isNotEmpty,
+                        onChanged: (v) {
+                          setState(() {});
+                          _appliquerTexte(v);
+                        },
+                        onSubmitted: (v) => _appliquerTexte(v, immediat: true),
+                        onEffacer: _effacerRecherche,
+                        onFiltres: () => _ouvrirFiltres(context),
+                      ),
                     ),
                     if (_champActif)
                       PanneauSuggestionsRecherche(
@@ -375,12 +384,12 @@ class _CollectionsScreenState extends ConsumerState<CollectionsScreen> {
                 skipLoadingOnReload: true,
                 data: (articles) => _Resultats(
                   articles: articles,
-                  onReinitialiser: _filtresActifs ? _reinitialiserFiltres : null,
+                  onReinitialiser: _filtresActifs
+                      ? _reinitialiserFiltres
+                      : null,
                 ),
-                loading: () => const SizedBox(
-                  height: 280,
-                  child: EtatEcran.chargement(),
-                ),
+                loading: () =>
+                    const SizedBox(height: 280, child: EtatEcran.chargement()),
                 error: (e, _) => SizedBox(
                   height: 280,
                   child: EtatEcran.erreur(
@@ -401,10 +410,7 @@ class _CollectionsScreenState extends ConsumerState<CollectionsScreen> {
 }
 
 class _Resultats extends StatelessWidget {
-  const _Resultats({
-    required this.articles,
-    this.onReinitialiser,
-  });
+  const _Resultats({required this.articles, this.onReinitialiser});
 
   final List<Article> articles;
   final VoidCallback? onReinitialiser;
@@ -415,8 +421,9 @@ class _Resultats extends StatelessWidget {
       return ClosetListeVide(
         message: ClosetL10n.of(context).aucunePieceRecherche,
         action: onReinitialiser,
-        libelleAction:
-            onReinitialiser == null ? null : ClosetL10n.of(context).effacerRecherche,
+        libelleAction: onReinitialiser == null
+            ? null
+            : ClosetL10n.of(context).effacerRecherche,
       );
     }
 
@@ -488,13 +495,13 @@ class _BarreRecherche extends StatelessWidget {
         onSubmitted: onSubmitted,
         textInputAction: TextInputAction.search,
         maxLength: 120,
-        buildCounter: (
-          context, {
-          required currentLength,
-          required isFocused,
-          maxLength,
-        }) =>
-            null,
+        buildCounter:
+            (
+              context, {
+              required currentLength,
+              required isFocused,
+              maxLength,
+            }) => null,
         style: ClosetTextStyles.saisie.copyWith(color: context.closetEncre),
         cursorColor: ClosetColors.vert,
         decoration: InputDecoration(
@@ -529,7 +536,10 @@ class _BarreRecherche extends StatelessWidget {
               ),
             ],
           ),
-          suffixIconConstraints: const BoxConstraints(minWidth: 0, minHeight: 0),
+          suffixIconConstraints: const BoxConstraints(
+            minWidth: 0,
+            minHeight: 0,
+          ),
           counterText: '',
           filled: true,
           fillColor: context.closetChamp,
@@ -547,7 +557,7 @@ class _BarreRecherche extends StatelessWidget {
   }
 
   static OutlineInputBorder _bordure(Color couleur) => OutlineInputBorder(
-        borderRadius: BorderRadius.circular(AppRadius.bouton),
-        borderSide: BorderSide(color: couleur, width: AppStroke.fin),
-      );
+    borderRadius: BorderRadius.circular(AppRadius.bouton),
+    borderSide: BorderSide(color: couleur, width: AppStroke.fin),
+  );
 }

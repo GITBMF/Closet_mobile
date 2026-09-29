@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/l10n/closet_l10n.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/closet_colors.dart';
 import '../../../core/theme/closet_text_styles.dart';
@@ -54,7 +55,7 @@ class _SelectionScreenState extends ConsumerState<SelectionScreen> {
                         pieces.length == 1
                             ? '1 pièce unique mise de côté pour vous.'
                             : '${pieces.length} pièces uniques mises de côté '
-                                'pour vous.',
+                                  'pour vous.',
                         style: ClosetTextStyles.citation.copyWith(
                           fontSize: 14,
                           fontWeight: FontWeight.w400,
@@ -72,14 +73,15 @@ class _SelectionScreenState extends ConsumerState<SelectionScreen> {
                         child: _LignePiece(
                           article: piece,
                           onRetirer: () {
-                            ref
-                                .read(cartProvider.notifier)
-                                .removeArticle(piece.id);
+                            final cart = ref.read(cartProvider.notifier);
+                            cart.removeArticle(piece.id);
                             toastActionPiece(
                               ref,
-                              nom: piece.title,
-                              resultat: 'a été retirée de votre sélection.',
+                              message: ClosetL10n.of(
+                                context,
+                              ).pieceRetireeSelection(piece.title),
                               succes: false,
+                              onAnnuler: () => cart.addArticle(piece),
                             );
                           },
                           onTap: () => context.push('/product/${piece.id}'),
@@ -192,7 +194,7 @@ class _LignePiece extends StatelessWidget {
             ),
             Semantics(
               button: true,
-              label: 'Retirer de ma sélection',
+              label: ClosetL10n.of(context).retirerDeMaSelection,
               child: GestureDetector(
                 onTap: onRetirer,
                 child: const SizedBox(

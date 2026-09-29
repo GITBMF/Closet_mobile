@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/theme/closet_colors.dart';
 import '../../core/theme/closet_text_styles.dart';
+import '../../core/widgets/badge_qualite.dart';
 import '../../core/widgets/closet_app_bar.dart';
 import '../../core/widgets/closet_filet.dart';
 import '../../data/repositories/cart_repository.dart';
@@ -86,6 +87,8 @@ class RecapMontants extends ConsumerWidget {
             color: ClosetColors.taupe,
           ),
         ),
+        const SizedBox(height: AppSpacing.p12),
+        const BadgeQualiteVerifiee(),
       ],
     );
   }

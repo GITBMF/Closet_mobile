@@ -8,6 +8,7 @@ import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/closet_colors.dart';
 import '../../../core/theme/closet_layout.dart';
 import '../../../core/theme/closet_text_styles.dart';
+import '../../../core/widgets/badge_qualite.dart';
 import '../../../core/widgets/closet_app_bar.dart';
 import '../../../core/widgets/closet_filet.dart';
 import '../../../core/widgets/closet_header_button.dart';
@@ -22,8 +23,10 @@ import '../../../data/repositories/catalog_repository.dart';
 import '../../../data/repositories/wishlist_repository.dart';
 import '../../auth/auth_screen.dart';
 
-final productDetailProvider =
-    FutureProvider.family<Article?, String>((ref, id) {
+final productDetailProvider = FutureProvider.family<Article?, String>((
+  ref,
+  id,
+) {
   return ref.watch(catalogRepositoryProvider).getById(id);
 });
 
@@ -82,9 +85,11 @@ class _ProductScreenState extends ConsumerState<ProductScreen> {
               // défilement de la fiche (remarque AMINA — navigation ancrée).
               Positioned(
                 top: MediaQuery.paddingOf(context).top + AppSpacing.p8,
-                left: MediaQuery.paddingOf(context).left +
+                left:
+                    MediaQuery.paddingOf(context).left +
                     ClosetLayout.of(context).gouttiere,
-                right: MediaQuery.paddingOf(context).right +
+                right:
+                    MediaQuery.paddingOf(context).right +
                     ClosetLayout.of(context).gouttiere,
                 child: _BoutonsFiche(article: article),
               ),
@@ -192,6 +197,8 @@ class _Corps extends ConsumerWidget {
                     _StatutStock(epuise: article.isSoldOut),
                   ],
                 ),
+                const SizedBox(height: AppSpacing.p12),
+                const BadgeQualiteVerifiee(),
                 if (article.sourceurId != null &&
                     article.libelleSourceur.isNotEmpty) ...[
                   const SizedBox(height: AppSpacing.p8),
@@ -231,7 +238,7 @@ class _Corps extends ConsumerWidget {
   }
 }
 
-class _Carrousel extends StatelessWidget {
+class _Carrousel extends ConsumerWidget {
   const _Carrousel({
     required this.article,
     required this.controller,
@@ -245,9 +252,13 @@ class _Carrousel extends StatelessWidget {
   final ValueChanged<int> onChange;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final images = article.imageUrls;
     final layout = ClosetLayout.of(context);
+    final enFavori = ref
+        .watch(wishlistListProvider)
+        .any((a) => a.id == article.id);
+    final likes = article.likesAffiches(enFavori: enFavori);
 
     return SizedBox(
       height: layout.hauteurHeroProduit,
@@ -270,6 +281,21 @@ class _Carrousel extends StatelessWidget {
                     ),
                   ),
           ),
+          Positioned(
+            left: ClosetLayout.of(context).gouttiere,
+            bottom: images.length > 1 ? 40 : AppSpacing.p16,
+            child: const BadgeQualiteVerifiee(surPhoto: true),
+          ),
+          if (likes > 0)
+            Positioned(
+              right: ClosetLayout.of(context).gouttiere,
+              bottom: images.length > 1 ? 40 : AppSpacing.p16,
+              child: CompteurFavoris(
+                nombre: likes,
+                actif: enFavori,
+                surPhoto: true,
+              ),
+            ),
           if (images.length > 1)
             Positioned(
               bottom: AppSpacing.p16,
@@ -316,9 +342,7 @@ class _LigneCaracteristique extends StatelessWidget {
             flex: 5,
             child: Text(
               label,
-              style: ClosetTextStyles.corps.copyWith(
-                color: ClosetColors.taupe,
-              ),
+              style: ClosetTextStyles.corps.copyWith(color: ClosetColors.taupe),
             ),
           ),
           const SizedBox(width: AppSpacing.p12),
@@ -343,8 +367,9 @@ class _BarreAjout extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final dejaDansSelection =
-        ref.watch(cartListProvider).any((a) => a.id == article.id);
+    final dejaDansSelection = ref
+        .watch(cartListProvider)
+        .any((a) => a.id == article.id);
     final indisponible = article.isSoldOut;
 
     final layout = ClosetLayout.of(context);
@@ -377,23 +402,21 @@ class _BarreAjout extends ConsumerWidget {
                           return;
                         }
                         final cart = ref.read(cartProvider.notifier);
+                        final l10n = ClosetL10n.of(context);
                         if (dejaDansSelection) {
                           cart.removeArticle(article.id);
                           toastActionPiece(
                             ref,
-                            nom: article.title,
-                            resultat: 'a été retirée de votre sélection.',
+                            message: l10n.pieceRetireeSelection(article.title),
                             succes: false,
+                            onAnnuler: () => cart.addArticle(article),
                           );
                         } else {
-                          final router = GoRouter.of(context);
                           cart.addArticle(article);
                           toastActionPiece(
                             ref,
-                            nom: article.title,
-                            resultat: 'a été ajoutée à votre sélection.',
-                            actionLabel: ClosetL10n.of(context).voirMaSelection,
-                            onAction: () => router.go('/selection'),
+                            message: l10n.pieceAjouteeSelection(article.title),
+                            onAnnuler: () => cart.removeArticle(article.id),
                           );
                           if (context.canPop()) context.pop();
                         }
@@ -401,10 +424,10 @@ class _BarreAjout extends ConsumerWidget {
                 child: Center(
                   child: Text(
                     indisponible
-                        ? 'Indisponible'
+                        ? ClosetL10n.of(context).indisponible
                         : dejaDansSelection
-                            ? 'Retirer de ma sélection'
-                            : 'Ajouter à ma sélection',
+                        ? ClosetL10n.of(context).retirerDeMaSelection
+                        : ClosetL10n.of(context).ajouterAMaSelection,
                     style: ClosetTextStyles.bouton.copyWith(
                       color: ClosetColors.blanc,
                     ),
@@ -456,10 +479,12 @@ class _BoutonsFiche extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final enWishlist =
-        ref.watch(wishlistListProvider).any((a) => a.id == article.id);
-    final dansSelection =
-        ref.watch(cartListProvider).any((a) => a.id == article.id);
+    final enWishlist = ref
+        .watch(wishlistListProvider)
+        .any((a) => a.id == article.id);
+    final dansSelection = ref
+        .watch(cartListProvider)
+        .any((a) => a.id == article.id);
     final nbSelection = ref.watch(cartCountProvider);
 
     return Row(
@@ -485,8 +510,8 @@ class _BoutonsFiche extends ConsumerWidget {
         ClosetBoutonHeader(
           icone: enWishlist ? Icons.favorite : Icons.favorite_border,
           label: enWishlist
-              ? 'Retirer de la wishlist'
-              : 'Ajouter à la wishlist',
+              ? ClosetL10n.of(context).retirerDesFavoris
+              : ClosetL10n.of(context).ajouterAuxFavoris,
           couleurIcone: enWishlist ? ClosetColors.erreurCouture : null,
           onTap: () => basculerFavori(context, ref, article),
           sansDisque: true,

@@ -34,8 +34,11 @@ class SourceurHeroCard extends StatelessWidget {
                 const Icon(Icons.auto_awesome,
                     size: 12, color: ClosetColors.noir),
                 const SizedBox(width: 7),
-                Text('CERCLE DES SOURCEURS',
-                    style: ClosetTextStyles.badgePill),
+                Text('Cercle des sourceurs',
+                    style: ClosetTextStyles.libelleFort.copyWith(
+                      fontSize: 11,
+                      color: ClosetColors.noir,
+                    )),
               ],
             ),
           ),

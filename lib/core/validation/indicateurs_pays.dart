@@ -332,15 +332,48 @@ String? validerTelephone(
   String? e164, {
   required bool obligatoire,
   String libelle = 'numéro',
+  bool camerounUniquement = false,
 }) {
   final saisie = (e164 ?? '').trim();
   if (saisie.isEmpty) {
     return obligatoire ? 'Indiquez un $libelle.' : null;
   }
+  if (RegExp(r'[A-Za-z]').hasMatch(saisie)) {
+    return 'Le $libelle ne doit contenir que des chiffres.';
+  }
   final parse = IndicateurPays.analyser(saisie);
-  if (parse == null) return 'Ce $libelle semble incorrect.';
+  if (parse == null) {
+    return camerounUniquement
+        ? 'Utilisez l’indicatif +237, puis 9 chiffres.'
+        : 'Ce $libelle semble incorrect.';
+  }
+  if (camerounUniquement || parse.pays.iso == 'CM') {
+    if (parse.pays.indicatif != '237') {
+      return 'Le $libelle doit commencer par +237.';
+    }
+    if (parse.national.length != 9) {
+      return 'Le $libelle camerounais a 9 chiffres (6XX XX XX XX).';
+    }
+    if (!parse.national.startsWith('6')) {
+      return 'Le $libelle doit commencer par 6.';
+    }
+    return null;
+  }
   if (parse.national.length < parse.pays.minChiffres) {
     return 'Ce $libelle semble incomplet.';
   }
   return null;
+}
+
+/// Affichage national camerounais : `6XX XX XX XX`.
+String formaterNationalCm(String chiffres) {
+  final t = chiffres.replaceAll(RegExp(r'\D'), '');
+  final coupe = t.length > 9 ? t.substring(0, 9) : t;
+  if (coupe.isEmpty) return '';
+  final b = StringBuffer(coupe[0]);
+  for (var i = 1; i < coupe.length; i++) {
+    if ((i - 1) % 2 == 0) b.write(' ');
+    b.write(coupe[i]);
+  }
+  return b.toString();
 }

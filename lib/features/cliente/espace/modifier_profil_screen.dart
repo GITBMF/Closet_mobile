@@ -3,12 +3,15 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/l10n/closet_l10n.dart';
+import '../../../core/services/notification_service.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/closet_colors.dart';
 import '../../../core/theme/closet_text_styles.dart';
 import '../../../core/validation/formats.dart';
 import '../../../core/validation/indicateurs_pays.dart';
 import '../../../core/widgets/champ_telephone.dart';
+import '../../../core/widgets/closet_buttons.dart';
 import '../../../core/widgets/closet_field.dart';
 import '../../../core/widgets/toasts.dart';
 import '../../../data/models/user.dart';
@@ -26,12 +29,17 @@ class ModifierProfilScreen extends ConsumerStatefulWidget {
       _ModifierProfilScreenState();
 }
 
-class _ModifierProfilScreenState
-    extends ConsumerState<ModifierProfilScreen> {
+class _ModifierProfilScreenState extends ConsumerState<ModifierProfilScreen> {
   final _formKey = GlobalKey<FormState>();
   late final TextEditingController _nom;
   late final TextEditingController _email;
   late final TelephoneController _telephone;
+
+  late final String _nomInitial;
+  late final String _emailInitial;
+  late final String _telInitial;
+
+  bool _envoiEnCours = false;
 
   @override
   void initState() {
@@ -40,34 +48,101 @@ class _ModifierProfilScreenState
     _nom = TextEditingController(text: user?.nomComplet ?? '');
     _email = TextEditingController(text: user?.email ?? '');
     _telephone = TelephoneController(initial: user?.phone);
+    _nomInitial = _nom.text.trim();
+    _emailInitial = _email.text.trim().toLowerCase();
+    _telInitial = _telephone.e164;
+    _nom.addListener(_surSaisie);
+    _email.addListener(_surSaisie);
+    _telephone.addListener(_surSaisie);
   }
 
   @override
   void dispose() {
+    _nom.removeListener(_surSaisie);
+    _email.removeListener(_surSaisie);
+    _telephone.removeListener(_surSaisie);
     _nom.dispose();
     _email.dispose();
     _telephone.dispose();
     super.dispose();
   }
 
-  /// Envoi en cours. Bloque le bouton pour éviter deux mises à jour
-  /// concurrentes, dont la seconde écraserait la première.
-  bool _envoiEnCours = false;
+  void _surSaisie() {
+    if (mounted) setState(() {});
+  }
+
+  bool get _modifie =>
+      _nom.text.trim() != _nomInitial ||
+      _email.text.trim().toLowerCase() != _emailInitial ||
+      _telephone.e164 != _telInitial;
+
+  Future<bool> _confirmerSortie() async {
+    if (!_modifie) return true;
+    final l10n = ClosetL10n.of(context);
+    final quitter = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppRadius.carte),
+        ),
+        title: Text(
+          l10n.modificationsNonEnregistrees,
+          style: ClosetTextStyles.titreSection,
+        ),
+        content: Text(
+          l10n.quitterSansEnregistrer,
+          style: ClosetTextStyles.citation.copyWith(color: ClosetColors.taupe),
+        ),
+        actionsAlignment: MainAxisAlignment.end,
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: Text(
+              l10n.continuerEdition,
+              style: ClosetTextStyles.corps.copyWith(color: ClosetColors.vert),
+            ),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: Text(
+              l10n.quitter,
+              style: ClosetTextStyles.corps.copyWith(
+                color: ClosetColors.erreur,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+    return quitter == true;
+  }
+
+  Future<void> _quitter() async {
+    if (!await _confirmerSortie()) return;
+    if (mounted) context.pop();
+  }
 
   Future<void> _enregistrer() async {
-    if (_envoiEnCours) return;
+    if (_envoiEnCours || !_modifie) return;
     if (!(_formKey.currentState?.validate() ?? false)) return;
 
     setState(() => _envoiEnCours = true);
     try {
-      await ref.read(authRepositoryProvider).mettreAJourProfil(
+      await ref
+          .read(authRepositoryProvider)
+          .mettreAJourProfil(
             nomComplet: _nom.text,
             email: _email.text,
             phone: _telephone.e164,
           );
       if (!mounted) return;
-      toastSucces(ref, 'Profil mis à jour');
+      final l10n = ClosetL10n.of(context);
+      final notifier = ref.read<NotificationNotifier>(
+        notificationProvider.notifier,
+      );
       context.pop();
+      notifier.showSuccess(l10n.profilMisAJour, l10n.profilMisAJour);
     } catch (e) {
       if (!mounted) return;
       toastErreur(ref, e, titre: 'Mise à jour impossible');
@@ -78,114 +153,129 @@ class _ModifierProfilScreenState
 
   @override
   Widget build(BuildContext context) {
+    final l10n = ClosetL10n.of(context);
     final user = ref.watch<ClosetUser?>(currentUserProvider);
+    final peutEnregistrer = _modifie && !_envoiEnCours;
 
-    return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      body: SafeArea(
-        child: Column(
-          children: [
-            _EnTeteRetour(
-              titre: '',
-              onRetour: () => context.pop(),
-            ),
-            Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(
-                  AppSpacing.p20,
-                  AppSpacing.p20,
-                  AppSpacing.p20,
-                  AppSpacing.p32,
-                ),
-                child: Form(
-                  key: _formKey,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      Center(child: _AvatarEditable(user: user)),
-                      const SizedBox(height: 29),
-                      ClosetChampLibelle(
-                        label: 'Nom complet',
-                        controller: _nom,
-                        hint: 'Marie Dupont',
-                        textInputAction: TextInputAction.next,
-                        validator: (v) => (v == null || v.trim().isEmpty)
-                            ? 'Veuillez renseigner votre nom.'
-                            : null,
-                      ),
-                      const SizedBox(height: AppSpacing.p24),
-                      ClosetChampLibelle(
-                        label: 'Email',
-                        controller: _email,
-                        hint: 'marie.dupont@email.com',
-                        keyboardType: TextInputType.emailAddress,
-                        textInputAction: TextInputAction.next,
-                        validator: validerEmail,
-                        autocorrect: false,
-                        inputFormatters: [
-                          FilteringTextInputFormatter.deny(RegExp(r'\s')),
-                        ],
-                      ),
-                      const SizedBox(height: AppSpacing.p24),
-                      ChampTelephone(
-                        label: 'Téléphone (Whatsapp)',
-                        controller: _telephone,
-                        hint: '6 90 12 34 56',
-                        style: StyleChampTelephone.libelle,
-                        obligatoire: false,
-                        textInputAction: TextInputAction.done,
-                        validator: (v) => validerTelephone(
-                          v,
-                          obligatoire: false,
-                          libelle: 'numéro WhatsApp',
+    return PopScope(
+      canPop: !_modifie,
+      onPopInvokedWithResult: (didPop, _) async {
+        if (didPop) return;
+        await _quitter();
+      },
+      child: Scaffold(
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+        body: SafeArea(
+          child: Column(
+            children: [
+              _EnTeteRetour(titre: '', onRetour: _quitter),
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.fromLTRB(
+                    AppSpacing.p20,
+                    AppSpacing.p20,
+                    AppSpacing.p20,
+                    AppSpacing.p32,
+                  ),
+                  child: Form(
+                    key: _formKey,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Center(child: _AvatarEditable(user: user)),
+                        const SizedBox(height: 29),
+                        ClosetChampLibelle(
+                          label: 'Nom complet',
+                          controller: _nom,
+                          hint: 'Marie Dupont',
+                          textInputAction: TextInputAction.next,
+                          validator: (v) => (v == null || v.trim().isEmpty)
+                              ? 'Veuillez renseigner votre nom.'
+                              : null,
                         ),
-                      ),
-                      const SizedBox(height: 47),
-                      Center(
-                        child: SizedBox(
-                          width: 312,
-                          height: 44,
-                          child: Material(
-                            color: ClosetColors.vert,
-                            borderRadius:
-                                BorderRadius.circular(AppRadius.cercle),
-                            child: InkWell(
-                              borderRadius:
-                                  BorderRadius.circular(AppRadius.cercle),
-                              onTap: _envoiEnCours ? null : _enregistrer,
-                              child: Center(
-                                child: _envoiEnCours
-                                    ? const SizedBox(
+                        const SizedBox(height: AppSpacing.p24),
+                        ClosetChampLibelle(
+                          label: 'Email',
+                          controller: _email,
+                          hint: 'marie.dupont@email.com',
+                          keyboardType: TextInputType.emailAddress,
+                          textInputAction: TextInputAction.next,
+                          validator: validerEmail,
+                          autocorrect: false,
+                          inputFormatters: [
+                            FilteringTextInputFormatter.deny(RegExp(r'\s')),
+                          ],
+                        ),
+                        const SizedBox(height: AppSpacing.p24),
+                        ChampTelephone(
+                          label: 'Téléphone (Whatsapp)',
+                          controller: _telephone,
+                          hint: '6 90 12 34 56',
+                          style: StyleChampTelephone.libelle,
+                          obligatoire: false,
+                          textInputAction: TextInputAction.done,
+                          paysFixe: IndicateurPays.cameroun,
+                          validator: (v) => validerTelephone(
+                            v,
+                            obligatoire: false,
+                            libelle: 'numéro WhatsApp',
+                            camerounUniquement: true,
+                          ),
+                        ),
+                        const SizedBox(height: 47),
+                        Center(
+                          child: SizedBox(
+                            width: 312,
+                            height: 44,
+                            child: _envoiEnCours
+                                ? Material(
+                                    color: ClosetColors.vert,
+                                    borderRadius: BorderRadius.circular(
+                                      AppRadius.cercle,
+                                    ),
+                                    child: const Center(
+                                      child: SizedBox(
                                         width: 18,
                                         height: 18,
                                         child: CircularProgressIndicator(
                                           strokeWidth: 2,
                                           color: ClosetColors.blanc,
                                         ),
-                                      )
-                                    : Text(
-                                        'Mettre à jour',
-                                        style:
-                                            ClosetTextStyles.bouton.copyWith(
-                                          color: ClosetColors.blanc,
-                                        ),
                                       ),
-                              ),
+                                    ),
+                                  )
+                                : ClosetPrimaryButton(
+                                    label: l10n.mettreAJour,
+                                    hauteur: 44,
+                                    onPressed: peutEnregistrer
+                                        ? _enregistrer
+                                        : null,
+                                  ),
+                          ),
+                        ),
+                        const SizedBox(height: AppSpacing.p12),
+                        Center(
+                          child: SizedBox(
+                            width: 312,
+                            height: 44,
+                            child: ClosetOutlineButton(
+                              label: l10n.annulerPaiement,
+                              hauteur: 44,
+                              onPressed: _envoiEnCours ? null : _quitter,
                             ),
                           ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
   }
-
 }
 
 /// Bandeau de retour : bouton rond à gauche, titre centré, filet doré.
@@ -200,10 +290,7 @@ class _EnTeteRetour extends StatelessWidget {
     return DecoratedBox(
       decoration: const BoxDecoration(
         border: Border(
-          bottom: BorderSide(
-            color: ClosetColors.fond400,
-            width: AppStroke.fin,
-          ),
+          bottom: BorderSide(color: ClosetColors.fond400, width: AppStroke.fin),
         ),
       ),
       child: SizedBox(

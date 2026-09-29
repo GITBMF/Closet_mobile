@@ -11,30 +11,35 @@ class MainLayout extends ConsumerWidget {
 
   final StatefulNavigationShell navigationShell;
 
-  static const _routesVisite = [
-    '/home',
-    '/collections',
-    '/wishlist',
-    '/selection',
-    '/espace',
-  ];
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = ClosetL10n.of(context);
+    final etapes = etapesVisiteCliente(l10n);
+
     ref.listen(spotlightTourProvider, (precedent, suivant) {
       if (!suivant.isActive) return;
-      if (suivant.currentStep < 0 ||
-          suivant.currentStep >= _routesVisite.length) {
+      if (suivant.currentStep < 0 || suivant.currentStep >= etapes.length) {
         return;
       }
-      final dest = _routesVisite[suivant.currentStep];
-      if (GoRouterState.of(context).uri.path != dest) {
+      final dest = etapes[suivant.currentStep].route;
+      if (dest != null && GoRouterState.of(context).uri.path != dest) {
         context.go(dest);
       }
     });
+
+    final tour = ref.watch(spotlightTourProvider);
+    final faite = ref.watch(visiteGuideeFaiteProvider);
+    if (!tour.isActive && faite.value == false) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!context.mounted) return;
+        if (ref.read(spotlightTourProvider).isActive) return;
+        if (ref.read(visiteGuideeFaiteProvider).value != false) return;
+        ref.read(spotlightTourProvider.notifier).startTour();
+      });
+    }
+
     return SpotlightShowcase(
-      steps: etapesVisiteCliente(l10n),
+      steps: etapes,
       child: Scaffold(
         body: navigationShell,
         extendBody: false,

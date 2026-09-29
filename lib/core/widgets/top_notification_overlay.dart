@@ -1,12 +1,13 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../services/notification_service.dart';
+import '../theme/app_spacing.dart';
 import '../theme/closet_colors.dart';
 import '../theme/closet_text_styles.dart';
+import 'closet_bottom_nav.dart';
 
-/// Overlay global affichant un bandeau de notification haut de gamme par-dessus le contenu.
+/// Snackbar global, compact, au-dessus de la barre de navigation.
 class TopNotificationOverlay extends ConsumerStatefulWidget {
   final Widget child;
 
@@ -27,22 +28,27 @@ class _TopNotificationOverlayState extends ConsumerState<TopNotificationOverlay>
   void initState() {
     super.initState();
     _controller = AnimationController(
-      duration: const Duration(milliseconds: 400),
+      duration: const Duration(milliseconds: 280),
       vsync: this,
     );
     _offsetAnimation = Tween<Offset>(
-      begin: const Offset(0, -1.5),
+      begin: const Offset(0, 1.2),
       end: Offset.zero,
-    ).animate(CurvedAnimation(
-      parent: _controller,
-      curve: Curves.easeOutBack,
-    ));
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic));
   }
 
   @override
   void dispose() {
     _controller.dispose();
     super.dispose();
+  }
+
+  double _margeBasse(BuildContext context) {
+    final inset = MediaQuery.viewPaddingOf(context).bottom;
+    return inset +
+        ClosetBottomNav.hauteurOnglets +
+        AppSpacing.p4 * 2 +
+        AppSpacing.p8;
   }
 
   @override
@@ -52,10 +58,11 @@ class _TopNotificationOverlayState extends ConsumerState<TopNotificationOverlay>
         setState(() {
           _cachedNotification = next;
         });
-        _controller.forward();
+        _controller.forward(from: 0);
       } else {
         _controller.reverse().then((_) {
-          if (mounted && ref.read<ClosetNotification?>(notificationProvider) == null) {
+          if (mounted &&
+              ref.read<ClosetNotification?>(notificationProvider) == null) {
             setState(() {
               _cachedNotification = null;
             });
@@ -64,118 +71,103 @@ class _TopNotificationOverlayState extends ConsumerState<TopNotificationOverlay>
       }
     });
 
+    final notification = _cachedNotification;
+
     return Stack(
       children: [
         widget.child,
-        if (_cachedNotification != null)
+        if (notification != null)
           Positioned(
-            top: 0,
-            left: 0,
-            right: 0,
+            left: AppSpacing.p16,
+            right: AppSpacing.p16,
+            bottom: _margeBasse(context),
             child: SlideTransition(
               position: _offsetAnimation,
-              child: SafeArea(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                  child: Material(
-                    color: Colors.transparent,
-                    child: GestureDetector(
-                      onTap: () {
-                        ref.read<NotificationNotifier>(notificationProvider.notifier).dismiss();
-                      },
-                      onVerticalDragUpdate: (details) {
-                        if (details.primaryDelta! < -5) {
-                          ref.read<NotificationNotifier>(notificationProvider.notifier).dismiss();
-                        }
-                      },
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(16),
-                        child: BackdropFilter(
-                          filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
-                          child: Container(
-                            padding: const EdgeInsets.all(16),
-                            decoration: BoxDecoration(
-                              color: _getBackgroundColor(_cachedNotification!.type),
-                              borderRadius: BorderRadius.circular(16),
-                              border: Border.all(
-                                color: _getBorderColor(_cachedNotification!.type),
-                                width: 1.5,
+              child: Material(
+                color: Colors.transparent,
+                child: GestureDetector(
+                  onTap: () {
+                    ref
+                        .read<NotificationNotifier>(
+                          notificationProvider.notifier,
+                        )
+                        .dismiss();
+                  },
+                  onVerticalDragUpdate: (details) {
+                    if ((details.primaryDelta ?? 0) > 5) {
+                      ref
+                          .read<NotificationNotifier>(
+                            notificationProvider.notifier,
+                          )
+                          .dismiss();
+                    }
+                  },
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      color: _getBackgroundColor(notification.type),
+                      borderRadius: BorderRadius.circular(AppRadius.carte),
+                      border: Border.all(
+                        color: _getBorderColor(notification.type),
+                        width: AppStroke.fin,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.18),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(12, 8, 6, 8),
+                      child: Row(
+                        children: [
+                          Icon(
+                            _getIconData(notification.type),
+                            color: _getIconColor(notification.type),
+                            size: 18,
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              _texte(notification),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: ClosetTextStyles.detail.copyWith(
+                                color: _getTextColor(notification.type),
+                                fontWeight: FontWeight.w500,
+                                height: 1.25,
                               ),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withValues(alpha: 0.35),
-                                  blurRadius: 15,
-                                  offset: const Offset(0, 8),
-                                ),
-                              ],
-                            ),
-                            child: Row(
-                              children: [
-                                Container(
-                                  padding: const EdgeInsets.all(10),
-                                  decoration: BoxDecoration(
-                                    color: _getIconBackgroundColor(_cachedNotification!.type),
-                                    shape: BoxShape.circle,
-                                  ),
-                                  child: Icon(
-                                    _getIconData(_cachedNotification!.type),
-                                    color: _getIconColor(_cachedNotification!.type),
-                                    size: 24,
-                                  ),
-                                ),
-                                const SizedBox(width: 14),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Text(
-                                        _cachedNotification!.title,
-                                        style: ClosetTextStyles.saisie.copyWith(
-                                          color: _getTextColor(_cachedNotification!.type),
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                      if (_afficheMessage(_cachedNotification!)) ...[
-                                        const SizedBox(height: 4),
-                                        Text(
-                                          _cachedNotification!.message,
-                                          style: ClosetTextStyles.corps.copyWith(
-                                            color: _cachedNotification!.type == NotificationType.info
-                                                ? ClosetColors.creme.withValues(alpha: 0.9)
-                                                : ClosetColors.noir.withValues(alpha: 0.8),
-                                            fontSize: 12,
-                                          ),
-                                        ),
-                                      ],
-                                    ],
-                                  ),
-                                ),
-                                if (_cachedNotification!.actionLabel != null)
-                                  TextButton(
-                                    onPressed: () {
-                                      final action = _cachedNotification!.onAction;
-                                      ref
-                                          .read<NotificationNotifier>(
-                                            notificationProvider.notifier,
-                                          )
-                                          .dismiss();
-                                      action?.call();
-                                    },
-                                    child: Text(
-                                      _cachedNotification!.actionLabel!,
-                                      style: ClosetTextStyles.actionPetite.copyWith(
-                                        color: _getTextColor(
-                                          _cachedNotification!.type,
-                                        ),
-                                        fontWeight: FontWeight.w700,
-                                      ),
-                                    ),
-                                  ),
-                              ],
                             ),
                           ),
-                        ),
+                          if (notification.actionLabel != null)
+                            TextButton(
+                              onPressed: () {
+                                final action = notification.onAction;
+                                ref
+                                    .read<NotificationNotifier>(
+                                      notificationProvider.notifier,
+                                    )
+                                    .dismiss();
+                                action?.call();
+                              },
+                              style: TextButton.styleFrom(
+                                visualDensity: VisualDensity.compact,
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                ),
+                                minimumSize: const Size(44, 36),
+                                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                              ),
+                              child: Text(
+                                notification.actionLabel!,
+                                style: ClosetTextStyles.actionPetite.copyWith(
+                                  color: _getTextColor(notification.type),
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ),
+                        ],
                       ),
                     ),
                   ),
@@ -187,41 +179,32 @@ class _TopNotificationOverlayState extends ConsumerState<TopNotificationOverlay>
     );
   }
 
-  bool _afficheMessage(ClosetNotification n) {
+  String _texte(ClosetNotification n) {
+    final titre = n.title.trim();
     final message = n.message.trim();
-    return message.isNotEmpty && message != n.title.trim();
+    if (message.isEmpty || message == titre) return titre;
+    return '$titre — $message';
   }
 
   Color _getBackgroundColor(NotificationType type) {
     switch (type) {
       case NotificationType.success:
-        return ClosetColors.fondsSucces.withValues(alpha: 0.95);
+        return ClosetColors.fondsSucces;
       case NotificationType.error:
-        return ClosetColors.fondsErreur.withValues(alpha: 0.95);
+        return ClosetColors.fondsErreur;
       case NotificationType.info:
-        return ClosetColors.noir.withValues(alpha: 0.85);
+        return ClosetColors.vert;
     }
   }
 
   Color _getBorderColor(NotificationType type) {
     switch (type) {
       case NotificationType.success:
-        return ClosetColors.succes.withValues(alpha: 0.6);
+        return ClosetColors.succes.withValues(alpha: 0.35);
       case NotificationType.error:
-        return ClosetColors.erreur.withValues(alpha: 0.6);
+        return ClosetColors.erreur.withValues(alpha: 0.35);
       case NotificationType.info:
-        return ClosetColors.dore.withValues(alpha: 0.6);
-    }
-  }
-
-  Color _getIconBackgroundColor(NotificationType type) {
-    switch (type) {
-      case NotificationType.success:
-        return ClosetColors.succes.withValues(alpha: 0.15);
-      case NotificationType.error:
-        return ClosetColors.erreur.withValues(alpha: 0.15);
-      case NotificationType.info:
-        return ClosetColors.dore.withValues(alpha: 0.15);
+        return ClosetColors.dore.withValues(alpha: 0.45);
     }
   }
 
@@ -243,7 +226,7 @@ class _TopNotificationOverlayState extends ConsumerState<TopNotificationOverlay>
       case NotificationType.error:
         return ClosetColors.erreur;
       case NotificationType.info:
-        return ClosetColors.doreClair;
+        return ClosetColors.creme;
     }
   }
 
@@ -254,7 +237,7 @@ class _TopNotificationOverlayState extends ConsumerState<TopNotificationOverlay>
       case NotificationType.error:
         return Icons.error_outline;
       case NotificationType.info:
-        return Icons.notifications_active_outlined;
+        return Icons.info_outline;
     }
   }
 }

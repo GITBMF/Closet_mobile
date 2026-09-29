@@ -11,10 +11,11 @@ import '../../../core/theme/closet_text_styles.dart';
 import '../../../core/validation/formats.dart';
 import '../../../core/validation/indicateurs_pays.dart';
 import '../../../core/widgets/aide_mot_de_passe.dart';
-import '../../../core/widgets/closet_filet.dart';
-import '../../../core/widgets/logo_closet.dart';
 import '../../../core/widgets/champ_telephone.dart';
+import '../../../core/widgets/closet_filet.dart';
+import '../../../core/widgets/closet_header_button.dart';
 import '../../../core/widgets/google_g_icon.dart';
+import '../../../core/widgets/logo_closet.dart';
 import '../../../core/widgets/toasts.dart';
 import '../../../data/models/user.dart';
 import '../../../data/repositories/auth_repository.dart';
@@ -120,7 +121,11 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
       toastInfo(ref, l10n.emailInvalideTitre, erreurEmail);
       return;
     }
-    final erreurMdp = validerMotDePasse(password, connexion: isLogin, l10n: l10n);
+    final erreurMdp = validerMotDePasse(
+      password,
+      connexion: isLogin,
+      l10n: l10n,
+    );
     if (erreurMdp != null) {
       toastInfo(ref, l10n.motDePasse, erreurMdp);
       return;
@@ -134,15 +139,12 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
       lastName = _lastNameController.text.trim();
       phone = _phone.e164;
       if (firstName.isEmpty || lastName.isEmpty) {
-        toastInfo(
-          ref,
-          l10n.champsManquants,
-          l10n.renseignerNomPrenom,
-        );
+        toastInfo(ref, l10n.champsManquants, l10n.renseignerNomPrenom);
         return;
       }
-      final nomComplet =
-          '$firstName $lastName'.replaceAll(RegExp(r'\s+'), ' ').trim();
+      final nomComplet = '$firstName $lastName'
+          .replaceAll(RegExp(r'\s+'), ' ')
+          .trim();
       if (nomComplet.length < 2) {
         toastInfo(ref, l10n.nomIncomplet, l10n.nomMinCaracteres);
         return;
@@ -200,9 +202,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
       }
 
       try {
-        await ref
-            .read(sourceurRepositoryProvider)
-            .chargerProfil(compte: user);
+        await ref.read(sourceurRepositoryProvider).chargerProfil(compte: user);
       } catch (_) {}
 
       if (!mounted) return;
@@ -228,7 +228,9 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
         await dialogueErreur(
           context,
           e,
-          titre: isLogin ? l10n.connexionImpossible : l10n.inscriptionImpossible,
+          titre: isLogin
+              ? l10n.connexionImpossible
+              : l10n.inscriptionImpossible,
         );
       }
     } finally {
@@ -238,225 +240,268 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
     }
   }
 
+  void _revenir() {
+    if (context.canPop()) {
+      context.pop();
+      return;
+    }
+    context.go('/home');
+  }
+
   @override
   Widget build(BuildContext context) {
     final mode = ref.watch(authModeProvider);
     final isLogin = mode == AuthMode.login;
     final l10n = ClosetL10n.of(context);
 
-    return Scaffold(
-      backgroundColor: ClosetColors.vert,
-      body: SafeArea(
-        child: FadeTransition(
-          opacity: _fadeAnim,
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.only(bottom: AppSpacing.p24),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) {
+        if (didPop) return;
+        _revenir();
+      },
+      child: Scaffold(
+        backgroundColor: ClosetColors.vert,
+        body: SafeArea(
+          child: FadeTransition(
+            opacity: _fadeAnim,
+            child: Stack(
               children: [
-                const _HeroLogo(),
-                const SizedBox(height: 39),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24),
-                  child: Text(
-                    isLogin
-                        ? l10n.authTitreConnexion
-                        : l10n.authTitreInscription,
-                    style: ClosetTextStyles.titreEcran.copyWith(
-                      letterSpacing: 0.44,
-                      color: ClosetColors.neutre200,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: AppSpacing.p24),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24),
-                  child: Form(
-                    key: _formKey,
-                    child: Column(
+                SingleChildScrollView(
+                  padding: const EdgeInsets.only(bottom: AppSpacing.p24),
+                  child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      if (!isLogin) ...[
-                        _ChampAuth(
-                          label: l10n.prenom,
-                          hint: 'Marie',
-                          controller: _nameController,
-                          textInputAction: TextInputAction.next,
-                          textCapitalization: TextCapitalization.words,
-                          formatters: const [FormateurPrenom()],
-                          validator: (v) => (v == null || v.trim().isEmpty)
-                              ? l10n.renseignerPrenom
-                              : null,
-                        ),
-                        const SizedBox(height: AppSpacing.p16),
-                        _ChampAuth(
-                          label: l10n.nom,
-                          hint: 'DUPONT',
-                          controller: _lastNameController,
-                          textInputAction: TextInputAction.next,
-                          textCapitalization: TextCapitalization.characters,
-                          formatters: const [FormateurNom()],
-                          validator: (v) => (v == null || v.trim().isEmpty)
-                              ? l10n.renseignerNom
-                              : null,
-                        ),
-                        const SizedBox(height: AppSpacing.p16),
-                        ChampTelephone(
-                          label: l10n.telephone,
-                          controller: _phone,
-                          hint: '6 90 12 34 56',
-                          style: StyleChampTelephone.auth,
-                          validerAvecLeFormulaire: false,
-                          textInputAction: TextInputAction.next,
-                          validator: (v) => _validerTelephone(v, l10n),
-                        ),
-                        const SizedBox(height: AppSpacing.p16),
-                      ],
-                      _ChampAuth(
-                        label: l10n.email,
-                        hint: 'Example@email.com',
-                        controller: _emailController,
-                        keyboardType: TextInputType.emailAddress,
-                        textInputAction: TextInputAction.next,
-                        autocorrect: false,
-                        sansEspaces: true,
-                        validator: (v) => _validerEmail(v, l10n),
-                      ),
-                      const SizedBox(height: AppSpacing.p16),
-                      _ChampAuth(
-                        label: l10n.motDePasse,
-                        hint: l10n.hintMotDePasse,
-                        controller: _passwordController,
-                        obscure: _obscurePassword,
-                        textInputAction: TextInputAction.done,
-                        onSubmitted: (_) => _submit(),
-                        validator: isLogin
-                            ? (v) => _validerMotDePasseConnexion(v, l10n)
-                            : (v) => _validerMotDePasseInscription(v, l10n),
-                        suffix: IconButton(
-                          icon: Icon(
-                            _obscurePassword
-                                ? Icons.visibility_outlined
-                                : Icons.visibility_off_outlined,
-                            size: 18,
-                            color: ClosetColors.champPlaceholder,
-                          ),
-                          onPressed: () => setState(
-                            () => _obscurePassword = !_obscurePassword,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: AppSpacing.p8),
-                      if (isLogin)
-                        Text(
-                          l10n.hintMdpRegle,
-                          style: ClosetTextStyles.meta.copyWith(
-                            fontWeight: FontWeight.w300,
-                            color: ClosetColors.beige,
-                          ),
-                        )
-                      else
-                        ListenableBuilder(
-                          listenable: _passwordController,
-                          builder: (_, _) => AideMotDePasse(
-                            saisie: _passwordController.text,
-                            surFondSombre: true,
-                          ),
-                        ),
-                      const SizedBox(height: AppSpacing.p24),
-                      _BoutonDore(
-                        label: isLogin ? l10n.boutonSeConnecter : l10n.boutonCreerCompte,
-                        enCours: _isLoading,
-                        onPressed: _isLoading ? null : _submit,
-                      ),
-                      const SizedBox(height: AppSpacing.p20),
-                      if (isLogin)
-                        Center(
-                          child: TextButton(
-                            onPressed: () => afficherMotDePasseOublie(
-                              context,
-                              emailInitial: _emailController.text,
-                            ),
-                            child: Text(
-                              l10n.motDePasseOublie,
-                              style: ClosetTextStyles.corps.copyWith(
-                                color: ClosetColors.beige,
-                              ),
-                            ),
-                          ),
-                        ),
-                      const SizedBox(height: AppSpacing.p8),
-                      const _SeparateurOu(),
-                      const SizedBox(height: AppSpacing.p20),
-                      Center(
-                        child: SizedBox(
-                          width: 312,
-                          child: _BoutonDore(
-                            label: l10n.continuerGoogle,
-                            icone: const GoogleGIcon(taille: 18),
-                            onPressed: () {
-                              toastInfo(
-                                ref,
-                                l10n.googleIndisponibleTitre,
-                                l10n.googleIndisponible,
-                              );
-                            },
+                      const _HeroLogo(),
+                      const SizedBox(height: 39),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 24),
+                        child: Text(
+                          isLogin
+                              ? l10n.authTitreConnexion
+                              : l10n.authTitreInscription,
+                          style: ClosetTextStyles.titreEcran.copyWith(
+                            letterSpacing: 0.44,
+                            color: ClosetColors.neutre200,
                           ),
                         ),
                       ),
                       const SizedBox(height: AppSpacing.p24),
-                      Center(
-                        child: TextButton(
-                          onPressed: () =>
-                              ref.read(authModeProvider.notifier).state =
-                                  isLogin ? AuthMode.register : AuthMode.login,
-                          child: Text.rich(
-                            TextSpan(
-                              text: isLogin
-                                  ? l10n.pasEncoreMembre
-                                  : l10n.dejaMembre,
-                              style: ClosetTextStyles.corps.copyWith(
-                                color: ClosetColors.beige,
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 24),
+                        child: Form(
+                          key: _formKey,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              if (!isLogin) ...[
+                                _ChampAuth(
+                                  label: l10n.prenom,
+                                  hint: 'Marie',
+                                  controller: _nameController,
+                                  textInputAction: TextInputAction.next,
+                                  textCapitalization: TextCapitalization.words,
+                                  formatters: const [FormateurPrenom()],
+                                  validator: (v) =>
+                                      (v == null || v.trim().isEmpty)
+                                      ? l10n.renseignerPrenom
+                                      : null,
+                                ),
+                                const SizedBox(height: AppSpacing.p16),
+                                _ChampAuth(
+                                  label: l10n.nom,
+                                  hint: 'DUPONT',
+                                  controller: _lastNameController,
+                                  textInputAction: TextInputAction.next,
+                                  textCapitalization:
+                                      TextCapitalization.characters,
+                                  formatters: const [FormateurNom()],
+                                  validator: (v) =>
+                                      (v == null || v.trim().isEmpty)
+                                      ? l10n.renseignerNom
+                                      : null,
+                                ),
+                                const SizedBox(height: AppSpacing.p16),
+                                ChampTelephone(
+                                  label: l10n.telephone,
+                                  controller: _phone,
+                                  hint: '6 90 12 34 56',
+                                  style: StyleChampTelephone.auth,
+                                  validerAvecLeFormulaire: false,
+                                  textInputAction: TextInputAction.next,
+                                  validator: (v) => _validerTelephone(v, l10n),
+                                ),
+                                const SizedBox(height: AppSpacing.p16),
+                              ],
+                              _ChampAuth(
+                                label: l10n.email,
+                                hint: 'Example@email.com',
+                                controller: _emailController,
+                                keyboardType: TextInputType.emailAddress,
+                                textInputAction: TextInputAction.next,
+                                autocorrect: false,
+                                sansEspaces: true,
+                                validator: (v) => _validerEmail(v, l10n),
                               ),
-                              children: [
-                                TextSpan(
-                                  text: isLogin
-                                      ? l10n.rejoindreLeCercle
-                                      : l10n.seConnecter,
-                                  style: ClosetTextStyles.corps.copyWith(
-                                    color: ClosetColors.fond300,
-                                    fontWeight: FontWeight.w600,
+                              const SizedBox(height: AppSpacing.p16),
+                              _ChampAuth(
+                                label: l10n.motDePasse,
+                                hint: l10n.hintMotDePasse,
+                                controller: _passwordController,
+                                obscure: _obscurePassword,
+                                textInputAction: TextInputAction.done,
+                                onSubmitted: (_) => _submit(),
+                                validator: isLogin
+                                    ? (v) =>
+                                          _validerMotDePasseConnexion(v, l10n)
+                                    : (v) => _validerMotDePasseInscription(
+                                        v,
+                                        l10n,
+                                      ),
+                                suffix: IconButton(
+                                  icon: Icon(
+                                    _obscurePassword
+                                        ? Icons.visibility_outlined
+                                        : Icons.visibility_off_outlined,
+                                    size: 18,
+                                    color: ClosetColors.champPlaceholder,
+                                  ),
+                                  onPressed: () => setState(
+                                    () => _obscurePassword = !_obscurePassword,
                                   ),
                                 ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                      Center(
-                        child: TextButton(
-                          onPressed: () => context.go('/home'),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text(
-                                l10n.continuerInvitee,
-                                style: ClosetTextStyles.detail.copyWith(
-                                  color: ClosetColors.fond400,
+                              ),
+                              const SizedBox(height: AppSpacing.p8),
+                              if (isLogin)
+                                Text(
+                                  l10n.hintMdpRegle,
+                                  style: ClosetTextStyles.meta.copyWith(
+                                    fontWeight: FontWeight.w300,
+                                    color: ClosetColors.beige,
+                                  ),
+                                )
+                              else
+                                ListenableBuilder(
+                                  listenable: _passwordController,
+                                  builder: (_, _) => AideMotDePasse(
+                                    saisie: _passwordController.text,
+                                    surFondSombre: true,
+                                  ),
+                                ),
+                              const SizedBox(height: AppSpacing.p24),
+                              _BoutonDore(
+                                label: isLogin
+                                    ? l10n.boutonSeConnecter
+                                    : l10n.boutonCreerCompte,
+                                enCours: _isLoading,
+                                onPressed: _isLoading ? null : _submit,
+                              ),
+                              const SizedBox(height: AppSpacing.p20),
+                              if (isLogin)
+                                Center(
+                                  child: TextButton(
+                                    onPressed: () => afficherMotDePasseOublie(
+                                      context,
+                                      emailInitial: _emailController.text,
+                                    ),
+                                    child: Text(
+                                      l10n.motDePasseOublie,
+                                      style: ClosetTextStyles.corps.copyWith(
+                                        color: ClosetColors.beige,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              const SizedBox(height: AppSpacing.p8),
+                              const _SeparateurOu(),
+                              const SizedBox(height: AppSpacing.p20),
+                              Center(
+                                child: SizedBox(
+                                  width: 312,
+                                  child: _BoutonDore(
+                                    label: l10n.continuerGoogle,
+                                    icone: const GoogleGIcon(taille: 18),
+                                    onPressed: () {
+                                      toastInfo(
+                                        ref,
+                                        l10n.googleIndisponibleTitre,
+                                        l10n.googleIndisponible,
+                                      );
+                                    },
+                                  ),
                                 ),
                               ),
-                              const SizedBox(width: 5),
-                              const Icon(
-                                Icons.arrow_forward,
-                                size: 12,
-                                color: ClosetColors.fond400,
+                              const SizedBox(height: AppSpacing.p24),
+                              Center(
+                                child: TextButton(
+                                  onPressed: () =>
+                                      ref
+                                          .read(authModeProvider.notifier)
+                                          .state = isLogin
+                                      ? AuthMode.register
+                                      : AuthMode.login,
+                                  child: Text.rich(
+                                    TextSpan(
+                                      text: isLogin
+                                          ? l10n.pasEncoreMembre
+                                          : l10n.dejaMembre,
+                                      style: ClosetTextStyles.corps.copyWith(
+                                        color: ClosetColors.beige,
+                                      ),
+                                      children: [
+                                        TextSpan(
+                                          text: isLogin
+                                              ? l10n.rejoindreLeCercle
+                                              : l10n.seConnecter,
+                                          style: ClosetTextStyles.corps
+                                              .copyWith(
+                                                color: ClosetColors.fond300,
+                                                fontWeight: FontWeight.w600,
+                                              ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              Center(
+                                child: TextButton(
+                                  onPressed: () => context.go('/home'),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Text(
+                                        l10n.continuerInvitee,
+                                        style: ClosetTextStyles.detail.copyWith(
+                                          color: ClosetColors.fond400,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 5),
+                                      const Icon(
+                                        Icons.arrow_forward,
+                                        size: 12,
+                                        color: ClosetColors.fond400,
+                                      ),
+                                    ],
+                                  ),
+                                ),
                               ),
                             ],
                           ),
                         ),
                       ),
                     ],
-                    ),
+                  ),
+                ),
+                Positioned(
+                  top: AppSpacing.p8,
+                  left: AppSpacing.p12,
+                  child: ClosetBoutonHeader(
+                    icone: Icons.arrow_back_ios_new,
+                    label: l10n.retour,
+                    onTap: _revenir,
+                    fond: ClosetColors.creme,
+                    couleurIcone: ClosetColors.vert,
                   ),
                 ),
               ],
@@ -627,9 +672,9 @@ class _ChampAuth extends StatelessWidget {
   }
 
   static OutlineInputBorder _bordure(Color couleur) => OutlineInputBorder(
-        borderRadius: BorderRadius.circular(AppRadius.carte),
-        borderSide: BorderSide(color: couleur, width: AppStroke.fin),
-      );
+    borderRadius: BorderRadius.circular(AppRadius.carte),
+    borderSide: BorderSide(color: couleur, width: AppStroke.fin),
+  );
 }
 
 /// CTA doré de la maquette : 44 de haut, rayon 100, fond `#CDAB71`.
@@ -672,10 +717,7 @@ class _BoutonDore extends StatelessWidget {
                 : Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      if (icone != null) ...[
-                        icone!,
-                        const SizedBox(width: 10),
-                      ],
+                      if (icone != null) ...[icone!, const SizedBox(width: 10)],
                       Text(
                         label,
                         style: ClosetTextStyles.bouton.copyWith(
@@ -698,10 +740,7 @@ class _SeparateurOu extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     const filet = Expanded(
-      child: ClosetFilet(
-        couleur: ClosetColors.filetSeparateur,
-        hauteur: 1,
-      ),
+      child: ClosetFilet(couleur: ClosetColors.filetSeparateur, hauteur: 1),
     );
     return Row(
       children: [
@@ -710,9 +749,7 @@ class _SeparateurOu extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: AppSpacing.p16),
           child: Text(
             ClosetL10n.of(context).ouSeConnecter,
-            style: ClosetTextStyles.corps.copyWith(
-              color: ClosetColors.fond300,
-            ),
+            style: ClosetTextStyles.corps.copyWith(color: ClosetColors.fond300),
           ),
         ),
         filet,

@@ -42,10 +42,10 @@ class NotificationNotifier extends Notifier<ClosetNotification?> {
     VoidCallback? onAction,
   }) {
     _dismissTimer?.cancel();
-    
+
     // Déclenche le retour haptique léger lors de l'apparition
     HapticFeedback.lightImpact();
-    
+
     state = ClosetNotification(
       title: title,
       message: message,
@@ -54,8 +54,10 @@ class NotificationNotifier extends Notifier<ClosetNotification?> {
       onAction: onAction,
     );
 
-    // Auto-fermeture après 4 secondes
-    _dismissTimer = Timer(const Duration(seconds: 4), () {
+    final duree = actionLabel != null
+        ? const Duration(seconds: 5)
+        : const Duration(seconds: 4);
+    _dismissTimer = Timer(duree, () {
       dismiss();
     });
   }
@@ -87,5 +89,5 @@ class NotificationNotifier extends Notifier<ClosetNotification?> {
 
 final notificationProvider =
     NotifierProvider<NotificationNotifier, ClosetNotification?>(() {
-  return NotificationNotifier();
-});
+      return NotificationNotifier();
+    });

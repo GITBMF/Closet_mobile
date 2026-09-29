@@ -30,7 +30,12 @@ class TelephoneController extends ChangeNotifier {
   }
 
   bool get estValide =>
-      validerTelephone(e164, obligatoire: true) == null;
+      validerTelephone(
+        e164,
+        obligatoire: true,
+        camerounUniquement: pays.iso == 'CM',
+      ) ==
+      null;
 
   void choisirPays(IndicateurPays suivant) {
     if (pays.iso == suivant.iso && pays.nom == suivant.nom) return;
@@ -83,7 +88,21 @@ class TelephoneController extends ChangeNotifier {
   }
 }
 
-/// Téléphone : indicateur (drapeau + code) + numéro national + recherche.
+class FormateurTelephoneCm extends TextInputFormatter {
+  const FormateurTelephoneCm();
+
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue ancien,
+    TextEditingValue saisie,
+  ) {
+    final affiche = formaterNationalCm(saisie.text);
+    return TextEditingValue(
+      text: affiche,
+      selection: TextSelection.collapsed(offset: affiche.length),
+    );
+  }
+}
 class ChampTelephone extends StatefulWidget {
   const ChampTelephone({
     super.key,
@@ -97,6 +116,7 @@ class ChampTelephone extends StatefulWidget {
     this.onChanged,
     this.icone,
     this.textInputAction,
+    this.paysFixe,
   });
 
   final String label;
@@ -109,6 +129,9 @@ class ChampTelephone extends StatefulWidget {
   final ValueChanged<String>? onChanged;
   final IconData? icone;
   final TextInputAction? textInputAction;
+
+  /// Si renseigné, l’indicatif ne peut pas changer (ClosET : +237).
+  final IndicateurPays? paysFixe;
 
   @override
   State<ChampTelephone> createState() => _ChampTelephoneState();
@@ -123,6 +146,9 @@ class _ChampTelephoneState extends State<ChampTelephone> {
     super.initState();
     _possede = widget.controller == null;
     _ctrl = widget.controller ?? TelephoneController();
+    if (widget.paysFixe != null) {
+      _ctrl.choisirPays(widget.paysFixe!);
+    }
     _ctrl.addListener(_relayer);
   }
 
@@ -150,6 +176,7 @@ class _ChampTelephoneState extends State<ChampTelephone> {
   }
 
   Future<void> _ouvrirPays() async {
+    if (widget.paysFixe != null) return;
     final choix = await afficherSelecteurPays(
       context,
       selection: _ctrl.pays,
@@ -166,6 +193,8 @@ class _ChampTelephoneState extends State<ChampTelephone> {
         _ctrl.e164,
         obligatoire: widget.obligatoire,
         libelle: 'numéro',
+        camerounUniquement:
+            widget.paysFixe?.iso == 'CM' || _ctrl.pays.iso == 'CM',
       );
 
   @override
@@ -181,7 +210,10 @@ class _ChampTelephoneState extends State<ChampTelephone> {
             icone: widget.icone,
             ctrl: _ctrl,
             textInputAction: widget.textInputAction,
-            erreur: etat.errorText,
+            paysVerrouille: widget.paysFixe != null,
+            erreur: _ctrl.national.text.trim().isEmpty
+                ? etat.errorText
+                : _valider(_ctrl.e164),
             onPays: _ouvrirPays,
             onChanged: () {
               etat.didChange(_ctrl.e164);
@@ -198,6 +230,8 @@ class _ChampTelephoneState extends State<ChampTelephone> {
       icone: widget.icone,
       ctrl: _ctrl,
       textInputAction: widget.textInputAction,
+      paysVerrouille: widget.paysFixe != null,
+      erreur: _ctrl.national.text.trim().isEmpty ? null : _valider(_ctrl.e164),
       onPays: _ouvrirPays,
       onChanged: () => widget.onChanged?.call(_ctrl.e164),
     );
@@ -215,6 +249,7 @@ class _HabillageTelephone extends StatelessWidget {
     this.icone,
     this.textInputAction,
     this.erreur,
+    this.paysVerrouille = false,
   });
 
   final String label;
@@ -224,11 +259,13 @@ class _HabillageTelephone extends StatelessWidget {
   final TelephoneController ctrl;
   final TextInputAction? textInputAction;
   final String? erreur;
+  final bool paysVerrouille;
   final VoidCallback onPays;
   final VoidCallback onChanged;
 
   @override
   Widget build(BuildContext context) {
+    final cm = ctrl.pays.iso == 'CM';
     final champ = switch (style) {
       StyleChampTelephone.sourceur => _ChampSourceurTel(
           hint: hint,
@@ -236,6 +273,8 @@ class _HabillageTelephone extends StatelessWidget {
           textInputAction: textInputAction,
           onPays: onPays,
           onChanged: onChanged,
+          formatCm: cm,
+          paysVerrouille: paysVerrouille,
         ),
       StyleChampTelephone.auth => _ChampEncadreTel(
           hint: hint,
@@ -247,6 +286,8 @@ class _HabillageTelephone extends StatelessWidget {
           bordure: ClosetColors.champBordure,
           focus: ClosetColors.fond300,
           hauteur: 42,
+          formatCm: cm,
+          paysVerrouille: paysVerrouille,
         ),
       StyleChampTelephone.libelle => _ChampEncadreTel(
           hint: hint,
@@ -258,6 +299,8 @@ class _HabillageTelephone extends StatelessWidget {
           bordure: ClosetColors.fond300,
           focus: ClosetColors.vert,
           hauteur: 42,
+          formatCm: cm,
+          paysVerrouille: paysVerrouille,
         ),
       StyleChampTelephone.checkout => _ChampEncadreTel(
           hint: hint,
@@ -269,6 +312,8 @@ class _HabillageTelephone extends StatelessWidget {
           bordure: ClosetColors.fond300,
           focus: ClosetColors.vert,
           hauteur: null,
+          formatCm: cm,
+          paysVerrouille: paysVerrouille,
         ),
     };
 
@@ -287,7 +332,7 @@ class _HabillageTelephone extends StatelessWidget {
             ],
             Expanded(
               child: Text(
-                label.toUpperCase(),
+                label,
                 style: ClosetTextStyles.labelChamp,
               ),
             ),
@@ -333,6 +378,8 @@ class _ChampEncadreTel extends StatelessWidget {
     required this.focus,
     required this.hauteur,
     this.textInputAction,
+    this.formatCm = false,
+    this.paysVerrouille = false,
   });
 
   final String hint;
@@ -344,6 +391,8 @@ class _ChampEncadreTel extends StatelessWidget {
   final Color focus;
   final double? hauteur;
   final TextInputAction? textInputAction;
+  final bool formatCm;
+  final bool paysVerrouille;
 
   @override
   Widget build(BuildContext context) {
@@ -351,9 +400,11 @@ class _ChampEncadreTel extends StatelessWidget {
       controller: ctrl.national,
       keyboardType: TextInputType.phone,
       textInputAction: textInputAction,
-      inputFormatters: [
-        FilteringTextInputFormatter.allow(RegExp(r'[\d+\s]')),
-      ],
+      inputFormatters: formatCm
+          ? const [FormateurTelephoneCm()]
+          : [
+              FilteringTextInputFormatter.allow(RegExp(r'[\d+\s]')),
+            ],
       onChanged: (_) => onChanged(),
       style: ClosetTextStyles.saisie.copyWith(color: context.closetEncre),
       cursorColor: ClosetColors.vert,
@@ -370,6 +421,7 @@ class _ChampEncadreTel extends StatelessWidget {
           pays: ctrl.pays,
           onTap: onPays,
           sombre: false,
+          verrouille: paysVerrouille,
         ),
         prefixIconConstraints: const BoxConstraints(minWidth: 88, minHeight: 40),
         contentPadding: const EdgeInsets.symmetric(
@@ -400,6 +452,8 @@ class _ChampSourceurTel extends StatelessWidget {
     required this.onPays,
     required this.onChanged,
     this.textInputAction,
+    this.formatCm = false,
+    this.paysVerrouille = false,
   });
 
   final String hint;
@@ -407,6 +461,8 @@ class _ChampSourceurTel extends StatelessWidget {
   final VoidCallback onPays;
   final VoidCallback onChanged;
   final TextInputAction? textInputAction;
+  final bool formatCm;
+  final bool paysVerrouille;
 
   @override
   Widget build(BuildContext context) {
@@ -421,9 +477,11 @@ class _ChampSourceurTel extends StatelessWidget {
         controller: ctrl.national,
         keyboardType: TextInputType.phone,
         textInputAction: textInputAction,
-        inputFormatters: [
-          FilteringTextInputFormatter.allow(RegExp(r'[\d+\s]')),
-        ],
+        inputFormatters: formatCm
+            ? const [FormateurTelephoneCm()]
+            : [
+                FilteringTextInputFormatter.allow(RegExp(r'[\d+\s]')),
+              ],
         onChanged: (_) => onChanged(),
         style: ClosetTextStyles.saisie.copyWith(color: cs.onSurface),
         cursorColor: cs.primary,
@@ -439,6 +497,7 @@ class _ChampSourceurTel extends StatelessWidget {
             pays: ctrl.pays,
             onTap: onPays,
             sombre: true,
+            verrouille: paysVerrouille,
           ),
           prefixIconConstraints:
               const BoxConstraints(minWidth: 88, minHeight: 40),
@@ -457,19 +516,21 @@ class _BoutonIndicateur extends StatelessWidget {
     required this.pays,
     required this.onTap,
     required this.sombre,
+    this.verrouille = false,
   });
 
   final IndicateurPays pays;
   final VoidCallback onTap;
   final bool sombre;
+  final bool verrouille;
 
   @override
   Widget build(BuildContext context) {
     return Semantics(
-      button: true,
+      button: !verrouille,
       label: 'Indicatif ${pays.nom} ${pays.libelleCourt}',
       child: InkWell(
-        onTap: onTap,
+        onTap: verrouille ? null : onTap,
         child: Padding(
           padding: const EdgeInsets.only(left: 10, right: 6),
           child: Row(
@@ -484,11 +545,14 @@ class _BoutonIndicateur extends StatelessWidget {
                   color: sombre ? context.closetEncre : ClosetColors.vert,
                 ),
               ),
-              Icon(
-                Icons.expand_more,
-                size: 16,
-                color: sombre ? ClosetColors.taupe : ClosetColors.champPlaceholder,
-              ),
+              if (!verrouille)
+                Icon(
+                  Icons.expand_more,
+                  size: 16,
+                  color: sombre
+                      ? ClosetColors.taupe
+                      : ClosetColors.champPlaceholder,
+                ),
             ],
           ),
         ),

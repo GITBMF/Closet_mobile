@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../l10n/closet_l10n.dart';
 import '../theme/closet_colors.dart';
 import '../theme/closet_text_styles.dart';
 
-/// Cibles de la visite — posées sur la barre cliente, toujours à l’écran.
+/// Cibles de la visite — onglets toujours visibles, et contrôles d’écran.
 class ClosetTourKeys {
   static final dressing = GlobalKey();
   static final collections = GlobalKey();
@@ -14,6 +15,9 @@ class ClosetTourKeys {
   static final selection = GlobalKey();
   static final espace = GlobalKey();
   static final barre = GlobalKey();
+  static final filtres = GlobalKey();
+  static final commandes = GlobalKey();
+  static final sourceur = GlobalKey();
 }
 
 class SpotlightStep {
@@ -21,42 +25,67 @@ class SpotlightStep {
     required this.targetKey,
     required this.title,
     required this.description,
+    this.route,
+    this.fallbackKey,
     this.borderRadius = 20,
   });
 
   final GlobalKey targetKey;
   final String title;
   final String description;
+
+  /// Branche du shell à afficher avant de viser la cible.
+  final String? route;
+
+  /// Si la cible n’est pas encore posée, on éclaire cet élément (souvent l’onglet).
+  final GlobalKey? fallbackKey;
   final double borderRadius;
 }
 
 List<SpotlightStep> etapesVisiteCliente(ClosetL10n l10n) => [
-      SpotlightStep(
-        targetKey: ClosetTourKeys.dressing,
-        title: l10n.navDressing,
-        description: l10n.visiteDressing,
-      ),
-      SpotlightStep(
-        targetKey: ClosetTourKeys.collections,
-        title: l10n.navCollections,
-        description: l10n.visiteCollections,
-      ),
-      SpotlightStep(
-        targetKey: ClosetTourKeys.wishlist,
-        title: l10n.navWishlist,
-        description: l10n.visiteWishlist,
-      ),
-      SpotlightStep(
-        targetKey: ClosetTourKeys.selection,
-        title: l10n.navSelection,
-        description: l10n.visiteSelection,
-      ),
-      SpotlightStep(
-        targetKey: ClosetTourKeys.espace,
-        title: l10n.navEspace,
-        description: l10n.visiteEspace,
-      ),
-    ];
+  SpotlightStep(
+    targetKey: ClosetTourKeys.dressing,
+    route: '/home',
+    title: l10n.navDressing,
+    description: l10n.visiteDressing,
+  ),
+  SpotlightStep(
+    targetKey: ClosetTourKeys.filtres,
+    fallbackKey: ClosetTourKeys.collections,
+    route: '/collections',
+    title: l10n.visiteFiltresTitre,
+    description: l10n.visiteFiltres,
+    borderRadius: 24,
+  ),
+  SpotlightStep(
+    targetKey: ClosetTourKeys.wishlist,
+    route: '/wishlist',
+    title: l10n.navWishlist,
+    description: l10n.visiteWishlist,
+  ),
+  SpotlightStep(
+    targetKey: ClosetTourKeys.selection,
+    route: '/selection',
+    title: l10n.navSelection,
+    description: l10n.visiteSelection,
+  ),
+  SpotlightStep(
+    targetKey: ClosetTourKeys.commandes,
+    fallbackKey: ClosetTourKeys.espace,
+    route: '/espace',
+    title: l10n.mesCommandes,
+    description: l10n.visiteCommandes,
+    borderRadius: 12,
+  ),
+  SpotlightStep(
+    targetKey: ClosetTourKeys.sourceur,
+    fallbackKey: ClosetTourKeys.espace,
+    route: '/espace',
+    title: l10n.devenirSourceur,
+    description: l10n.visiteSourceur,
+    borderRadius: 12,
+  ),
+];
 
 class SpotlightTourState {
   const SpotlightTourState({required this.isActive, required this.currentStep});
@@ -73,6 +102,8 @@ class SpotlightTourState {
 }
 
 class SpotlightTourNotifier extends Notifier<SpotlightTourState> {
+  static const _cleFaite = 'closet_visite_guidee_v1';
+
   @override
   SpotlightTourState build() =>
       const SpotlightTourState(isActive: false, currentStep: 0);
@@ -93,13 +124,31 @@ class SpotlightTourNotifier extends Notifier<SpotlightTourState> {
   void stopTour() {
     HapticFeedback.mediumImpact();
     state = const SpotlightTourState(isActive: false, currentStep: 0);
+    _marquerFaite();
+  }
+
+  Future<void> _marquerFaite() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool(_cleFaite, true);
+      ref.invalidate(visiteGuideeFaiteProvider);
+    } catch (_) {}
   }
 }
 
 final spotlightTourProvider =
     NotifierProvider<SpotlightTourNotifier, SpotlightTourState>(
-  SpotlightTourNotifier.new,
-);
+      SpotlightTourNotifier.new,
+    );
+
+final visiteGuideeFaiteProvider = FutureProvider<bool>((ref) async {
+  try {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool(SpotlightTourNotifier._cleFaite) ?? false;
+  } catch (_) {
+    return false;
+  }
+});
 
 class SpotlightPainter extends CustomPainter {
   SpotlightPainter({required this.targetRect, this.borderRadius = 8});
@@ -157,7 +206,9 @@ class _SpotlightShowcaseState extends ConsumerState<SpotlightShowcase> {
     if (!tour.isActive || widget.steps.isEmpty) return widget.child;
 
     final step = widget.steps[tour.currentStep];
-    final cible = _rectLocal(step.targetKey);
+    final cible =
+        _rectLocal(step.targetKey) ??
+        (step.fallbackKey != null ? _rectLocal(step.fallbackKey!) : null);
     final barre = _rectLocal(ClosetTourKeys.barre);
     if (cible == null || barre == null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -166,9 +217,7 @@ class _SpotlightShowcaseState extends ConsumerState<SpotlightShowcase> {
     }
 
     final taille = MediaQuery.sizeOf(context);
-    final margeBas = barre != null
-        ? (taille.height - barre.top + 12)
-        : 96.0;
+    final margeBas = barre != null ? (taille.height - barre.top + 12) : 96.0;
 
     return Stack(
       children: [
@@ -255,9 +304,14 @@ class _CarteEtape extends ConsumerWidget {
                     fontSize: 10,
                   ),
                 ),
-                GestureDetector(
-                  onTap: () =>
+                TextButton(
+                  onPressed: () =>
                       ref.read(spotlightTourProvider.notifier).stopTour(),
+                  style: TextButton.styleFrom(
+                    visualDensity: VisualDensity.compact,
+                    minimumSize: const Size(44, 44),
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                  ),
                   child: Text(
                     l10n.visitePasser,
                     style: ClosetTextStyles.labelChamp.copyWith(
@@ -269,7 +323,10 @@ class _CarteEtape extends ConsumerWidget {
               ],
             ),
             const SizedBox(height: 10),
-            Text(titre, style: ClosetTextStyles.titreEcran.copyWith(fontSize: 18)),
+            Text(
+              titre,
+              style: ClosetTextStyles.titreEcran.copyWith(fontSize: 18),
+            ),
             const SizedBox(height: 8),
             Text(
               description,
@@ -295,9 +352,8 @@ class _CarteEtape extends ConsumerWidget {
                   ),
                   elevation: 0,
                 ),
-                onPressed: () => ref
-                    .read(spotlightTourProvider.notifier)
-                    .nextStep(total),
+                onPressed: () =>
+                    ref.read(spotlightTourProvider.notifier).nextStep(total),
                 child: Text(
                   derniere ? l10n.visiteTerminer : l10n.visiteSuivant,
                   style: const TextStyle(

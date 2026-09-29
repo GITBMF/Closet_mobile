@@ -4,11 +4,15 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/theme/closet_colors.dart';
 import '../../../core/theme/closet_text_styles.dart';
+import '../../../core/validation/indicateurs_pays.dart';
 import '../../../core/widgets/champ_telephone.dart';
 import '../../../core/widgets/closet_buttons.dart';
 import '../../../core/widgets/closet_chip.dart';
 import '../../../core/widgets/toasts.dart';
+import '../../../data/models/geo.dart';
+import '../../../data/repositories/geo_repository.dart';
 import '../../../data/repositories/sourceur_repository.dart';
+import '../../checkout/widgets/checkout_widgets.dart';
 import '../widgets/sourceur_header.dart';
 import 'widgets/labeled_field.dart';
 import 'widgets/sourceur_hero_card.dart';
@@ -39,7 +43,7 @@ class _SourceurInscriptionScreenState
 
   // Étape 1 — Atelier
   final _atelierController = TextEditingController();
-  final _villeController = TextEditingController();
+  Ville? _ville;
   final _whatsapp = TelephoneController();
 
   // Étape 2 — Univers
@@ -58,7 +62,6 @@ class _SourceurInscriptionScreenState
   void dispose() {
     _scrollController.dispose();
     _atelierController.dispose();
-    _villeController.dispose();
     _whatsapp.dispose();
     _universController.dispose();
     _numero.dispose();
@@ -67,13 +70,31 @@ class _SourceurInscriptionScreenState
 
   bool get _etapeValide => switch (_etape) {
         0 => _atelierController.text.trim().isNotEmpty &&
-            _villeController.text.trim().isNotEmpty &&
+            _ville != null &&
             _whatsapp.estValide,
         1 => _universController.text.trim().isNotEmpty && _specialite != null,
         _ => _moyenPaiement == 'Virement bancaire'
             ? _numero.national.text.trim().isNotEmpty
             : _numero.estValide,
       };
+
+  Future<void> _choisirVille() async {
+    try {
+      final villes = await ref.read(villesProvider.future);
+      if (!mounted) return;
+      final choix = await afficherSelecteur<Ville>(
+        context: context,
+        titre: 'Ville',
+        options: villes,
+        libelle: (v) => v.nom,
+        selection: _ville,
+        recherchable: true,
+      );
+      if (choix != null) setState(() => _ville = choix);
+    } catch (e) {
+      if (mounted) toastErreur(ref, e, titre: 'Villes indisponibles');
+    }
+  }
 
   void _changerEtape(int delta) {
     setState(() => _etape = (_etape + delta).clamp(0, 2));
@@ -98,7 +119,7 @@ class _SourceurInscriptionScreenState
       final repo = ref.read<SourceurRepository>(sourceurRepositoryProvider);
       await repo.inscrire(SourceurInscriptionData(
         nomAtelier: _atelierController.text.trim(),
-        ville: _villeController.text.trim(),
+        ville: _ville?.nom ?? '',
         whatsapp: _whatsapp.e164,
         univers: _universController.text.trim(),
         specialite: _specialite,
@@ -156,7 +177,7 @@ class _SourceurInscriptionScreenState
                       padding: const EdgeInsets.symmetric(horizontal: 8),
                       child: StepIndicator(
                         etapeCourante: _etape,
-                        labels: const ['ATELIER', 'UNIVERS', 'PAIEMENT'],
+                        labels: const ['Atelier', 'Univers', 'Paiement'],
                       ),
                     ),
                     const SizedBox(height: 24),
@@ -169,7 +190,6 @@ class _SourceurInscriptionScreenState
                     ListenableBuilder(
                       listenable: Listenable.merge([
                         _atelierController,
-                        _villeController,
                         _whatsapp,
                         _universController,
                         _numero,
@@ -226,20 +246,19 @@ class _SourceurInscriptionScreenState
           hint: "L'Atelier d'Awa",
         ),
         const SizedBox(height: 22),
-        LabeledField(
-          icone: Icons.location_on_outlined,
-          label: 'Ville',
-          controller: _villeController,
-          hint: 'Yaoundé',
+        _ChampVille(
+          valeur: _ville?.nom,
+          onTap: _choisirVille,
         ),
         const SizedBox(height: 22),
         ChampTelephone(
           icone: Icons.phone_outlined,
           label: 'Téléphone WhatsApp',
           controller: _whatsapp,
-          hint: '6 77 45 22 18',
+          hint: '6 90 12 34 56',
           style: StyleChampTelephone.sourceur,
           validerAvecLeFormulaire: false,
+          paysFixe: IndicateurPays.cameroun,
         ),
       ],
     );
@@ -262,21 +281,30 @@ class _SourceurInscriptionScreenState
           children: [
             const Icon(Icons.palette_outlined, size: 16, color: ClosetColors.dore),
             const SizedBox(width: 8),
-            Text('SPÉCIALITÉ', style: ClosetTextStyles.labelChamp),
+            Text('Spécialité', style: ClosetTextStyles.labelChamp),
           ],
         ),
         const SizedBox(height: 16),
-        Wrap(
-          spacing: 12,
-          runSpacing: 12,
-          children: [
-            for (final s in _specialites)
-              ClosetChip(
-                label: s,
-                selectionnee: _specialite == s,
-                onTap: () => setState(() => _specialite = s),
-              ),
-          ],
+        LayoutBuilder(
+          builder: (context, constraints) {
+            const gap = 8.0;
+            final largeur = (constraints.maxWidth - gap * 2) / 3;
+            return Wrap(
+              spacing: gap,
+              runSpacing: gap,
+              children: [
+                for (final s in _specialites)
+                  SizedBox(
+                    width: largeur,
+                    child: ClosetChip(
+                      label: s,
+                      selectionnee: _specialite == s,
+                      onTap: () => setState(() => _specialite = s),
+                    ),
+                  ),
+              ],
+            );
+          },
         ),
       ],
     );
@@ -291,7 +319,7 @@ class _SourceurInscriptionScreenState
             const Icon(Icons.handshake_outlined,
                 size: 16, color: ClosetColors.dore),
             const SizedBox(width: 8),
-            Text('TYPE DE COLLABORATION', style: ClosetTextStyles.labelChamp),
+            Text('Type de collaboration', style: ClosetTextStyles.labelChamp),
           ],
         ),
         const SizedBox(height: 16),
@@ -309,7 +337,7 @@ class _SourceurInscriptionScreenState
             const Icon(Icons.payments_outlined,
                 size: 16, color: ClosetColors.dore),
             const SizedBox(width: 8),
-            Text('MOYEN DE RÉMUNÉRATION', style: ClosetTextStyles.labelChamp),
+            Text('Moyen de rémunération', style: ClosetTextStyles.labelChamp),
           ],
         ),
         const SizedBox(height: 16),
@@ -329,6 +357,7 @@ class _SourceurInscriptionScreenState
           hint: '6 90 12 34 56',
           style: StyleChampTelephone.sourceur,
           validerAvecLeFormulaire: false,
+          paysFixe: IndicateurPays.cameroun,
         ),
         const SizedBox(height: 24),
         Container(
@@ -447,6 +476,61 @@ class _PaiementOption extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+class _ChampVille extends StatelessWidget {
+  const _ChampVille({required this.onTap, this.valeur});
+
+  final String? valeur;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            const Icon(Icons.location_on_outlined,
+                size: 16, color: ClosetColors.dore),
+            const SizedBox(width: 6),
+            Text('Ville', style: ClosetTextStyles.labelChamp),
+          ],
+        ),
+        const SizedBox(height: 8),
+        Material(
+          color: cs.surface,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(14),
+            side: BorderSide(color: cs.onSurface.withValues(alpha: 0.12)),
+          ),
+          child: InkWell(
+            borderRadius: BorderRadius.circular(14),
+            onTap: onTap,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      valeur ?? 'Rechercher une ville…',
+                      style: ClosetTextStyles.saisie.copyWith(
+                        color: valeur == null
+                            ? cs.onSurface.withValues(alpha: 0.45)
+                            : cs.onSurface,
+                      ),
+                    ),
+                  ),
+                  Icon(Icons.search, size: 18, color: cs.onSurface),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

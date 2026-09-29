@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../core/l10n/closet_l10n.dart';
 import '../../core/widgets/toasts.dart';
 import '../../features/auth/auth_screen.dart';
 import '../api/api_exception.dart';
@@ -81,8 +82,9 @@ class WishlistNotifier extends AsyncNotifier<List<Article>> {
       state = AsyncData([...avant, article.copyWith(isWishlisted: true)]);
     }
     try {
-      final message =
-          await ref.read(bffClientProvider).postVide('/wishlist/${article.id}');
+      final message = await ref
+          .read(bffClientProvider)
+          .postVide('/wishlist/${article.id}');
       state = AsyncData(await chargerDepuisServeur());
       return message;
     } catch (e) {
@@ -110,12 +112,10 @@ class WishlistNotifier extends AsyncNotifier<List<Article>> {
     }
   }
 
-  bool isWishlisted(String id) =>
-      (state.value ?? []).any((a) => a.id == id);
+  bool isWishlisted(String id) => (state.value ?? []).any((a) => a.id == id);
 }
 
-final wishlistProvider =
-    AsyncNotifierProvider<WishlistNotifier, List<Article>>(
+final wishlistProvider = AsyncNotifierProvider<WishlistNotifier, List<Article>>(
   WishlistNotifier.new,
 );
 
@@ -145,18 +145,21 @@ Future<void> basculerFavori(
   try {
     final deja = ref.read(wishlistProvider.notifier).isWishlisted(article.id);
     await ref.read(wishlistProvider.notifier).toggleWishlist(article);
+    if (!context.mounted) return;
+    final l10n = ClosetL10n.of(context);
+    final notifier = ref.read(wishlistProvider.notifier);
     if (deja) {
       toastActionPiece(
         ref,
-        nom: article.title,
-        resultat: 'a été retirée de vos favoris.',
+        message: l10n.pieceRetireeFavoris(article.title),
         succes: false,
+        onAnnuler: () => notifier.addArticle(article),
       );
     } else {
       toastActionPiece(
         ref,
-        nom: article.title,
-        resultat: 'a été ajoutée à vos favoris.',
+        message: l10n.pieceAjouteeFavoris(article.title),
+        onAnnuler: () => notifier.removeArticle(article.id),
       );
     }
   } catch (e) {

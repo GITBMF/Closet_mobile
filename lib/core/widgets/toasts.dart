@@ -6,12 +6,11 @@ import '../l10n/closet_l10n.dart';
 import '../services/notification_service.dart';
 import 'closet_feedback.dart';
 
-/// Toasts globaux — le bandeau [TopNotificationOverlay] les affiche.
+/// Toasts globaux — [TopNotificationOverlay] les affiche en snackbar.
 void toastInfo(WidgetRef ref, String titre, [String? message]) {
-  ref.read<NotificationNotifier>(notificationProvider.notifier).show(
-        titre,
-        message ?? titre,
-      );
+  ref
+      .read<NotificationNotifier>(notificationProvider.notifier)
+      .show(titre, message ?? titre);
 }
 
 void toastSucces(WidgetRef ref, String titre, [String? message]) {
@@ -20,26 +19,27 @@ void toastSucces(WidgetRef ref, String titre, [String? message]) {
       .showSuccess(titre, message ?? titre);
 }
 
-/// Toast d'une action sur une pièce : le nom en titre, le résultat en corps.
+/// Confirmation compacte d'une action sur une pièce, avec [Annuler] optionnel.
 void toastActionPiece(
   WidgetRef ref, {
-  required String nom,
-  required String resultat,
+  required String message,
   bool succes = true,
-  String? actionLabel,
-  VoidCallback? onAction,
+  VoidCallback? onAnnuler,
 }) {
   final l10n = ref.read(l10nProvider);
-  final phrase = l10n.toastPiece(nom, resultat);
+  final notifier = ref.read<NotificationNotifier>(
+    notificationProvider.notifier,
+  );
+  final label = onAnnuler == null ? null : l10n.annulerAction;
   if (succes) {
-    ref.read<NotificationNotifier>(notificationProvider.notifier).showSuccess(
-          nom,
-          phrase,
-          actionLabel: actionLabel,
-          onAction: onAction,
-        );
+    notifier.showSuccess(
+      message,
+      message,
+      actionLabel: label,
+      onAction: onAnnuler,
+    );
   } else {
-    toastInfo(ref, nom, phrase);
+    notifier.show(message, message, actionLabel: label, onAction: onAnnuler);
   }
 }
 
@@ -52,7 +52,9 @@ void toastMelange(
   bool succes = false,
 }) {
   final corps = messageMelange(local: local ?? titre, backend: backend);
-  final notifier = ref.read<NotificationNotifier>(notificationProvider.notifier);
+  final notifier = ref.read<NotificationNotifier>(
+    notificationProvider.notifier,
+  );
   if (succes) {
     notifier.showSuccess(titre, corps);
   } else {
@@ -63,7 +65,9 @@ void toastMelange(
 void toastErreur(WidgetRef ref, Object erreur, {String? titre}) {
   final l10n = ref.read(l10nProvider);
   final texte = l10n.messageDepuisErreur(erreur);
-  ref.read<NotificationNotifier>(notificationProvider.notifier).showError(
+  ref
+      .read<NotificationNotifier>(notificationProvider.notifier)
+      .showError(
         titre ?? l10n.erreurTitre,
         texte.isEmpty ? l10n.erreurGenerique : texte,
       );

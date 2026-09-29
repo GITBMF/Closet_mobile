@@ -69,6 +69,9 @@ class ClosetChip extends StatelessWidget {
             children: [
               Text(
                 label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.center,
                 style: ClosetTextStyles.corps.copyWith(color: couleurTexte),
               ),
               if (hasCloseIcon) ...[

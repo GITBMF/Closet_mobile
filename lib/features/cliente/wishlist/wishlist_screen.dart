@@ -20,8 +20,8 @@ import '../../../data/repositories/wishlist_repository.dart';
 /// Mes favoris — transcription de la maquette `25:924`.
 ///
 /// Cartes vert profond de 352 × 97 : visuel 77 × 78 à gauche, maison, titre
-/// Cormorant, prix EB Garamond doré, cœur en haut à droite et bouton
-/// « Ajouter au panier » de 116 × 33.
+/// Cormorant, prix EB Garamond doré, cœur (retirer des favoris) et bouton
+/// explicite d’ajout à la sélection.
 class WishlistScreen extends ConsumerWidget {
   const WishlistScreen({super.key});
 
@@ -35,89 +35,93 @@ class WishlistScreen extends ConsumerWidget {
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
         child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const SizedBox(height: AppSpacing.p12),
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: AppSpacing.p20),
-            child: ClosetTitreEcran('Mes favoris'),
-          ),
-          Expanded(
-            child: !connectee
-                ? ClosetListeVide(
-                    message:
-                        'Connectez-vous pour enregistrer et retrouver vos pièces favorites.',
-                    action: () => context.push('/auth'),
-                    libelleAction: 'Se connecter',
-                  )
-                : (user?.nePeutPasAcheter ?? false)
-                    ? const ClosetListeVide(
-                        titre: 'Achats indisponibles',
-                        message:
-                            'Les comptes administrateur et livreur ne peuvent pas faire d’achats.',
-                      )
-                    : corpsAsync<List<Article>>(
-                    favoris,
-                    onRetry: () => ref.invalidate(wishlistProvider),
-                    data: (liste) => liste.isEmpty
-                        ? ClosetListeVide(
-                            message:
-                                'Aucune pièce n’a été ajoutée aux favoris.',
-                            action: () => context.go('/collections'),
-                            libelleAction: 'Découvrir les collections',
-                          )
-                        : ListView.separated(
-                            padding: const EdgeInsets.fromLTRB(
-                              18,
-                              AppSpacing.p16,
-                              18,
-                              AppSpacing.p32,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const SizedBox(height: AppSpacing.p12),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.p20),
+              child: ClosetTitreEcran(ClosetL10n.of(context).mesFavoris),
+            ),
+            Expanded(
+              child: !connectee
+                  ? ClosetListeVide(
+                      message:
+                          'Connectez-vous pour enregistrer et retrouver vos pièces favorites.',
+                      action: () => context.push('/auth'),
+                      libelleAction: 'Se connecter',
+                    )
+                  : (user?.nePeutPasAcheter ?? false)
+                  ? const ClosetListeVide(
+                      titre: 'Achats indisponibles',
+                      message:
+                          'Les comptes administrateur et livreur ne peuvent pas faire d’achats.',
+                    )
+                  : corpsAsync<List<Article>>(
+                      favoris,
+                      onRetry: () => ref.invalidate(wishlistProvider),
+                      data: (liste) => liste.isEmpty
+                          ? ClosetListeVide(
+                              message:
+                                  'Aucune pièce n’a été ajoutée aux favoris.',
+                              action: () => context.go('/collections'),
+                              libelleAction: 'Découvrir les collections',
+                            )
+                          : ListView.separated(
+                              padding: const EdgeInsets.fromLTRB(
+                                18,
+                                AppSpacing.p16,
+                                18,
+                                AppSpacing.p32,
+                              ),
+                              itemCount: liste.length,
+                              separatorBuilder: (_, _) =>
+                                  const SizedBox(height: 23),
+                              itemBuilder: (context, i) {
+                                final article = liste[i];
+                                return _CarteFavori(
+                                  article: article,
+                                  onTap: () =>
+                                      context.push('/product/${article.id}'),
+                                  onRetirer: () =>
+                                      basculerFavori(context, ref, article),
+                                  onAjouter: () {
+                                    final cart = ref.read(
+                                      cartProvider.notifier,
+                                    );
+                                    final l10n = ClosetL10n.of(context);
+                                    final deja = ref
+                                        .read(cartListProvider)
+                                        .any((a) => a.id == article.id);
+                                    if (deja) {
+                                      cart.removeArticle(article.id);
+                                      toastActionPiece(
+                                        ref,
+                                        message: l10n.pieceRetireeSelection(
+                                          article.title,
+                                        ),
+                                        succes: false,
+                                        onAnnuler: () =>
+                                            cart.addArticle(article),
+                                      );
+                                    } else {
+                                      cart.addArticle(article);
+                                      toastActionPiece(
+                                        ref,
+                                        message: l10n.pieceAjouteeSelection(
+                                          article.title,
+                                        ),
+                                        onAnnuler: () =>
+                                            cart.removeArticle(article.id),
+                                      );
+                                    }
+                                  },
+                                );
+                              },
                             ),
-                            itemCount: liste.length,
-                            separatorBuilder: (_, _) =>
-                                const SizedBox(height: 23),
-                            itemBuilder: (context, i) {
-                              final article = liste[i];
-                              return _CarteFavori(
-                                article: article,
-                                onTap: () =>
-                                    context.push('/product/${article.id}'),
-                                onRetirer: () =>
-                                    basculerFavori(context, ref, article),
-                                onAjouter: () {
-                                  final cart = ref.read(cartProvider.notifier);
-                                  final deja = ref
-                                      .read(cartListProvider)
-                                      .any((a) => a.id == article.id);
-                                  if (deja) {
-                                    cart.removeArticle(article.id);
-                                    toastActionPiece(
-                                      ref,
-                                      nom: article.title,
-                                      resultat:
-                                          'a été retirée de votre sélection.',
-                                      succes: false,
-                                    );
-                                  } else {
-                                    cart.addArticle(article);
-                                    toastActionPiece(
-                                      ref,
-                                      nom: article.title,
-                                      resultat:
-                                          'a été ajoutée à votre sélection.',
-                                      actionLabel:
-                                          ClosetL10n.of(context).voirMaSelection,
-                                      onAction: () => context.go('/selection'),
-                                    );
-                                  }
-                                },
-                              );
-                            },
-                          ),
-                  ),
-          ),
-        ],
-      ),
+                    ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -138,8 +142,9 @@ class _CarteFavori extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final dejaAjoute =
-        ref.watch(cartListProvider).any((a) => a.id == article.id);
+    final dejaAjoute = ref
+        .watch(cartListProvider)
+        .any((a) => a.id == article.id);
 
     return GestureDetector(
       onTap: onTap,
@@ -227,24 +232,27 @@ class _CarteFavori extends ConsumerWidget {
             const SizedBox(width: AppSpacing.p8),
             Semantics(
               button: true,
-              label: 'Retirer des favoris',
-              child: GestureDetector(
-                onTap: onRetirer,
-                child: Container(
-                  width: 19,
-                  height: 19,
-                  decoration: BoxDecoration(
-                    color: ClosetColors.carteFond,
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: ClosetColors.fond300,
-                      width: AppStroke.fin,
+              label: ClosetL10n.of(context).retirerDesFavoris,
+              child: Tooltip(
+                message: ClosetL10n.of(context).retirerDesFavoris,
+                child: GestureDetector(
+                  onTap: onRetirer,
+                  child: Container(
+                    width: 19,
+                    height: 19,
+                    decoration: BoxDecoration(
+                      color: ClosetColors.carteFond,
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: ClosetColors.fond300,
+                        width: AppStroke.fin,
+                      ),
                     ),
-                  ),
-                  child: const Icon(
-                    Icons.favorite,
-                    size: 10,
-                    color: ClosetColors.erreurCouture,
+                    child: const Icon(
+                      Icons.favorite,
+                      size: 10,
+                      color: ClosetColors.erreurCouture,
+                    ),
                   ),
                 ),
               ),
@@ -256,7 +264,7 @@ class _CarteFavori extends ConsumerWidget {
   }
 }
 
-/// Bouton doré « Ajouter au panier » : 116 × 33, rayon 100.
+/// Bouton doré d'ajout à la sélection, libellé explicite + icône.
 class _BoutonAjouter extends StatelessWidget {
   const _BoutonAjouter({
     required this.dejaAjoute,
@@ -270,9 +278,15 @@ class _BoutonAjouter extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = ClosetL10n.of(context);
     final actif = !indisponible;
+    final libelle = indisponible
+        ? l10n.indisponible
+        : dejaAjoute
+        ? l10n.retirerDeMaSelection
+        : l10n.ajouterAMaSelection;
     return SizedBox(
-      width: 116,
+      width: 138,
       height: 33,
       child: Material(
         color: indisponible ? ClosetColors.doreDesactive : ClosetColors.fond300,
@@ -280,20 +294,37 @@ class _BoutonAjouter extends StatelessWidget {
         child: InkWell(
           borderRadius: BorderRadius.circular(AppRadius.cercle),
           onTap: actif ? onTap : null,
-          child: Center(
-            child: Text(
-              indisponible
-                  ? 'Indisponible'
-                  : dejaAjoute
-                      ? 'Retirer'
-                      : 'Ajouter',
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: ClosetTextStyles.attribut.copyWith(
-                fontWeight: FontWeight.w500,
-                letterSpacing: 0,
-                color: ClosetColors.neutre1000,
-              ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                if (!indisponible) ...[
+                  Icon(
+                    dejaAjoute
+                        ? Icons.shopping_bag
+                        : Icons.shopping_bag_outlined,
+                    size: 12,
+                    color: ClosetColors.neutre1000,
+                  ),
+                  const SizedBox(width: 4),
+                ],
+                Flexible(
+                  child: Text(
+                    libelle,
+                    maxLines: 2,
+                    textAlign: TextAlign.center,
+                    overflow: TextOverflow.ellipsis,
+                    style: ClosetTextStyles.attribut.copyWith(
+                      fontWeight: FontWeight.w600,
+                      letterSpacing: 0,
+                      height: 1.1,
+                      fontSize: 9,
+                      color: ClosetColors.neutre1000,
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
         ),

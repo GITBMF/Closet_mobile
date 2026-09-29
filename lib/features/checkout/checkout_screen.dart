@@ -6,6 +6,7 @@ import '../../core/theme/app_spacing.dart';
 import '../../core/theme/closet_colors.dart';
 import '../../core/theme/closet_text_styles.dart';
 import '../../core/validation/indicateurs_pays.dart';
+import '../../core/widgets/badge_qualite.dart';
 import '../../core/widgets/champ_telephone.dart';
 import '../../core/widgets/marque_paiement.dart';
 import '../../core/widgets/closet_app_bar.dart';
@@ -114,6 +115,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
         libelle: (v) => v.nom,
         sousTitre: (v) => v.delaiAnnonce,
         selection: ref.read(brouillonCommandeProvider).ville,
+        recherchable: true,
       );
       if (choix != null) _brouillon.choisirVille(choix);
     } catch (e) {
@@ -281,6 +283,8 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                   ),
                   children: [
                     FriseTunnel(etapeCourante: _etape == 0 ? 1 : 2),
+                    const SizedBox(height: AppSpacing.p16),
+                    const BadgeQualiteVerifiee(etendu: true),
                     const SizedBox(height: AppSpacing.p24),
                     if (_etape == 0) ...[
                       const ClosetEnTeteSection(titre: 'Détails de livraison'),
@@ -306,7 +310,9 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                           v,
                           obligatoire: true,
                           libelle: 'numéro WhatsApp',
+                          camerounUniquement: true,
                         ),
+                        paysFixe: IndicateurPays.cameroun,
                       ),
                       const SizedBox(height: AppSpacing.p8),
                       Text(

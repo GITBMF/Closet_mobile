@@ -1,10 +1,12 @@
-﻿import 'package:cached_network_image/cached_network_image.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../l10n/closet_l10n.dart';
 import '../theme/app_spacing.dart';
 import '../theme/closet_colors.dart';
 import '../theme/closet_text_styles.dart';
+import 'badge_qualite.dart';
 
 /// Carte produit — transcription du composant « Product Card » de `11:30`.
 ///
@@ -22,6 +24,7 @@ class PieceCard extends StatelessWidget {
     this.imageUrl,
     this.isImageArche = false,
     this.etoiles = 0,
+    this.likes = 0,
     this.isFavorite = false,
     this.isSold = false,
     this.onFavoriteTap,
@@ -42,6 +45,9 @@ class PieceCard extends StatelessWidget {
 
   /// Étoiles d'état, à gauche du nom. 0 = masquées.
   final int etoiles;
+
+  /// Compteur de favoris affiché sur la photo (0 = masqué).
+  final int likes;
   final bool isFavorite;
   final bool isSold;
   final VoidCallback? onFavoriteTap;
@@ -91,6 +97,8 @@ class PieceCard extends StatelessWidget {
                   imageUrl: imageUrl,
                   arche: isImageArche,
                   isSold: isSold,
+                  likes: likes,
+                  isFavorite: isFavorite,
                 ),
               ),
               const SizedBox(height: 11),
@@ -172,11 +180,15 @@ class _Visuel extends StatelessWidget {
     required this.imageUrl,
     required this.arche,
     required this.isSold,
+    required this.likes,
+    required this.isFavorite,
   });
 
   final String? imageUrl;
   final bool arche;
   final bool isSold;
+  final int likes;
+  final bool isFavorite;
 
   @override
   Widget build(BuildContext context) {
@@ -225,6 +237,18 @@ class _Visuel extends StatelessWidget {
                     color: ClosetColors.creme,
                   ),
                 ),
+              ),
+            ),
+          ),
+        if (likes > 0)
+          Positioned(
+            right: 6,
+            bottom: isSold ? 28 : 6,
+            child: IgnorePointer(
+              child: CompteurFavoris(
+                nombre: likes,
+                actif: isFavorite,
+                surPhoto: true,
               ),
             ),
           ),
@@ -294,13 +318,17 @@ class _BoutonCoeurState extends State<BoutonCoeur>
     );
     _echelle = TweenSequence<double>([
       TweenSequenceItem(
-        tween: Tween<double>(begin: 1.0, end: 1.28)
-            .chain(CurveTween(curve: Curves.easeOut)),
+        tween: Tween<double>(
+          begin: 1.0,
+          end: 1.28,
+        ).chain(CurveTween(curve: Curves.easeOut)),
         weight: 40,
       ),
       TweenSequenceItem(
-        tween: Tween<double>(begin: 1.28, end: 1.0)
-            .chain(CurveTween(curve: Curves.easeIn)),
+        tween: Tween<double>(
+          begin: 1.28,
+          end: 1.0,
+        ).chain(CurveTween(curve: Curves.easeIn)),
         weight: 60,
       ),
     ]).animate(_pulse);
@@ -323,8 +351,8 @@ class _BoutonCoeurState extends State<BoutonCoeur>
     return Semantics(
       button: true,
       label: widget.actif
-          ? 'Retirer des favoris'
-          : 'Ajouter aux favoris',
+          ? ClosetL10n.of(context).retirerDesFavoris
+          : ClosetL10n.of(context).ajouterAuxFavoris,
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
         onTap: _taper,

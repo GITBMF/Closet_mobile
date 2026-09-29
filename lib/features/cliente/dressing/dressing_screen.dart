@@ -8,6 +8,7 @@ import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/closet_colors.dart';
 import '../../../core/theme/closet_layout.dart';
 import '../../../core/theme/closet_text_styles.dart';
+import '../../../core/widgets/badge_qualite.dart';
 import '../../../core/widgets/closet_app_bar.dart';
 import '../../../core/widgets/closet_feedback.dart';
 import '../../../core/widgets/etat_ecran.dart';
@@ -278,29 +279,54 @@ class _PhotoPiece extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final local = _visuelHabitPour(article);
-    if (article.imageUrls.isEmpty) {
-      return Image.asset(
-        local,
-        fit: BoxFit.cover,
-        width: double.infinity,
-        height: double.infinity,
-        errorBuilder: (_, _, _) =>
-            const ColoredBox(color: ClosetColors.gabaritImageClair),
-      );
-    }
-    return CachedNetworkImage(
-      imageUrl: article.imageUrls.first,
-      fit: BoxFit.cover,
-      width: double.infinity,
-      height: double.infinity,
-      placeholder: (context, url) =>
-          const ColoredBox(color: ClosetColors.gabaritImageClair),
-      errorWidget: (context, url, error) => Image.asset(
-        local,
-        fit: BoxFit.cover,
-        width: double.infinity,
-        height: double.infinity,
-      ),
+    final photo = article.imageUrls.isEmpty
+        ? Image.asset(
+            local,
+            fit: BoxFit.cover,
+            width: double.infinity,
+            height: double.infinity,
+            errorBuilder: (_, _, _) =>
+                const ColoredBox(color: ClosetColors.gabaritImageClair),
+          )
+        : CachedNetworkImage(
+            imageUrl: article.imageUrls.first,
+            fit: BoxFit.cover,
+            width: double.infinity,
+            height: double.infinity,
+            placeholder: (context, url) =>
+                const ColoredBox(color: ClosetColors.gabaritImageClair),
+            errorWidget: (context, url, error) => Image.asset(
+              local,
+              fit: BoxFit.cover,
+              width: double.infinity,
+              height: double.infinity,
+            ),
+          );
+
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        photo,
+        const Positioned(
+          left: 10,
+          bottom: 10,
+          child: IgnorePointer(child: BadgeQualiteVerifiee(surPhoto: true)),
+        ),
+        if (article.likesAffiches(enFavori: article.isWishlisted) > 0)
+          Positioned(
+            right: 10,
+            bottom: 10,
+            child: IgnorePointer(
+              child: CompteurFavoris(
+                nombre: article.likesAffiches(
+                  enFavori: article.isWishlisted,
+                ),
+                actif: article.isWishlisted,
+                surPhoto: true,
+              ),
+            ),
+          ),
+      ],
     );
   }
 }

@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -26,8 +26,9 @@ class EspaceScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final ClosetUser? user = ref.watch<ClosetUser?>(currentUserProvider);
-    final sourceurRepo =
-        ref.watch<SourceurRepository>(sourceurRepositoryProvider);
+    final sourceurRepo = ref.watch<SourceurRepository>(
+      sourceurRepositoryProvider,
+    );
     final partenaire = sourceurRepo.accesAutorisePour(user);
     final l10n = ClosetL10n.of(context);
 
@@ -41,58 +42,58 @@ class EspaceScreen extends ConsumerWidget {
             children: [
               const SizedBox(height: AppSpacing.p8),
               Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppSpacing.p20,
-                ),
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.p20),
                 child: ClosetTitreEcran(l10n.monEspace),
               ),
               const SizedBox(height: AppSpacing.p24),
               Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppSpacing.p20,
-                ),
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.p20),
                 child: _EnTeteProfil(
                   user: user,
-                  onEditer: () => context.push(
-                    user == null ? '/auth' : '/espace/infos',
-                  ),
+                  onEditer: () =>
+                      context.push(user == null ? '/auth' : '/espace/infos'),
                 ),
               ),
               const SizedBox(height: AppSpacing.p24),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 19),
-                child: _CarteSourceur(
-                  dejaInscrit: partenaire,
-                  onTap: () => context.push(
-                    user == null
-                        ? '/auth'
-                        : partenaire
-                            ? '/sourceur/espace'
-                            : '/sourceur/devenir',
+                child: KeyedSubtree(
+                  key: ClosetTourKeys.sourceur,
+                  child: _CarteSourceur(
+                    dejaInscrit: partenaire,
+                    onTap: () => context.push(
+                      user == null
+                          ? '/auth'
+                          : partenaire
+                          ? '/sourceur/espace'
+                          : '/sourceur/devenir',
+                    ),
                   ),
                 ),
               ),
               const SizedBox(height: AppSpacing.p24),
-              _EntreeEspace(
-                icone: Icons.receipt_long_outlined,
-                label: l10n.mesCommandes,
-                onTap: () => user == null
-                    ? context.push('/auth')
-                    : context.push('/espace/commandes'),
+              KeyedSubtree(
+                key: ClosetTourKeys.commandes,
+                child: _EntreeEspace(
+                  icone: Icons.receipt_long_outlined,
+                  label: l10n.mesCommandes,
+                  onTap: () => user == null
+                      ? context.push('/auth')
+                      : context.push('/espace/commandes'),
+                ),
               ),
               _EntreeEspace(
                 icone: Icons.person_outline,
                 label: l10n.mesInformations,
-                onTap: () => context.push(
-                  user == null ? '/auth' : '/espace/infos',
-                ),
+                onTap: () =>
+                    context.push(user == null ? '/auth' : '/espace/infos'),
               ),
               _EntreeEspace(
                 icone: Icons.auto_awesome_outlined,
                 label: l10n.visiteGuidee,
                 onTap: () {
-                  ref.read(spotlightTourProvider.notifier).startTour();
                   context.go('/home');
+                  ref.read(spotlightTourProvider.notifier).startTour();
                 },
               ),
               const _BasculeTheme(),
@@ -115,7 +116,6 @@ class EspaceScreen extends ConsumerWidget {
       ),
     );
   }
-
 }
 
 /// Bouton rond de r�glages, en haut � droite.
@@ -163,7 +163,7 @@ class _EnTeteProfil extends StatelessWidget {
     final nom = user == null
         ? l10n.invite
         : '${user!.firstName} ${user!.lastName.isEmpty ? '' : '${user!.lastName[0]}.'}'
-            .trim();
+              .trim();
 
     return Row(
       children: [
@@ -213,9 +213,7 @@ class _EnTeteProfil extends StatelessWidget {
               ),
               const SizedBox(height: AppSpacing.p4),
               Text(
-                user == null
-                    ? l10n.connectezVousPieces
-                    : l10n.membreDressing,
+                user == null ? l10n.connectezVousPieces : l10n.membreDressing,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: ClosetTextStyles.meta.copyWith(
@@ -268,87 +266,88 @@ class _CarteSourceur extends StatelessWidget {
         onTap: onTap,
         borderRadius: BorderRadius.circular(AppRadius.carte),
         child: Container(
-      constraints: const BoxConstraints(minHeight: 97),
-      padding: const EdgeInsets.all(AppSpacing.p20),
-      child: Row(
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                if (!dejaInscrit)
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: AppSpacing.p12,
-                      vertical: 2,
+          constraints: const BoxConstraints(minHeight: 97),
+          padding: const EdgeInsets.all(AppSpacing.p20),
+          child: Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    if (!dejaInscrit)
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: AppSpacing.p12,
+                          vertical: 2,
+                        ),
+                        decoration: BoxDecoration(
+                          color: ClosetColors.emeraude100,
+                          borderRadius: BorderRadius.circular(
+                            AppRadius.vignette,
+                          ),
+                        ),
+                        child: Text(
+                          l10n.nouveau,
+                          style: ClosetTextStyles.attribut.copyWith(
+                            color: ClosetColors.emeraude500,
+                          ),
+                        ),
+                      ),
+                    const SizedBox(height: AppSpacing.p4),
+                    Text(
+                      dejaInscrit
+                          ? l10n.monEspaceSourceur
+                          : l10n.devenirSourceur,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: ClosetTextStyles.prix.copyWith(
+                        fontWeight: FontWeight.w600,
+                        letterSpacing: 0,
+                        color: ClosetColors.texteSurVert,
+                      ),
                     ),
-                    decoration: BoxDecoration(
-                      color: ClosetColors.emeraude100,
-                      borderRadius:
-                          BorderRadius.circular(AppRadius.vignette),
+                    const SizedBox(height: 2),
+                    Text(
+                      l10n.carteSourceurCorps,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: ClosetTextStyles.attribut.copyWith(
+                        fontWeight: FontWeight.w300,
+                        letterSpacing: 0.16,
+                        color: ClosetColors.blanc,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: AppSpacing.p12),
+              Material(
+                color: ClosetColors.creme,
+                borderRadius: BorderRadius.circular(AppRadius.cercle),
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(AppRadius.cercle),
+                  onTap: onTap,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.p16,
+                      vertical: AppSpacing.p12,
                     ),
                     child: Text(
-                      l10n.nouveau,
-                      style: ClosetTextStyles.attribut.copyWith(
-                        color: ClosetColors.emeraude500,
+                      dejaInscrit
+                          ? l10n.monEspaceCourt
+                          : l10n.rejoindreCercleCourt,
+                      textAlign: TextAlign.center,
+                      style: ClosetTextStyles.actionPetite.copyWith(
+                        color: ClosetColors.vert,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                   ),
-                const SizedBox(height: AppSpacing.p4),
-                Text(
-                  dejaInscrit
-                      ? l10n.monEspaceSourceur
-                      : l10n.devenirSourceur,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: ClosetTextStyles.prix.copyWith(
-                    fontWeight: FontWeight.w600,
-                    letterSpacing: 0,
-                    color: ClosetColors.texteSurVert,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  l10n.carteSourceurCorps,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: ClosetTextStyles.attribut.copyWith(
-                    fontWeight: FontWeight.w300,
-                    letterSpacing: 0.16,
-                    color: ClosetColors.blanc,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(width: AppSpacing.p12),
-          Material(
-            color: ClosetColors.creme,
-            borderRadius: BorderRadius.circular(AppRadius.cercle),
-            child: InkWell(
-              borderRadius: BorderRadius.circular(AppRadius.cercle),
-              onTap: onTap,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppSpacing.p16,
-                  vertical: AppSpacing.p12,
-                ),
-                child: Text(
-                  dejaInscrit
-                      ? l10n.monEspaceCourt
-                      : l10n.rejoindreCercleCourt,
-                  textAlign: TextAlign.center,
-                  style: ClosetTextStyles.actionPetite.copyWith(
-                    color: ClosetColors.vert,
-                    fontWeight: FontWeight.w600,
-                  ),
                 ),
               ),
-            ),
+            ],
           ),
-        ],
-      ),
         ),
       ),
     );
@@ -372,40 +371,40 @@ class _EntreeEspace extends StatelessWidget {
     return Material(
       color: Colors.transparent,
       child: InkWell(
-      onTap: onTap,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.p24,
-          vertical: AppSpacing.p12,
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 35,
-              height: 35,
-              decoration: BoxDecoration(
-                color: ClosetColors.vert,
-                borderRadius: BorderRadius.circular(AppRadius.carte),
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.p24,
+            vertical: AppSpacing.p12,
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 35,
+                height: 35,
+                decoration: BoxDecoration(
+                  color: ClosetColors.vert,
+                  borderRadius: BorderRadius.circular(AppRadius.carte),
+                ),
+                child: Icon(icone, size: 18, color: ClosetColors.blanc),
               ),
-              child: Icon(icone, size: 18, color: ClosetColors.blanc),
-            ),
-            const SizedBox(width: AppSpacing.p16),
-            Expanded(
-              child: Text(
-                label,
-                style: ClosetTextStyles.libelle.copyWith(
-                  color: context.closetEncre,
+              const SizedBox(width: AppSpacing.p16),
+              Expanded(
+                child: Text(
+                  label,
+                  style: ClosetTextStyles.libelle.copyWith(
+                    color: context.closetEncre,
+                  ),
                 ),
               ),
-            ),
-            const Icon(
-              Icons.chevron_right,
-              size: 18,
-              color: ClosetColors.taupe,
-            ),
-          ],
+              const Icon(
+                Icons.chevron_right,
+                size: 18,
+                color: ClosetColors.taupe,
+              ),
+            ],
+          ),
         ),
-      ),
       ),
     );
   }

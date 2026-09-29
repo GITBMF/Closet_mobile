@@ -16,6 +16,8 @@ class Article {
   final String universe;
   final bool isSoldOut;
   final bool isWishlisted;
+  /// Nombre de favoris renvoyé par l'API (`likes_count`, etc.). 0 = inconnu.
+  final int likesCount;
   final String? story;
   final String? houseId;
   final String? universeId;
@@ -38,6 +40,7 @@ class Article {
     this.universe = '',
     this.isSoldOut = false,
     this.isWishlisted = false,
+    this.likesCount = 0,
     this.story,
     this.houseId,
     this.universeId,
@@ -110,6 +113,12 @@ class Article {
       universe: nomUnivers ?? chaineDe(json['universe']),
       isSoldOut: statut == 'sold' || statut == 'reserved' || statut == 'withdrawn',
       isWishlisted: booleenDe(json['in_wishlist']),
+      likesCount: entierDe(
+        json['likes_count'] ??
+            json['wishlist_count'] ??
+            json['favorites_count'] ??
+            json['likes'],
+      ),
       story: story,
       houseId: json['house_id'] as String?,
       universeId: json['universe_id'] as String?,
@@ -189,6 +198,7 @@ class Article {
         'universe': universe,
         'isSoldOut': isSoldOut,
         'isWishlisted': isWishlisted,
+        'likes_count': likesCount,
         'story': story,
         'house_id': houseId,
         'universe_id': universeId,
@@ -212,6 +222,7 @@ class Article {
     String? universe,
     bool? isSoldOut,
     bool? isWishlisted,
+    int? likesCount,
     String? story,
     String? houseId,
     String? universeId,
@@ -234,6 +245,7 @@ class Article {
       universe: universe ?? this.universe,
       isSoldOut: isSoldOut ?? this.isSoldOut,
       isWishlisted: isWishlisted ?? this.isWishlisted,
+      likesCount: likesCount ?? this.likesCount,
       story: story ?? this.story,
       houseId: houseId ?? this.houseId,
       universeId: universeId ?? this.universeId,
@@ -258,6 +270,17 @@ class Article {
   /// Notation visuelle de l'état, à gauche du nom (sans badge sur la photo).
   int get etoilesEtat =>
       condition.trim().isEmpty ? 0 : niveauEtat.etoiles;
+
+  /// Compteur public de favoris. L'OpenAPI n'expose pas encore `likes_count`
+  /// (`PieceSummary` / `PieceDetail` n'ont que `in_wishlist`). Tant que le
+  /// champ est absent, on n'invente pas de popularité.
+  int likesAffiches({required bool enFavori}) {
+    if (likesCount <= 0) return enFavori ? 1 : 0;
+    var n = likesCount;
+    if (enFavori && !isWishlisted) n += 1;
+    if (!enFavori && isWishlisted) n = (n - 1).clamp(0, n);
+    return n;
+  }
 
   /// Conseil d'entretien dérivé de la matière renvoyée par le catalogue.
   String get conseilsLavage {

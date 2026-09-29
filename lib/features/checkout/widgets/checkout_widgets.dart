@@ -255,71 +255,148 @@ Future<T?> afficherSelecteur<T>({
   required String Function(T) libelle,
   T? selection,
   String Function(T)? sousTitre,
+  bool recherchable = false,
 }) {
   return showModalBottomSheet<T>(
     context: context,
     isScrollControlled: true,
     backgroundColor: Colors.transparent,
     builder: (context) {
-      return Material(
-        color: Theme.of(context).colorScheme.surface,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-        clipBehavior: Clip.antiAlias,
-        child: SafeArea(
-          top: false,
-          child: ConstrainedBox(
-            constraints: BoxConstraints(
-              maxHeight: MediaQuery.of(context).size.height * 0.7,
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const SizedBox(height: AppSpacing.p12),
-                const ClosetPoignee(couleur: ClosetColors.caseVide),
-                const SizedBox(height: AppSpacing.p16),
-                Text(titre, style: ClosetTextStyles.titreBloc),
-                const SizedBox(height: AppSpacing.p12),
-                const ClosetFilet(couleur: ClosetColors.caseVide),
-                Flexible(
-                  child: ListView.builder(
-                    padding: const EdgeInsets.symmetric(
-                      vertical: AppSpacing.p8,
-                    ),
-                    shrinkWrap: true,
-                    itemCount: options.length,
-                    itemBuilder: (context, i) {
-                      final option = options[i];
-                      final choisi = option == selection;
-                      return ListTile(
-                        title: Text(
-                          libelle(option),
-                          style: ClosetTextStyles.libelle,
-                        ),
-                        subtitle: sousTitre == null
-                            ? null
-                            : Text(
-                                sousTitre(option),
-                                style: ClosetTextStyles.meta.copyWith(
-                                  color: ClosetColors.taupe,
-                                ),
-                              ),
-                        trailing: Icon(
-                          choisi
-                              ? Icons.radio_button_checked
-                              : Icons.radio_button_unchecked,
-                          size: 20,
-                          color: choisi ? ClosetColors.vert : ClosetColors.ligne,
-                        ),
-                        onTap: () => Navigator.of(context).pop(option),
-                      );
-                    },
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
+      return _FeuilleSelecteur<T>(
+        titre: titre,
+        options: options,
+        libelle: libelle,
+        selection: selection,
+        sousTitre: sousTitre,
+        recherchable: recherchable,
       );
     },
   );
+}
+
+class _FeuilleSelecteur<T> extends StatefulWidget {
+  const _FeuilleSelecteur({
+    required this.titre,
+    required this.options,
+    required this.libelle,
+    required this.recherchable,
+    this.selection,
+    this.sousTitre,
+  });
+
+  final String titre;
+  final List<T> options;
+  final String Function(T) libelle;
+  final T? selection;
+  final String Function(T)? sousTitre;
+  final bool recherchable;
+
+  @override
+  State<_FeuilleSelecteur<T>> createState() => _FeuilleSelecteurState<T>();
+}
+
+class _FeuilleSelecteurState<T> extends State<_FeuilleSelecteur<T>> {
+  String _filtre = '';
+
+  @override
+  Widget build(BuildContext context) {
+    final needle = _filtre.trim().toLowerCase();
+    final options = needle.isEmpty
+        ? widget.options
+        : [
+            for (final o in widget.options)
+              if (widget.libelle(o).toLowerCase().contains(needle)) o,
+          ];
+
+    return Material(
+      color: Theme.of(context).colorScheme.surface,
+      borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+      clipBehavior: Clip.antiAlias,
+      child: SafeArea(
+        top: false,
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            maxHeight: MediaQuery.of(context).size.height * 0.7,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const SizedBox(height: AppSpacing.p12),
+              const ClosetPoignee(couleur: ClosetColors.caseVide),
+              const SizedBox(height: AppSpacing.p16),
+              Text(widget.titre, style: ClosetTextStyles.titreBloc),
+              if (widget.recherchable) ...[
+                const SizedBox(height: AppSpacing.p12),
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.p16,
+                  ),
+                  child: TextField(
+                    autofocus: true,
+                    onChanged: (v) => setState(() => _filtre = v),
+                    style: ClosetTextStyles.saisie,
+                    decoration: InputDecoration(
+                      hintText: 'Rechercher…',
+                      prefixIcon: const Icon(Icons.search, size: 20),
+                      isDense: true,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(AppRadius.carte),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+              const SizedBox(height: AppSpacing.p12),
+              const ClosetFilet(couleur: ClosetColors.caseVide),
+              Flexible(
+                child: options.isEmpty
+                    ? Padding(
+                        padding: const EdgeInsets.all(AppSpacing.p24),
+                        child: Text(
+                          'Aucune ville ne correspond.',
+                          style: ClosetTextStyles.meta,
+                        ),
+                      )
+                    : ListView.builder(
+                        padding: const EdgeInsets.symmetric(
+                          vertical: AppSpacing.p8,
+                        ),
+                        shrinkWrap: true,
+                        itemCount: options.length,
+                        itemBuilder: (context, i) {
+                          final option = options[i];
+                          final choisi = option == widget.selection;
+                          return ListTile(
+                            title: Text(
+                              widget.libelle(option),
+                              style: ClosetTextStyles.libelle,
+                            ),
+                            subtitle: widget.sousTitre == null
+                                ? null
+                                : Text(
+                                    widget.sousTitre!(option),
+                                    style: ClosetTextStyles.meta.copyWith(
+                                      color: ClosetColors.taupe,
+                                    ),
+                                  ),
+                            trailing: Icon(
+                              choisi
+                                  ? Icons.radio_button_checked
+                                  : Icons.radio_button_unchecked,
+                              size: 20,
+                              color: choisi
+                                  ? ClosetColors.vert
+                                  : ClosetColors.ligne,
+                            ),
+                            onTap: () => Navigator.of(context).pop(option),
+                          );
+                        },
+                      ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 }

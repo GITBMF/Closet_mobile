@@ -1,7 +1,8 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/l10n/closet_l10n.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/closet_colors.dart';
 import '../../../core/theme/closet_text_styles.dart';
@@ -42,7 +43,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       image: 'assets/onboarding_1.jpg',
       surtitre: 'Le dressing privé',
       titre: 'Une sélection curée, pièce par pièce',
-      corps: 'Chaque entrée dans le dressing est authentifiée, restaurée et '
+      corps:
+          'Chaque entrée dans le dressing est authentifiée, restaurée et '
           'photographiée avec soin. Ici, la seconde main devient un rituel '
           "d'élégance.",
     ),
@@ -50,7 +52,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       image: 'assets/onboarding_2.jpg',
       surtitre: "L'élégance durable",
       titre: 'Consommer moins, choisir mieux.',
-      corps: "Nous prolongeons la vie de pièces d'exception. Chaque "
+      corps:
+          "Nous prolongeons la vie de pièces d'exception. Chaque "
           'acquisition est un geste pour la planète — sans compromis sur la '
           'beauté.',
     ),
@@ -58,7 +61,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       image: 'assets/onboarding_3.jpg',
       surtitre: 'Le cercle privilège',
       titre: 'Un accès discret aux plus belles pièces.',
-      corps: 'Notifications privées sur les nouveautés de vos maisons '
+      corps:
+          'Notifications privées sur les nouveautés de vos maisons '
           'préférées, avantages exclusifs, livraison écrin. Un service à la '
           'hauteur de vos exigences.',
     ),
@@ -87,7 +91,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   void _jaiUnCompte() {
     HapticFeedback.mediumImpact();
-    context.go('/auth');
+    context.push('/auth');
   }
 
   @override
@@ -97,6 +101,22 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       body: SafeArea(
         child: Column(
           children: [
+            Align(
+              alignment: Alignment.centerRight,
+              child: TextButton(
+                onPressed: () {
+                  HapticFeedback.mediumImpact();
+                  context.go('/home');
+                },
+                child: Text(
+                  ClosetL10n.of(context).visitePasser,
+                  style: ClosetTextStyles.bouton.copyWith(
+                    color: ClosetColors.fond300,
+                    fontSize: 12,
+                  ),
+                ),
+              ),
+            ),
             Expanded(
               child: PageView.builder(
                 controller: _pageController,
@@ -105,10 +125,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 itemBuilder: (context, i) => _Slide(slide: _slides[i]),
               ),
             ),
-            _Indicateur(
-              total: _slides.length,
-              actif: _pageCourante,
-            ),
+            _Indicateur(total: _slides.length, actif: _pageCourante),
             const SizedBox(height: AppSpacing.p24),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 39),

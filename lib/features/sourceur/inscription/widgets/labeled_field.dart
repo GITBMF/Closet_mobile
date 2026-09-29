@@ -39,7 +39,7 @@ class LabeledField extends StatelessWidget {
             ],
             Expanded(
               child: Text(
-                label.toUpperCase(),
+                label,
                 style: ClosetTextStyles.labelChamp,
               ),
             ),

@@ -5,11 +5,7 @@ import '../theme/locale_provider.dart';
 
 /// Système i18n maison — supporte [Locale('fr')] et [Locale('en')].
 class ClosetL10n extends InheritedWidget {
-  const ClosetL10n({
-    super.key,
-    required this.locale,
-    required super.child,
-  });
+  const ClosetL10n({super.key, required this.locale, required super.child});
 
   final Locale locale;
 
@@ -29,35 +25,59 @@ class ClosetL10n extends InheritedWidget {
 
   // ─── Navigation ─────────────────────────────────────────────────────────────
   String get navDressing => t('Mon Dressing', 'My Wardrobe');
+  String get navDressingCourt => t('Dressing', 'Home');
   String get navCollections => t('Collections', 'Collections');
-  String get navWishlist => t('Wishlist', 'Wishlist');
+  String get navWishlist => t('Favoris', 'Favorites');
   String get navSelection => t('Sélection', 'Selection');
   String get voirMaSelection => t('Voir ma sélection', 'View selection');
+  String get mesFavoris => t('Mes favoris', 'My favorites');
+  String get ajouterAMaSelection =>
+      t('Ajouter à ma sélection', 'Add to selection');
+  String get retirerDeMaSelection =>
+      t('Retirer de ma sélection', 'Remove from selection');
+  String get ajouterAuxFavoris => t('Ajouter aux favoris', 'Add to favorites');
+  String get retirerDesFavoris =>
+      t('Retirer des favoris', 'Remove from favorites');
+  String get indisponible => t('Indisponible', 'Unavailable');
+  String get annulerAction => t('Annuler', 'Undo');
   String get navEspace => t('Espace', 'Space');
   String get navDepots => t('Mes Dépôts', 'My Items');
+  String get navDepotsCourt => t('Dépôts', 'Items');
   String get navConfier => t('Confier', 'Consign');
   String get navGains => t('Gains', 'Earnings');
 
   // ─── Dressing / Accueil ─────────────────────────────────────────────────────
-  String get dressingVide => t('Votre dressing est vide.', 'Your wardrobe is empty.');
+  String get dressingVide =>
+      t('Votre dressing est vide.', 'Your wardrobe is empty.');
   String get pieceDeLaSemaine => t('Pièce de la semaine', 'Item of the week');
   String get decouvrir => t('Découvrir', 'Discover');
-  String pieceSemaineSemantics(String titre, String prix) =>
-      t('Pièce de la semaine : $titre — $prix', 'Item of the week: $titre — $prix');
+  String get qualiteVerifiee => t('Qualité vérifiée', 'Quality checked');
+  String get qualiteVerifieeDetail => t(
+    'Chaque pièce est contrôlée avant d’être mise en ligne.',
+    'Every piece is inspected before it goes live.',
+  );
+  String pieceSemaineSemantics(String titre, String prix) => t(
+    'Pièce de la semaine : $titre — $prix',
+    'Item of the week: $titre — $prix',
+  );
   String get libelleCategorie => t('Catégorie', 'Category');
 
   // ─── Collections / Recherche ────────────────────────────────────────────────
-  String get rechercherPiece => t('Rechercher une pièce…', 'Search for an item…');
-  String get recherchesPopulaires => t('Recherches populaires', 'Popular searches');
+  String get rechercherPiece =>
+      t('Rechercher une pièce…', 'Search for an item…');
+  String get recherchesPopulaires =>
+      t('Recherches populaires', 'Popular searches');
   String get marquesTendance => t('Marques tendance', 'Trending brands');
   String get suggestionsMarques => t('Marques', 'Brands');
   String get suggestionsTypes => t('Types', 'Types');
   String get suggestionsTailles => t('Tailles', 'Sizes');
   String get suggestionsEtats => t('États', 'Condition');
   String get toutes => t('Toutes', 'All');
-  String get aucunePieceRecherche => t('Aucune pièce ne correspond.', 'No items found.');
+  String get aucunePieceRecherche =>
+      t('Aucune pièce ne correspond.', 'No items found.');
   String get effacerRecherche => t('Effacer', 'Clear');
-  String nbPieces(int n) => n == 1 ? t('1 pièce', '1 item') : t('$n pièces', '$n items');
+  String nbPieces(int n) =>
+      n == 1 ? t('1 pièce', '1 item') : t('$n pièces', '$n items');
 
   // ─── Fiche produit ──────────────────────────────────────────────────────────
   String get enStock => t('En stock', 'In stock');
@@ -69,10 +89,12 @@ class ClosetL10n extends InheritedWidget {
   String get etatPiece => t('État', 'Condition');
   String get etatDeLaPiece => t('État de la pièce', 'Item condition');
   String get signesUsage => t('Signes d’usage relevés', 'Noted signs of wear');
-  String get descriptionArticle => t('À propos de cette pièce', 'About this item');
+  String get descriptionArticle =>
+      t('À propos de cette pièce', 'About this item');
 
   // ─── Sélection / Checkout ───────────────────────────────────────────────────
-  String get selectionVide => t('Votre sélection est vide.', 'Your selection is empty.');
+  String get selectionVide =>
+      t('Votre sélection est vide.', 'Your selection is empty.');
   String get paiementEnCours => t('Paiement en cours…', 'Payment in progress…');
   String get annulerPaiement => t('Annuler', 'Cancel');
 
@@ -81,11 +103,24 @@ class ClosetL10n extends InheritedWidget {
   String get mesCommandes => t('Mes commandes', 'My orders');
   String get mesInformations => t('Mes informations', 'My information');
   String get modifierProfil => t('Modifier le profil', 'Edit profile');
+  String get mettreAJour => t('Mettre à jour', 'Update');
+  String get profilMisAJour => t('Profil mis à jour', 'Profile updated');
+  String get modificationsNonEnregistrees =>
+      t('Modifications non enregistrées', 'Unsaved changes');
+  String get quitterSansEnregistrer => t(
+    'Quitter cette page sans enregistrer ?',
+    'Leave this page without saving?',
+  );
+  String get continuerEdition => t('Rester', 'Keep editing');
+  String get quitter => t('Quitter', 'Leave');
   String get invite => t('Invité', 'Guest');
-  String get connectezVousPieces =>
-      t('Connectez-vous pour accéder à vos pièces.', 'Sign in to access your items.');
+  String get connectezVousPieces => t(
+    'Connectez-vous pour accéder à vos pièces.',
+    'Sign in to access your items.',
+  );
   String get membreDressing => t('Membre ClosET', 'ClosET member');
-  String get seConnecterInscrire => t("Se connecter / S'inscrire", 'Sign in / Register');
+  String get seConnecterInscrire =>
+      t("Se connecter / S'inscrire", 'Sign in / Register');
   String get logout => t('Se déconnecter', 'Sign out');
   String get deconnexion => t('Déconnexion', 'Sign out');
   String get themeSombre => t('Mode sombre', 'Dark mode');
@@ -97,41 +132,54 @@ class ClosetL10n extends InheritedWidget {
   String get visitePasser => t('PASSER', 'SKIP');
   String get visiteSuivant => t('Suivant', 'Next');
   String get visiteTerminer => t('Terminer', 'Done');
+  String get visiteFiltresTitre => t('Filtres', 'Filters');
   String get visiteDressing => t(
-        'Les nouveautés et la pièce de la semaine, dès l’ouverture.',
-        'New arrivals and the piece of the week, right on home.',
-      );
-  String get visiteCollections => t(
-        'Cherchez par univers, taille, état et budget.',
-        'Search by universe, size, condition and budget.',
-      );
+    'Parcourez les nouveautés et ouvrez une pièce pour voir le détail.',
+    'Browse new arrivals and open a piece to see the details.',
+  );
+  String get visiteFiltres => t(
+    'Cherchez une pièce, puis touchez l’icône à droite pour filtrer par univers, taille, état et budget.',
+    'Search, then tap the icon on the right to filter by universe, size, condition and budget.',
+  );
   String get visiteWishlist => t(
-        'Vos coups de cœur. La connexion est demandée pour les garder.',
-        'Your saved pieces. Sign in to keep them.',
-      );
+    'Le cœur sur une fiche l’ajoute à vos favoris. Touchez-le à nouveau pour la retirer.',
+    'The heart on a card saves it to your favorites. Tap again to remove it.',
+  );
   String get visiteSelection => t(
-        'Les pièces mises de côté, prêtes à être finalisées.',
-        'Items set aside, ready to check out.',
-      );
+    '« Ajouter à ma sélection » met la pièce dans le sac. Ici vous relisez le panier et finalisez la commande.',
+    '“Add to selection” puts the piece in your bag. Review it here, then check out.',
+  );
+  String get visiteCommandes => t(
+    'Après le paiement, suivez préparation et livraison dans Mes commandes.',
+    'After payment, track preparation and delivery in My orders.',
+  );
+  String get visiteSourceur => t(
+    'Confiez vos pièces : le programme Sourceur vous reverse une part de chaque vente.',
+    'Consign your pieces: the Sourcer programme pays you a share of each sale.',
+  );
   String get visiteEspace => t(
-        'Commandes, profil, et relance de cette visite.',
-        'Orders, profile, and this tour again.',
-      );
+    'Commandes, profil, et relance de cette visite.',
+    'Orders, profile, and this tour again.',
+  );
 
   // ─── Carte Sourceur ─────────────────────────────────────────────────────────
   String get nouveau => t('Nouveau', 'New');
   String get devenirSourceur => t('Devenir Sourceur', 'Become a Sourcer');
   String get monEspaceSourceur => t('Mon Espace Sourceur', 'My Sourcer Space');
-  String get carteSourceurCorps =>
-      t('Confiez vos pièces et gagnez sur chaque vente.',
-          'Consign your items and earn on every sale.');
+  String get carteSourceurCorps => t(
+    'Confiez vos pièces et gagnez sur chaque vente.',
+    'Consign your items and earn on every sale.',
+  );
   String get monEspaceCourt => t('Mon Espace', 'My Space');
   String get rejoindreCercleCourt => t('Rejoindre', 'Join');
 
   // ─── Espace sourceur ────────────────────────────────────────────────────────
-  String get revenirEspaceClient => t('Basculer vers le compte Client', 'Switch to Client account');
-  String get policesConfidentialite => t('Confidentialité & CGU', 'Privacy & Terms');
-  String get ajouterCompteSourceur => t('Ajouter un compte sourceur', 'Add a sourcer account');
+  String get revenirEspaceClient =>
+      t('Basculer vers le compte Client', 'Switch to Client account');
+  String get policesConfidentialite =>
+      t('Confidentialité & CGU', 'Privacy & Terms');
+  String get ajouterCompteSourceur =>
+      t('Ajouter un compte sourceur', 'Add a sourcer account');
   String get statut => t('Statut', 'Status');
   String get telephone => t('Téléphone', 'Phone');
   String get collaboration => t('Collaboration', 'Collaboration');
@@ -141,8 +189,10 @@ class ClosetL10n extends InheritedWidget {
   // ─── Sourceur — Dépôts ──────────────────────────────────────────────────────
   String get mesDepots => t('Mes Dépôts', 'My Items');
   String get aucuneDonnee => t('Aucune donnée', 'No data');
-  String get depotsVide =>
-      t("Vous n'avez encore confié aucune pièce.", "You haven't consigned any items yet.");
+  String get depotsVide => t(
+    "Vous n'avez encore confié aucune pièce.",
+    "You haven't consigned any items yet.",
+  );
   String get confierUnePiece => t('Confier une pièce', 'Consign an item');
   String etapeDepot(int n) => t('Étape $n/3', 'Step $n/3');
   String get depotEtapePhotos => t('Photos', 'Photos');
@@ -155,10 +205,11 @@ class ClosetL10n extends InheritedWidget {
   String get depotTypeRequis =>
       t('Choisissez un type d’article.', 'Choose a category.');
   String get depotPhotosAide => t(
-        'Une photo nette suffit pour commencer. Vous pourrez en ajouter.',
-        'One clear photo is enough to start. You can add more later.',
-      );
-  String get aucunePieceFiltre => t('Aucune pièce pour ce filtre.', 'No items for this filter.');
+    'Une photo nette suffit pour commencer. Vous pourrez en ajouter.',
+    'One clear photo is enough to start. You can add more later.',
+  );
+  String get aucunePieceFiltre =>
+      t('Aucune pièce pour ce filtre.', 'No items for this filter.');
   String get enVente => t('En vente', 'For sale');
   String get enLigne => t('En ligne', 'Online');
   String get enCoursAnalyse => t('En analyse', 'Under review');
@@ -172,7 +223,8 @@ class ClosetL10n extends InheritedWidget {
   String get retraitsApprouves => t('Approuvés', 'Approved');
   String get retraitsEnCours => t('En cours', 'Pending');
   String get retraitsRefuses => t('Refusés', 'Refused');
-  String get effectuerRetrait => t('Effectuer un retrait', 'Request withdrawal');
+  String get effectuerRetrait =>
+      t('Effectuer un retrait', 'Request withdrawal');
   String get soldeDisponible => t('Solde disponible', 'Available balance');
   String get soldeEnAttente => t('En attente', 'Pending');
 
@@ -186,74 +238,100 @@ class ClosetL10n extends InheritedWidget {
   String get depotEnCours => t('Dépôt en cours…', 'Submitting…');
   String get depotImpossible => t('Dépôt impossible', 'Submission failed');
   String get pieceRecue => t('Pièce reçue !', 'Item received!');
-  String pieceEnExamen(String nom) =>
-      t('« $nom » est en cours d\'examen par notre équipe.',
-          '"$nom" is being reviewed by our team.');
+  String pieceEnExamen(String nom) => t(
+    '« $nom » est en cours d\'examen par notre équipe.',
+    '"$nom" is being reviewed by our team.',
+  );
 
   // ─── Feedback / États écran ─────────────────────────────────────────────────
-  String get chargementMessage => t('Préparation de votre dressing…', 'Preparing your wardrobe…');
+  String get chargementMessage =>
+      t('Préparation de votre dressing…', 'Preparing your wardrobe…');
   String get retryLabel => t('Réessayer', 'Retry');
   String get vide => t('Aucun contenu', 'No content');
   String get listeVideTitre => t('Aucun contenu', 'Nothing here');
-  String get listeVideMessage =>
-      t('Cette section est vide pour le moment.', 'This section is empty for now.');
+  String get listeVideMessage => t(
+    'Cette section est vide pour le moment.',
+    'This section is empty for now.',
+  );
 
   // ─── Auth ────────────────────────────────────────────────────────────────────
   String get ouSeConnecter => t('ou se connecter avec', 'or sign in with');
-  String get emailInvalide => t('Adresse e-mail invalide.', 'Invalid e-mail address.');
+  String get emailInvalide =>
+      t('Adresse e-mail invalide.', 'Invalid e-mail address.');
   String get emailInvalideTitre => t('E-mail invalide', 'Invalid e-mail');
-  String get motDePasseTropCourt => t('Minimum 6 caractères.', 'Minimum 6 characters.');
-  String get champsObligatoires => t('Ce champ est obligatoire.', 'This field is required.');
-  String get telephoneInvalide => t('Numéro de téléphone invalide.', 'Invalid phone number.');
+  String get motDePasseTropCourt =>
+      t('Minimum 6 caractères.', 'Minimum 6 characters.');
+  String get champsObligatoires =>
+      t('Ce champ est obligatoire.', 'This field is required.');
+  String get telephoneInvalide =>
+      t('Numéro de téléphone invalide.', 'Invalid phone number.');
   String get champsManquants => t('Champs manquants', 'Missing fields');
-  String get renseignerNomPrenom =>
-      t('Renseignez votre prénom et nom.', 'Please enter your first and last name.');
+  String get renseignerNomPrenom => t(
+    'Renseignez votre prénom et nom.',
+    'Please enter your first and last name.',
+  );
   String get nomIncomplet => t('Nom incomplet', 'Incomplete name');
   String get nomMinCaracteres =>
       t('Minimum 2 caractères par champ.', 'Minimum 2 characters per field.');
   String get nomTropLong => t('Nom trop long', 'Name too long');
   String get max150 => t('Maximum 150 caractères.', 'Maximum 150 characters.');
-  String get renseignerNom => t('Renseignez votre nom.', 'Please enter your last name.');
-  String get renseignerPrenom => t('Renseignez votre prénom.', 'Please enter your first name.');
-  String get renseignerEmail => t('Renseignez votre e-mail.', 'Please enter your e-mail.');
-  String get emailIncorrect => t('Format e-mail incorrect.', 'Incorrect e-mail format.');
-  String get renseignerMdp => t('Renseignez un mot de passe.', 'Please enter a password.');
-  String get min8Caracteres => t('Minimum 8 caractères.', 'Minimum 8 characters.');
+  String get renseignerNom =>
+      t('Renseignez votre nom.', 'Please enter your last name.');
+  String get renseignerPrenom =>
+      t('Renseignez votre prénom.', 'Please enter your first name.');
+  String get renseignerEmail =>
+      t('Renseignez votre e-mail.', 'Please enter your e-mail.');
+  String get emailIncorrect =>
+      t('Format e-mail incorrect.', 'Incorrect e-mail format.');
+  String get renseignerMdp =>
+      t('Renseignez un mot de passe.', 'Please enter a password.');
+  String get min8Caracteres =>
+      t('Minimum 8 caractères.', 'Minimum 8 characters.');
   String get motDePasse => t('Mot de passe', 'Password');
-  String get hintMotDePasse => t('Au moins 8 caractères', 'At least 8 characters');
-  String get hintMdpRegle =>
-      t('Majuscule, chiffre, caractère spécial requis.',
-          'Uppercase, number, special character required.');
+  String get hintMotDePasse =>
+      t('Au moins 8 caractères', 'At least 8 characters');
+  String get hintMdpRegle => t(
+    'Majuscule, chiffre, caractère spécial requis.',
+    'Uppercase, number, special character required.',
+  );
   String get motDePasseOublie => t('Mot de passe oublié ?', 'Forgot password?');
   String get boutonSeConnecter => t('Se connecter', 'Sign in');
   String get boutonCreerCompte => t('Créer mon compte', 'Create account');
-  String get continuerGoogle => t('Continuer avec Google', 'Continue with Google');
-  String get googleIndisponibleTitre => t('Google indisponible', 'Google unavailable');
-  String get googleIndisponible =>
-      t("La connexion Google n'est pas disponible sur cet appareil.",
-          'Google sign-in is not available on this device.');
+  String get continuerGoogle =>
+      t('Continuer avec Google', 'Continue with Google');
+  String get googleIndisponibleTitre =>
+      t('Google indisponible', 'Google unavailable');
+  String get googleIndisponible => t(
+    "La connexion Google n'est pas disponible sur cet appareil.",
+    'Google sign-in is not available on this device.',
+  );
   String get pasEncoreMembre => t('Pas encore membre ?', 'Not a member yet?');
   String get dejaMembre => t('Déjà membre ?', 'Already a member?');
   String get rejoindreLeCercle => t('Rejoindre le cercle', 'Join the circle');
   String get seConnecter => t('Se connecter', 'Sign in');
-  String get continuerInvitee => t('Continuer sans compte', 'Continue without account');
+  String get continuerInvitee =>
+      t('Continuer sans compte', 'Continue without account');
   String get authTitreConnexion => t('Connexion', 'Sign in');
   String get authTitreInscription => t('Inscription', 'Register');
   String get connexionReussie => t('Connexion réussie', 'Signed in');
   String get compteCree => t('Compte créé', 'Account created');
-  String bonRetour(String prenom) => t('Bon retour, $prenom !', 'Welcome back, $prenom!');
-  String bienvenuePrenom(String prenom) => t('Bienvenue, $prenom !', 'Welcome, $prenom!');
+  String bonRetour(String prenom) =>
+      t('Bon retour, $prenom !', 'Welcome back, $prenom!');
+  String bienvenuePrenom(String prenom) =>
+      t('Bienvenue, $prenom !', 'Welcome, $prenom!');
   String get connexionImpossible => t('Connexion impossible', 'Sign-in failed');
-  String get inscriptionImpossible => t('Inscription impossible', 'Registration failed');
+  String get inscriptionImpossible =>
+      t('Inscription impossible', 'Registration failed');
   String get prenom => t('Prénom', 'First name');
   String get nom => t('Nom', 'Last name');
   String get email => t('E-mail', 'E-mail');
 
   // ─── Connexion requise ──────────────────────────────────────────────────────
   String get connexionRequise => t('Connexion requise', 'Sign in required');
-  String get connexionRequiseSelection =>
-      t('Connectez-vous pour finaliser votre sélection.',
-          'Sign in to complete your selection.');
+  String get connexionRequiseSelection => t(
+    'Connectez-vous pour finaliser votre sélection.',
+    'Sign in to complete your selection.',
+  );
   String get plusTard => t('Plus tard', 'Later');
 
   // ─── Erreurs ────────────────────────────────────────────────────────────────
@@ -263,15 +341,24 @@ class ClosetL10n extends InheritedWidget {
   String messageDepuisErreur(Object erreur) {
     final s = erreur.toString();
     if (s.contains('SocketException') || s.contains('NetworkException')) {
-      return t('Vérifiez votre connexion internet.', 'Check your internet connection.');
+      return t(
+        'Vérifiez votre connexion internet.',
+        'Check your internet connection.',
+      );
     }
     if (s.contains('401') || s.contains('Unauthorized')) {
-      return t('Session expirée, veuillez vous reconnecter.',
-          'Session expired, please sign in again.');
+      return t(
+        'Session expirée, veuillez vous reconnecter.',
+        'Session expired, please sign in again.',
+      );
     }
-    if (s.contains('404')) return t('Contenu introuvable.', 'Content not found.');
+    if (s.contains('404'))
+      return t('Contenu introuvable.', 'Content not found.');
     if (s.contains('500') || s.contains('502') || s.contains('503')) {
-      return t('Problème serveur. Réessayez plus tard.', 'Server error. Please try again later.');
+      return t(
+        'Problème serveur. Réessayez plus tard.',
+        'Server error. Please try again later.',
+      );
     }
     final match = RegExp(r'"([^"]{4,120})"').firstMatch(s);
     if (match != null) return match.group(1)!;
@@ -280,6 +367,22 @@ class ClosetL10n extends InheritedWidget {
 
   // ─── Toasts ─────────────────────────────────────────────────────────────────
   String toastPiece(String nom, String resultat) => '$nom $resultat';
+  String pieceAjouteeSelection(String nom) => t(
+    '$nom a été ajouté à votre sélection.',
+    '$nom was added to your selection.',
+  );
+  String pieceRetireeSelection(String nom) => t(
+    '$nom a été retiré de votre sélection.',
+    '$nom was removed from your selection.',
+  );
+  String pieceAjouteeFavoris(String nom) => t(
+    '$nom a été ajouté à vos favoris.',
+    '$nom was added to your favorites.',
+  );
+  String pieceRetireeFavoris(String nom) => t(
+    '$nom a été retiré de vos favoris.',
+    '$nom was removed from your favorites.',
+  );
 
   // ─── Filtres / Recherche avancée ────────────────────────────────────────────
   String get affinerRecherche => t('Affiner la recherche', 'Refine search');
@@ -298,8 +401,10 @@ class ClosetL10n extends InheritedWidget {
       t('Ajoutez au moins un chiffre.', 'Add at least one digit.');
   String get ajouterLettre =>
       t('Ajoutez au moins une lettre.', 'Add at least one letter.');
-  String get mdpSansEspaces => t('Le mot de passe ne doit pas contenir d’espaces.',
-      'The password must not contain spaces.');
+  String get mdpSansEspaces => t(
+    'Le mot de passe ne doit pas contenir d’espaces.',
+    'The password must not contain spaces.',
+  );
   String get max128 => t('128 caractères maximum.', '128 characters maximum.');
   String get renseignerNumero =>
       t('Renseignez votre numéro.', 'Please enter your number.');
@@ -316,7 +421,7 @@ class ClosetL10n extends InheritedWidget {
 
 class _L10nInstance extends ClosetL10n {
   const _L10nInstance(Locale locale)
-      : super(locale: locale, child: const SizedBox.shrink());
+    : super(locale: locale, child: const SizedBox.shrink());
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

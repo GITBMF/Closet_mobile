@@ -221,6 +221,7 @@ class _ArticleCardState extends ConsumerState<ArticleCard> {
       ].join('. '),
       imageUrl: article.imageUrls.isEmpty ? null : article.imageUrls.first,
       etoiles: article.etoilesEtat,
+      likes: article.likesAffiches(enFavori: isWishlisted),
       isFavorite: isWishlisted,
       isSold: article.isSoldOut,
       onTap: widget.onTap,
